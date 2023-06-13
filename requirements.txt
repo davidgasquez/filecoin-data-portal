@@ -1,0 +1,15 @@
+altair
+duckdb
+ipykernel
+ipywidgets
+ijson
+jupyterlab
+matplotlib
+nbclient
+nbformat
+numpy
+pandas
+pyarrow
+regex
+tqdm
+zstandard

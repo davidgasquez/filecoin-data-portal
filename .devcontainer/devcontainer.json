@@ -1,0 +1,19 @@
+{
+	"name": "Filecoin Analytics",
+	"build": {
+		"dockerfile": "../Dockerfile",
+		"context": ".."
+	},
+	"features": {
+		"ghcr.io/stuartleeks/dev-container-features/shell-history:latest": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.vscode-pylance",
+				"VisualStudioExptTeam.vscodeintellicode",
+				"ms-toolsai.jupyter"
+			]
+		}
+	}
+}
