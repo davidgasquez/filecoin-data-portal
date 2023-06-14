@@ -1,9 +1,11 @@
 altair
 duckdb
+duckdb-engine
 ipykernel
 ipywidgets
 ijson
 jupyterlab
+jupysql
 matplotlib
 nbclient
 nbformat
