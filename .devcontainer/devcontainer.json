@@ -9,10 +9,15 @@
 	},
 	"customizations": {
 		"vscode": {
+			"settings": {
+				"quarto.render.previewType": "external"
+			},
 			"extensions": [
+				"ms-python.python",
 				"ms-python.vscode-pylance",
 				"VisualStudioExptTeam.vscodeintellicode",
-				"ms-toolsai.jupyter"
+				"ms-toolsai.jupyter",
+				"quarto.quarto"
 			]
 		}
 	}
