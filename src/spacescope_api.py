@@ -22,8 +22,6 @@ def call_method(method: str, params=None):
 
 
 def get_power_data(date=None, miner_id=None):
-    params = {"state_date": date, "miner_id": miner_id}
-
     response = call_method(
         "storage_provider/power", params={"state_date": date, "miner_id": miner_id}
     )
