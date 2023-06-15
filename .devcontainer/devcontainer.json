@@ -10,14 +10,22 @@
 	"customizations": {
 		"vscode": {
 			"settings": {
-				"quarto.render.previewType": "external"
+				"quarto.render.previewType": "external",
+				"[python]": {
+					"editor.formatOnSave": true,
+					"editor.codeActionsOnSave": {
+						"source.fixAll": true
+					}
+				},
+				"python.formatting.provider": "black"
 			},
 			"extensions": [
 				"ms-python.python",
 				"ms-python.vscode-pylance",
 				"VisualStudioExptTeam.vscodeintellicode",
 				"ms-toolsai.jupyter",
-				"quarto.quarto"
+				"quarto.quarto",
+				"charliermarsh.ruff"
 			]
 		}
 	}
