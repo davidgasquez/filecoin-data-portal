@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.361">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Filecoin Analytics - Filecoin Chain Data via JSON-RPC</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Filecoin Analytics</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/davidgasquez/filecoin-analytics" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/davidgasquez/" rel="" target=""><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Filecoin Chain Data via JSON-RPC</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>Date: <em>2021-06-14</em></p>
+<p><a href="https://filecoin-shipyard.github.io/js-lotus-client/intro/json-rpc.html">Filecoin has support for JSON-RPC API</a>, a standardized way to encode remote procedure calls in JSON. Projects such as Bitcoin and Ethereum have adopted it for use in their APIs.</p>
+<p>For example, when you run the Lotus node with lotus daemon, it will listen for connections on TCP port 1234 (by default).</p>
+<p>Applications may connect to this port and issue JSON-RPC calls. For example, using CURL, if we want to call the Filecoin.Version method, we might do this:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-X</span> POST <span class="dt">\</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">"Content-Type: application/json"</span> <span class="dt">\</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--data</span> <span class="st">'{ </span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="st">      "jsonrpc": "2.0", </span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="st">      "method": "Filecoin.Version", </span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="st">      "params": [], </span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="st">      "id": 1 </span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="st">    }'</span> <span class="dt">\</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  http://127.0.0.1:1234/rpc/v0 </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Since Filecoin doesn’t have a Python client and tooling around CAR files is still in development, we’ll use <a href="https://lotus.filecoin.io/reference/basics/api-access/">the JSON-RPC API to get data from the Filecoin chain</a>.</p>
+<div class="cell" data-execution_count="59">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> requests</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="60">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ENDPOINT_URL <span class="op">=</span> <span class="st">"https://api.node.glif.io"</span>  <span class="co"># Another alternative is "https://lotus.miner.report/mainnet_api/0/node/rpc/v0"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="61">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> filecoin_rpc(method: <span class="bu">str</span>, params):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Call a Filecoin JSON-RPC method with the given parameters.</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    payload <span class="op">=</span> {</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"jsonrpc"</span>: <span class="st">"2.0"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"method"</span>: method,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"params"</span>: params,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"id"</span>: <span class="dv">1</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> requests.post(ENDPOINT_URL, json<span class="op">=</span>payload).json()</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">"error"</span> <span class="kw">in</span> response:</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">Exception</span>(response[<span class="st">"error"</span>])</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response[<span class="st">"result"</span>]</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_tipset_by_height(height: <span class="bu">int</span>):</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co">    Get a tipset by its height.</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> filecoin_rpc(<span class="st">"Filecoin.ChainGetTipSetByHeight"</span>, [height, <span class="va">None</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>With this we’re ready to go. First, let’s see the head of the chain:</p>
+<div class="cell" data-execution_count="62">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>chain_head <span class="op">=</span> filecoin_rpc(<span class="st">"Filecoin.ChainHead"</span>, [])</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>latest_epoch <span class="op">=</span> chain_head[<span class="st">"Height"</span>]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Latest epoch is </span><span class="sc">{</span>latest_epoch<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Latest epoch is 2948182</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="64">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>pd.json_normalize(chain_head[<span class="st">"Blocks"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="64">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Miner</th>
+<th data-quarto-table-cell-role="th">BeaconEntries</th>
+<th data-quarto-table-cell-role="th">WinPoStProof</th>
+<th data-quarto-table-cell-role="th">Parents</th>
+<th data-quarto-table-cell-role="th">ParentWeight</th>
+<th data-quarto-table-cell-role="th">Height</th>
+<th data-quarto-table-cell-role="th">Timestamp</th>
+<th data-quarto-table-cell-role="th">ForkSignaling</th>
+<th data-quarto-table-cell-role="th">ParentBaseFee</th>
+<th data-quarto-table-cell-role="th">Ticket.VRFProof</th>
+<th data-quarto-table-cell-role="th">ElectionProof.WinCount</th>
+<th data-quarto-table-cell-role="th">ElectionProof.VRFProof</th>
+<th data-quarto-table-cell-role="th">ParentStateRoot./</th>
+<th data-quarto-table-cell-role="th">ParentMessageReceipts./</th>
+<th data-quarto-table-cell-role="th">Messages./</th>
+<th data-quarto-table-cell-role="th">BLSAggregate.Type</th>
+<th data-quarto-table-cell-role="th">BLSAggregate.Data</th>
+<th data-quarto-table-cell-role="th">BlockSig.Type</th>
+<th data-quarto-table-cell-role="th">BlockSig.Data</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>f01777777</td>
+<td>[{'Round': 3044027, 'Data': 'jsqnJfP8uSHqWnRPD...</td>
+<td>[{'PoStProof': 4, 'ProofBytes': 'jbAbjqUp34ot/...</td>
+<td>[{'/': 'bafy2bzaceacxbckrwx45ntjp7nwnfxx5bzwie...</td>
+<td>69520993633</td>
+<td>2948182</td>
+<td>1686751860</td>
+<td>0</td>
+<td>1034486241</td>
+<td>qBguMRwOCZIr6R3i1wyPYRrL7UkSZRbcIy5Vo5tyGPnuck...</td>
+<td>1</td>
+<td>pP/X/5xcg3Ej05zUwgmhwU6Pi1n0CjL/ndCaMJMZLYU9OI...</td>
+<td>bafy2bzaceco5bzk37qir4fc62lnjkiir47lj64kc5rlij...</td>
+<td>bafy2bzacec7w5xagjrbeugqxscmvhljvil6selmvtlu6z...</td>
+<td>bafy2bzacedioyzrsqlnlixbczstsskzjlj6c7gfwm4vp7...</td>
+<td>2</td>
+<td>kNrhxvl6hKsQpIbN5Xx/IsQrXEUhcNzItoMPLssGoimlFz...</td>
+<td>2</td>
+<td>qkOwjqkp/oM1b5+VXulPUyZhGoJEYw4RDwoACK7bBsYsn1...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>f01945216</td>
+<td>[{'Round': 3044027, 'Data': 'jsqnJfP8uSHqWnRPD...</td>
+<td>[{'PoStProof': 3, 'ProofBytes': 'mWqQoLMu/HR5a...</td>
+<td>[{'/': 'bafy2bzaceacxbckrwx45ntjp7nwnfxx5bzwie...</td>
+<td>69520993633</td>
+<td>2948182</td>
+<td>1686751860</td>
+<td>0</td>
+<td>1034486241</td>
+<td>kfDQkOqlPdgDHgCmsBOt6U05SfahiBpIXOgljP8Agsu1lW...</td>
+<td>1</td>
+<td>tQuiJxY2J56ml1OPF9vzwTQ8VDLoxSCzdWI/sQB5cXncPQ...</td>
+<td>bafy2bzaceco5bzk37qir4fc62lnjkiir47lj64kc5rlij...</td>
+<td>bafy2bzacec7w5xagjrbeugqxscmvhljvil6selmvtlu6z...</td>
+<td>bafy2bzacebqwmvftufwcoe5yk5joki7prrz4bohynvfqm...</td>
+<td>2</td>
+<td>p/t0uBEzIXvCpzm6n5ZTeYctnDdzfZnhQ7q5OIby8nU4wm...</td>
+<td>2</td>
+<td>iwzbfDUTyGlOElQLC1JKst8HPDOP1+4FhKAit5qf1XMxun...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>f01889512</td>
+<td>[{'Round': 3044027, 'Data': 'jsqnJfP8uSHqWnRPD...</td>
+<td>[{'PoStProof': 4, 'ProofBytes': 'p6GEmFbVe2cc0...</td>
+<td>[{'/': 'bafy2bzaceacxbckrwx45ntjp7nwnfxx5bzwie...</td>
+<td>69520993633</td>
+<td>2948182</td>
+<td>1686751860</td>
+<td>0</td>
+<td>1034486241</td>
+<td>hTfkJgtGdl5/WEPiN+NeQBWZyDWPwOdIV/puBZ19eqyb9p...</td>
+<td>1</td>
+<td>uPzJP1x+W19njRi49YuN9RCDqCktEEMu8KKviBzn86lcq1...</td>
+<td>bafy2bzaceco5bzk37qir4fc62lnjkiir47lj64kc5rlij...</td>
+<td>bafy2bzacec7w5xagjrbeugqxscmvhljvil6selmvtlu6z...</td>
+<td>bafy2bzacec5ok37dwydjkf76uup3fau6e3rh2saezttbn...</td>
+<td>2</td>
+<td>k48kicfKWQ2cLgemP7/PXvUPdv+ApV6+SZ7OoAvWxJA7kh...</td>
+<td>2</td>
+<td>tVK+MmLL+Zc11mcDGqsVnpI0j+37LEqbdd4Ilvc3Hd+51H...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>f02127257</td>
+<td>[{'Round': 3044027, 'Data': 'jsqnJfP8uSHqWnRPD...</td>
+<td>[{'PoStProof': 4, 'ProofBytes': 'maMCZ4uziHmV5...</td>
+<td>[{'/': 'bafy2bzaceacxbckrwx45ntjp7nwnfxx5bzwie...</td>
+<td>69520993633</td>
+<td>2948182</td>
+<td>1686751860</td>
+<td>0</td>
+<td>1034486241</td>
+<td>s2AtNjbDMAj+WBfzKUKSWZxliZrje7tX4X3XwAeDQiR0fM...</td>
+<td>1</td>
+<td>pkNcrVzsGr5vzxhNLPDk6uBZLrwy9LSodhDBKz1G22VNDv...</td>
+<td>bafy2bzaceco5bzk37qir4fc62lnjkiir47lj64kc5rlij...</td>
+<td>bafy2bzacec7w5xagjrbeugqxscmvhljvil6selmvtlu6z...</td>
+<td>bafy2bzaceatlma645ji5o4233jxiwqceldx4r6dg4i5kl...</td>
+<td>2</td>
+<td>sbb4Nssgjd28HrcsehfgyutXqjvdr3tKZL6+OJU2DDbw45...</td>
+<td>2</td>
+<td>g0Y7fTB37Usm0UiTHkYfVv2B39IUR7UlD/EzEJcB8hMXX6...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>f0867300</td>
+<td>[{'Round': 3044027, 'Data': 'jsqnJfP8uSHqWnRPD...</td>
+<td>[{'PoStProof': 3, 'ProofBytes': 'qyyuVYNR/uinA...</td>
+<td>[{'/': 'bafy2bzaceacxbckrwx45ntjp7nwnfxx5bzwie...</td>
+<td>69520993633</td>
+<td>2948182</td>
+<td>1686751860</td>
+<td>0</td>
+<td>1034486241</td>
+<td>g3LmIDR0xEZHVYzTzR44/wTFaYnCd+Dxwm5YZZIWjYJS4u...</td>
+<td>1</td>
+<td>gg9gqWV/wj85Iitf6sO7mO+bv/IeiT5VP7/24z0aTxXhLe...</td>
+<td>bafy2bzaceco5bzk37qir4fc62lnjkiir47lj64kc5rlij...</td>
+<td>bafy2bzacec7w5xagjrbeugqxscmvhljvil6selmvtlu6z...</td>
+<td>bafy2bzacecmd2tcjgx6xxw2drqken7is56cmmunbkzozy...</td>
+<td>2</td>
+<td>l/STkmYziTtq1rGngLw/RyWOJAE/cI65e7awaX+xRUrQQ8...</td>
+<td>2</td>
+<td>g42mGqH9ugv7SDAKqX1tRnrDu9CS66WXu71l8LotwB01kU...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>f01975338</td>
+<td>[{'Round': 3044027, 'Data': 'jsqnJfP8uSHqWnRPD...</td>
+<td>[{'PoStProof': 3, 'ProofBytes': 'ipgtQdmncW7Wj...</td>
+<td>[{'/': 'bafy2bzaceacxbckrwx45ntjp7nwnfxx5bzwie...</td>
+<td>69520993633</td>
+<td>2948182</td>
+<td>1686751860</td>
+<td>0</td>
+<td>1034486241</td>
+<td>kA1Xa3of+el1ehibDHT9V4K2t2XPatgENKmLgRLlm0sAi2...</td>
+<td>1</td>
+<td>rS6dxhS3ku00VuwCf2JuBT3JIE4Yvt4V+Xg1TYAhRNGZLT...</td>
+<td>bafy2bzaceco5bzk37qir4fc62lnjkiir47lj64kc5rlij...</td>
+<td>bafy2bzacec7w5xagjrbeugqxscmvhljvil6selmvtlu6z...</td>
+<td>bafy2bzacebcugxmtmlcx7sxy22mopilykjlxvfsntqvgb...</td>
+<td>2</td>
+<td>i9ZhtcFB0yFu9BbI1FrwZigyav3k2FKA+plZCEWvmyGNDR...</td>
+<td>2</td>
+<td>mMRMoXRT3pBlwa/CfSSuEEx/4o7WkJ5vzh2KLh6AWTWz7F...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6</td>
+<td>f0136399</td>
+<td>[{'Round': 3044027, 'Data': 'jsqnJfP8uSHqWnRPD...</td>
+<td>[{'PoStProof': 4, 'ProofBytes': 'lQvtJG0vsKvWG...</td>
+<td>[{'/': 'bafy2bzaceacxbckrwx45ntjp7nwnfxx5bzwie...</td>
+<td>69520993633</td>
+<td>2948182</td>
+<td>1686751860</td>
+<td>0</td>
+<td>1034486241</td>
+<td>qMr9HIgMgfHNh4Tz7S2OXLxduP+19GP7PwMkp0b+xQkglx...</td>
+<td>1</td>
+<td>jonTVrtABXm4Y7lb3O/uJDqxExSQIaLJzh7Q3T17tQLCQI...</td>
+<td>bafy2bzaceco5bzk37qir4fc62lnjkiir47lj64kc5rlij...</td>
+<td>bafy2bzacec7w5xagjrbeugqxscmvhljvil6selmvtlu6z...</td>
+<td>bafy2bzacec6qmz7etov3efdxuavhaqmbsk4jjghnubmbl...</td>
+<td>2</td>
+<td>ppeTAfMDrYCC0VDNOkFSpED/vyd+1Igpr8qCJITF+0c6ZO...</td>
+<td>2</td>
+<td>sCil7nxZ0gFyAAX8mZczrcPAVKvbAKHXcI50Dsuk2Iz+WU...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7</td>
+<td>f02062851</td>
+<td>[{'Round': 3044027, 'Data': 'jsqnJfP8uSHqWnRPD...</td>
+<td>[{'PoStProof': 3, 'ProofBytes': 'qEBsFfZ50Fa/X...</td>
+<td>[{'/': 'bafy2bzaceacxbckrwx45ntjp7nwnfxx5bzwie...</td>
+<td>69520993633</td>
+<td>2948182</td>
+<td>1686751860</td>
+<td>0</td>
+<td>1034486241</td>
+<td>tF47dqFWYB+J79HrgZE1R2dO6ZAX9nakmvB00HZ3s3LTLw...</td>
+<td>1</td>
+<td>omZU7hbJuEXx7yrTZpaj6k84vUzEpSjjxpJw7GYlBVGUsA...</td>
+<td>bafy2bzaceco5bzk37qir4fc62lnjkiir47lj64kc5rlij...</td>
+<td>bafy2bzacec7w5xagjrbeugqxscmvhljvil6selmvtlu6z...</td>
+<td>bafy2bzacedutyj466b764qwhgy76lz7ytevkf22neqmev...</td>
+<td>2</td>
+<td>pG611R4tcp/cIDZzfJVuZjh0HBB7D+DYKgu1J4JX4MDd6o...</td>
+<td>2</td>
+<td>jiUkNTlGHbewVKErX6zkOk6021PSpVq84fd7S8clUsuiPY...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8</td>
+<td>f01923405</td>
+<td>[{'Round': 3044027, 'Data': 'jsqnJfP8uSHqWnRPD...</td>
+<td>[{'PoStProof': 4, 'ProofBytes': 'jWufjcCVhXSqt...</td>
+<td>[{'/': 'bafy2bzaceacxbckrwx45ntjp7nwnfxx5bzwie...</td>
+<td>69520993633</td>
+<td>2948182</td>
+<td>1686751860</td>
+<td>0</td>
+<td>1034486241</td>
+<td>iD3ynO7MRiu2yZeUw0yyZdsYqVF6cdRMRszb7ig92Mbwmt...</td>
+<td>1</td>
+<td>h3NHKCERpw0ip5mUGNsvj/8ua7h9v5f/5kOSsUIjZ6Wef3...</td>
+<td>bafy2bzaceco5bzk37qir4fc62lnjkiir47lj64kc5rlij...</td>
+<td>bafy2bzacec7w5xagjrbeugqxscmvhljvil6selmvtlu6z...</td>
+<td>bafy2bzacebh6lkljoxthjjqyvqpkosq2mgoh25hjtahme...</td>
+<td>2</td>
+<td>i9ZhtcFB0yFu9BbI1FrwZigyav3k2FKA+plZCEWvmyGNDR...</td>
+<td>2</td>
+<td>p1/P2ggXGxiUKFI2lcAqMvmO4Gzue2bKLoX2LRZjtXUpGH...</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>We can get all active miners.</p>
+<div class="cell" data-execution_count="65">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>state_miners <span class="op">=</span> filecoin_rpc(<span class="st">"Filecoin.StateListMiners"</span>, [chain_head[<span class="st">"Cids"</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="66">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total number of miners is </span><span class="sc">{</span><span class="bu">len</span>(state_miners)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Total number of miners is 599304</code></pre>
+</div>
+</div>
+<p>We could, in theory, get the power of each miner by calling Filecoin.StateMinerPower, but it is be very slow.</p>
+<div class="cell" data-execution_count="68">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># from tqdm.auto import tqdm</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># mp = []</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># for miner in tqdm(state_miners):</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     m = filecoin_rpc("Filecoin.StateMinerPower", [miner, chain_head["Cids"]])</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">#     m["MinerID"] = miner</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co">#     mp.append(m)</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># pd.json_normalize(mp).sample(5)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>We can get messages from random blocks too!</p>
+<div class="cell" data-execution_count="69">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>block <span class="op">=</span> chain_head[<span class="st">"Cids"</span>][<span class="dv">0</span>]</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>block_messages <span class="op">=</span> filecoin_rpc(<span class="st">"Filecoin.ChainGetBlockMessages"</span>, [block])</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>pd.json_normalize(block_messages[<span class="st">"SecpkMessages"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="69">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Message.Version</th>
+<th data-quarto-table-cell-role="th">Message.To</th>
+<th data-quarto-table-cell-role="th">Message.From</th>
+<th data-quarto-table-cell-role="th">Message.Nonce</th>
+<th data-quarto-table-cell-role="th">Message.Value</th>
+<th data-quarto-table-cell-role="th">Message.GasLimit</th>
+<th data-quarto-table-cell-role="th">Message.GasFeeCap</th>
+<th data-quarto-table-cell-role="th">Message.GasPremium</th>
+<th data-quarto-table-cell-role="th">Message.Method</th>
+<th data-quarto-table-cell-role="th">Message.Params</th>
+<th data-quarto-table-cell-role="th">Message.CID./</th>
+<th data-quarto-table-cell-role="th">Signature.Type</th>
+<th data-quarto-table-cell-role="th">Signature.Data</th>
+<th data-quarto-table-cell-role="th">CID./</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>0</td>
+<td>f13czx5l52ujqpluqur5lbhyoyqn2feqqir6pkqki</td>
+<td>f1zk5enkukxuyl4vdy7zxruhktmjepxjb7m6vv5pa</td>
+<td>23758</td>
+<td>54419827200000000000</td>
+<td>15000000</td>
+<td>5167034692</td>
+<td>258061572</td>
+<td>0</td>
+<td>None</td>
+<td>bafy2bzacedoixxab6qy4ef5igrh6uylrqlfmorji523ib...</td>
+<td>1</td>
+<td>n3YC+Csj4fvDX/EhouL5dQYPqNBxCkJ8WY52kIb13aZPOJ...</td>
+<td>bafy2bzacebm6cv7cdjwhngrekqp3u2ww2i4wgrmyblghr...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>0</td>
+<td>f1ys5qqiciehcml3sp764ymbbytfn3qoar5fo3iwy</td>
+<td>f15d3nhmg4gq5rbretn3tsro5yefvysvpprbw6ama</td>
+<td>37</td>
+<td>2983489820000000000</td>
+<td>3059156</td>
+<td>46106420400</td>
+<td>78302002</td>
+<td>0</td>
+<td>None</td>
+<td>bafy2bzacea62uffekc55h7aphvciisdsji4unjz2uzrzf...</td>
+<td>1</td>
+<td>GkBwZIXB8x/lB2Tg7QHMdIBrI+7CRQbsIguck+pX+RVTJq...</td>
+<td>bafy2bzacec6bk4l6nbh4ilrlm5p4nw6x5adaiserbvvpq...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>0</td>
+<td>f1ys5qqiciehcml3sp764ymbbytfn3qoar5fo3iwy</td>
+<td>f1ulaw56ozhnpn72qdo2hpz6ielvgofycn3spowhi</td>
+<td>10</td>
+<td>11998815050000000000</td>
+<td>3055906</td>
+<td>46106215240</td>
+<td>78240454</td>
+<td>0</td>
+<td>None</td>
+<td>bafy2bzacecx34unm2s433gfomogweuk7zaaowixgr5654...</td>
+<td>1</td>
+<td>DkwOb8e1K6GvK/H0TvLW42065LqMcuFOOLzk68Q5PJ1paW...</td>
+<td>bafy2bzaceahyvuhiistskztj7xco7htzgaet2ykvhu4kt...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>0</td>
+<td>f1ys5qqiciehcml3sp764ymbbytfn3qoar5fo3iwy</td>
+<td>f1sz7ec3t6ranyeyqou3a6vmlvbqia6rsmwdtnnzy</td>
+<td>13</td>
+<td>2997208650000000000</td>
+<td>3055906</td>
+<td>46103796556</td>
+<td>77514849</td>
+<td>0</td>
+<td>None</td>
+<td>bafy2bzacedn2vq7mgsqvraypbftl56fhpftk6uwhrvbvw...</td>
+<td>1</td>
+<td>EINbCRUD4TI96TVrUUHtLYfgxOawKWDenlvdxcA9H1oLqQ...</td>
+<td>bafy2bzacece2o4qnbe4xfvrjogefaven6cpyrx23srajs...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>0</td>
+<td>f1ys5qqiciehcml3sp764ymbbytfn3qoar5fo3iwy</td>
+<td>f1rwl2qs3jlhlgy6b7xrlinmkqqyz6jf2bsseigaa</td>
+<td>40</td>
+<td>7959151700000000000</td>
+<td>3059156</td>
+<td>46103776832</td>
+<td>77508932</td>
+<td>0</td>
+<td>None</td>
+<td>bafy2bzaceajrhz2vrjh76xeichxazl56fgw4574nlvvhw...</td>
+<td>1</td>
+<td>wxbqJDUNMOBbjc/PB4f1HWWFivUlMeSCn/r5nFOJINtzAh...</td>
+<td>bafy2bzacedzc2vcmmnlzwql7lk32gjh3skvv636ufxarh...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>0</td>
+<td>f1ys5qqiciehcml3sp764ymbbytfn3qoar5fo3iwy</td>
+<td>f1zvkok7jdyyk3f6huynq5oxc2w55oxkybn4vquba</td>
+<td>1</td>
+<td>7093530130000000000</td>
+<td>3055906</td>
+<td>46103753728</td>
+<td>77502001</td>
+<td>0</td>
+<td>None</td>
+<td>bafy2bzacec4xekrqunvyueplmygcq7o66a534aqjtgiw6...</td>
+<td>1</td>
+<td>7KGZOlYGpiuDX1PC6mRndVrVcAcS11p9jB3LdTLvAAF1mq...</td>
+<td>bafy2bzacec4gpun7iomeliyuwjifhvsonq5yplwpvhft7...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6</td>
+<td>0</td>
+<td>f1ys5qqiciehcml3sp764ymbbytfn3qoar5fo3iwy</td>
+<td>f1i7dwuq3cqk3xa4a4w2vjg5l52notai7yaswx5wa</td>
+<td>1</td>
+<td>798826780000000000</td>
+<td>3055906</td>
+<td>46103597016</td>
+<td>77454987</td>
+<td>0</td>
+<td>None</td>
+<td>bafy2bzacecttjqn6b5acjbkf22imzx42n475ory2ebesu...</td>
+<td>1</td>
+<td>wA4Ijn4WATV1eg5+S1ieEdvEQbutVsBxOxE9lG3tu/Base...</td>
+<td>bafy2bzacebojmtoycz3aukrwhypk745kba2fvq6fwl2qo...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7</td>
+<td>0</td>
+<td>f1ys5qqiciehcml3sp764ymbbytfn3qoar5fo3iwy</td>
+<td>f1mu6hgqedrjybmntxwb2ghtge46vxs7tfkjwl6ia</td>
+<td>19</td>
+<td>4376760970000000000</td>
+<td>3055906</td>
+<td>46102967620</td>
+<td>77266168</td>
+<td>0</td>
+<td>None</td>
+<td>bafy2bzacebtfrrz3kpzfujguqj233klu74wmabwsahzor...</td>
+<td>1</td>
+<td>ZLmlK2X7fznzGkA0g2YB8u7fRH60t4KMgDFh1Mj3OBQiqB...</td>
+<td>bafy2bzaceapcvw37j2bjivfouogrqqgqys2zifkjglxey...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8</td>
+<td>0</td>
+<td>f410fk27kkiq27z4wqidktmqolw6hqwcy4nhhhbvh5bq</td>
+<td>f410fqdg6ccovwwf357zlpkxrtzcv2bve3y6x6ajcxbq</td>
+<td>49</td>
+<td>500000000000000000</td>
+<td>2280436</td>
+<td>1811043585</td>
+<td>75536620</td>
+<td>3844450837</td>
+<td>None</td>
+<td>bafy2bzacebsmvlttclog5ufmmrrdhrnx4ewnnqer5x4xf...</td>
+<td>3</td>
+<td>qtoTsLNAEdKU1Xp6RJ4M1ZBKjU0iexS6UfW/eo7sZ3V1UD...</td>
+<td>bafy2bzacebkyzrzc4qrojj2pizz46e7st3mzunjirtqmy...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">9</td>
+<td>0</td>
+<td>f05</td>
+<td>f1wkntaokupidewobwp5wv3fqxhqmdwpma4c65hii</td>
+<td>10753</td>
+<td>0</td>
+<td>1627739163</td>
+<td>1228698089</td>
+<td>64946244</td>
+<td>4</td>
+<td>gYiCi9gqWCgAAYHiA5IgIDSJckakN14VgjGtKQmBYBkzCt...</td>
+<td>bafy2bzacedfeobxgq65tfy57cigjxukvn6m4noxia2i52...</td>
+<td>1</td>
+<td>g+AEWakCPfn9ssk9QkhQpEDfuriYjIiOdIh7K/cyVE8zZD...</td>
+<td>bafy2bzacebjbae6knpzc562shi2hflzyrr7t7krcrcet5...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">10</td>
+<td>0</td>
+<td>f0861588</td>
+<td>f1wkntaokupidewobwp5wv3fqxhqmdwpma4c65hii</td>
+<td>10754</td>
+<td>2162119865892726644</td>
+<td>73487277</td>
+<td>11526238895</td>
+<td>64885464</td>
+<td>7</td>
+<td>ghlAQFkHgJhJQkEm8VX/TyRn6MFRgnEw2WnCpt6vGWCe5d...</td>
+<td>bafy2bzacecawrlffhpt3t4dlhvaailir3fg5qngirzqub...</td>
+<td>1</td>
+<td>dxIzUnhCMGjZMLavbPF/Z/3Lg5t7kJTCCZ5LJBtVHTNYva...</td>
+<td>bafy2bzacedlursalcyweljxg26tuihosufimrnpv2so3e...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">11</td>
+<td>0</td>
+<td>f0861589</td>
+<td>f1huvna5kf7ybeu3w2pmioe4axn7s6qfvbgybwm6q</td>
+<td>11044</td>
+<td>2161710390950606226</td>
+<td>78271017</td>
+<td>11526196139</td>
+<td>64842708</td>
+<td>7</td>
+<td>ghoAHopzWQeAr0XGWw43VN2lMXBm37JRxJEifiahJa/gqQ...</td>
+<td>bafy2bzacecfmctzxf2sg4vubahxw45mulmgua75ib4fkq...</td>
+<td>1</td>
+<td>x65PHfiU3/9XA3eZsRhdvMvTPMYf3mLFudL+hi78VYEI+l...</td>
+<td>bafy2bzacecjxisp433fwiecbnmj7ncd464g6luevreius...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">12</td>
+<td>0</td>
+<td>f05</td>
+<td>f1wkntaokupidewobwp5wv3fqxhqmdwpma4c65hii</td>
+<td>10755</td>
+<td>0</td>
+<td>1669933807</td>
+<td>1197652261</td>
+<td>64700092</td>
+<td>4</td>
+<td>gYiCi9gqWCgAAYHiA5IgIFi6HPjfuAq1r+X8gc+gvdFW/K...</td>
+<td>bafy2bzacebse43kgxjqxqtqlzmtb7jh5r65cgzmvagcrv...</td>
+<td>1</td>
+<td>l8R+JbsUYomJqWXPLDaXUH7loFM/Z66xJ1IWBG2hYxtbsS...</td>
+<td>bafy2bzaced6k7ke2ehao3yfgmesqmbm47nn4me7fxxt7d...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">13</td>
+<td>0</td>
+<td>f0861589</td>
+<td>f1wkntaokupidewobwp5wv3fqxhqmdwpma4c65hii</td>
+<td>10756</td>
+<td>61168421677757883</td>
+<td>64723435</td>
+<td>1545035426</td>
+<td>64741159</td>
+<td>6</td>
+<td>iggZQUzYKlgpAAGC4gOB6AIgECg4rEdA/WEOJsrdzpC3Uf...</td>
+<td>bafy2bzacec4qk2trpxmr52n3urzbgwceotjfhdyqj7lho...</td>
+<td>1</td>
+<td>kMjMkruwrs8nrROZOlnwjbcWriMAsB0k04EEYTjkzxIvWI...</td>
+<td>bafy2bzacebjnlxodg6dugcxeaimww4lf4klzxrfuitrsw...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">14</td>
+<td>0</td>
+<td>f0861589</td>
+<td>f1wkntaokupidewobwp5wv3fqxhqmdwpma4c65hii</td>
+<td>10757</td>
+<td>61168421677757883</td>
+<td>65419761</td>
+<td>1528590115</td>
+<td>65052371</td>
+<td>6</td>
+<td>iggZQVTYKlgpAAGC4gOB6AIgO8vKIgcpZ//bswDHNMuzQk...</td>
+<td>bafy2bzacedj6hc2npwvpo7ausjrzmknuzqlbnljfwbrqy...</td>
+<td>1</td>
+<td>O/c9UjbpMX+Hi/VM6dG7OSJMysNZieJMm76Cp8q2wTE7z3...</td>
+<td>bafy2bzacedxrkjo7kxs3uguu66eh7cftb3sjbnwlct3z3...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">15</td>
+<td>0</td>
+<td>f2itwdh5nww62tdjn2svfpbgx52254lt5f65x4khy</td>
+<td>f1h6s3zv3wb6g4ie7wiyqezcem5pdhmkpgqcboosy</td>
+<td>22074</td>
+<td>0</td>
+<td>13891978</td>
+<td>5038879272</td>
+<td>64518951</td>
+<td>2</td>
+<td>hFUCROwz9ba3tTGlupVK8Jr91rvFz6VAB1gtglUBP6W813...</td>
+<td>bafy2bzaceauj2s3tj6wnnnqeskfyhpfxg6znvkcs7xnnl...</td>
+<td>1</td>
+<td>aksIprOlrrQzgefZrBjVGi9Gb/z0G59ppShMm3f1mL5hMe...</td>
+<td>bafy2bzaced4bl5fytsdcybn2d2c5z4inxxpcou37rboc3...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">16</td>
+<td>0</td>
+<td>f2jnzurrvvnyeaagxva72hevjzihrc66v4igloori</td>
+<td>f1h6s3zv3wb6g4ie7wiyqezcem5pdhmkpgqcboosy</td>
+<td>22075</td>
+<td>0</td>
+<td>13891978</td>
+<td>5038879272</td>
+<td>64881326</td>
+<td>2</td>
+<td>hFUCS3NIxrVuCAAa9Qf0clU5QeIverxAB1gtglUBP6W813...</td>
+<td>bafy2bzaced2tle3lbgiho7vmcykcpfnnuxh55qlpm77gu...</td>
+<td>1</td>
+<td>/R1WxM0xwv5JPAWOx5+MbYPYecQeLoEomBQm+z/q7pxh7h...</td>
+<td>bafy2bzacebym3rzn2zehzbjcd34roawezbnk53ekwvjc3...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">17</td>
+<td>0</td>
+<td>f0861589</td>
+<td>f1huvna5kf7ybeu3w2pmioe4axn7s6qfvbgybwm6q</td>
+<td>11045</td>
+<td>61168828487979488</td>
+<td>64573295</td>
+<td>1548627803</td>
+<td>64626197</td>
+<td>6</td>
+<td>iggaAB6KaNgqWCkAAYLiA4HoAiB55TBSG/h0sT6BUh9frq...</td>
+<td>bafy2bzaceablnb5uxhcez7uxe2kpv4vvn5lqdngy6a2s7...</td>
+<td>1</td>
+<td>LxsVbZJJ4TbJaMGlPsPTD9bzwLMUMqpriupYsyRupfJUg2...</td>
+<td>bafy2bzacedqtmjk3rxfxtyq337xgv6u76n7ha7xawtbdu...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">18</td>
+<td>0</td>
+<td>f0861590</td>
+<td>f1huvna5kf7ybeu3w2pmioe4axn7s6qfvbgybwm6q</td>
+<td>11046</td>
+<td>61168828487979488</td>
+<td>65878112</td>
+<td>1517954855</td>
+<td>64559959</td>
+<td>6</td>
+<td>iggaAB6IzdgqWCkAAYLiA4HoAiCD6JIMFkL8UYbw0/UHX2...</td>
+<td>bafy2bzacedyh4tk5smvs7r2lr7xqajz67pxy7xlmqi62h...</td>
+<td>1</td>
+<td>PcIAKGBUe3TgQ8yiLl42Nc5C3vpY/OLrv64vHtA8kuQGIP...</td>
+<td>bafy2bzacedjkgch62wtb7hm5rnf5lzknocs27i624yrta...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">19</td>
+<td>0</td>
+<td>f2couom2tjwktwntalfwnw6h7tmsrtd4yxxrpf26y</td>
+<td>f1h6s3zv3wb6g4ie7wiyqezcem5pdhmkpgqcboosy</td>
+<td>22076</td>
+<td>0</td>
+<td>13891978</td>
+<td>5038879272</td>
+<td>64537166</td>
+<td>2</td>
+<td>hFUCE6jmammyp2bMCy2bbx/zZKMx8xdAB1gtglUBP6W813...</td>
+<td>bafy2bzacec7k3lxox7ziyusfrtoltevxtpgowjw2xkhin...</td>
+<td>1</td>
+<td>uAziAI+8fv+o9sB7JyBMquyaSAr86u99+T1eHYBlmkQA3h...</td>
+<td>bafy2bzaced3aqlvvneiao352pmsbyze7ns4qd7lse5kmy...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">20</td>
+<td>0</td>
+<td>f02191897</td>
+<td>f1qqirfi6fxd67ck6kmr3ysd6gaftzsou7asmixsy</td>
+<td>7140</td>
+<td>2147191500892010110</td>
+<td>71836685</td>
+<td>1145427061</td>
+<td>64484771</td>
+<td>7</td>
+<td>ghka1FkHgI4K3F1wIFLI+UlQjA1TAXnAgIw1UTsGKjaLLs...</td>
+<td>bafy2bzacecrulyioy6a2wi7tsplw7zbuc7a3zzp3suimf...</td>
+<td>1</td>
+<td>X0TwAlQHY0AXrMzBqh5XWsROFcOrlzoC44BE/MC0V1ZKph...</td>
+<td>bafy2bzacedjux3gdz7yn5vgqcjamvtzwvayi63q5pbhvo...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">21</td>
+<td>0</td>
+<td>f0861589</td>
+<td>f1huvna5kf7ybeu3w2pmioe4axn7s6qfvbgybwm6q</td>
+<td>11047</td>
+<td>2161722194612358332</td>
+<td>88217085</td>
+<td>11565604733</td>
+<td>64460240</td>
+<td>7</td>
+<td>ghoAHopxWQeArYp+3jfEsHBsVMdvbFiUjByDb/cd3gDA7e...</td>
+<td>bafy2bzacea4x2qpoaiery4r2vooauvgpbicztuhtbfedx...</td>
+<td>1</td>
+<td>bxu2UpMRlNDqJK8/ZJp0+DXoNTpw/FwHpPj1AvE7upZ5W6...</td>
+<td>bafy2bzacebxwze6mnmeu3iqqrfcrckffatrtocxkwr7ix...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">22</td>
+<td>0</td>
+<td>f2hzrigo52inhqrur6hru6jlc6c4tp77jsqtctimi</td>
+<td>f1h6s3zv3wb6g4ie7wiyqezcem5pdhmkpgqcboosy</td>
+<td>22077</td>
+<td>0</td>
+<td>13891978</td>
+<td>5038879272</td>
+<td>64444888</td>
+<td>2</td>
+<td>hFUCPmKDO7pDTwjSPjxp5KxeFyb//TJAB1gtglUBP6W813...</td>
+<td>bafy2bzaceathmk6b4iegqw6wvz7zwhgsbnhxv5ij6ndo4...</td>
+<td>1</td>
+<td>/WxX25+CedQq27PujYGyzlqPP+OXyRSSz7eQzidvFoI60U...</td>
+<td>bafy2bzacea2nj24i6bn2tnlhrilddfd7efgdhac2p7mje...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">23</td>
+<td>0</td>
+<td>f1nuljfkabz3q2tx3n5tdwufrft53lsvbt4ha6yya</td>
+<td>f1ljgamz7pmc3ttjn4oez4crqzshc6ivffbwofpvq</td>
+<td>14735</td>
+<td>1990000000000000000</td>
+<td>2449926</td>
+<td>3528856873</td>
+<td>64124247</td>
+<td>0</td>
+<td>None</td>
+<td>bafy2bzacec7j5pxghln52c2gfzh74wtyicy4n5b6s3knp...</td>
+<td>1</td>
+<td>X8ysu/opcpC7rKJR4/TrM5qfFxR2DOftQo7XVzpXTMJkze...</td>
+<td>bafy2bzaceanyh5ltozccelttssjdv4lntwusrsodmf32s...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">24</td>
+<td>0</td>
+<td>f410fabpafjfjgqkc3douo3yzfug5tq4bwfvuhsewxji</td>
+<td>f410f343rjmwj52pjeo7e2s4typpf5jnzyfalt6qxp7q</td>
+<td>36</td>
+<td>0</td>
+<td>37648655</td>
+<td>1455916663</td>
+<td>64121114</td>
+<td>3844450837</td>
+<td>WESpBZy7AAAAAAAAAAAAAAAA0L1tuC/J28yOOnWxtA9/b4...</td>
+<td>bafy2bzacebpwrxdskbdtpj76mveotdrjammgllfhp7jfr...</td>
+<td>3</td>
+<td>bQsey/YTpyzRKP2ptPtLdhSak7H56U4WZ6UBIyU5LMtFMK...</td>
+<td>bafy2bzacea3glonfev6skhgijk3rcwhrjuzwqr7rzvfcs...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">25</td>
+<td>0</td>
+<td>f1khdd2v7il7lxn4zjzzrqwceh466mq5k333ktu7q</td>
+<td>f15jy2p35dopcsvmcfpspusddzcnwbp3v3ajh42kq</td>
+<td>2</td>
+<td>101895811258263558034</td>
+<td>1529578</td>
+<td>11501744493</td>
+<td>600000</td>
+<td>0</td>
+<td>None</td>
+<td>bafy2bzaceck3ynlvmvfiuov7z7i4mgk24rryowoi6f5b5...</td>
+<td>1</td>
+<td>o/2+BE306b8uj+lJRy3zud+FgpF63Ah0P4hXN2S8KXoE96...</td>
+<td>bafy2bzacebzaamrday5mae4i3xan5p36g5yxg33girxy5...</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Messages from 5 heights ago:</p>
+<div class="cell" data-execution_count="74">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>pd.json_normalize(get_tipset_by_height(chain_head[<span class="st">"Height"</span>] <span class="op">-</span> <span class="dv">5</span>)[<span class="st">"Blocks"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="74">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Miner</th>
+<th data-quarto-table-cell-role="th">BeaconEntries</th>
+<th data-quarto-table-cell-role="th">WinPoStProof</th>
+<th data-quarto-table-cell-role="th">Parents</th>
+<th data-quarto-table-cell-role="th">ParentWeight</th>
+<th data-quarto-table-cell-role="th">Height</th>
+<th data-quarto-table-cell-role="th">Timestamp</th>
+<th data-quarto-table-cell-role="th">ForkSignaling</th>
+<th data-quarto-table-cell-role="th">ParentBaseFee</th>
+<th data-quarto-table-cell-role="th">Ticket.VRFProof</th>
+<th data-quarto-table-cell-role="th">ElectionProof.WinCount</th>
+<th data-quarto-table-cell-role="th">ElectionProof.VRFProof</th>
+<th data-quarto-table-cell-role="th">ParentStateRoot./</th>
+<th data-quarto-table-cell-role="th">ParentMessageReceipts./</th>
+<th data-quarto-table-cell-role="th">Messages./</th>
+<th data-quarto-table-cell-role="th">BLSAggregate.Type</th>
+<th data-quarto-table-cell-role="th">BLSAggregate.Data</th>
+<th data-quarto-table-cell-role="th">BlockSig.Type</th>
+<th data-quarto-table-cell-role="th">BlockSig.Data</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>f01839495</td>
+<td>[{'Round': 3044022, 'Data': 'q0a1FuP1bGMe1mDv6...</td>
+<td>[{'PoStProof': 3, 'ProofBytes': 'rAtmt0uFj/l/d...</td>
+<td>[{'/': 'bafy2bzacebowjoilxsi5vjmjmc46wwaksl75u...</td>
+<td>69520874032</td>
+<td>2948177</td>
+<td>1686751710</td>
+<td>0</td>
+<td>1174502781</td>
+<td>pEPiM6+Lor11hW/nTl4rgju/Ux6027+vbMqaOl8KjKlGkz...</td>
+<td>1</td>
+<td>qgyPhrQpwhVgDHhAPOSib4Zyg/WcwKoLLPdCh8SE/NLto/...</td>
+<td>bafy2bzacedru246p3cnapplkhrhs6ffjoqth3rl5h537g...</td>
+<td>bafy2bzacecizodixvl2eb6jhji5rrngenvvrr4rqv6ke2...</td>
+<td>bafy2bzacedzqhrmlvhrbffzx73gqbmm6ws23z7im3coak...</td>
+<td>2</td>
+<td>iwbEM6TOF4sogEdzEr+NM+OUMTAZ/Hmg2eXA0cM4jmDlG0...</td>
+<td>2</td>
+<td>lT33uE2+YFE1UFHGgITlkeS5WbdWLI6sSCdqBXRix88HMV...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>f01920091</td>
+<td>[{'Round': 3044022, 'Data': 'q0a1FuP1bGMe1mDv6...</td>
+<td>[{'PoStProof': 4, 'ProofBytes': 'k+Z7o2QOObIuK...</td>
+<td>[{'/': 'bafy2bzacebowjoilxsi5vjmjmc46wwaksl75u...</td>
+<td>69520874032</td>
+<td>2948177</td>
+<td>1686751710</td>
+<td>0</td>
+<td>1174502781</td>
+<td>tQVWDRLtXYgL/j+z9PWIUGhFkjZv16meZ5ayAubfV0ejsv...</td>
+<td>1</td>
+<td>tfSmuwgIAVljWd9nPBw5xNZzmNAE2LfFZYvJur5TZjmtKY...</td>
+<td>bafy2bzacedru246p3cnapplkhrhs6ffjoqth3rl5h537g...</td>
+<td>bafy2bzacecizodixvl2eb6jhji5rrngenvvrr4rqv6ke2...</td>
+<td>bafy2bzaceck2vf5kdkwubstgbgn23tzmmzshwmxwuvqtl...</td>
+<td>2</td>
+<td>sNMqciVZmvtjjpIC7tgCeIP+rfBv88WzK/ejJlX7AEG3Is...</td>
+<td>2</td>
+<td>qpruh9alqG0YvX9NXL59mOh51eMyhiqSfvtXTyn0awOqPn...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>f01228108</td>
+<td>[{'Round': 3044022, 'Data': 'q0a1FuP1bGMe1mDv6...</td>
+<td>[{'PoStProof': 3, 'ProofBytes': 'klxxVKPJ2aCPX...</td>
+<td>[{'/': 'bafy2bzacebowjoilxsi5vjmjmc46wwaksl75u...</td>
+<td>69520874032</td>
+<td>2948177</td>
+<td>1686751710</td>
+<td>0</td>
+<td>1174502781</td>
+<td>hb2ZiPPAYaUFTyvUZJTl3O+G3udy25tZ1z8Sdtq60ghCgn...</td>
+<td>1</td>
+<td>jO2wAplJbsM3apX24f07Jj9O5dQVxwXktXLmQivr5zoBeN...</td>
+<td>bafy2bzacedru246p3cnapplkhrhs6ffjoqth3rl5h537g...</td>
+<td>bafy2bzacecizodixvl2eb6jhji5rrngenvvrr4rqv6ke2...</td>
+<td>bafy2bzacecptz57vc4oty23yxrnyunrycnsjqjyavtyq6...</td>
+<td>2</td>
+<td>sKE5zcRffuQ4w5O9AKUrXqY/qEP9GTV+Ql8SRh4Dot8uGG...</td>
+<td>2</td>
+<td>i+bUuG3Vh7Nw26r0dnNqVz+MUnxVyd0Z0igS794TwYjJo0...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>f01794032</td>
+<td>[{'Round': 3044022, 'Data': 'q0a1FuP1bGMe1mDv6...</td>
+<td>[{'PoStProof': 3, 'ProofBytes': 'rd0n0TRv4w7CK...</td>
+<td>[{'/': 'bafy2bzacebowjoilxsi5vjmjmc46wwaksl75u...</td>
+<td>69520874032</td>
+<td>2948177</td>
+<td>1686751710</td>
+<td>0</td>
+<td>1174502781</td>
+<td>ls4krGkfmhQlSxv8H7sVHsrJm1z+ncticA1NoY0HRmTZbL...</td>
+<td>1</td>
+<td>kryt0aVRV5Fn3GXLDpQnb5B8yd8JWjSy4hq0Qix2vZBmPM...</td>
+<td>bafy2bzacedru246p3cnapplkhrhs6ffjoqth3rl5h537g...</td>
+<td>bafy2bzacecizodixvl2eb6jhji5rrngenvvrr4rqv6ke2...</td>
+<td>bafy2bzacecpqx62p7ythojrfidifmdjq3cugkzdpscum6...</td>
+<td>2</td>
+<td>q+uWAzx3kuTORhV/7Lcxksrak5JNcCE5UlYnS0hiZywFeN...</td>
+<td>2</td>
+<td>lw4q7rVJj4IbPoccDLUq66Rk10RHjCKEquN7N76SrPMWNG...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>f01815391</td>
+<td>[{'Round': 3044022, 'Data': 'q0a1FuP1bGMe1mDv6...</td>
+<td>[{'PoStProof': 3, 'ProofBytes': 'sb5bWh1Ztb+J4...</td>
+<td>[{'/': 'bafy2bzacebowjoilxsi5vjmjmc46wwaksl75u...</td>
+<td>69520874032</td>
+<td>2948177</td>
+<td>1686751710</td>
+<td>0</td>
+<td>1174502781</td>
+<td>lih0LN/RwvhY4Ssb5dc6k+a9bGzB7AYzUa8z3c3ljfflA/...</td>
+<td>1</td>
+<td>lSacKRUNBtFmjzIXQaGs46AHWKQZdWi8Sd89IAMQtabvVn...</td>
+<td>bafy2bzacedru246p3cnapplkhrhs6ffjoqth3rl5h537g...</td>
+<td>bafy2bzacecizodixvl2eb6jhji5rrngenvvrr4rqv6ke2...</td>
+<td>bafy2bzacebczfq2jtulhzb5n3t4e5kvvot2kykau7x4ms...</td>
+<td>2</td>
+<td>rPLwGxeNL31d+KrrOfRn0+72OEkyAraNwbq5Lm5czUOig8...</td>
+<td>2</td>
+<td>s1a4XBiH9qH9yFGNQAOSQ2Py/a6dTEPwIb7uxs+6sLld/g...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>f02035238</td>
+<td>[{'Round': 3044022, 'Data': 'q0a1FuP1bGMe1mDv6...</td>
+<td>[{'PoStProof': 3, 'ProofBytes': 'qgKx+CRPN2iP6...</td>
+<td>[{'/': 'bafy2bzacebowjoilxsi5vjmjmc46wwaksl75u...</td>
+<td>69520874032</td>
+<td>2948177</td>
+<td>1686751710</td>
+<td>0</td>
+<td>1174502781</td>
+<td>jBGH5LIO+jmPCiNLZS7xyDkSOIvZwNECgBQ5U+T3aImthw...</td>
+<td>1</td>
+<td>qsCFotvYIdAj08RVZk+IRDIfd7cqtEN3Rxqqbo1kueDw7H...</td>
+<td>bafy2bzacedru246p3cnapplkhrhs6ffjoqth3rl5h537g...</td>
+<td>bafy2bzacecizodixvl2eb6jhji5rrngenvvrr4rqv6ke2...</td>
+<td>bafy2bzacede2rxv2oirev4yolkhodjbzjtsmkg6o7afef...</td>
+<td>2</td>
+<td>uHjm6+X3Zw/QBt1vbvv3T7Ra+UfftUVRdcOBGGLVs6r4Ko...</td>
+<td>2</td>
+<td>oDYq6cxiG3Umt/CnegugVsF0S6UL0DUtBcW/v2UO3ojZXE...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6</td>
+<td>f0427989</td>
+<td>[{'Round': 3044022, 'Data': 'q0a1FuP1bGMe1mDv6...</td>
+<td>[{'PoStProof': 3, 'ProofBytes': 'tTnQbvLql+TOU...</td>
+<td>[{'/': 'bafy2bzacebowjoilxsi5vjmjmc46wwaksl75u...</td>
+<td>69520874032</td>
+<td>2948177</td>
+<td>1686751710</td>
+<td>0</td>
+<td>1174502781</td>
+<td>hb/dAd9S1WggmkgQLxo9ZMNV1pzC+D8Jz+KSYW5u03h3HZ...</td>
+<td>1</td>
+<td>paK7nzhDIG6TmMui1DN/bau5n8mkhKN0xeQK/O+A0mZNqe...</td>
+<td>bafy2bzacedru246p3cnapplkhrhs6ffjoqth3rl5h537g...</td>
+<td>bafy2bzacecizodixvl2eb6jhji5rrngenvvrr4rqv6ke2...</td>
+<td>bafy2bzaceavglk26a6ct3dybxp5qgjr3fv4vi5vhzenz5...</td>
+<td>2</td>
+<td>i0eSeDc9jAJ68T+ZfQINMj6L/tK8IqFP4cgxWQZ9E1Dpox...</td>
+<td>2</td>
+<td>ryXX7NSOGqFqs5m1exi/8mB4BNwxXnG6Cx51J6mZjogNyt...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7</td>
+<td>f087871</td>
+<td>[{'Round': 3044022, 'Data': 'q0a1FuP1bGMe1mDv6...</td>
+<td>[{'PoStProof': 3, 'ProofBytes': 'uWsWozm2ma3ol...</td>
+<td>[{'/': 'bafy2bzacebowjoilxsi5vjmjmc46wwaksl75u...</td>
+<td>69520874032</td>
+<td>2948177</td>
+<td>1686751710</td>
+<td>0</td>
+<td>1174502781</td>
+<td>tjtqJAGnHsNNHS+WK5JXXxOSRwhE+H6/tRLuWt0qj+sxdG...</td>
+<td>1</td>
+<td>lMZqr0Sbni0FowkMcnzhaB3rVPhrZ1dxbcKMgDfOLIRJ/x...</td>
+<td>bafy2bzacedru246p3cnapplkhrhs6ffjoqth3rl5h537g...</td>
+<td>bafy2bzacecizodixvl2eb6jhji5rrngenvvrr4rqv6ke2...</td>
+<td>bafy2bzaceamnd46xc2372t2wxnvk5wjjkxcnak4s7yaqx...</td>
+<td>2</td>
+<td>i0eSeDc9jAJ68T+ZfQINMj6L/tK8IqFP4cgxWQZ9E1Dpox...</td>
+<td>2</td>
+<td>om5pFSKEtNvGa2LtUyf54hPrRJh2PqBlGh7CX1TPkj3wxn...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8</td>
+<td>f01880894</td>
+<td>[{'Round': 3044022, 'Data': 'q0a1FuP1bGMe1mDv6...</td>
+<td>[{'PoStProof': 3, 'ProofBytes': 'mZfBLXHKMzdhl...</td>
+<td>[{'/': 'bafy2bzacebowjoilxsi5vjmjmc46wwaksl75u...</td>
+<td>69520874032</td>
+<td>2948177</td>
+<td>1686751710</td>
+<td>0</td>
+<td>1174502781</td>
+<td>lSH/FjDqzgEE4Iq4IDuOtIHUtkq2QySRMVdo3f2xiymGIE...</td>
+<td>1</td>
+<td>gA+0HKQX74POOSObqzsEQafZjfb8Alnuse45CTtsjPULWV...</td>
+<td>bafy2bzacedru246p3cnapplkhrhs6ffjoqth3rl5h537g...</td>
+<td>bafy2bzacecizodixvl2eb6jhji5rrngenvvrr4rqv6ke2...</td>
+<td>bafy2bzacebqsn3r4brtcozed2byq4avmxe4abukmzyvff...</td>
+<td>2</td>
+<td>sHyiSVa9m6+u31sOdv0OmEwgv5DFl8F9ubzqgT+nub/RUN...</td>
+<td>2</td>
+<td>qFpxdufBYqm/SZblzwaDhXnK2byQeh32ZyziIPfbbg8R75...</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+
+
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

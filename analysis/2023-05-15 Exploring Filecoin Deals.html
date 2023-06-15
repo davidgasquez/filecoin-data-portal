@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.361">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Filecoin Analytics - Exploring Filecoin Deals</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+
+
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Filecoin Analytics</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/davidgasquez/filecoin-analytics" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/davidgasquez/" rel="" target=""><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Exploring Filecoin Deals</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>Storage deals are core to Filecoin. They are the <a href="https://filecoin.io/blog/posts/how-storage-and-retrieval-deals-work-on-filecoin/">main mechanism by which clients and storage providers interact</a>.</p>
+<p>Let’s explore the data!</p>
+<section id="data-sources" class="level2">
+<h2 class="anchored" data-anchor-id="data-sources">Data Sources</h2>
+<p>Deals data is available from the on-chain state (via the <a href="https://lotus.filecoin.io/reference/lotus/state/#statemarketdeals"><code>StateMarketDeals</code></a> JSON-RPC method). The state doesn’t reflect the historical deals, but should be enough to get a sense of things.</p>
+<p>Alternatively you can use an <a href="https://github.com/ribasushi/fil-naive-marketwatch">oracle like <code>fil-naive-marketwatch</code></a>, rely on APIs like <a href="https://spacescope.io/">Spacescope</a> for aggregated data or reconstruct the deals from <a href="https://lilium.sh/">Lily</a> CSV dumps, which can provide all deals in Filecoin history.</p>
+<p>I’ll rely on <a href="https://lotus.filecoin.io/lotus/developers/glif-nodes/">Glif nodes</a> export of <code>StateMarketDeals</code> on S3 (<a href="https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst">direct link</a>).</p>
+<div class="cell" data-execution_count="2">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> urllib</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> zstandard</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> ijson</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>STATE_MARKET_DEALS_URL <span class="op">=</span> (</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst"</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the file</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># curl -o /tmp/StateMarketDeals.json.zst https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>urllib.request.urlretrieve(</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    STATE_MARKET_DEALS_URL,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"/tmp/StateMarketDeals.json.zst"</span>,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Decompress the file</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co"># zstd -d /tmp/StateMarketDeals.json.zst -o /tmp/StateMarketDeals.json</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>dctx <span class="op">=</span> zstandard.ZstdDecompressor()</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"/tmp/StateMarketDeals.json.zst"</span>, <span class="st">"rb"</span>) <span class="im">as</span> fh:</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    stream_reader <span class="op">=</span> dctx.stream_reader(fh)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    output <span class="op">=</span> stream_reader.read()</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(<span class="st">"/tmp/StateMarketDeals.json"</span>, <span class="st">"wb"</span>) <span class="im">as</span> f:</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        f.write(output)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Parse the file</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="co"># jq --stream 'fromstream(1|truncate_stream(inputs))' -c /tmp/StateMarketDeals.json &gt; /tmp/ParsedStateMarketDeals.json</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"/tmp/ParsedStateMarketDeals.json"</span>, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k, v <span class="kw">in</span> ijson.kvitems(<span class="bu">open</span>(<span class="st">"/tmp/StateMarketDeals.json"</span>), <span class="st">""</span>):</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        v[<span class="st">"DealID"</span>] <span class="op">=</span> k</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        f.write(json.dumps(v) <span class="op">+</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Now we have a large JSON file with the latest deals state straight from the chain! Let’s load it up.</p>
+<div class="cell" data-execution_count="3">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>load_ext sql</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>sql duckdb:<span class="op">////</span>tmp<span class="op">/</span>local.duckdb</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The sql extension is already loaded. To reload it, use:
+  %reload_ext sql</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="4">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>sql </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>select DealID, Proposal.<span class="op">*</span>, State.<span class="op">*</span> <span class="im">from</span> read_ndjson_auto(<span class="st">"/tmp/ParsedStateMarketDeals.json"</span>) limit <span class="dv">10</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<span style="None">Running query in 'duckdb:////tmp/local.duckdb'</span>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">DealID</th>
+<th data-quarto-table-cell-role="th">PieceCID</th>
+<th data-quarto-table-cell-role="th">PieceSize</th>
+<th data-quarto-table-cell-role="th">VerifiedDeal</th>
+<th data-quarto-table-cell-role="th">Client</th>
+<th data-quarto-table-cell-role="th">Provider</th>
+<th data-quarto-table-cell-role="th">Label</th>
+<th data-quarto-table-cell-role="th">StartEpoch</th>
+<th data-quarto-table-cell-role="th">EndEpoch</th>
+<th data-quarto-table-cell-role="th">StoragePricePerEpoch</th>
+<th data-quarto-table-cell-role="th">ProviderCollateral</th>
+<th data-quarto-table-cell-role="th">ClientCollateral</th>
+<th data-quarto-table-cell-role="th">SectorStartEpoch</th>
+<th data-quarto-table-cell-role="th">LastUpdatedEpoch</th>
+<th data-quarto-table-cell-role="th">SlashEpoch</th>
+<th data-quarto-table-cell-role="th">VerifiedClaim</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>159155</td>
+<td>{'/': 'baga6ea4seaqaazz4brpn3zde6dkorq3muck42qzw5hetx7wtwm6oyz4lqdklcpa'}</td>
+<td>65536</td>
+<td>False</td>
+<td>f020319</td>
+<td>f016305</td>
+<td>mAXESINiz1A6zzmVo8QoU7wKbP+gB3PGSyA43a4ZukzHIxc3z</td>
+<td>1281643200</td>
+<td>1282165340</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>-1</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>159170</td>
+<td>{'/': 'baga6ea4seaqaazz4brpn3zde6dkorq3muck42qzw5hetx7wtwm6oyz4lqdklcpa'}</td>
+<td>65536</td>
+<td>False</td>
+<td>f020319</td>
+<td>f016305</td>
+<td>mAXESINiz1A6zzmVo8QoU7wKbP+gB3PGSyA43a4ZukzHIxc3z</td>
+<td>1282046400</td>
+<td>1282568540</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>-1</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>159181</td>
+<td>{'/': 'baga6ea4seaqaazz4brpn3zde6dkorq3muck42qzw5hetx7wtwm6oyz4lqdklcpa'}</td>
+<td>65536</td>
+<td>False</td>
+<td>f020319</td>
+<td>f016309</td>
+<td>mAXESINiz1A6zzmVo8QoU7wKbP+gB3PGSyA43a4ZukzHIxc3z</td>
+<td>1282608000</td>
+<td>1283129618</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>-1</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>159183</td>
+<td>{'/': 'baga6ea4seaqcjw5o3bbrn6u2tgv7j7lihxufsm4c3zijhznymvpjfmlckbuccaq'}</td>
+<td>1048576</td>
+<td>False</td>
+<td>f020319</td>
+<td>f016305</td>
+<td>mAXESIN6mq1OV8vx3Wq/vL7IaZX5f+bmEIatiFHnvR4ZNhLVr</td>
+<td>1282608000</td>
+<td>1283130140</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>-1</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>159188</td>
+<td>{'/': 'baga6ea4seaqkkyehwbcfh6l72e2jrooyqvbbr6f2xdyobesu6aupjfrox7tc2ki'}</td>
+<td>4096</td>
+<td>False</td>
+<td>f020319</td>
+<td>f016304</td>
+<td>mAXESIOBDGaYV/UAiPSsJZDXHqoU4SYqq7nJ0/tagst+ls8d9</td>
+<td>1282680000</td>
+<td>1283202204</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>-1</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>159189</td>
+<td>{'/': 'baga6ea4seaqojxopcje7y4biwj3qs2xt3srmcill6uvmga6gfqcppcutqs3g6my'}</td>
+<td>4096</td>
+<td>False</td>
+<td>f020319</td>
+<td>f016305</td>
+<td>mAXESIAjeNqjrNMiI9wdUEG54r2AaDGf1WfvfXjuutGQ/esch</td>
+<td>1282680000</td>
+<td>1283202140</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>-1</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>159190</td>
+<td>{'/': 'baga6ea4seaqpg2hxv5os6bygcipqks537txiaojypb6ilzsu5qmp7bw2dptwcei'}</td>
+<td>4096</td>
+<td>False</td>
+<td>f020319</td>
+<td>f016303</td>
+<td>mAXESIKtGtBrFsswfb5KZRnLb06BxpxE2ZJiuTQjWwUEy4dT5</td>
+<td>1282680000</td>
+<td>1283204137</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>-1</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>159191</td>
+<td>{'/': 'baga6ea4seaqoxyynqy3cbeutvbiygtlk6jw6wc4cpolguq65ebgrby4tcyjbgci'}</td>
+<td>4096</td>
+<td>False</td>
+<td>f020319</td>
+<td>f016309</td>
+<td>mAXESIFcZ1jlnoL7/DPtkuvcTlV0aYMyeLo5YL5ivYcTLf+lj</td>
+<td>1282680000</td>
+<td>1283201618</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>-1</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>159192</td>
+<td>{'/': 'baga6ea4seaqgxbzhjoaxjpzcqozmb6nznm6y452okpmp6adqmn6p4bz6w5ugaoq'}</td>
+<td>4096</td>
+<td>False</td>
+<td>f020319</td>
+<td>f016303</td>
+<td>mAXESIFvyl9nFfaMUEQ2XoY8SDTnhpybAFU/hcn98nkyQnVl6</td>
+<td>1282680000</td>
+<td>1283204137</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>-1</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>159193</td>
+<td>{'/': 'baga6ea4seaqkwr7zajmbufki6sgx2f3cqcjbq3bh4is4u3j6tlv2crfyyiyjykq'}</td>
+<td>8192</td>
+<td>False</td>
+<td>f020319</td>
+<td>f016309</td>
+<td>mAXESIHyfVbyMVkTSYC2mCSewpvokw5I8LEBwQuwEvTsvAios</td>
+<td>1282694400</td>
+<td>1283216018</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>-1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell" data-execution_count="5">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>sql</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>create <span class="kw">or</span> replace table state_market_deals <span class="im">as</span> (</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    select DealID, Proposal.<span class="op">*</span>, State.<span class="op">*</span> <span class="im">from</span> read_ndjson_auto(<span class="st">"/tmp/ParsedStateMarketDeals.json"</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<span style="None">Running query in 'duckdb:////tmp/local.duckdb'</span>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"747401c0aa11495eb00e8a3f50edf074","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>36806346</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell" data-execution_count="6">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>sql</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>select </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">sum</span>(PieceSize) <span class="op">/</span> <span class="dv">1024</span> <span class="op">**</span> <span class="dv">5</span> <span class="im">as</span> total_pibs_in_active_deals,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> state_market_deals</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>where SectorStartEpoch <span class="op">&gt;</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<span style="None">Running query in 'duckdb:////tmp/local.duckdb'</span>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">total_pibs_in_active_deals</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1098.3741609410454</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell" data-execution_count="7">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>sql sector_start_lag <span class="op">&lt;&lt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>select </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    DealID,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    StartEpoch,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    SectorStartEpoch,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    StartEpoch <span class="op">-</span> SectorStartEpoch <span class="im">as</span> SectorStartLag,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> state_market_deals</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>where SectorStartEpoch <span class="op">&gt;</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<span style="None">Running query in 'duckdb:////tmp/local.duckdb'</span>
+</div>
+</div>
+<div class="cell" data-execution_count="12">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>sector_start_lag <span class="op">=</span> sector_start_lag.DataFrame()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="15">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>_ <span class="op">=</span> sector_start_lag[<span class="st">"SectorStartLag"</span>].plot.hist(bins<span class="op">=</span><span class="dv">100</span>, xlim<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">50000</span>))</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>sector_start_lag[<span class="st">"SectorStartLag"</span>].describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="15">
+<pre><code>count    3.654148e+07
+mean     1.565833e+04
+std      8.315649e+03
+min      0.000000e+00
+25%      1.259100e+04
+50%      1.364800e+04
+75%      1.800800e+04
+max      2.580400e+05
+Name: SectorStartLag, dtype: float64</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-15 Exploring Filecoin Deals_files/figure-html/cell-9-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="16">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>sql</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>select</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    PieceCID.<span class="st">"/"</span> <span class="im">as</span> piece_id,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    count(<span class="op">*</span>) <span class="im">as</span> copies</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> state_market_deals</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>where <span class="dv">1</span><span class="op">=</span><span class="dv">1</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">and</span> SectorStartEpoch <span class="op">!=</span> <span class="op">-</span><span class="dv">1</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">and</span> SlashEpoch <span class="op">=</span> <span class="op">-</span><span class="dv">1</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>group by piece_id</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>having copies <span class="op">&lt;</span> <span class="dv">20</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>order by <span class="dv">2</span> desc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<span style="None">Running query in 'duckdb:////tmp/local.duckdb'</span>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"54b2010232f24abb8d4671e962d2e864","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">piece_id</th>
+<th data-quarto-table-cell-role="th">copies</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>baga6ea4seaqbzgxi433tmkczbt3tjxuowtgui6hafo67o6m7buipfgt57m6k2na</td>
+<td>19</td>
+</tr>
+<tr class="even">
+<td>baga6ea4seaqiybgaka5svssl52fgr3bmd4q7avateggi3vmqvyqier7mk4dfoka</td>
+<td>19</td>
+</tr>
+<tr class="odd">
+<td>baga6ea4seaqi57bpicf74ex6owzv35qympyiivsqc4hcdwa6kggtyalxnmdgkjy</td>
+<td>19</td>
+</tr>
+<tr class="even">
+<td>baga6ea4seaqdw6vpp25o4dqfwksbmar2nbqszarvimtsbrt5ouim26su3o7bkhq</td>
+<td>19</td>
+</tr>
+<tr class="odd">
+<td>baga6ea4seaqfukeem5on3tcyunu6b5x7quaoxjrjtvty37tuhkek5nsrtebm2mi</td>
+<td>19</td>
+</tr>
+<tr class="even">
+<td>baga6ea4seaqn5kiciwnjvtmm7w3gzldl6ywou3f7jks2fddye3gtozq5do6h2ni</td>
+<td>19</td>
+</tr>
+<tr class="odd">
+<td>baga6ea4seaqgwkt2pxqokbehxer73cnr25tstzjrrdiudtxu2wg2m6jj3yhi2fa</td>
+<td>19</td>
+</tr>
+<tr class="even">
+<td>baga6ea4seaqfzrnztqwgjyu46hssvn3m7x6cqnvtsojmgcaohsc7fpzsxoc6kby</td>
+<td>19</td>
+</tr>
+<tr class="odd">
+<td>baga6ea4seaqfxgt5bhswek7ndiqzyikmv2b4ktom5tc6xgfjtr2isl7c773v2cq</td>
+<td>19</td>
+</tr>
+<tr class="even">
+<td>baga6ea4seaqpmk5qeyh2rdiujco6knh4222ajxiry3oxpwwess2ade5klbhwqeq</td>
+<td>19</td>
+</tr>
+</tbody>
+</table>
+
+<span style="font-style:italic;text-align:center;">11754796 rows, truncated to displaylimit of 10</span><br><span style="font-style:italic;text-align:center;">If you want to see more, please visit <a href="https://jupysql.ploomber.io/en/latest/api/configuration.html#displaylimit">displaylimit</a> configuration</span>
+</div>
+</div>
+<div class="cell" data-execution_count="17">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>sql</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>select</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    PieceCID.<span class="st">"/"</span> <span class="im">as</span> piece_id,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    count(<span class="op">*</span>) <span class="im">as</span> copies</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> state_market_deals</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>where <span class="dv">1</span><span class="op">=</span><span class="dv">1</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">and</span> SectorStartEpoch <span class="op">!=</span> <span class="op">-</span><span class="dv">1</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">and</span> SlashEpoch <span class="op">=</span> <span class="op">-</span><span class="dv">1</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>group by piece_id</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>order by copies desc</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>limit <span class="dv">5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<span style="None">Running query in 'duckdb:////tmp/local.duckdb'</span>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"07b2cb154d834e07959a1e44ae44db0a","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">piece_id</th>
+<th data-quarto-table-cell-role="th">copies</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>baga6ea4seaqof356aeq4mvurh43yir2z6j3wguczeke4dy4lngbb7fwrmfpjydy</td>
+<td>10420</td>
+</tr>
+<tr class="even">
+<td>baga6ea4seaqnvexhndom5ipydpn42c3va2jhuepv4bc7rwrc33t3x7gqkn53ugi</td>
+<td>8640</td>
+</tr>
+<tr class="odd">
+<td>baga6ea4seaqma3d2foqh3obhlxca2z4emobsarysx5pyrygroakuyxyd7sjzmby</td>
+<td>6518</td>
+</tr>
+<tr class="even">
+<td>baga6ea4seaqfecaafawnex4i4z3dlpv5ngaxp5sa5spgf77mz3s3lvfidqom2da</td>
+<td>636</td>
+</tr>
+<tr class="odd">
+<td>baga6ea4seaqootvvm3rolzm7o4cdbshrgs4ceoe5rdwi6j6q52gmmkgtppwiogq</td>
+<td>631</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell" data-execution_count="19">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>sql</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>select distinct</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    Client,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    Provider,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> state_market_deals</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>where PieceCID.<span class="st">"/"</span> <span class="op">=</span> <span class="st">'baga6ea4seaqof356aeq4mvurh43yir2z6j3wguczeke4dy4lngbb7fwrmfpjydy'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<span style="None">Running query in 'duckdb:////tmp/local.duckdb'</span>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="19">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Client</th>
+<th data-quarto-table-cell-role="th">Provider</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>f01624861</td>
+<td>f01781851</td>
+</tr>
+<tr class="even">
+<td>f01624861</td>
+<td>f01716466</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
