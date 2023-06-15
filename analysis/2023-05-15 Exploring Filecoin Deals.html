@@ -169,7 +169,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Deals data is available from the on-chain state (via the <a href="https://lotus.filecoin.io/reference/lotus/state/#statemarketdeals"><code>StateMarketDeals</code></a> JSON-RPC method). The state doesn’t reflect the historical deals, but should be enough to get a sense of things.</p>
 <p>Alternatively you can use an <a href="https://github.com/ribasushi/fil-naive-marketwatch">oracle like <code>fil-naive-marketwatch</code></a>, rely on APIs like <a href="https://spacescope.io/">Spacescope</a> for aggregated data or reconstruct the deals from <a href="https://lilium.sh/">Lily</a> CSV dumps, which can provide all deals in Filecoin history.</p>
 <p>I’ll rely on <a href="https://lotus.filecoin.io/lotus/developers/glif-nodes/">Glif nodes</a> export of <code>StateMarketDeals</code> on S3 (<a href="https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst">direct link</a>).</p>
-<div class="cell" data-execution_count="2">
+<div class="cell" data-execution_count="1">
 <details>
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> urllib</span>
@@ -199,7 +199,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Parse the file</span></span>
 <span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="co"># jq --stream 'fromstream(1|truncate_stream(inputs))' -c /tmp/StateMarketDeals.json &gt; /tmp/ParsedStateMarketDeals.json</span></span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"/tmp/ParsedStateMarketDeals.json"</span>, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"../data/ParsedStateMarketDeals.json"</span>, <span class="st">"w"</span>) <span class="im">as</span> f:</span>
 <span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k, v <span class="kw">in</span> ijson.kvitems(<span class="bu">open</span>(<span class="st">"/tmp/StateMarketDeals.json"</span>), <span class="st">""</span>):</span>
 <span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        v[<span class="st">"DealID"</span>] <span class="op">=</span> k</span>
 <span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        f.write(json.dumps(v) <span class="op">+</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
