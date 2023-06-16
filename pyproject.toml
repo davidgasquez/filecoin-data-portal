@@ -1,0 +1,38 @@
+[project]
+name = "filda"
+version = "0.1.0"
+dependencies = [
+    "altair",
+    "duckdb",
+    "ijson",
+    "ipykernel",
+    "ipywidgets",
+    "jupysql",
+    "jupyterlab",
+    "matplotlib",
+    "nbclient",
+    "nbformat",
+    "numpy",
+    "pandas",
+    "pyarrow",
+    "regex",
+    "tqdm",
+    "vegafusion[embed]",
+    "zstandard",
+]
+requires-python = ">=3.10, <3.12"
+readme = "README.md"
+license = { text = "MIT" }
+
+[project.optional-dependencies]
+dev = ["duckdb-engine", "jupyter-cache"]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["filda"]
+
+[tool.dagster]
+module_name = "filda"

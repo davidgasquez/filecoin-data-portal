@@ -1,24 +1,27 @@
 project:
   type: website
   output-dir: .quarto/_site
+  resources: reports
   preview:
     port: 4200
 
-execute:
-  freeze: true
-  cache: true
-
-title-block-banner: true
-
 website:
   title: "Filecoin Analytics"
+  repo-url: https://github.com/davidgasquez/filecoin-analytics
+  repo-actions: [edit, issue]
   navbar:
-    right:
-      - icon: github
-        href: https://github.com/davidgasquez/filecoin-analytics
+    logo: "https://www.pngall.com/wp-content/uploads/10/Filecoin-Crypto-Logo-180x180.png"
+    search: false
+    pinned: true
+    tools:
       - icon: twitter
         href: https://twitter.com/davidgasquez/
+      - icon: github
+        href: https://github.com/davidgasquez/filecoin-analytics
 
 format:
   html:
     code-fold: true
+    theme: lux
+    css: "custom.css"
+    mainfont: "Roboto"

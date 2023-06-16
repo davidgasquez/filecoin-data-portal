@@ -5,9 +5,7 @@ RUN curl -sL $(curl https://quarto.org/docs/download/_download.json | grep -oP "
     && dpkg -i /tmp/quarto.deb \
     && rm /tmp/quarto.deb
 
-# Copy requirements.txt to the container
-COPY requirements.txt /tmp/requirements.txt
-
-# Install requirements
-RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/requirements.txt \
-    && rm -rf /tmp/requirements.txt
+# Install Python Dependencie
+WORKDIR /workspaces/filecoin-analytics
+COPY . /workspaces/filecoin-analytics
+RUN pip install -e ".[dev]"
