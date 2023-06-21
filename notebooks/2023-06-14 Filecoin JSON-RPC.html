@@ -6,6 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="David Gasquez">
+<meta name="dcterms.date" content="2023-06-14">
 
 <title>Filecoin Analytics - Filecoin Chain Data via JSON-RPC</title>
 <style>
@@ -89,7 +91,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -114,7 +116,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -127,7 +131,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>David Gasquez </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 14, 2023</p>
+    </div>
+  </div>
   
     
   </div>
@@ -135,7 +151,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<p>Date: <em>2021-06-14</em></p>
 <p><a href="https://filecoin-shipyard.github.io/js-lotus-client/intro/json-rpc.html">Filecoin has support for JSON-RPC API</a>, a standardized way to encode remote procedure calls in JSON. Projects such as Bitcoin and Ethereum have adopted it for use in their APIs.</p>
 <p>For example, when you run the Lotus node with lotus daemon, it will listen for connections on TCP port 1234 (by default).</p>
 <p>Applications may connect to this port and issue JSON-RPC calls. For example, using CURL, if we want to call the Filecoin.Version method, we might do this:</p>
