@@ -6,6 +6,7 @@ project:
 
 website:
   title: "Filecoin Analytics"
+  favicon: "favicon.ico"
   repo-url: https://github.com/davidgasquez/filecoin-analytics
   repo-actions: [edit, issue]
   search: false
@@ -25,3 +26,5 @@ website:
 format:
   html:
     code-fold: true
+    toc: true
+    echo: false

@@ -9,6 +9,9 @@ run: deps
 preview:
 	@quarto preview
 
+publish:
+	@quarto publish gh-pages --no-prompt
+
 clean:
 	@dbt clean --project-dir dbt;
 	@rm -rf output .quarto target dbt_packages logs

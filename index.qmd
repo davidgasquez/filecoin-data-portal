@@ -6,13 +6,14 @@ listing:
     image-placeholder: https://docs.appian.com/suite/help/23.2/sail/ds-images/uxds_images/sales_dashboard_dark_theme.png
   - id: notebooks
     contents: "notebooks"
-    type: table
+    # type: table
+    sort: date desc
     sort-ui: false
+    date-format: "YYYY-MM-DD"
     filter-ui: false
-    fields:
-      - title
-      - date
-      - author
+format:
+  html:
+    toc: false
 ---
 
 ## Dashboards
