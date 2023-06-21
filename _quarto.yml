@@ -13,6 +13,7 @@ website:
     center: "David Gasquez"
   navbar:
     logo: "https://www.pngall.com/wp-content/uploads/10/Filecoin-Crypto-Logo-180x180.png"
+    background: dark
     search: false
     pinned: true
     tools:
@@ -21,11 +22,6 @@ website:
       - icon: github
         href: https://github.com/davidgasquez/filecoin-analytics
 
-  # sidebar:
-  #   contents: auto
-
 format:
   html:
     code-fold: true
-    # theme: lux
-    # css: "custom.css"

@@ -2,10 +2,17 @@
 listing:
   - id: reports
     contents: "reports"
-    type: default
+    type: grid
+    image-placeholder: https://docs.appian.com/suite/help/23.2/sail/ds-images/uxds_images/sales_dashboard_dark_theme.png
   - id: notebooks
     contents: "notebooks"
-    type: default
+    type: table
+    sort-ui: false
+    filter-ui: false
+    fields:
+      - title
+      - date
+      - author
 ---
 
 ## Dashboards
