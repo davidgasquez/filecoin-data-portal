@@ -1,0 +1,15 @@
+name: 'fildata'
+version: '1.0.0'
+config-version: 2
+
+profile: 'default'
+
+clean-targets:
+  - "logs"
+  - "target"
+  - "database"
+  - "dbt_packages"
+
+models:
+  fildata:
+    +materialized: table

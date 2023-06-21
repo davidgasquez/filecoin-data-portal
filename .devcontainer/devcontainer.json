@@ -4,6 +4,10 @@
 		"dockerfile": "../Dockerfile",
 		"context": ".."
 	},
+	"runArgs": [
+		"--env-file",
+		"${localWorkspaceFolder}/.env"
+	],
 	"features": {
 		"ghcr.io/stuartleeks/dev-container-features/shell-history:latest": {}
 	},

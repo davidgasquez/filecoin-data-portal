@@ -167,3 +167,8 @@ _freeze/
 # Ignore everything in data except the .gitkeep file
 data/*
 !data/.gitkeep
+
+# dbt
+target/
+dbt_packages/
+logs/

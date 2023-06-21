@@ -5,6 +5,11 @@ RUN curl -sL $(curl https://quarto.org/docs/download/_download.json | grep -oP "
     && dpkg -i /tmp/quarto.deb \
     && rm /tmp/quarto.deb
 
+# Setup environment
+ENV DBT_PROFILES_DIR=/workspaces/filecoin-analytics/dbt
+ENV DATA_DIR /workspaces/filecoin-analytics/data
+ENV DATABASE_URL "duckdb:///${DATA_DIR}/dbt.duckdb"
+
 # Install Python Dependencie
 WORKDIR /workspaces/filecoin-analytics
 COPY . /workspaces/filecoin-analytics

@@ -1,8 +1,10 @@
 [project]
-name = "filda"
+name = "fildata"
 version = "0.1.0"
 dependencies = [
     "altair",
+    "dbt-core",
+    "dbt-duckdb",
     "duckdb",
     "ijson",
     "ipykernel",
@@ -32,7 +34,4 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["filda"]
-
-[tool.dagster]
-module_name = "filda"
+packages = ["fildata"]
