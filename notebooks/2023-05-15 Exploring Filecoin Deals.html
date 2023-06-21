@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Filecoin Analytics</title>
+<title>Filecoin Analytics - Exploring Filecoin Deals</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,19 +23,17 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -50,80 +48,24 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-reports .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-title','listing-author','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-reports'] = new List('listing-reports', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-notebooks .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-title','listing-author','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-notebooks'] = new List('listing-notebooks', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg navbar-dark ">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container">
-    <a href="./index.html" class="navbar-brand navbar-brand-logo">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
     <img src="https://www.pngall.com/wp-content/uploads/10/Filecoin-Crypto-Logo-180x180.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Filecoin Analytics</span>
     </a>
   </div>
@@ -138,137 +80,139 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#data-sources" id="toc-data-sources" class="nav-link active" data-scroll-target="#data-sources">Data Sources</a></li>
+  <li><a href="#market-deals-state" id="toc-market-deals-state" class="nav-link" data-scroll-target="#market-deals-state">Market Deals State</a></li>
+  <li><a href="#replication-factor" id="toc-replication-factor" class="nav-link" data-scroll-target="#replication-factor">Replication Factor</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.dev/davidgasquez/filecoin-analytics/blob/main/notebooks/2023-05-15 Exploring Filecoin Deals.ipynb" class="toc-action">Edit this page</a></p><p><a href="https://github.com/davidgasquez/filecoin-analytics/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Exploring Filecoin Deals</h1>
+</div>
 
 
-<section id="dashboards" class="level2">
-<h2 class="anchored" data-anchor-id="dashboards">Dashboards</h2>
-<div id="listing-reports" class="quarto-listing quarto-listing-container-default">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-listing-file-modified-sort="1687348652378" data-listing-reading-time-sort="1">
-<div class="thumbnail">
-<p><a href="./reports/deals.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
-</div>
-<div class="body">
-<a href="./reports/deals.html">
-<h3 class="no-anchor listing-title">
-Deals
-</h3>
-<div class="listing-subtitle">
 
-</div>
-<div class="listing-description">
+<div class="quarto-title-meta">
 
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./reports/deals.html"> </a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-listing-file-modified-sort="1687348356180" data-listing-reading-time-sort="1">
-<div class="thumbnail">
-<p><a href="./reports/storage_providers.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
-</div>
-<div class="body">
-<a href="./reports/storage_providers.html">
-<h3 class="no-anchor listing-title">
-Storage Providers
-</h3>
-<div class="listing-subtitle">
+    
+  
+    
+  </div>
+  
 
-</div>
-<div class="listing-description">
+</header>
 
+<p>Storage deals are core to Filecoin. They are the <a href="https://filecoin.io/blog/posts/how-storage-and-retrieval-deals-work-on-filecoin/">main mechanism by which clients and storage providers interact</a>.</p>
+<p>Let’s explore the data!</p>
+<section id="data-sources" class="level2">
+<h2 class="anchored" data-anchor-id="data-sources">Data Sources</h2>
+<p>Deals data is available from the on-chain state (via the <a href="https://lotus.filecoin.io/reference/lotus/state/#statemarketdeals"><code>StateMarketDeals</code></a> JSON-RPC method). The state doesn’t reflect the historical deals, but should be enough to get a sense of things.</p>
+<p>Alternatively you can use an <a href="https://github.com/ribasushi/fil-naive-marketwatch">oracle like <code>fil-naive-marketwatch</code></a>, rely on APIs like <a href="https://spacescope.io/">Spacescope</a> for aggregated data or reconstruct the deals from <a href="https://lilium.sh/">Lily</a> CSV dumps, which can provide all deals in Filecoin history.</p>
+<p>I’ll rely on <a href="https://lotus.filecoin.io/lotus/developers/glif-nodes/">Glif nodes</a> export of <code>StateMarketDeals</code> on S3 (<a href="https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst">direct link</a>).</p>
+</section>
+<section id="market-deals-state" class="level2">
+<h2 class="anchored" data-anchor-id="market-deals-state">Market Deals State</h2>
+<div class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display" data-execution_count="3">
+<p>There are <strong>1134.41 PIBs</strong> in active deals.</p>
 </div>
-</a>
 </div>
-<div class="metadata">
-<a href="./reports/storage_providers.html"> </a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
+<p>There is a natural lag between the time a deal is scheduled and the time it actually starts.</p>
+<div class="cell" data-execution_count="11">
+<div class="cell-output cell-output-display">
+<p><img src="2023-05-15 Exploring Filecoin Deals_files/figure-html/cell-7-output-1.png" class="img-fluid"></p>
 </div>
 </div>
 </section>
-<section id="notebooks" class="level2">
-<h2 class="anchored" data-anchor-id="notebooks">Notebooks</h2>
-<div id="listing-notebooks" class="quarto-listing quarto-listing-container-default">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-listing-file-modified-sort="1687348635538" data-listing-reading-time-sort="1">
-<div class="thumbnail">
-<p><a href="./notebooks/2023-05-15 Exploring Filecoin Deals.html"> <p class="card-img-top"><img src="notebooks/2023-05-15 Exploring Filecoin Deals_files/figure-html/cell-7-output-1.png"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./notebooks/2023-05-15 Exploring Filecoin Deals.html">
-<h3 class="no-anchor listing-title">
-Exploring Filecoin Deals
-</h3>
-<div class="listing-subtitle">
-
-</div>
-<div class="listing-description">
-Storage deals are core to Filecoin. They are the main mechanism by which clients and storage providers interact.
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./notebooks/2023-05-15 Exploring Filecoin Deals.html"> </a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-listing-file-modified-sort="1687346138943" data-listing-reading-time-sort="2">
-<div class="thumbnail">
-<p><a href="./notebooks/2023-06-14 Filecoin JSON-RPC.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
-</div>
-<div class="body">
-<a href="./notebooks/2023-06-14 Filecoin JSON-RPC.html">
-<h3 class="no-anchor listing-title">
-Filecoin Chain Data via JSON-RPC
-</h3>
-<div class="listing-subtitle">
-
-</div>
-<div class="listing-description">
-Date: <em>2021-06-14</em>
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./notebooks/2023-06-14 Filecoin JSON-RPC.html"> </a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-listing-file-modified-sort="1686838936165" data-listing-reading-time-sort="2">
-<div class="thumbnail">
-<p><a href="./notebooks/2023-06-13 Filecoin Plus.html"> <p class="card-img-top"><img src="notebooks/2023-06-13 Filecoin Plus_files/figure-html/cell-7-output-2.png"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./notebooks/2023-06-13 Filecoin Plus.html">
-<h3 class="no-anchor listing-title">
-Filecoin Plus
-</h3>
-<div class="listing-subtitle">
-
-</div>
-<div class="listing-description">
-Filecoin Plus is based on a set of guiding principles, detailed…
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./notebooks/2023-06-13 Filecoin Plus.html"> </a>
+<section id="replication-factor" class="level2">
+<h2 class="anchored" data-anchor-id="replication-factor">Replication Factor</h2>
+<p>Some pieces have multiple copies. These are the most copied pieces:</p>
+<div class="cell" data-execution_count="26">
+<div class="cell-output cell-output-display" data-execution_count="26">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">piece_id</th>
+<th data-quarto-table-cell-role="th">copies</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>baga6ea4seaqof356aeq4mvurh43yir2z6j3wguczeke4dy4lngbb7fwrmfpjydy</td>
+<td>10420</td>
+</tr>
+<tr class="even">
+<td>baga6ea4seaqnvexhndom5ipydpn42c3va2jhuepv4bc7rwrc33t3x7gqkn53ugi</td>
+<td>8640</td>
+</tr>
+<tr class="odd">
+<td>baga6ea4seaqma3d2foqh3obhlxca2z4emobsarysx5pyrygroakuyxyd7sjzmby</td>
+<td>6518</td>
+</tr>
+<tr class="even">
+<td>baga6ea4seaqfecaafawnex4i4z3dlpv5ngaxp5sa5spgf77mz3s3lvfidqom2da</td>
+<td>636</td>
+</tr>
+<tr class="odd">
+<td>baga6ea4seaqootvvm3rolzm7o4cdbshrgs4ceoe5rdwi6j6q52gmmkgtppwiogq</td>
+<td>631</td>
+</tr>
+<tr class="even">
+<td>baga6ea4seaqpc6o5flzyg2ujmzdoydpjzkctembxk6mrfa6td3dzfcptbed4qkq</td>
+<td>618</td>
+</tr>
+<tr class="odd">
+<td>baga6ea4seaqmjgc2dhqsggctzwx5i2msscsdc5v27lva2tvanmd4j2pq27n2yaq</td>
+<td>606</td>
+</tr>
+<tr class="even">
+<td>baga6ea4seaqdpednuhl5eukv7ym7lnxg66k3qzf5tf33h5uovhrkvwmlrpg24fa</td>
+<td>596</td>
+</tr>
+<tr class="odd">
+<td>baga6ea4seaqgshsnocaigqcar5frhf4f5xfvprumbzjjci2xofktnef6utiuyoa</td>
+<td>595</td>
+</tr>
+<tr class="even">
+<td>baga6ea4seaqdorw3mefmpaabi7tx7rxu7qxmqdxkpeyyqg3myiq72pwfk6qzedq</td>
+<td>594</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
+<p>Some of these pieces have more than 10k copies… Which providers are storing them?</p>
+<div class="cell" data-execution_count="10">
+<div class="cell-output cell-output-display" data-execution_count="10">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Client</th>
+<th data-quarto-table-cell-role="th">Provider</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>f01624861</td>
+<td>f01781851</td>
+</tr>
+<tr class="even">
+<td>f01624861</td>
+<td>f01716466</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div class="listing-no-matching d-none">
-No matching items
 </div>
-</div>
-
 
 
 </section>
@@ -513,7 +457,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     <div class="nav-footer-left">
       &nbsp;
     </div>   
-    <div class="nav-footer-center">David Gasquez<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/davidgasquez/filecoin-analytics/edit/main/index.qmd" class="toc-action">Edit this page</a></p><p><a href="https://github.com/davidgasquez/filecoin-analytics/issues/new" class="toc-action">Report an issue</a></p></div></div></div>
+    <div class="nav-footer-center">David Gasquez</div>
     <div class="nav-footer-right">
       &nbsp;
     </div>
