@@ -1,0 +1,19 @@
+---
+listing:
+  - id: reports
+    contents: "reports"
+    type: default
+  - id: notebooks
+    contents: "notebooks"
+    type: default
+---
+
+## Dashboards
+
+:::{#reports}
+:::
+
+## Notebooks
+
+:::{#notebooks}
+:::

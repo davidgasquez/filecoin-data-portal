@@ -2,4 +2,4 @@
 version: 2
 
 models:
-  - name: state_market_deals
+  - name: filecoin_state_market_deals
