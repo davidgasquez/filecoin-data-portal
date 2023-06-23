@@ -1,5 +1,3 @@
-# Filecoin Open Data Analytics Platform
+# Filecoin Data Analytics Platform
 
-Hub for some Filecoin related analysis and other data needs. Open and reproducible.
-
-The repository contains a small Python package, `fildata`, that provides a set of functions to download and process Filecoin related data.
+Hub for the Filecoin Network Analytics needs. The repository also contains a small Python package, `fildata`, that provides helpers to download and process Filecoin related data from multiple [sources](docs/data-sources.md).
