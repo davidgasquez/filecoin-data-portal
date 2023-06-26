@@ -1,27 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/index.html</loc>
-    <lastmod>2023-06-21T15:32:20.799Z</lastmod>
-  </url>
-  <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/notebooks/2023-06-13-Filecoin-Plus.html</loc>
-    <lastmod>2023-06-21T15:32:21.512Z</lastmod>
-  </url>
-  <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/notebooks/2023-06-14-Filecoin JSON-RPC.html</loc>
-    <lastmod>2023-06-21T15:32:22.532Z</lastmod>
-  </url>
-  <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/notebooks/2023-06-21-Exploring-Filecoin-Deals.html</loc>
-    <lastmod>2023-06-21T15:32:22.852Z</lastmod>
+    <loc>https://davidgasquez.github.io/filecoin-analytics/docs/data-sources.html</loc>
+    <lastmod>2023-06-26T14:04:00.943Z</lastmod>
   </url>
   <url>
     <loc>https://davidgasquez.github.io/filecoin-analytics/reports/deals.html</loc>
-    <lastmod>2023-06-21T15:32:23.216Z</lastmod>
+    <lastmod>2023-06-26T14:03:59.140Z</lastmod>
+  </url>
+  <url>
+    <loc>https://davidgasquez.github.io/filecoin-analytics/notebooks/2023-06-14-Filecoin JSON-RPC.html</loc>
+    <lastmod>2023-06-26T14:03:58.460Z</lastmod>
+  </url>
+  <url>
+    <loc>https://davidgasquez.github.io/filecoin-analytics/notebooks/2023-06-22-Reputation-Data.html</loc>
+    <lastmod>2023-06-26T14:03:56.746Z</lastmod>
+  </url>
+  <url>
+    <loc>https://davidgasquez.github.io/filecoin-analytics/index.html</loc>
+    <lastmod>2023-06-26T14:03:56.106Z</lastmod>
+  </url>
+  <url>
+    <loc>https://davidgasquez.github.io/filecoin-analytics/notebooks/2023-06-13-Filecoin-Plus.html</loc>
+    <lastmod>2023-06-26T14:03:57.426Z</lastmod>
+  </url>
+  <url>
+    <loc>https://davidgasquez.github.io/filecoin-analytics/notebooks/2023-06-21-Exploring-Filecoin-Deals.html</loc>
+    <lastmod>2023-06-26T14:03:58.786Z</lastmod>
   </url>
   <url>
     <loc>https://davidgasquez.github.io/filecoin-analytics/reports/storage_providers.html</loc>
-    <lastmod>2023-06-21T15:32:24.716Z</lastmod>
+    <lastmod>2023-06-26T14:04:00.460Z</lastmod>
   </url>
 </urlset>

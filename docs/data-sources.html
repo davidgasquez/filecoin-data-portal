@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Filecoin Analytics - Deals</title>
+<title>Filecoin Analytics – data-sources</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -49,9 +49,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
 </head>
@@ -82,257 +79,63 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#data-sources" id="toc-data-sources" class="nav-link active" data-scroll-target="#data-sources">Data Sources</a>
+  <ul class="collapse">
+  <li><a href="#deals" id="toc-deals" class="nav-link" data-scroll-target="#deals">Deals</a></li>
+  <li><a href="#clients" id="toc-clients" class="nav-link" data-scroll-target="#clients">Clients</a></li>
+  <li><a href="#storage-providers" id="toc-storage-providers" class="nav-link" data-scroll-target="#storage-providers">Storage Providers</a></li>
+  <li><a href="#others" id="toc-others" class="nav-link" data-scroll-target="#others">Others</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/davidgasquez/filecoin-analytics/edit/main/docs/data-sources.md" class="toc-action">Edit this page</a></p><p><a href="https://github.com/davidgasquez/filecoin-analytics/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">Deals</h1>
-</div>
 
 
-
-<div class="quarto-title-meta">
-
-    
-  
-    
-  </div>
-  
-
-</header>
-
-<div class="cell" data-execution_count="2">
-<div class="cell-output cell-output-display" data-execution_count="2">
-<table data-quarto-postprocess="true" class="table table-sm table-striped small">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th">total_stored_data</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>1134.4070000660677</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="cell" data-execution_count="5">
-<div class="cell-output cell-output-display">
-<span style="None">Running query in 'duckdb:////workspaces/filecoin-analytics/data/dbt.duckdb'</span>
-</div>
-<div class="cell-output cell-output-display" data-execution_count="5">
-<table data-quarto-postprocess="true" class="table table-sm table-striped small">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th">DealID</th>
-<th data-quarto-table-cell-role="th">PieceCID</th>
-<th data-quarto-table-cell-role="th">PieceSize</th>
-<th data-quarto-table-cell-role="th">VerifiedDeal</th>
-<th data-quarto-table-cell-role="th">Client</th>
-<th data-quarto-table-cell-role="th">Provider</th>
-<th data-quarto-table-cell-role="th">Label</th>
-<th data-quarto-table-cell-role="th">StartEpoch</th>
-<th data-quarto-table-cell-role="th">EndEpoch</th>
-<th data-quarto-table-cell-role="th">StoragePricePerEpoch</th>
-<th data-quarto-table-cell-role="th">ProviderCollateral</th>
-<th data-quarto-table-cell-role="th">ClientCollateral</th>
-<th data-quarto-table-cell-role="th">SectorStartEpoch</th>
-<th data-quarto-table-cell-role="th">LastUpdatedEpoch</th>
-<th data-quarto-table-cell-role="th">SlashEpoch</th>
-<th data-quarto-table-cell-role="th">VerifiedClaim</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>159155</td>
-<td>{'/': 'baga6ea4seaqaazz4brpn3zde6dkorq3muck42qzw5hetx7wtwm6oyz4lqdklcpa'}</td>
-<td>65536</td>
-<td>False</td>
-<td>f020319</td>
-<td>f016305</td>
-<td>mAXESINiz1A6zzmVo8QoU7wKbP+gB3PGSyA43a4ZukzHIxc3z</td>
-<td>1281643200</td>
-<td>1282165340</td>
-<td>0</td>
-<td>0</td>
-<td>0</td>
-<td>-1</td>
-<td>-1</td>
-<td>-1</td>
-<td>0</td>
-</tr>
-<tr class="even">
-<td>159170</td>
-<td>{'/': 'baga6ea4seaqaazz4brpn3zde6dkorq3muck42qzw5hetx7wtwm6oyz4lqdklcpa'}</td>
-<td>65536</td>
-<td>False</td>
-<td>f020319</td>
-<td>f016305</td>
-<td>mAXESINiz1A6zzmVo8QoU7wKbP+gB3PGSyA43a4ZukzHIxc3z</td>
-<td>1282046400</td>
-<td>1282568540</td>
-<td>0</td>
-<td>0</td>
-<td>0</td>
-<td>-1</td>
-<td>-1</td>
-<td>-1</td>
-<td>0</td>
-</tr>
-<tr class="odd">
-<td>159181</td>
-<td>{'/': 'baga6ea4seaqaazz4brpn3zde6dkorq3muck42qzw5hetx7wtwm6oyz4lqdklcpa'}</td>
-<td>65536</td>
-<td>False</td>
-<td>f020319</td>
-<td>f016309</td>
-<td>mAXESINiz1A6zzmVo8QoU7wKbP+gB3PGSyA43a4ZukzHIxc3z</td>
-<td>1282608000</td>
-<td>1283129618</td>
-<td>0</td>
-<td>0</td>
-<td>0</td>
-<td>-1</td>
-<td>-1</td>
-<td>-1</td>
-<td>0</td>
-</tr>
-<tr class="even">
-<td>159183</td>
-<td>{'/': 'baga6ea4seaqcjw5o3bbrn6u2tgv7j7lihxufsm4c3zijhznymvpjfmlckbuccaq'}</td>
-<td>1048576</td>
-<td>False</td>
-<td>f020319</td>
-<td>f016305</td>
-<td>mAXESIN6mq1OV8vx3Wq/vL7IaZX5f+bmEIatiFHnvR4ZNhLVr</td>
-<td>1282608000</td>
-<td>1283130140</td>
-<td>0</td>
-<td>0</td>
-<td>0</td>
-<td>-1</td>
-<td>-1</td>
-<td>-1</td>
-<td>0</td>
-</tr>
-<tr class="odd">
-<td>159188</td>
-<td>{'/': 'baga6ea4seaqkkyehwbcfh6l72e2jrooyqvbbr6f2xdyobesu6aupjfrox7tc2ki'}</td>
-<td>4096</td>
-<td>False</td>
-<td>f020319</td>
-<td>f016304</td>
-<td>mAXESIOBDGaYV/UAiPSsJZDXHqoU4SYqq7nJ0/tagst+ls8d9</td>
-<td>1282680000</td>
-<td>1283202204</td>
-<td>0</td>
-<td>0</td>
-<td>0</td>
-<td>-1</td>
-<td>-1</td>
-<td>-1</td>
-<td>0</td>
-</tr>
-<tr class="even">
-<td>159189</td>
-<td>{'/': 'baga6ea4seaqojxopcje7y4biwj3qs2xt3srmcill6uvmga6gfqcppcutqs3g6my'}</td>
-<td>4096</td>
-<td>False</td>
-<td>f020319</td>
-<td>f016305</td>
-<td>mAXESIAjeNqjrNMiI9wdUEG54r2AaDGf1WfvfXjuutGQ/esch</td>
-<td>1282680000</td>
-<td>1283202140</td>
-<td>0</td>
-<td>0</td>
-<td>0</td>
-<td>-1</td>
-<td>-1</td>
-<td>-1</td>
-<td>0</td>
-</tr>
-<tr class="odd">
-<td>159190</td>
-<td>{'/': 'baga6ea4seaqpg2hxv5os6bygcipqks537txiaojypb6ilzsu5qmp7bw2dptwcei'}</td>
-<td>4096</td>
-<td>False</td>
-<td>f020319</td>
-<td>f016303</td>
-<td>mAXESIKtGtBrFsswfb5KZRnLb06BxpxE2ZJiuTQjWwUEy4dT5</td>
-<td>1282680000</td>
-<td>1283204137</td>
-<td>0</td>
-<td>0</td>
-<td>0</td>
-<td>-1</td>
-<td>-1</td>
-<td>-1</td>
-<td>0</td>
-</tr>
-<tr class="even">
-<td>159191</td>
-<td>{'/': 'baga6ea4seaqoxyynqy3cbeutvbiygtlk6jw6wc4cpolguq65ebgrby4tcyjbgci'}</td>
-<td>4096</td>
-<td>False</td>
-<td>f020319</td>
-<td>f016309</td>
-<td>mAXESIFcZ1jlnoL7/DPtkuvcTlV0aYMyeLo5YL5ivYcTLf+lj</td>
-<td>1282680000</td>
-<td>1283201618</td>
-<td>0</td>
-<td>0</td>
-<td>0</td>
-<td>-1</td>
-<td>-1</td>
-<td>-1</td>
-<td>0</td>
-</tr>
-<tr class="odd">
-<td>159192</td>
-<td>{'/': 'baga6ea4seaqgxbzhjoaxjpzcqozmb6nznm6y452okpmp6adqmn6p4bz6w5ugaoq'}</td>
-<td>4096</td>
-<td>False</td>
-<td>f020319</td>
-<td>f016303</td>
-<td>mAXESIFvyl9nFfaMUEQ2XoY8SDTnhpybAFU/hcn98nkyQnVl6</td>
-<td>1282680000</td>
-<td>1283204137</td>
-<td>0</td>
-<td>0</td>
-<td>0</td>
-<td>-1</td>
-<td>-1</td>
-<td>-1</td>
-<td>0</td>
-</tr>
-<tr class="even">
-<td>159193</td>
-<td>{'/': 'baga6ea4seaqkwr7zajmbufki6sgx2f3cqcjbq3bh4is4u3j6tlv2crfyyiyjykq'}</td>
-<td>8192</td>
-<td>False</td>
-<td>f020319</td>
-<td>f016309</td>
-<td>mAXESIHyfVbyMVkTSYC2mCSewpvokw5I8LEBwQuwEvTsvAios</td>
-<td>1282694400</td>
-<td>1283216018</td>
-<td>0</td>
-<td>0</td>
-<td>0</td>
-<td>-1</td>
-<td>-1</td>
-<td>-1</td>
-<td>0</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<section id="data-sources" class="level1">
+<h1>Data Sources</h1>
+<p>Most of the data required for dashboards and analysis is coming from the Filecoin chain. However, there is some off-chain data like Datacap applications or reputation data that we need to pull from several places.</p>
+<p>This document goes over the different entities and the data sources we use to get the data.</p>
+<section id="deals" class="level2">
+<h2 class="anchored" data-anchor-id="deals">Deals</h2>
+<p>Deals data is available on chain and can be obtained via a <code>StateMarketDeals</code> JSON-RPC call. That said, is easirt to use an <a href="https://github.com/ribasushi/fil-naive-marketwatch">oracle like <code>fil-naive-marketwatch</code></a>.</p>
+<p>You can also get the data from the <a href="https://lotus.filecoin.io/lotus/developers/glif-nodes/">Glif nodes</a> <code>StateMarketDeals</code> periodic dump on S3 (<a href="https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst">direct link</a>) or <a href="https://lilium.sh/">from Lily</a>.</p>
+</section>
+<section id="clients" class="level2">
+<h2 class="anchored" data-anchor-id="clients">Clients</h2>
+<p>Can be derived from all the historical deals on-chain. Then augmented with the following sources:</p>
+<ul>
+<li>Datacap Stats API. E.g: calling <code>https://api.datacapstats.io/api/getVerifiedClients</code> returns a JSON of verified clients in the FIL+ program. This contains the client names and other self-reported data.
+<ul>
+<li>This can also be obtained by parsing the relevant GitHub repositories issues and comments.</li>
+</ul></li>
+</ul>
+</section>
+<section id="storage-providers" class="level2">
+<h2 class="anchored" data-anchor-id="storage-providers">Storage Providers</h2>
+<p>Can be derived from all the historical deals on-chain. Then augmented with the following sources:</p>
+<ul>
+<li>Using the different <a href="https://provider.quest/">provider.quest</a> endpoints.</li>
+<li>Location data from multiple services run by PL.</li>
+<li>The best source for linking <code>miner_id</code> (Storage Providers) with and Storage Provider Name/Organization is Hubspot. It is represented in the association between the Custom Object <em>Miner ID</em> field <em>Miner ID</em> and the Company Object Associated Company’s field <em>Company Name</em>.</li>
+<li>Reputation datafrom <a href="https://filrep.io/">filrep.io</a> or internal sources.</li>
+</ul>
+</section>
+<section id="others" class="level2">
+<h2 class="anchored" data-anchor-id="others">Others</h2>
+<ul>
+<li><a href="https://data.storage.market/">Storage Market</a></li>
+</ul>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -574,7 +377,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     <div class="nav-footer-left">
       &nbsp;
     </div>   
-    <div class="nav-footer-center">David Gasquez<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.dev/davidgasquez/filecoin-analytics/blob/main/reports/deals.ipynb" class="toc-action">Edit this page</a></p><p><a href="https://github.com/davidgasquez/filecoin-analytics/issues/new" class="toc-action">Report an issue</a></p></div></div></div>
+    <div class="nav-footer-center">David Gasquez</div>
     <div class="nav-footer-right">
       &nbsp;
     </div>
