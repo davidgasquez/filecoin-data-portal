@@ -18,6 +18,7 @@ dependencies = [
     "pandas",
     "pyarrow",
     "pymongo",
+    "prophet",
     "regex",
     "tqdm",
     "vegafusion[embed]",
