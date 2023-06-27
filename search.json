@@ -35,13 +35,6 @@
     "text": "Storage Market"
   },
   {
-    "objectID": "reports/deals.html",
-    "href": "reports/deals.html",
-    "title": "Deals",
-    "section": "",
-    "text": "total_stored_data\n\n\n\n\n1134.4070000660677\n\n\n\n\n\n\n\nRunning query in 'duckdb:////workspaces/filecoin-analytics/data/dbt.duckdb'\n\n\n\n\n\nDealID\nPieceCID\nPieceSize\nVerifiedDeal\nClient\nProvider\nLabel\nStartEpoch\nEndEpoch\nStoragePricePerEpoch\nProviderCollateral\nClientCollateral\nSectorStartEpoch\nLastUpdatedEpoch\nSlashEpoch\nVerifiedClaim\n\n\n\n\n159155\n{'/': 'baga6ea4seaqaazz4brpn3zde6dkorq3muck42qzw5hetx7wtwm6oyz4lqdklcpa'}\n65536\nFalse\nf020319\nf016305\nmAXESINiz1A6zzmVo8QoU7wKbP+gB3PGSyA43a4ZukzHIxc3z\n1281643200\n1282165340\n0\n0\n0\n-1\n-1\n-1\n0\n\n\n159170\n{'/': 'baga6ea4seaqaazz4brpn3zde6dkorq3muck42qzw5hetx7wtwm6oyz4lqdklcpa'}\n65536\nFalse\nf020319\nf016305\nmAXESINiz1A6zzmVo8QoU7wKbP+gB3PGSyA43a4ZukzHIxc3z\n1282046400\n1282568540\n0\n0\n0\n-1\n-1\n-1\n0\n\n\n159181\n{'/': 'baga6ea4seaqaazz4brpn3zde6dkorq3muck42qzw5hetx7wtwm6oyz4lqdklcpa'}\n65536\nFalse\nf020319\nf016309\nmAXESINiz1A6zzmVo8QoU7wKbP+gB3PGSyA43a4ZukzHIxc3z\n1282608000\n1283129618\n0\n0\n0\n-1\n-1\n-1\n0\n\n\n159183\n{'/': 'baga6ea4seaqcjw5o3bbrn6u2tgv7j7lihxufsm4c3zijhznymvpjfmlckbuccaq'}\n1048576\nFalse\nf020319\nf016305\nmAXESIN6mq1OV8vx3Wq/vL7IaZX5f+bmEIatiFHnvR4ZNhLVr\n1282608000\n1283130140\n0\n0\n0\n-1\n-1\n-1\n0\n\n\n159188\n{'/': 'baga6ea4seaqkkyehwbcfh6l72e2jrooyqvbbr6f2xdyobesu6aupjfrox7tc2ki'}\n4096\nFalse\nf020319\nf016304\nmAXESIOBDGaYV/UAiPSsJZDXHqoU4SYqq7nJ0/tagst+ls8d9\n1282680000\n1283202204\n0\n0\n0\n-1\n-1\n-1\n0\n\n\n159189\n{'/': 'baga6ea4seaqojxopcje7y4biwj3qs2xt3srmcill6uvmga6gfqcppcutqs3g6my'}\n4096\nFalse\nf020319\nf016305\nmAXESIAjeNqjrNMiI9wdUEG54r2AaDGf1WfvfXjuutGQ/esch\n1282680000\n1283202140\n0\n0\n0\n-1\n-1\n-1\n0\n\n\n159190\n{'/': 'baga6ea4seaqpg2hxv5os6bygcipqks537txiaojypb6ilzsu5qmp7bw2dptwcei'}\n4096\nFalse\nf020319\nf016303\nmAXESIKtGtBrFsswfb5KZRnLb06BxpxE2ZJiuTQjWwUEy4dT5\n1282680000\n1283204137\n0\n0\n0\n-1\n-1\n-1\n0\n\n\n159191\n{'/': 'baga6ea4seaqoxyynqy3cbeutvbiygtlk6jw6wc4cpolguq65ebgrby4tcyjbgci'}\n4096\nFalse\nf020319\nf016309\nmAXESIFcZ1jlnoL7/DPtkuvcTlV0aYMyeLo5YL5ivYcTLf+lj\n1282680000\n1283201618\n0\n0\n0\n-1\n-1\n-1\n0\n\n\n159192\n{'/': 'baga6ea4seaqgxbzhjoaxjpzcqozmb6nznm6y452okpmp6adqmn6p4bz6w5ugaoq'}\n4096\nFalse\nf020319\nf016303\nmAXESIFvyl9nFfaMUEQ2XoY8SDTnhpybAFU/hcn98nkyQnVl6\n1282680000\n1283204137\n0\n0\n0\n-1\n-1\n-1\n0\n\n\n159193\n{'/': 'baga6ea4seaqkwr7zajmbufki6sgx2f3cqcjbq3bh4is4u3j6tlv2crfyyiyjykq'}\n8192\nFalse\nf020319\nf016309\nmAXESIHyfVbyMVkTSYC2mCSewpvokw5I8LEBwQuwEvTsvAios\n1282694400\n1283216018\n0\n0\n0\n-1\n-1\n-1\n0"
-  },
-  {
     "objectID": "notebooks/2023-06-14-Filecoin JSON-RPC.html",
     "href": "notebooks/2023-06-14-Filecoin JSON-RPC.html",
     "title": "Filecoin Chain Data via JSON-RPC",
@@ -74,7 +67,7 @@
     "href": "index.html#notebooks",
     "title": "Filecoin Analytics",
     "section": "Notebooks",
-    "text": "Notebooks\n\n\n\n\n  \n\n\n\n\nExploring State Filecoin Deals\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-26\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nReputation Data\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-22\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Chain Data via JSON-RPC\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-14\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Plus\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-13\n\n\nDavid Gasquez\n\n\n\n\n\n\nNo matching items"
+    "text": "Notebooks\n\n\n\n\n  \n\n\n\n\nExploring State Filecoin Deals\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-27\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nReputation Data\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-22\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Chain Data via JSON-RPC\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-14\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Plus\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-13\n\n\nDavid Gasquez\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "notebooks/2023-06-13-Filecoin-Plus.html",
