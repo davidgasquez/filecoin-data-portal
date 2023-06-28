@@ -29,7 +29,7 @@ readme = "README.md"
 license = { text = "MIT" }
 
 [project.optional-dependencies]
-dev = ["duckdb-engine", "jupyter-cache"]
+dev = ["duckdb-engine", "jupyter-cache", "shandy-sqlfmt[jinjafmt]"]
 
 [build-system]
 requires = ["setuptools"]
