@@ -7,6 +7,12 @@ default:
       extensions:
         - httpfs
         - parquet
+        - postgres
+      plugins:
+        - module: sqlalchemy
+          alias: state_market_deals
+          config:
+            connection_url: "{{ env_var('STATEMARKETDEALS_POSTGRES_URI') }}"
       settings:
         enable_object_cache: true
         enable_http_metadata_cache: true

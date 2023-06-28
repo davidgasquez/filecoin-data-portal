@@ -1,5 +1,15 @@
-
 version: 2
+
+sources:
+  - name: state_market_deals
+    schema: main
+    config:
+      plugin: state_market_deals
+      save_mode: ignore
+    tables:
+      - name: client_mapping
+        config:
+          table: "client_mapping"
 
 models:
   - name: filecoin_state_market_deals

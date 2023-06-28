@@ -18,6 +18,7 @@ dependencies = [
     "pandas",
     "pyarrow",
     "pymongo",
+    "psycopg2",
     "prophet",
     "regex",
     "tqdm",
