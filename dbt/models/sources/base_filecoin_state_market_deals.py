@@ -1,7 +1,8 @@
-import urllib
-import zstandard
-import ijson
 import json
+import urllib
+
+import ijson
+import zstandard
 
 
 def model(dbt, session):

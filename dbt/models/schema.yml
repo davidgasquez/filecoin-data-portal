@@ -7,9 +7,9 @@ sources:
       plugin: state_market_deals
       save_mode: ignore
     tables:
-      - name: client_mapping
+      - name: active_miners
         config:
-          table: "client_mapping"
+          table: active_miners_v2
 
 models:
   - name: filecoin_state_market_deals
