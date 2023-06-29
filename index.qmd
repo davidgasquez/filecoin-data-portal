@@ -3,7 +3,7 @@ listing:
   - id: reports
     contents: "reports"
     type: grid
-    image-placeholder: https://docs.appian.com/suite/help/23.2/sail/ds-images/uxds_images/sales_dashboard_dark_theme.png
+    image-placeholder: https://www.transparentpng.com/thumb/business-growth-chart/business-graph-business-growth-growth-icon-pictures-8.png
   - id: notebooks
     contents: "notebooks"
     # type: table
@@ -21,7 +21,7 @@ format:
 :::{#reports}
 :::
 
-## Notebooks
+## Explorations
 
 :::{#notebooks}
 :::
