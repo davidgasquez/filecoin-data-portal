@@ -10,6 +10,3 @@ sources:
       - name: active_miners
         config:
           table: active_miners_v2
-
-models:
-  - name: filecoin_state_market_deals

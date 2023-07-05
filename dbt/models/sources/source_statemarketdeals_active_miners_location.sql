@@ -3,7 +3,7 @@ with
 
     renamed as (
         select
-            minerid as miner_id,
+            minerid as provider_id,
             rawbytepower as raw_byte_power,
             qualityadjpower as quality_adjusted_power,
             geolite2country as geolite_country,
