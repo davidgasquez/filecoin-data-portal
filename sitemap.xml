@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/reports/storage_providers.html</loc>
-    <lastmod>2023-07-03T09:47:55.988Z</lastmod>
+    <loc>https://davidgasquez.github.io/filecoin-analytics/sandbox.html</loc>
+    <lastmod>2023-07-05T14:26:32.572Z</lastmod>
   </url>
   <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/notebooks/2023-06-22-Reputation-Data.html</loc>
-    <lastmod>2023-07-03T09:47:54.488Z</lastmod>
+    <loc>https://davidgasquez.github.io/filecoin-analytics/reports/storage_providers.html</loc>
+    <lastmod>2023-07-05T14:26:32.162Z</lastmod>
   </url>
   <url>
     <loc>https://davidgasquez.github.io/filecoin-analytics/notebooks/2023-06-21-Exploring-Filecoin-Deals.html</loc>
-    <lastmod>2023-07-03T09:47:53.078Z</lastmod>
-  </url>
-  <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/docs/data-sources.html</loc>
-    <lastmod>2023-07-03T09:47:52.161Z</lastmod>
-  </url>
-  <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/index.html</loc>
-    <lastmod>2023-07-03T09:47:51.698Z</lastmod>
+    <lastmod>2023-07-05T14:26:30.582Z</lastmod>
   </url>
   <url>
     <loc>https://davidgasquez.github.io/filecoin-analytics/notebooks/2023-06-13-Filecoin-Plus.html</loc>
-    <lastmod>2023-07-03T09:47:52.748Z</lastmod>
+    <lastmod>2023-07-05T14:26:29.199Z</lastmod>
+  </url>
+  <url>
+    <loc>https://davidgasquez.github.io/filecoin-analytics/index.html</loc>
+    <lastmod>2023-07-05T14:26:27.869Z</lastmod>
   </url>
   <url>
     <loc>https://davidgasquez.github.io/filecoin-analytics/notebooks/2023-06-14-Filecoin JSON-RPC.html</loc>
-    <lastmod>2023-07-03T09:47:53.951Z</lastmod>
+    <lastmod>2023-07-05T14:26:30.259Z</lastmod>
   </url>
   <url>
     <loc>https://davidgasquez.github.io/filecoin-analytics/reports/deals.html</loc>
-    <lastmod>2023-07-03T09:47:54.671Z</lastmod>
+    <lastmod>2023-07-05T14:26:30.779Z</lastmod>
+  </url>
+  <url>
+    <loc>https://davidgasquez.github.io/filecoin-analytics/docs/data-sources.html</loc>
+    <lastmod>2023-07-05T14:26:32.406Z</lastmod>
   </url>
 </urlset>

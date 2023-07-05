@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Filecoin Analytics</title>
+<title>Filecoin Analytics – sandbox</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -25,8 +25,6 @@ ul.task-list li input[type="checkbox"] {
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <link href="./favicon.ico" rel="icon">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -51,70 +49,11 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-reports .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-title','listing-author','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-reports'] = new List('listing-reports', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-notebooks .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-notebooks'] = new List('listing-notebooks', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -139,163 +78,26 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 
 
-<section id="dashboards" class="level2">
-<h2 class="anchored" data-anchor-id="dashboards">Dashboards</h2>
-<div id="listing-reports" class="quarto-listing quarto-listing-container-grid">
-<div class="list grid quarto-listing-cols-3">
-<div class="g-col-1" data-index="0" data-listing-file-modified-sort="1688567037555" data-listing-reading-time-sort="1">
-<a href="./reports/deals.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top">
-<img src="https://www.transparentpng.com/thumb/business-growth-chart/business-graph-business-growth-growth-icon-pictures-8.png" class="thumbnail-image card-img" style="height: 150px;">
-</p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Deals
-</h5>
-<div class="card-text listing-description">
-
-</div>
-<div class="card-attribution card-text-small start">
-<div class="listing-author">
-
+<div class="cell" data-execution_count="6">
+<div class="cell-output cell-output-display" data-execution_count="6">
+<pre><code>['prod']</code></pre>
 </div>
 </div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="1" data-listing-file-modified-sort="1688567069275" data-listing-reading-time-sort="1">
-<a href="./reports/storage_providers.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top">
-<img src="https://www.transparentpng.com/thumb/business-growth-chart/business-graph-business-growth-growth-icon-pictures-8.png" class="thumbnail-image card-img" style="height: 150px;">
-</p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Storage Providers
-</h5>
-<div class="card-text listing-description">
-Dashboard for Filecoin Storage Providers.
-</div>
-<div class="card-attribution card-text-small start">
-<div class="listing-author">
-
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div>
-</section>
-<section id="explorations" class="level2">
-<h2 class="anchored" data-anchor-id="explorations">Explorations</h2>
-<div id="listing-notebooks" class="quarto-listing quarto-listing-container-default">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-listing-date-sort="1688515200000" data-listing-file-modified-sort="1687361442392" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
-<div class="thumbnail">
-<p><a href="./notebooks/2023-06-21-Exploring-Filecoin-Deals.html"> <p class="card-img-top"><img src="notebooks/2023-06-21-Exploring-Filecoin-Deals_files/figure-html/cell-11-output-1.png"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./notebooks/2023-06-21-Exploring-Filecoin-Deals.html">
-<h3 class="no-anchor listing-title">
-Exploring State Filecoin Deals
-</h3>
-<div class="listing-subtitle">
-
-</div>
-<div class="listing-description">
-Storage deals are core to Filecoin. They are the main mechanism by which clients and storage providers interact.
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./notebooks/2023-06-21-Exploring-Filecoin-Deals.html">
-<div class="listing-date">
-2023-07-05
-</div>
-<div class="listing-author">
-David Gasquez
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-listing-date-sort="1686700800000" data-listing-file-modified-sort="1687357146445" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
-<div class="thumbnail">
-<p><a href="./notebooks/2023-06-14-Filecoin JSON-RPC.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
-</div>
-<div class="body">
-<a href="./notebooks/2023-06-14-Filecoin JSON-RPC.html">
-<h3 class="no-anchor listing-title">
-Filecoin Chain Data via JSON-RPC
-</h3>
-<div class="listing-subtitle">
-
-</div>
-<div class="listing-description">
-Filecoin has support for JSON-RPC API…
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./notebooks/2023-06-14-Filecoin JSON-RPC.html">
-<div class="listing-date">
-2023-06-14
-</div>
-<div class="listing-author">
-David Gasquez
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-listing-date-sort="1686614400000" data-listing-file-modified-sort="1687764531469" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
-<div class="thumbnail">
-<p><a href="./notebooks/2023-06-13-Filecoin-Plus.html"> <p class="card-img-top"><img src="notebooks/2023-06-13-Filecoin-Plus_files/figure-html/cell-7-output-2.png"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./notebooks/2023-06-13-Filecoin-Plus.html">
-<h3 class="no-anchor listing-title">
-Filecoin Plus
-</h3>
-<div class="listing-subtitle">
-
-</div>
-<div class="listing-description">
-Filecoin Plus is based on a set of guiding principles, detailed…
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./notebooks/2023-06-13-Filecoin-Plus.html">
-<div class="listing-date">
-2023-06-13
-</div>
-<div class="listing-author">
-David Gasquez
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
+<div class="cell" data-execution_count="16">
+<div class="cell-output cell-output-error">
+<pre><code>OperationFailure: not authorized on prod to execute command { listCollections: 1, cursor: {}, nameOnly: true, lsid: { id: UUID("66be9498-9ede-479c-9697-852f59fb97d6") }, $clusterTime: { clusterTime: Timestamp(1688566031, 4), signature: { hash: BinData(0, E3DCDB43174440F52D5DA4EFBFB8D2D51C9E9C96), keyId: 7244959411389595653 } }, $db: "prod" }, full error: {'ok': 0.0, 'errmsg': 'not authorized on prod to execute command { listCollections: 1, cursor: {}, nameOnly: true, lsid: { id: UUID("66be9498-9ede-479c-9697-852f59fb97d6") }, $clusterTime: { clusterTime: Timestamp(1688566031, 4), signature: { hash: BinData(0, E3DCDB43174440F52D5DA4EFBFB8D2D51C9E9C96), keyId: 7244959411389595653 } }, $db: "prod" }', 'code': 13, 'codeName': 'Unauthorized', '$clusterTime': {'clusterTime': Timestamp(1688566031, 4), 'signature': {'hash': b'\xe3\xdc\xdbC\x17D@\xf5-]\xa4\xef\xbf\xb8\xd2\xd5\x1c\x9e\x9c\x96', 'keyId': 7244959411389595653}}, 'operationTime': Timestamp(1688566031, 4)}</code></pre>
 </div>
 </div>
 
 
-
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -537,7 +339,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     <div class="nav-footer-left">
       &nbsp;
     </div>   
-    <div class="nav-footer-center">David Gasquez<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/davidgasquez/filecoin-analytics/edit/main/index.qmd" class="toc-action">Edit this page</a></p><p><a href="https://github.com/davidgasquez/filecoin-analytics/issues/new" class="toc-action">Report an issue</a></p></div></div></div>
+    <div class="nav-footer-center">David Gasquez<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.dev/davidgasquez/filecoin-analytics/blob/main/sandbox.ipynb" class="toc-action">Edit this page</a></p><p><a href="https://github.com/davidgasquez/filecoin-analytics/issues/new" class="toc-action">Report an issue</a></p></div></div></div>
     <div class="nav-footer-right">
       &nbsp;
     </div>
