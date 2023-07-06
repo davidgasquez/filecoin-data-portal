@@ -11,6 +11,7 @@ listing:
     sort-ui: false
     date-format: "YYYY-MM-DD"
     filter-ui: false
+    image-height: 120px
 format:
   html:
     toc: false
