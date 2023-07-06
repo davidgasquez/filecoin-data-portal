@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Filecoin Analytics</title>
+<title>Filecoin Analytics – sandbox</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,20 +23,18 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<link href="./favicon.ico" rel="icon">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<link href="../favicon.ico" rel="icon">
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -51,80 +49,24 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-reports .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-title','listing-author','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-reports'] = new List('listing-reports', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-notebooks .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-notebooks'] = new List('listing-notebooks', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg navbar-dark ">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container">
-    <a href="./index.html" class="navbar-brand navbar-brand-logo">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
     <img src="https://www.pngall.com/wp-content/uploads/10/Filecoin-Crypto-Logo-180x180.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Filecoin Analytics</span>
     </a>
   </div>
@@ -139,163 +81,232 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 
 
-<section id="dashboards" class="level2">
-<h2 class="anchored" data-anchor-id="dashboards">Dashboards</h2>
-<div id="listing-reports" class="quarto-listing quarto-listing-container-grid">
-<div class="list grid quarto-listing-cols-3">
-<div class="g-col-1" data-index="0" data-listing-file-modified-sort="1688635669079" data-listing-reading-time-sort="1">
-<a href="./reports/deals.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top">
-<img src="https://thenounproject.com/api/private/icons/4733049/edit/?backgroundShape=SQUARE&amp;backgroundShapeColor=%23000000&amp;backgroundShapeOpacity=0&amp;exportSize=752&amp;flipX=false&amp;flipY=false&amp;foregroundColor=%23000000&amp;foregroundOpacity=1&amp;imageFormat=png&amp;rotation=0" class="thumbnail-image card-img" style="height: 150px;">
-</p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Deals
-</h5>
-<div class="card-text listing-description">
-Metrics for Filecoin Deals.
+<div class="cell" data-execution_count="7">
+<div class="cell-output cell-output-display" data-execution_count="7">
+<pre><code>0.845575959933222</code></pre>
 </div>
-<div class="card-attribution card-text-small start">
-<div class="listing-author">
+</div>
+<div class="cell" data-execution_count="22">
+<div class="cell-output cell-output-display" data-execution_count="22">
+<pre><code>0.32136894824707846</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="23">
+<div class="cell-output cell-output-display" data-execution_count="23">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">agentCountry</th>
+<th data-quarto-table-cell-role="th">ipinfo_country</th>
+<th data-quarto-table-cell-role="th">provider</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>CN</td>
+<td>CN</td>
+<td>f01098931</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>CN</td>
+<td>CN</td>
+<td>f0110808</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>JP</td>
+<td>JP</td>
+<td>f01114827</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>HK</td>
+<td>HK</td>
+<td>f01128206</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>CN</td>
+<td>CN</td>
+<td>f0113754</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>AU</td>
+<td>AU</td>
+<td>f01157314</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6</td>
+<td>HK</td>
+<td>HK</td>
+<td>f01228009</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7</td>
+<td>GB</td>
+<td>GB</td>
+<td>f01228087</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8</td>
+<td>CN</td>
+<td>CN</td>
+<td>f0123931</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">9</td>
+<td>CN</td>
+<td>CN</td>
+<td>f01261113</td>
+</tr>
+</tbody>
+</table>
 
 </div>
 </div>
 </div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="1" data-listing-file-modified-sort="1688635145536" data-listing-reading-time-sort="1">
-<a href="./reports/storage_providers.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top">
-<img src="https://thenounproject.com/api/private/icons/5671984/edit/?backgroundShape=SQUARE&amp;backgroundShapeColor=%23000000&amp;backgroundShapeOpacity=0&amp;exportSize=752&amp;flipX=false&amp;flipY=false&amp;foregroundColor=%23000000&amp;foregroundOpacity=1&amp;imageFormat=png&amp;rotation=0" class="thumbnail-image card-img" style="height: 150px;">
-</p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Storage Providers
-</h5>
-<div class="card-text listing-description">
-Metrics for Filecoin Storage Providers.
-</div>
-<div class="card-attribution card-text-small start">
-<div class="listing-author">
+<div class="cell" data-execution_count="33">
+<div class="cell-output cell-output-display" data-execution_count="33">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">provider</th>
+<th data-quarto-table-cell-role="th">agentCountry</th>
+<th data-quarto-table-cell-role="th">ipinfo_country</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">15</td>
+<td>f01392893</td>
+<td>BE</td>
+<td>NL</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">19</td>
+<td>f01720359</td>
+<td>GB</td>
+<td>NL</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">28</td>
+<td>f01864397</td>
+<td>DE</td>
+<td>BE</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">32</td>
+<td>f01900537</td>
+<td>TW</td>
+<td>VN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">35</td>
+<td>f01924824</td>
+<td>MY</td>
+<td>SG</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">40</td>
+<td>f01964215</td>
+<td>US</td>
+<td>CN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">51</td>
+<td>f02051391</td>
+<td>US</td>
+<td>HK</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">110</td>
+<td>f02012221</td>
+<td>NL</td>
+<td>BE</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">113</td>
+<td>f02041447</td>
+<td>JP</td>
+<td>CN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">123</td>
+<td>f02126560</td>
+<td>CN</td>
+<td>HK</td>
+</tr>
+</tbody>
+</table>
 
 </div>
 </div>
 </div>
-</div>
-</a>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
+<div class="cell" data-execution_count="30">
+<div class="cell-output cell-output-stdout">
+<pre><code>Note: you may need to restart the kernel to use updated packages.</code></pre>
 </div>
 </div>
-</section>
-<section id="explorations" class="level2">
-<h2 class="anchored" data-anchor-id="explorations">Explorations</h2>
-<div id="listing-notebooks" class="quarto-listing quarto-listing-container-default">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-listing-date-sort="1688601600000" data-listing-file-modified-sort="1687361442392" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
-<div class="thumbnail">
-<p><a href="./notebooks/2023-06-21-Exploring-Filecoin-Deals.html"> <p class="card-img-top"><img src="notebooks/2023-06-21-Exploring-Filecoin-Deals_files/figure-html/cell-11-output-1.png" style="height: 120px;"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./notebooks/2023-06-21-Exploring-Filecoin-Deals.html">
-<h3 class="no-anchor listing-title">
-Exploring State Filecoin Deals
-</h3>
-<div class="listing-subtitle">
-
-</div>
-<div class="listing-description">
-Storage deals are core to Filecoin. They are the main mechanism by which clients and storage providers interact.
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./notebooks/2023-06-21-Exploring-Filecoin-Deals.html">
-<div class="listing-date">
-2023-07-06
-</div>
-<div class="listing-author">
-David Gasquez
-</div>
-</a>
+<div class="cell" data-execution_count="10">
+<div class="cell-output cell-output-display" data-execution_count="10">
+<pre><code>40745244</code></pre>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="1" data-listing-date-sort="1686700800000" data-listing-file-modified-sort="1688635354013" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
-<div class="thumbnail">
-<p><a href="./notebooks/2023-06-14-Filecoin JSON-RPC.html"> <img src="https://thenounproject.com/api/private/icons/4847530/edit/?backgroundShape=SQUARE&amp;backgroundShapeColor=%23000000&amp;backgroundShapeOpacity=0&amp;exportSize=752&amp;flipX=false&amp;flipY=false&amp;foregroundColor=%23000000&amp;foregroundOpacity=1&amp;imageFormat=png&amp;rotation=0" class="thumbnail-image" style="height: 120px;"> </a></p>
-</div>
-<div class="body">
-<a href="./notebooks/2023-06-14-Filecoin JSON-RPC.html">
-<h3 class="no-anchor listing-title">
-Filecoin Chain Data via JSON-RPC
-</h3>
-<div class="listing-subtitle">
-
-</div>
-<div class="listing-description">
-<p>Small exploration around the Filecoin chain data available via JSON-RPC</p>
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./notebooks/2023-06-14-Filecoin JSON-RPC.html">
-<div class="listing-date">
-2023-06-14
-</div>
-<div class="listing-author">
-David Gasquez
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-listing-date-sort="1686614400000" data-listing-file-modified-sort="1687764531469" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
-<div class="thumbnail">
-<p><a href="./notebooks/2023-06-13-Filecoin-Plus.html"> <p class="card-img-top"><img src="notebooks/2023-06-13-Filecoin-Plus_files/figure-html/cell-7-output-2.png" style="height: 120px;"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./notebooks/2023-06-13-Filecoin-Plus.html">
-<h3 class="no-anchor listing-title">
-Filecoin Plus
-</h3>
-<div class="listing-subtitle">
-
-</div>
-<div class="listing-description">
-Filecoin Plus is based on a set of guiding principles, detailed…
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./notebooks/2023-06-13-Filecoin-Plus.html">
-<div class="listing-date">
-2023-06-13
-</div>
-<div class="listing-author">
-David Gasquez
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
+<div class="cell" data-execution_count="27">
+<div class="cell-output cell-output-display" data-execution_count="27">
+<pre><code>{'_id': ObjectId('6473893953113ae264dc773a'),
+ 'task': {'requester': 'filplus',
+  'module': 'graphsync',
+  'metadata': {'assume_label': 'true',
+   'retrieve_type': 'root_block',
+   'deal_id': '14385412',
+   'client': 'f01752086'},
+  'provider': {'id': 'f01271208',
+   'peer_id': '12D3KooWLQpYdpVBSp6nU9YQboWrQehFUqpHyEYzdrCvq9LuMUwD',
+   'multiaddrs': ['/ip4/14.17.97.229/tcp/23450'],
+   'city': 'Guangzhou',
+   'region': 'Guangdong',
+   'country': 'CN',
+   'continent': 'AS'},
+  'content': {'cid': 'mAXCg5AIgC1QttleiSLmJ+aYYKBklr1mX8ebtxaZLpiQar5XNeYc'},
+  'timeout': 15000000000,
+  'created_at': datetime.datetime(2023, 5, 28, 16, 33, 35, 343000)},
+ 'retriever': {'ip': '18.140.113.151',
+  'city': 'Singapore',
+  'region': 'Singapore',
+  'country': 'SG',
+  'continent': 'AS',
+  'asn': 'AS16509',
+  'isp': 'Amazon.com, Inc.',
+  'lat': 1.279099941253662,
+  'long': 103.85440063476562},
+ 'result': {'success': False,
+  'error_code': 'cannot_connect',
+  'error_message': 'failed to dial 12D3KooWLQpYdpVBSp6nU9YQboWrQehFUqpHyEYzdrCvq9LuMUwD:\n  * [/ip4/14.17.97.229/tcp/23450] dial tcp4 14.17.97.229:23450: i/o timeout'},
+ 'created_at': Timestamp('2023-05-28 17:02:49.102000')}</code></pre>
 </div>
 </div>
 
 
-
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -537,7 +548,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     <div class="nav-footer-left">
       &nbsp;
     </div>   
-    <div class="nav-footer-center">David Gasquez<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/davidgasquez/filecoin-analytics/edit/main/index.qmd" class="toc-action">Edit this page</a></p><p><a href="https://github.com/davidgasquez/filecoin-analytics/issues/new" class="toc-action">Report an issue</a></p></div></div></div>
+    <div class="nav-footer-center">David Gasquez<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.dev/davidgasquez/filecoin-analytics/blob/main/data/sandbox.ipynb" class="toc-action">Edit this page</a></p><p><a href="https://github.com/davidgasquez/filecoin-analytics/issues/new" class="toc-action">Report an issue</a></p></div></div></div>
     <div class="nav-footer-right">
       &nbsp;
     </div>
