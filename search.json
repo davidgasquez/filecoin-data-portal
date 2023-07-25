@@ -11,7 +11,7 @@
     "href": "reports/storage_providers.html",
     "title": "Storage Providers",
     "section": "",
-    "text": "Updated on 2023-07-03.\n\n\n\nActive Storage Providers\n3475\n\n\nTotal Raw Power\n11735.71 PiBs\n\n\nTotal Quality Adjusted PiB Power\n22352.06 PiBs\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power\n\n\n\n\n\n\n\n\n\n\nStorage Provider Quality Adjusted PiB Power\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power Growth Rate (7 Days Rolling Mean)\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time Growth Rate (7 Days Rolling Mean)"
+    "text": "Updated on 2023-07-23.\n\n\n\nActive Storage Providers\n3484\n\n\nTotal Raw Power\n11559.41 PiBs\n\n\nTotal Quality Adjusted PiB Power\n23139.81 PiBs\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power\n\n\n\n\n\n\n\n\n\n\nStorage Provider Quality Adjusted PiB Power\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power Growth Rate (7 Days Rolling Mean)\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time Growth Rate (7 Days Rolling Mean)"
   },
   {
     "objectID": "notebooks/2023-06-21-Exploring-Filecoin-Deals.html",
@@ -81,7 +81,7 @@
     "href": "index.html#explorations",
     "title": "Filecoin Analytics",
     "section": "Explorations",
-    "text": "Explorations\n\n\n\n\n  \n\n\n\n\nExploring State Filecoin Deals\n\n\n\n\n\n\n\n\n\n\n\n\n2023-07-06\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Chain Data via JSON-RPC\n\n\n\n\n\nSmall exploration around the Filecoin chain data available via JSON-RPC\n\n\n\n\n\n\n2023-06-14\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Plus\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-13\n\n\nDavid Gasquez\n\n\n\n\n\n\nNo matching items"
+    "text": "Explorations\n\n\n\n\n  \n\n\n\n\nExploring State Filecoin Deals\n\n\n\n\n\n\n\n\n\n\n\n\n2023-07-25\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Chain Data via JSON-RPC\n\n\n\n\n\nSmall exploration around the Filecoin chain data available via JSON-RPC\n\n\n\n\n\n\n2023-06-14\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Plus\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-13\n\n\nDavid Gasquez\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "notebooks/2023-06-14-Filecoin JSON-RPC.html",
