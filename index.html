@@ -54,7 +54,7 @@ ul.task-list li input[type="checkbox"] {
 <script>
 
   window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-reports .list');
+    const listingTargetEl = window.document.querySelector('#listing-dashboards .list');
     if (!listingTargetEl) {
       // No listing discovered, do not attach.
       return; 
@@ -67,7 +67,7 @@ ul.task-list li input[type="checkbox"] {
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-reports'] = new List('listing-reports', options);
+    window['quarto-listings']['listing-dashboards'] = new List('listing-dashboards', options);
 
     if (window['quarto-listing-loaded']) {
       window['quarto-listing-loaded']();
@@ -82,7 +82,7 @@ ul.task-list li input[type="checkbox"] {
   
 
   window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-notebooks .list');
+    const listingTargetEl = window.document.querySelector('#listing-reports .list');
     if (!listingTargetEl) {
       // No listing discovered, do not attach.
       return; 
@@ -95,7 +95,7 @@ ul.task-list li input[type="checkbox"] {
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-notebooks'] = new List('listing-notebooks', options);
+    window['quarto-listings']['listing-reports'] = new List('listing-reports', options);
 
     if (window['quarto-listing-loaded']) {
       window['quarto-listing-loaded']();
@@ -147,10 +147,10 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="dashboards" class="level2">
 <h2 class="anchored" data-anchor-id="dashboards">Dashboards</h2>
-<div id="listing-reports" class="quarto-listing quarto-listing-container-grid">
+<div id="listing-dashboards" class="quarto-listing quarto-listing-container-grid">
 <div class="list grid quarto-listing-cols-3">
 <div class="g-col-1" data-index="0" data-listing-file-modified-sort="1690270604570" data-listing-reading-time-sort="1">
-<a href="./reports/deals.html" class="quarto-grid-link">
+<a href="./dashboards/deals.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <p class="card-img-top">
 <img src="https://thenounproject.com/api/private/icons/4733049/edit/?backgroundShape=SQUARE&amp;backgroundShapeColor=%23000000&amp;backgroundShapeOpacity=0&amp;exportSize=752&amp;flipX=false&amp;flipY=false&amp;foregroundColor=%23000000&amp;foregroundOpacity=1&amp;imageFormat=png&amp;rotation=0" class="thumbnail-image card-img" style="height: 150px;">
@@ -171,8 +171,8 @@ Metrics for Filecoin Deals.
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="1" data-listing-file-modified-sort="1690271800675" data-listing-reading-time-sort="1">
-<a href="./reports/storage_providers.html" class="quarto-grid-link">
+<div class="g-col-1" data-index="1" data-listing-file-modified-sort="1690449402125" data-listing-reading-time-sort="1">
+<a href="./dashboards/storage_providers.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <p class="card-img-top">
 <img src="https://thenounproject.com/api/private/icons/5671984/edit/?backgroundShape=SQUARE&amp;backgroundShapeColor=%23000000&amp;backgroundShapeOpacity=0&amp;exportSize=752&amp;flipX=false&amp;flipY=false&amp;foregroundColor=%23000000&amp;foregroundOpacity=1&amp;imageFormat=png&amp;rotation=0" class="thumbnail-image card-img" style="height: 150px;">
@@ -199,16 +199,16 @@ No matching items
 </div>
 </div>
 </section>
-<section id="explorations" class="level2">
-<h2 class="anchored" data-anchor-id="explorations">Explorations</h2>
-<div id="listing-notebooks" class="quarto-listing quarto-listing-container-default">
+<section id="reports" class="level2">
+<h2 class="anchored" data-anchor-id="reports">Reports</h2>
+<div id="listing-reports" class="quarto-listing quarto-listing-container-default">
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-listing-date-sort="1690243200000" data-listing-file-modified-sort="1687361442392" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
+<div class="quarto-post image-right" data-index="0" data-listing-date-sort="1690416000000" data-listing-file-modified-sort="1687361442392" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
 <div class="thumbnail">
-<p><a href="./notebooks/2023-06-21-Exploring-Filecoin-Deals.html"> <p class="card-img-top"><img src="notebooks/2023-06-21-Exploring-Filecoin-Deals_files/figure-html/cell-11-output-1.png" style="height: 120px;"  class="thumbnail-image card-img"/></p> </a></p>
+<p><a href="./reports/2023-06-21-Exploring-Filecoin-Deals.html"> <p class="card-img-top"><img src="reports/2023-06-21-Exploring-Filecoin-Deals_files/figure-html/cell-11-output-1.png" style="height: 120px;"  class="thumbnail-image card-img"/></p> </a></p>
 </div>
 <div class="body">
-<a href="./notebooks/2023-06-21-Exploring-Filecoin-Deals.html">
+<a href="./reports/2023-06-21-Exploring-Filecoin-Deals.html">
 <h3 class="no-anchor listing-title">
 Exploring State Filecoin Deals
 </h3>
@@ -221,9 +221,9 @@ Storage deals are core to Filecoin. They are the main mechanism by which clients
 </a>
 </div>
 <div class="metadata">
-<a href="./notebooks/2023-06-21-Exploring-Filecoin-Deals.html">
+<a href="./reports/2023-06-21-Exploring-Filecoin-Deals.html">
 <div class="listing-date">
-2023-07-25
+2023-07-27
 </div>
 <div class="listing-author">
 David Gasquez
@@ -233,10 +233,10 @@ David Gasquez
 </div>
 <div class="quarto-post image-right" data-index="1" data-listing-date-sort="1686700800000" data-listing-file-modified-sort="1688635354013" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
 <div class="thumbnail">
-<p><a href="./notebooks/2023-06-14-Filecoin JSON-RPC.html"> <img src="https://thenounproject.com/api/private/icons/4847530/edit/?backgroundShape=SQUARE&amp;backgroundShapeColor=%23000000&amp;backgroundShapeOpacity=0&amp;exportSize=752&amp;flipX=false&amp;flipY=false&amp;foregroundColor=%23000000&amp;foregroundOpacity=1&amp;imageFormat=png&amp;rotation=0" class="thumbnail-image" style="height: 120px;"> </a></p>
+<p><a href="./reports/2023-06-14-Filecoin JSON-RPC.html"> <img src="https://thenounproject.com/api/private/icons/4847530/edit/?backgroundShape=SQUARE&amp;backgroundShapeColor=%23000000&amp;backgroundShapeOpacity=0&amp;exportSize=752&amp;flipX=false&amp;flipY=false&amp;foregroundColor=%23000000&amp;foregroundOpacity=1&amp;imageFormat=png&amp;rotation=0" class="thumbnail-image" style="height: 120px;"> </a></p>
 </div>
 <div class="body">
-<a href="./notebooks/2023-06-14-Filecoin JSON-RPC.html">
+<a href="./reports/2023-06-14-Filecoin JSON-RPC.html">
 <h3 class="no-anchor listing-title">
 Filecoin Chain Data via JSON-RPC
 </h3>
@@ -249,7 +249,7 @@ Filecoin Chain Data via JSON-RPC
 </a>
 </div>
 <div class="metadata">
-<a href="./notebooks/2023-06-14-Filecoin JSON-RPC.html">
+<a href="./reports/2023-06-14-Filecoin JSON-RPC.html">
 <div class="listing-date">
 2023-06-14
 </div>
@@ -259,12 +259,12 @@ David Gasquez
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="2" data-listing-date-sort="1686614400000" data-listing-file-modified-sort="1690271382710" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
+<div class="quarto-post image-right" data-index="2" data-listing-date-sort="1686614400000" data-listing-file-modified-sort="1690466288276" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
 <div class="thumbnail">
-<p><a href="./notebooks/2023-06-13-Filecoin-Plus.html"> <p class="card-img-top"><img src="notebooks/2023-06-13-Filecoin-Plus_files/figure-html/cell-7-output-2.png" style="height: 120px;"  class="thumbnail-image card-img"/></p> </a></p>
+<p><a href="./reports/2023-06-13-Filecoin-Plus.html"> <p class="card-img-top"><img src="reports/2023-06-13-Filecoin-Plus_files/figure-html/cell-7-output-2.png" style="height: 120px;"  class="thumbnail-image card-img"/></p> </a></p>
 </div>
 <div class="body">
-<a href="./notebooks/2023-06-13-Filecoin-Plus.html">
+<a href="./reports/2023-06-13-Filecoin-Plus.html">
 <h3 class="no-anchor listing-title">
 Filecoin Plus
 </h3>
@@ -277,7 +277,7 @@ Filecoin Plus is based on a set of guiding principles, detailed…
 </a>
 </div>
 <div class="metadata">
-<a href="./notebooks/2023-06-13-Filecoin-Plus.html">
+<a href="./reports/2023-06-13-Filecoin-Plus.html">
 <div class="listing-date">
 2023-06-13
 </div>
