@@ -1,6 +1,6 @@
 # Filecoin Data Analytics Platform
 
-A local first data hub for the Filecoin Network Analytics needs built on top of the open data stack.  Final reports are rendered and published at the [Filecoin Analytics](https://davidgasquez.github.io/filecoin-analytics/) static website.
+A local first data hub for the Filecoin Network Analytics needs built on top of the open data stack. The repository contains code and artifacts to generate the dashboards and analysis published at the [Filecoin Analytics](https://davidgasquez.github.io/filecoin-analytics/) static website.
 
 ## 💻 Getting Started
 
