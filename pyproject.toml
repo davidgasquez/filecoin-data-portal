@@ -22,6 +22,7 @@ dependencies = [
     "prophet",
     "regex",
     "tqdm",
+    "toml",
     "vegafusion[embed]",
     "zstandard",
 ]

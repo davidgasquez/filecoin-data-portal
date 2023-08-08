@@ -1,6 +1,7 @@
-import requests
 import os
+
 import pandas as pd
+import requests
 
 url = "https://api.datacapstats.io/"
 data_dir = os.getenv("DATA_DIR", "data")

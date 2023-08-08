@@ -6,9 +6,10 @@ select
     min(sector_start_at) as first_deal_at,
     max(sector_start_at) as last_deal_at,
     min(spl.country) as country
-from {{ ref('filecoin_state_market_deals') }} as smd
+from {{ ref("filecoin_state_market_deals") }} as smd
 left join
-    {{ ref('filecoin_storage_providers_locations') }} as spl on smd.provider_id = spl.provider_id
+    {{ ref("filecoin_storage_providers_locations") }} as spl
+    on smd.provider_id = spl.provider_id
 where sector_start_epoch != -1 and slash_epoch = -1
 group by 1
 order by 2 desc
