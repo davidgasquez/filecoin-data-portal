@@ -1,1 +1,1 @@
-Sitemap: https://davidgasquez.github.io/filecoin-analytics/sitemap.xml
+Sitemap: https://davidgasquez.github.io/filecoin-data-portal/sitemap.xml

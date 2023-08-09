@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/data/sandbox.html</loc>
-    <lastmod>2023-08-09T15:08:55.830Z</lastmod>
+    <loc>https://davidgasquez.github.io/filecoin-data-portal/data/sandbox.html</loc>
+    <lastmod>2023-08-09T15:14:28.028Z</lastmod>
   </url>
   <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/docs/data-sources.html</loc>
-    <lastmod>2023-08-09T15:08:55.370Z</lastmod>
+    <loc>https://davidgasquez.github.io/filecoin-data-portal/docs/data-sources.html</loc>
+    <lastmod>2023-08-09T15:14:27.575Z</lastmod>
   </url>
   <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/reports/2023-06-14-Filecoin JSON-RPC.html</loc>
-    <lastmod>2023-08-09T15:08:54.840Z</lastmod>
+    <loc>https://davidgasquez.github.io/filecoin-data-portal/reports/2023-06-14-Filecoin JSON-RPC.html</loc>
+    <lastmod>2023-08-09T15:14:27.028Z</lastmod>
   </url>
   <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/dashboards/deals.html</loc>
-    <lastmod>2023-08-09T15:08:51.593Z</lastmod>
+    <loc>https://davidgasquez.github.io/filecoin-data-portal/dashboards/deals.html</loc>
+    <lastmod>2023-08-09T15:14:23.855Z</lastmod>
   </url>
   <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/index.html</loc>
-    <lastmod>2023-08-09T15:08:49.857Z</lastmod>
+    <loc>https://davidgasquez.github.io/filecoin-data-portal/index.html</loc>
+    <lastmod>2023-08-09T15:14:22.481Z</lastmod>
   </url>
   <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/dashboards/storage_providers.html</loc>
-    <lastmod>2023-08-09T15:08:52.850Z</lastmod>
+    <loc>https://davidgasquez.github.io/filecoin-data-portal/dashboards/storage_providers.html</loc>
+    <lastmod>2023-08-09T15:14:25.048Z</lastmod>
   </url>
   <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/reports/2023-06-13-Filecoin-Plus.html</loc>
-    <lastmod>2023-08-09T15:08:54.263Z</lastmod>
+    <loc>https://davidgasquez.github.io/filecoin-data-portal/reports/2023-06-13-Filecoin-Plus.html</loc>
+    <lastmod>2023-08-09T15:14:26.425Z</lastmod>
   </url>
   <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/reports/2023-06-21-Exploring-Filecoin-Deals.html</loc>
-    <lastmod>2023-08-09T15:08:55.147Z</lastmod>
+    <loc>https://davidgasquez.github.io/filecoin-data-portal/reports/2023-06-21-Exploring-Filecoin-Deals.html</loc>
+    <lastmod>2023-08-09T15:14:27.345Z</lastmod>
   </url>
   <url>
-    <loc>https://davidgasquez.github.io/filecoin-analytics/data/export.html</loc>
-    <lastmod>2023-08-09T15:08:55.563Z</lastmod>
+    <loc>https://davidgasquez.github.io/filecoin-data-portal/data/export.html</loc>
+    <lastmod>2023-08-09T15:14:27.755Z</lastmod>
   </url>
 </urlset>
