@@ -1,5 +1,5 @@
 {
-	"name": "Filecoin Analytics",
+	"name": "Filecoin Data Portal",
 	"build": {
 		"dockerfile": "../Dockerfile",
 		"context": ".."
