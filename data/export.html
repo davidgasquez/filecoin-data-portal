@@ -70,10 +70,21 @@ ul.task-list li input[type="checkbox"] {
     <span class="navbar-title">Filecoin Data Portal</span>
     </a>
   </div>
-        <div class="quarto-navbar-tools ms-auto">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../docs/data-sources.html" rel="" target="">
+ <span class="menu-text">Docs</span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools ms-auto">
     <a href="https://twitter.com/davidgasquez/" rel="" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-twitter"></i></a>
     <a href="https://github.com/davidgasquez/filecoin-data-portal" rel="" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
 </div>
+          </div> <!-- /navcollapse -->
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -89,18 +100,40 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<div class="cell" data-execution_count="1">
-<div class="cell-output cell-output-display">
-<span style="None">Found pyproject.toml from '/workspaces/filecoin-analytics'</span>
+<div class="cell" data-execution_count="4">
+<div class="cell-output cell-output-stdout">
+<pre><code>The sql extension is already loaded. To reload it, use:
+  %reload_ext sql</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="2">
+<div class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <span style="None">Running query in 'duckdb'</span>
 </div>
-<div class="cell-output cell-output-display" data-execution_count="2">
+<div class="cell-output cell-output-display" data-execution_count="3">
 <table data-quarto-postprocess="true">
 <tbody>
+</tbody>
+</table>
+
+<span style="font-style:italic;font-size:11px"><code>ResultSet</code> : to convert to pandas, call <a href="https://jupysql.ploomber.io/en/latest/integrations/pandas.html"><code>.DataFrame()</code></a> or to polars, call <a href="https://jupysql.ploomber.io/en/latest/integrations/polars.html"><code>.PolarsDataFrame()</code></a></span><br>
+</div>
+</div>
+<div class="cell" data-execution_count="6">
+<div class="cell-output cell-output-display">
+<span style="None">Running query in 'duckdb'</span>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>7609</td>
+</tr>
 </tbody>
 </table>
 

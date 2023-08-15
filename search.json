@@ -53,35 +53,35 @@
     "href": "dashboards/deals.html",
     "title": "Deals",
     "section": "",
-    "text": "Data Onboarding Rate\n\n\n\n\n\n\n\n\n\n\nCumulative Data Onboarded\n\n\n\n\n\n\n\n\n\n\nOnboarding Growth Rate (7 day rolling average)"
+    "text": "Note\n\n\n\nThis dashboard is using data from Glif nodes StateMarketDeals periodic dump on S3 (direct link).\n\n\n\n\n\n\nData Onboarding Rate\n\n\n\n\n\n\n\n\n\n\nCumulative Data Onboarded\n\n\n\n\n\n\n\n\n\n\n\n\nOnboarding Growth Rate (7 day rolling average)"
   },
   {
     "objectID": "index.html",
     "href": "index.html",
     "title": "Filecoin Data Portal",
     "section": "",
-    "text": "Metrics for Filecoin Deals.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nMetrics for Filecoin Storage Providers.\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items"
+    "text": "Explore Filecoin Deals related metrics and statistics\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nMetrics for Filecoin Storage Providers.\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "index.html#dashboards",
     "href": "index.html#dashboards",
     "title": "Filecoin Data Portal",
     "section": "",
-    "text": "Metrics for Filecoin Deals.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nMetrics for Filecoin Storage Providers.\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items"
+    "text": "Explore Filecoin Deals related metrics and statistics\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nMetrics for Filecoin Storage Providers.\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "index.html#reports",
     "href": "index.html#reports",
     "title": "Filecoin Data Portal",
     "section": "Reports",
-    "text": "Reports\n\n\n\n\n  \n\n\n\n\nExploring State Filecoin Deals\n\n\n\n\n\n\n\n\n\n\n\n\n2023-08-10\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Chain Data via JSON-RPC\n\n\n\n\n\nSmall exploration around the Filecoin chain data available via JSON-RPC\n\n\n\n\n\n\n2023-06-14\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Plus\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-13\n\n\nDavid Gasquez\n\n\n\n\n\n\nNo matching items"
+    "text": "Reports\n\n\n\n\n  \n\n\n\n\nExploring State Filecoin Deals\n\n\n\n\n\n\n\n\n\n\n\n\n2023-08-15\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Chain Data via JSON-RPC\n\n\n\n\n\nSmall exploration around the Filecoin chain data available via JSON-RPC\n\n\n\n\n\n\n2023-06-14\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Plus\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-13\n\n\nDavid Gasquez\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "dashboards/storage_providers.html",
     "href": "dashboards/storage_providers.html",
     "title": "Storage Providers",
     "section": "",
-    "text": "Updated on 2023-08-08.\n\n\n\nActive Storage Providers\n3483\n\n\nTotal Raw Power\n11476.47 PiBs\n\n\nTotal Quality Adjusted PiB Power\n23721.00 PiBs\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power\n\n\n\n\n\n\n\n\n\n\nStorage Provider Quality Adjusted PiB Power\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power Growth Rate (7 Days Rolling Mean)\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time Growth Rate (7 Days Rolling Mean)"
+    "text": "Updated on 2023-08-13.\n\n\n\nActive Storage Providers\n3485\n\n\nTotal Raw Power\n11364.37 PiBs\n\n\nTotal Quality Adjusted PiB Power\n23840.51 PiBs\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power\n\n\n\n\n\n\n\n\n\n\nStorage Provider Quality Adjusted PiB Power\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power Growth Rate (7 Days Rolling Mean)\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time Growth Rate (7 Days Rolling Mean)"
   },
   {
     "objectID": "reports/2023-06-13-Filecoin-Plus.html",
@@ -137,6 +137,6 @@
     "href": "data/export.html",
     "title": "Filecoin Data Portal",
     "section": "",
-    "text": "Found pyproject.toml from '/workspaces/filecoin-analytics'\n\n\n\n\nRunning query in 'duckdb'\n\n\n\n\n\n\n\nResultSet : to convert to pandas, call .DataFrame() or to polars, call .PolarsDataFrame()"
+    "text": "The sql extension is already loaded. To reload it, use:\n  %reload_ext sql\n\n\n\n\nRunning query in 'duckdb'\n\n\n\n\n\n\n\nResultSet : to convert to pandas, call .DataFrame() or to polars, call .PolarsDataFrame()\n\n\n\n\nRunning query in 'duckdb'\n\n\n\n\n\nCount\n\n\n\n\n7609\n\n\n\n\nResultSet : to convert to pandas, call .DataFrame() or to polars, call .PolarsDataFrame()"
   }
 ]
