@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/python:3.11
+FROM mcr.microsoft.com/devcontainers/python:3
 
 # Install Quarto
 RUN curl -sL $(curl https://quarto.org/docs/download/_download.json | grep -oP "(?<=\"download_url\":\s\")https.*${ARCH}\.deb") --output /tmp/quarto.deb \
@@ -12,5 +12,5 @@ ENV DATABASE_URL "duckdb:///${DATA_DIR}/dbt.duckdb"
 
 # Install Python Dependencie
 WORKDIR /workspaces/filecoin-data-portal
-COPY . /workspaces/filecoin-data-portal
+COPY . .
 RUN pip install -e ".[dev]"

@@ -19,7 +19,6 @@ dependencies = [
     "pyarrow",
     "pymongo",
     "psycopg2",
-    "prophet",
     "regex",
     "tqdm",
     "toml",
@@ -31,7 +30,7 @@ readme = "README.md"
 license = { text = "MIT" }
 
 [project.optional-dependencies]
-dev = ["duckdb-engine", "jupyter-cache", "shandy-sqlfmt[jinjafmt]"]
+dev = ["duckdb-engine", "jupyter-cache"]
 
 [build-system]
 requires = ["setuptools"]

@@ -20,8 +20,7 @@
 					"*.sql": "jinja-sql"
 				},
 				"[jinja-sql]": {
-					"editor.defaultFormatter": "innoverio.vscode-dbt-power-user",
-					"editor.formatOnSave": true
+					"editor.formatOnSave": false
 				},
 				"[python]": {
 					"editor.codeActionsOnSave": {

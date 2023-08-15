@@ -22,9 +22,7 @@ Can be derived from the [deals](#deals) table. Clients can be augmented with the
 
 Can be derived from the [deals](#deals) table. Storage Providers cab ve augmented with the following sources:
 
-- Organization names can be derived by linking `miner_id` (Storage Providers) with and Storage Provider Name/Organization in Hubspot. It is represented in the association between the Custom Object _Miner ID_ field _Miner ID_ and the Company Object Associated Company's field _Company Name_.
-- Location data from multiple services run by PL or by using the [IP2Location](https://lite.ip2location.com/database/ip-country-region-city) database or similar.
-- Reputation datafrom [filrep.io](https://filrep.io/) or internal sources.
+- Reputation and location data from [filrep.io](https://filrep.io/) or internal sources.
 - More Storage Providers details using the different [provider.quest](https://provider.quest/) endpoints.
 
 ## Others

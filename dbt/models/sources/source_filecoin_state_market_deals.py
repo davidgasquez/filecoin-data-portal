@@ -6,8 +6,6 @@ import zstandard
 
 
 def model(dbt, session):
-    dbt.config(materialized="external")
-
     urllib.request.urlretrieve(
         "https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst",
         "/tmp/StateMarketDeals.json.zst",

@@ -1,11 +1,8 @@
-with
-    json_lines as (
-        select unnest(providerlocations) as l
-        from
-            read_json_auto(
-                'https://geoip.feeds.provider.quest/synthetic-locations-latest.json'
-            )
-    )
+with provider_locations_json as (
+    select
+        unnest(providerlocations) as l
+    from read_json_auto('https://geoip.feeds.provider.quest/synthetic-locations-latest.json')
+)
 
 select
     l ->> '$.provider' as provider_id,
@@ -14,4 +11,4 @@ select
     l ->> '$.region' as region,
     l ->> '$.long' as longitude,
     l ->> '$.lat' as latitude
-from json_lines
+from provider_locations_json
