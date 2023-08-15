@@ -17,6 +17,9 @@ website:
     background: dark
     search: false
     pinned: true
+    left:
+      - text: "Docs"
+        href: /docs/data-sources.html
     tools:
       - icon: twitter
         href: https://twitter.com/davidgasquez/
