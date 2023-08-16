@@ -20,7 +20,12 @@ In the next section, we'll details the features and frameworks used in this repo
 
 ## 🛠️ Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. There are multiple interesting ways to contribute to this project:
+
+- Add new data sources!
+- Improve [dbt project](dbt/) models.
+- Write a one off [report](reports/).
+- Build a [dashboard](dashboards/).
 
 ## 📝 License
 
