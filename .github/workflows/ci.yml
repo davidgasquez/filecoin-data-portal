@@ -9,13 +9,20 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Data directory
+        run: mkdir -p data
+
       - name: Build Docker
         run: docker build -t davidgasquez/fdp:latest . --build-arg SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }}
+
       - name: Run dbt
         run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ davidgasquez/fdp:latest make run
+
       - name: Render Quarto
         run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ davidgasquez/fdp:latest make publish
 
