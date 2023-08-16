@@ -13,11 +13,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Build Docker
-        run: docker build -t davidgasquez/fdp:latest . --build-arg SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} --build-arg STATEMARKETDEALS_POSTGRES_URI=${{ secrets.STATEMARKETDEALS_POSTGRES_URI }}
+        run: docker build -t davidgasquez/fdp:latest . --build-arg SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }}
       - name: Run dbt
-        run: docker run -t -v $PWD/:/workspaces/filecoin-data-portal/ davidgasquez/fdp:latest make run
+        run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ davidgasquez/fdp:latest make run
       - name: Render Quarto
-        run: docker run -t -v $PWD/:/workspaces/filecoin-data-portal/ davidgasquez/fdp:latest make publish
+        run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ davidgasquez/fdp:latest make publish
 
 
 
