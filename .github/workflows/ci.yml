@@ -46,7 +46,6 @@ jobs:
 #     image: davidgasquez/fdp:latest
 #     env:
 #         SPACESCOPE_TOKEN: ${{ secrets.SPACESCOPE_TOKEN }}
-#         STATEMARKETDEALS_POSTGRES_URI: ${{ secrets.STATEMARKETDEALS_POSTGRES_URI }}
 # steps:
 #     - name: Checkout
 #     uses: actions/checkout@v2
