@@ -51,6 +51,4 @@ def historical_power_data(miner_id=None, use_cache=True):
             [df_power_data, pd.DataFrame(power_data)], ignore_index=True
         )
 
-    df_power_data.to_csv("/tmp/storage_provider_power.csv", index=False)
-
     return df_power_data

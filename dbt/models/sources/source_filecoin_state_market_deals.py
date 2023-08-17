@@ -1,4 +1,5 @@
 import json
+import os
 import urllib
 
 import ijson
@@ -28,5 +29,8 @@ def model(dbt, session):
         State.*
     from read_ndjson_auto("/tmp/ParsedStateMarketDeals.json")
     """
+
+    # Remove the temporary files
+    os.remove("/tmp/StateMarketDeals.json.zst")
 
     return session.query(query)
