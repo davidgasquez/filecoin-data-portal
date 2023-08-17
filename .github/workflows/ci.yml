@@ -52,7 +52,7 @@ jobs:
         run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ davidgasquez/fdp:latest make run
 
       - name: Render Quarto
-        run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ davidgasquez/fdp:latest make publish
+        run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ davidgasquez/fdp:latest quarto render
 
       - name: Publish Docs
         uses: JamesIves/github-pages-deploy-action@4.0.0
