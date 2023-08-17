@@ -54,7 +54,11 @@ jobs:
       - name: Render Quarto
         run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ davidgasquez/fdp:latest make publish
 
-
+      - name: Publish Docs
+        uses: JamesIves/github-pages-deploy-action@4.0.0
+        with:
+          branch: gh-pages
+          folder: .quarto/_site
 
 # name: CI
 

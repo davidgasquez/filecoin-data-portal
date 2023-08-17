@@ -15,3 +15,6 @@ publish:
 clean:
 	@dbt clean --project-dir dbt;
 	@rm -rf output .quarto target dbt_packages logs
+
+render:
+	@quarto render
