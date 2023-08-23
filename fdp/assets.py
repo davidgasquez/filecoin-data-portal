@@ -57,22 +57,22 @@ def raw_storage_providers_location_jimpick() -> pd.DataFrame:
     return pd.json_normalize(df["providerLocations"])
 
 
-@asset
-def raw_filecoin_state_market_deals() -> None:
-    urllib.request.urlretrieve(
-        "https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst",
-        "/tmp/StateMarketDeals.json.zst",
-    )
+# @asset
+# def raw_filecoin_state_market_deals() -> None:
+#     urllib.request.urlretrieve(
+#         "https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst",
+#         "/tmp/StateMarketDeals.json.zst",
+#     )
 
-    dctx = zstandard.ZstdDecompressor()
-    input_path = "/tmp/StateMarketDeals.json.zst"
-    output_path = "/tmp/ParsedStateMarketDeals.json"
+#     dctx = zstandard.ZstdDecompressor()
+#     input_path = "/tmp/StateMarketDeals.json.zst"
+#     output_path = "/tmp/ParsedStateMarketDeals.json"
 
-    with open(input_path, "rb") as ifh, open(output_path, "wb") as ofh:
-        reader = dctx.stream_reader(ifh)
-        for k, v in ijson.kvitems(reader, ""):
-            v["DealID"] = k
-            ofh.write(json.dumps(v).encode("utf-8") + b"\n")
+#     with open(input_path, "rb") as ifh, open(output_path, "wb") as ofh:
+#         reader = dctx.stream_reader(ifh)
+#         for k, v in ijson.kvitems(reader, ""):
+#             v["DealID"] = k
+#             ofh.write(json.dumps(v).encode("utf-8") + b"\n")
 
-    # Remove the temporary files
-    os.remove("/tmp/StateMarketDeals.json.zst")
+#     # Remove the temporary files
+#     os.remove("/tmp/StateMarketDeals.json.zst")
