@@ -1,4 +1,4 @@
-name: "fildata"
+name: "fdp"
 version: "1.0.0"
 config-version: 2
 
@@ -11,5 +11,5 @@ clean-targets:
   - "dbt_packages"
 
 models:
-  fildata:
+  fdp:
     +materialized: table
