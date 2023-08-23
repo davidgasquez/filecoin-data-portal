@@ -1,3 +1,11 @@
+with base as (
+    select
+        DealID,
+        Proposal.*,
+        State.*
+    from {{ source('raw_assets', 'raw_filecoin_state_market_deals') }}
+)
+
 select
     dealid as deal_id,
     piececid."/" as piece_cid,
@@ -20,4 +28,4 @@ select
     slashepoch as slash_epoch,
     to_timestamp(slashepoch * 30 + 1598306400) as slashed_at,
     verifiedclaim as verified_claim
-from {{ ref("source_filecoin_state_market_deals") }}
+from base

@@ -16,8 +16,6 @@ The easiest way to get started is to use Visuel Studio Code and rely on the Deve
 
 Once in the environment, you can get the data locally with `make run` and start working with it on a notebook, model, or pipeline.
 
-In the next section, we'll details the features and frameworks used in this repository.
-
 ## 🛠️ Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. There are multiple interesting ways to contribute to this project:

@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: raw_assets
+    schema: public
+    tables:
+      - name: raw_storage_provider_daily_power
+        meta:
+          dagster:
+            asset_key: ["raw_storage_provider_daily_power"]
+      - name: raw_filecoin_state_market_deals
+        meta:
+          dagster:
+            asset_key: ["raw_filecoin_state_market_deals"]
+          external_location: 'read_ndjson_auto("/tmp/ParsedStateMarketDeals.json")'

@@ -20,7 +20,7 @@ resources = {
     "spacescope_api": resources.SpacescopeResource(),
     "io_manager": DuckDBPandasIOManager(
         database="/workspaces/filecoin-data-portal/data/dbt.duckdb",
-        schema="main",
+        schema="public",
     ),
 }
 

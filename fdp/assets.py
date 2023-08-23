@@ -5,17 +5,10 @@ import urllib
 
 import ijson
 import pandas as pd
-import requests
 import zstandard
 from dagster import asset
 
 from .resources import SpacescopeResource
-
-
-@asset
-def raw_datacapstats_verified_clients() -> pd.DataFrame:
-    url = "https://api.datacapstats.io/"
-    return pd.read_json(url + "api/getVerifiedClients")
 
 
 @asset
@@ -39,40 +32,26 @@ def raw_storage_provider_daily_power(
 
     return df_power_data
 
-
 @asset
-def raw_storage_providers_filrep() -> pd.DataFrame:
-    url = "https://api.filrep.io/api/v1/miners"
+def raw_filecoin_state_market_deals(context) -> None:
+    urllib.request.urlretrieve(
+        "https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst",
+        "/tmp/StateMarketDeals.json.zst",
+    )
 
-    storage_providers = pd.DataFrame(requests.get(url).json()["miners"])
-    storage_providers = storage_providers.astype("str")
+    context.log.info("Downloaded StateMarketDeals.json.zst")
 
-    return storage_providers.drop(columns=["id"])
+    dctx = zstandard.ZstdDecompressor()
+    input_path = "/tmp/StateMarketDeals.json.zst"
+    output_path = "/tmp/ParsedStateMarketDeals.json"
 
+    with open(input_path, "rb") as ifh, open(output_path, "wb") as ofh:
+        reader = dctx.stream_reader(ifh)
+        for k, v in ijson.kvitems(reader, ""):
+            v["DealID"] = k
+            ofh.write(json.dumps(v).encode("utf-8") + b"\n")
 
-@asset
-def raw_storage_providers_location_jimpick() -> pd.DataFrame:
-    url = "https://geoip.feeds.provider.quest/synthetic-locations-latest.json"
-    df = pd.read_json(url)
-    return pd.json_normalize(df["providerLocations"])
+    context.log.info("Decompressed StateMarketDeals.json.zst")
 
-
-# @asset
-# def raw_filecoin_state_market_deals() -> None:
-#     urllib.request.urlretrieve(
-#         "https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst",
-#         "/tmp/StateMarketDeals.json.zst",
-#     )
-
-#     dctx = zstandard.ZstdDecompressor()
-#     input_path = "/tmp/StateMarketDeals.json.zst"
-#     output_path = "/tmp/ParsedStateMarketDeals.json"
-
-#     with open(input_path, "rb") as ifh, open(output_path, "wb") as ofh:
-#         reader = dctx.stream_reader(ifh)
-#         for k, v in ijson.kvitems(reader, ""):
-#             v["DealID"] = k
-#             ofh.write(json.dumps(v).encode("utf-8") + b"\n")
-
-#     # Remove the temporary files
-#     os.remove("/tmp/StateMarketDeals.json.zst")
+    # Remove the temporary files
+    os.remove("/tmp/StateMarketDeals.json.zst")
