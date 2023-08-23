@@ -1,10 +1,9 @@
 .DEFAULT_GOAL := run
 
 run:
-	@dbt run --project-dir dbt;
-	# @dagster asset materialize --select \* -m fdp;
+	@dagster asset materialize --select \* -m fdp;
 
-dagster:
+dev:
 	@dagster dev -m fdp;
 
 preview:
