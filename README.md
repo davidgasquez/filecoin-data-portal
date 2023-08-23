@@ -8,6 +8,8 @@ The repository contains code and artifacts to help process Filecoin data from on
 - Collaborate on [core Filecoin models](https://github.com/davidgasquez/filecoin-data-portal/blob/main/dbt/models/filecoin_state_market_deals.sql).
 - Share [Filecoin related explorations with the world](https://davidgasquez.github.io/filecoin-data-portal/reports/2023-06-14-Filecoin%20JSON-RPC.html)!
 
+![DAG](https://user-images.githubusercontent.com/1682202/262713531-74827dbe-b944-49c5-ae20-c6eb0e97daad.png)
+
 ## 💻 Getting Started
 
 The easiest way to get started is to use Visuel Studio Code and rely on the Development Container configuration provided in this repository. Alternatively, you can install the dependencies locally or reuse the Dockerfile provided.
