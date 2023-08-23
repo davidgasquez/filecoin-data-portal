@@ -32,11 +32,9 @@
 				"notebook.formatOnSave.enabled": true
 			},
 			"extensions": [
-				"bastienboutonnet.vscode-dbt",
 				"charliermarsh.ruff",
-				"ms-python.python",
-				"EditorConfig.EditorConfig",
 				"innoverio.vscode-dbt-power-user",
+				"ms-python.black-formatter",
 				"ms-python.isort",
 				"ms-python.python",
 				"ms-python.vscode-pylance",
@@ -44,7 +42,6 @@
 				"ms-toolsai.jupyter",
 				"quarto.quarto",
 				"redhat.vscode-yaml",
-				"samuelcolvin.jinjahtml",
 				"tamasfe.even-better-toml",
 				"VisualStudioExptTeam.vscodeintellicode"
 			]

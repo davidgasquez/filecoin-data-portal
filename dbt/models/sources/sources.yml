@@ -1,0 +1,22 @@
+version: 2
+
+sources:
+  - name: raw_assets
+    schema: public
+    tables:
+      - name: raw_storage_provider_daily_power
+        meta:
+          dagster:
+            asset_key: ["raw_storage_provider_daily_power"]
+      - name: raw_storage_providers_location_jimpick
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_location_jimpick"]
+      - name: raw_storage_providers_filrep
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_filrep"]
+      - name: raw_datacapstats_verified_clients
+        meta:
+          dagster:
+            asset_key: ["raw_datacapstats_verified_clients"]

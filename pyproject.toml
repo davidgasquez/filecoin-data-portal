@@ -1,10 +1,15 @@
 [project]
-name = "fildata"
+name = "fdp"
 version = "0.1.0"
 dependencies = [
     "altair",
     "dbt-core",
     "dbt-duckdb",
+    "dagster",
+    "dagster-webserver",
+    "dagster-dbt",
+    "dagster-duckdb",
+    "dagster-duckdb-pandas",
     "duckdb",
     "ijson",
     "ipykernel",
@@ -37,4 +42,4 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["fildata"]
+packages = ["fdp"]
