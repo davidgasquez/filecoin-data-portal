@@ -32,6 +32,7 @@ def raw_storage_provider_daily_power(
 
     return df_power_data
 
+
 @asset
 def raw_filecoin_state_market_deals(context) -> None:
     urllib.request.urlretrieve(

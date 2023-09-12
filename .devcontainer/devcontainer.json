@@ -9,7 +9,6 @@
 		"${localWorkspaceFolder}/.env"
 	],
 	"features": {
-		"ghcr.io/stuartleeks/dev-container-features/shell-history:latest": {},
 		"ghcr.io/rocker-org/devcontainer-features/quarto-cli:latest": {}
 	},
 	"customizations": {
@@ -27,23 +26,24 @@
 						"editor.formatOnSave": true,
 						"source.fixAll": true,
 						"source.organizeImports": true
-					}
+					},
+					"editor.defaultFormatter": "ms-python.black-formatter"
 				},
 				"notebook.formatOnSave.enabled": true
 			},
 			"extensions": [
-				"charliermarsh.ruff",
-				"innoverio.vscode-dbt-power-user",
-				"ms-python.black-formatter",
-				"ms-python.isort",
+				"VisualStudioExptTeam.vscodeintellicode",
 				"ms-python.python",
+				"innoverio.vscode-dbt-power-user",
+				"ms-python.isort",
 				"ms-python.vscode-pylance",
 				"ms-toolsai.datawrangler",
 				"ms-toolsai.jupyter",
 				"quarto.quarto",
 				"redhat.vscode-yaml",
+				"charliermarsh.ruff",
 				"tamasfe.even-better-toml",
-				"VisualStudioExptTeam.vscodeintellicode"
+				"ms-python.black-formatter"
 			]
 		}
 	}
