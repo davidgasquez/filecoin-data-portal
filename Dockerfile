@@ -5,12 +5,17 @@ RUN curl -sL $(curl https://quarto.org/docs/download/_download.json | grep -oP "
     && dpkg -i /tmp/quarto.deb \
     && rm /tmp/quarto.deb
 
-# Setup environment
-ENV DATA_DIR /workspaces/filecoin-data-portal/data
-ENV DBT_PROFILES_DIR /workspaces/filecoin-data-portal/dbt
-ENV DATABASE_URL "duckdb:///${DATA_DIR}/dbt.duckdb"
+# Working Directory
+ENV WORKDIR "/workspaces/filecoin-data-portal"
+WORKDIR ${WORKDIR}
 
-# Install Python Dependencie
-WORKDIR /workspaces/filecoin-data-portal
+# Environment Variables
+ENV PROJECT_DIR "${WORKDIR}"
+ENV DATA_DIR "${WORKDIR}/data"
+ENV DBT_PROFILES_DIR "${WORKDIR}/dbt"
+ENV DATABASE_URL "duckdb:///${DATA_DIR}/dbt.duckdb"
+ENV DAGSTER_HOME "/home/vscode"
+
+# Install Python Dependencies
 COPY . .
 RUN pip install -e ".[dev]"

@@ -49,6 +49,10 @@ The easiest way to get started is to use Visuel Studio Code and rely on the Deve
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/davidgasquez/filecoin-data-platform)
 
+You'll need the following secrets in your environment:
+
+- A `SPACESCOPE_TOKEN` to access [Spacescope](https://spacescope.io/) API.
+
 ## 🛠️ Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. There are multiple interesting ways to contribute to this project:

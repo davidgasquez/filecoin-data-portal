@@ -1,7 +1,7 @@
 import datetime
 import json
 import os
-import urllib
+import urllib.request
 
 import ijson
 import pandas as pd
@@ -11,7 +11,9 @@ from dagster import asset
 from .resources import SpacescopeResource
 
 
-@asset
+@asset(
+    compute_kind="API", description="Storage Providers daily power from Spacescope API"
+)
 def raw_storage_provider_daily_power(
     spacescope_api: SpacescopeResource,
 ) -> pd.DataFrame:
@@ -33,7 +35,7 @@ def raw_storage_provider_daily_power(
     return df_power_data
 
 
-@asset
+@asset(compute_kind="python", description="State Market Deals as JSON from S3")
 def raw_filecoin_state_market_deals(context) -> None:
     urllib.request.urlretrieve(
         "https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst",

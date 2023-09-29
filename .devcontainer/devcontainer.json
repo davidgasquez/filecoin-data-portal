@@ -4,10 +4,6 @@
 		"dockerfile": "../Dockerfile",
 		"context": ".."
 	},
-	"runArgs": [
-		"--env-file",
-		"${localWorkspaceFolder}/.env"
-	],
 	"features": {
 		"ghcr.io/rocker-org/devcontainer-features/quarto-cli:latest": {}
 	},
@@ -18,32 +14,30 @@
 				"files.associations": {
 					"*.sql": "jinja-sql"
 				},
-				"[jinja-sql]": {
-					"editor.formatOnSave": false
-				},
 				"[python]": {
+					"editor.defaultFormatter": "charliermarsh.ruff",
 					"editor.codeActionsOnSave": {
-						"editor.formatOnSave": true,
 						"source.fixAll": true,
 						"source.organizeImports": true
-					},
-					"editor.defaultFormatter": "ms-python.black-formatter"
+					}
 				},
-				"notebook.formatOnSave.enabled": true
+				"notebook.formatOnSave.enabled": true,
+				"python.analysis.typeCheckingMode": "basic",
+				"ruff.organizeImports": true,
+				"ruff.enableExperimentalFormatter": true
 			},
 			"extensions": [
-				"VisualStudioExptTeam.vscodeintellicode",
-				"ms-python.python",
+				"charliermarsh.ruff",
 				"innoverio.vscode-dbt-power-user",
 				"ms-python.isort",
+				"ms-python.python",
 				"ms-python.vscode-pylance",
 				"ms-toolsai.datawrangler",
 				"ms-toolsai.jupyter",
 				"quarto.quarto",
 				"redhat.vscode-yaml",
-				"charliermarsh.ruff",
 				"tamasfe.even-better-toml",
-				"ms-python.black-formatter"
+				"VisualStudioExptTeam.vscodeintellicode"
 			]
 		}
 	}

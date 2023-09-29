@@ -7,7 +7,6 @@ default:
       extensions:
         - httpfs
         - parquet
-        - postgres
       settings:
         enable_object_cache: true
         enable_http_metadata_cache: true
