@@ -6,6 +6,10 @@ from requests import Response
 
 
 class SpacescopeResource(ConfigurableResource):
+    """
+    Spacescope API resource.
+    """
+
     token = os.environ.get("SPACESCOPE_TOKEN")
     endpoint = "https://api.spacescope.io/v2/"
 

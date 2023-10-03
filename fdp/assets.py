@@ -5,18 +5,57 @@ import urllib.request
 
 import ijson
 import pandas as pd
+import requests
 import zstandard
 from dagster import asset
 
 from .resources import SpacescopeResource
 
 
-@asset(
-    compute_kind="API", description="Storage Providers daily power from Spacescope API"
-)
+@asset(compute_kind="python")
+def raw_datacapstats_verified_clients() -> pd.DataFrame:
+    """
+    Verified Clients information from Datacapstats API.
+    """
+    url = "https://api.datacapstats.io/api/getVerifiedClients"
+
+    data = pd.read_json(url, typ="series")["data"]
+    df = pd.json_normalize(data)
+    df["allowanceArray"] = df["allowanceArray"]
+
+    return df
+
+
+@asset(compute_kind="python")
+def raw_storage_providers_filrep() -> pd.DataFrame:
+    """
+    Storage Providers information from Filrep API.
+    """
+    url = "https://api.filrep.io/api/v1/miners"
+
+    storage_providers = pd.DataFrame(requests.get(url).json()["miners"])
+    storage_providers = storage_providers.astype(str)
+
+    return storage_providers.drop(columns=["id"])
+
+
+@asset(compute_kind="python")
+def raw_storage_providers_location_jimpick() -> pd.DataFrame:
+    """
+    Storage Providers location information from Jimpick's JSONs.
+    """
+    url = "https://geoip.feeds.provider.quest/synthetic-locations-latest.json"
+    df = pd.read_json(url, typ="series")
+    return pd.json_normalize(df["providerLocations"])
+
+
+@asset(compute_kind="API")
 def raw_storage_provider_daily_power(
-    spacescope_api: SpacescopeResource,
+    spacescope_api: SpacescopeResource
 ) -> pd.DataFrame:
+    """
+    Storage Providers daily power from Spacescope API.
+    """
     FILECOIN_FIRST_DAY = datetime.date(2020, 10, 15)
 
     today = datetime.date.today()
@@ -35,8 +74,11 @@ def raw_storage_provider_daily_power(
     return df_power_data
 
 
-@asset(compute_kind="python", description="State Market Deals as JSON from S3")
+@asset(compute_kind="python")
 def raw_filecoin_state_market_deals(context) -> None:
+    """
+    State Market Deals snapshot from Gliff S3 JSON.
+    """
     urllib.request.urlretrieve(
         "https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst",
         "/tmp/StateMarketDeals.json.zst",
