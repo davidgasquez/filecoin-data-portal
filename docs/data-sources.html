@@ -99,7 +99,6 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#deals" id="toc-deals" class="nav-link" data-scroll-target="#deals">Deals</a></li>
   <li><a href="#clients" id="toc-clients" class="nav-link" data-scroll-target="#clients">Clients</a></li>
   <li><a href="#storage-providers" id="toc-storage-providers" class="nav-link" data-scroll-target="#storage-providers">Storage Providers</a></li>
-  <li><a href="#others" id="toc-others" class="nav-link" data-scroll-target="#others">Others</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/davidgasquez/filecoin-data-portal/edit/main/docs/data-sources.md" class="toc-action">Edit this page</a></p><p><a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
@@ -111,7 +110,7 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="filecoin-anlytitcs-data-sources" class="level1">
 <h1>Filecoin Anlytitcs Data Sources</h1>
-<p>Most of the data required for the dashboards and analysis is coming from the Filecoin chain itself. However, there is some off-chain data like Datacap applications or reputation data that we pull from other places (public and private). This document covers the main data entities and how to get the relavant data.</p>
+<p>Most of the data used is coming from the Filecoin chain itself. However, there is some off-chain data like <a href="https://docs.filecoin.io/basics/how-storage-works/filecoin-plus">Datacap Applications</a> or <a href="https://filecoin.io/blog/posts/reputation-systems-in-filecoin/">Storage Provider’s Reputation scores</a> that we pull from other public places. Each data “entity” comes from the best source available and is augmented with data from other sources.</p>
 <section id="deals" class="level2">
 <h2 class="anchored" data-anchor-id="deals">Deals</h2>
 <p>Deals data is available on chain and can be obtained via different ways.</p>
@@ -126,7 +125,7 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="clients">Clients</h2>
 <p>Can be derived from the <a href="#deals">deals</a> table. Clients can be augmented with the following sources:</p>
 <ul>
-<li>Datacap. From Datacap Stats API calling <code>https://api.datacapstats.io/api/getVerifiedClients</code> returns a JSON of verified clients in the FIL+ program. This contains the client names, Datacap application data and other self-reported data. Alternatively, this data can be obtained by parsing the relevant GitHub repositories issues and comments.</li>
+<li>Datacap. From <a href="https://datacapstats.io/">Datacap Stats API</a> calling <code>https://api.datacapstats.io/api/getVerifiedClients</code>. You get a JSON of verified clients in the FIL+ program that contains client names, Datacap application data and other self-reported data. Alternatively, this data can be obtained by parsing the relevant GitHub repositories issues and comments.</li>
 </ul>
 </section>
 <section id="storage-providers" class="level2">
@@ -134,13 +133,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Can be derived from the <a href="#deals">deals</a> table. Storage Providers cab ve augmented with the following sources:</p>
 <ul>
 <li>Reputation and location data from <a href="https://filrep.io/">filrep.io</a> or internal sources.</li>
-<li>More Storage Providers details using the different <a href="https://provider.quest/">provider.quest</a> endpoints.</li>
-</ul>
-</section>
-<section id="others" class="level2">
-<h2 class="anchored" data-anchor-id="others">Others</h2>
-<ul>
-<li><a href="https://data.storage.market/">Storage Market</a></li>
+<li>More Storage Providers details using the different <a href="https://provider.quest/">provider.quest</a> endpoints/datasets.</li>
 </ul>
 
 
