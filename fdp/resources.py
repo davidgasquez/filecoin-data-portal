@@ -1,7 +1,6 @@
-import os
-
 import requests
 from dagster import ConfigurableResource
+from dagster import EnvVar
 from requests import Response
 
 
@@ -10,7 +9,7 @@ class SpacescopeResource(ConfigurableResource):
     Spacescope API resource.
     """
 
-    token = str(os.getenv("SPACESCOPE_TOKEN"))
+    token = str(EnvVar("SPACESCOPE_TOKEN"))
     endpoint = "https://api.spacescope.io/v2/"
 
     def request(self, method: str, params: dict = {}) -> Response:

@@ -3,7 +3,7 @@ name = "fdp"
 version = "0.1.0"
 dependencies = [
     "altair",
-    # "dbt-core",
+    "dbt-core",
     "dbt-duckdb",
     "dagster",
     # "dagster-webserver",
@@ -18,7 +18,7 @@ dependencies = [
     "matplotlib",
     # "nbclient",
     "nbformat",
-    "numpy",
+    # "numpy",
     "pandas",
     "pyarrow",
     "regex",
