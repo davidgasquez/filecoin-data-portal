@@ -49,11 +49,11 @@
     "text": "Storage Providers\n\n\n\n\n\n\n\n\n\nid\nprovider\nnoOfDeals\nnoOfClients\navgDealLength\navgDealPrice\nminDealSize\nnoOfVerifiedDeals\npercentOfVerifiedDealsFromRawPower\nverifiedDealsTotalSize\nrawPower\n\n\n\n\n1094\n362\nf01131460\n94926.0\n4.0\n37725990\n0\n1024\n162722.0\n12.0\n234987671519232\n1749185560838144\n\n\n1584\n1121\nf010254\n81071.0\n2.0\n46062780\n0\n134217728\n63899.0\n0.0\n69675643830272\n3308911524315136\n\n\n1769\n276\nf01128320\n71787.0\n3.0\n35758230\n0\n256\n196991.0\n11.0\n315021553827840\n2439438344912896\n\n\n1067\n363\nf01264125\n39123.0\n4.0\n45721380\n0\n1048576\n34581.0\n0.0\n223541851062272\n26096049491804160\n\n\n894\n1182\nf022352\n32816.0\n95.0\n43667100\n2454\n1048576\n81485.0\n93.0\n2160946129666048\n1826460612427776\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nSeems the stats might be off or I’m not filtering correctly.\n\n\n&lt;Axes: title={'center': 'Monthly Datacap Request'}, xlabel='day'&gt;\n\n\n\n\n\n\n\n\n\n\n\n\n\nUsing Filplus API now\n\n\n&lt;Axes: title={'center': 'Monthly LDN Allowances'}, xlabel='timestamp', ylabel='Allowances'&gt;"
   },
   {
-    "objectID": "dashboards/storage_providers.html",
-    "href": "dashboards/storage_providers.html",
-    "title": "Storage Providers",
+    "objectID": "dashboards/deals.html",
+    "href": "dashboards/deals.html",
+    "title": "Deals",
     "section": "",
-    "text": "Updated on 2023-10-01.\n\n\n\nActive Storage Providers\n3378\n\n\nTotal Raw Power\n10529.04 PiBs\n\n\nTotal Quality Adjusted PiB Power\n24741.42 PiBs\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power\n\n\n\n\n\n\n\n\n\n\nStorage Provider Quality Adjusted PiB Power\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power Growth Rate (7 Days Rolling Mean)\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time Growth Rate (7 Days Rolling Mean)"
+    "text": "Note\n\n\n\nThis dashboard is using data from Glif nodes StateMarketDeals periodic dump on S3 (direct link).\n\n\n\n\n\n\nData Onboarding Rate\n\n\n\n\n\n\n\n\n\n\nCumulative Data Onboarded\n\n\n\n\n\n\n\n\n\n\n\n\nOnboarding Growth Rate (7 day rolling average)"
   },
   {
     "objectID": "index.html",
@@ -74,14 +74,14 @@
     "href": "index.html#reports",
     "title": "Filecoin Data Portal",
     "section": "Reports",
-    "text": "Reports\n\n\n\n\n  \n\n\n\n\nUntitled\n\n\n\n\n\n\n\n\n\n\n \n\n\n\n\n  \n\n\n\n\nExploring State Filecoin Deals\n\n\n\n\n\n\n\n\n\n\n\n\n2023-10-03\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Chain Data via JSON-RPC\n\n\n\n\n\nSmall exploration around the Filecoin chain data available via JSON-RPC\n\n\n\n\n\n\n2023-06-14\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Plus\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-13\n\n\nDavid Gasquez\n\n\n\n\n\n\nNo matching items"
+    "text": "Reports\n\n\n\n\n  \n\n\n\n\nExploring State Filecoin Deals\n\n\n\n\n\n\n\n\n\n\n\n\n2023-10-04\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Chain Data via JSON-RPC\n\n\n\n\n\nSmall exploration around the Filecoin chain data available via JSON-RPC\n\n\n\n\n\n\n2023-06-14\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Plus\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-13\n\n\nDavid Gasquez\n\n\n\n\n\n\nNo matching items"
   },
   {
-    "objectID": "dashboards/deals.html",
-    "href": "dashboards/deals.html",
-    "title": "Deals",
+    "objectID": "dashboards/storage_providers.html",
+    "href": "dashboards/storage_providers.html",
+    "title": "Storage Providers",
     "section": "",
-    "text": "Note\n\n\n\nThis dashboard is using data from Glif nodes StateMarketDeals periodic dump on S3 (direct link).\n\n\n\n\n\n\nData Onboarding Rate\n\n\n\n\n\n\n\n\n\n\nCumulative Data Onboarded\n\n\n\n\n\n\n\n\n\n\n\n\nOnboarding Growth Rate (7 day rolling average)"
+    "text": "Updated on 2023-10-02.\n\n\n\nActive Storage Providers\n3380\n\n\nTotal Raw Power\n10511.14 PiBs\n\n\nTotal Quality Adjusted PiB Power\n24752.23 PiBs\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power\n\n\n\n\n\n\n\n\n\n\nStorage Provider Quality Adjusted PiB Power\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power Growth Rate (7 Days Rolling Mean)\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time Growth Rate (7 Days Rolling Mean)"
   },
   {
     "objectID": "reports/2023-06-21-Exploring-Filecoin-Deals.html",
