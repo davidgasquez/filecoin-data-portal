@@ -13,7 +13,7 @@ WORKDIR ${WORKDIR}
 ENV PROJECT_DIR "${WORKDIR}"
 ENV DATA_DIR "${WORKDIR}/data"
 ENV DBT_PROFILES_DIR "${WORKDIR}/dbt"
-ENV DATABASE_URL "duckdb:///${DATA_DIR}/dbt.duckdb"
+ENV DATABASE_URL "duckdb:///${DATA_DIR}/local.duckdb"
 ENV DAGSTER_HOME "/home/vscode"
 
 # Install Python Dependencies

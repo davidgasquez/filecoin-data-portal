@@ -2,7 +2,7 @@ default:
   outputs:
     dev:
       type: duckdb
-      path: "{{ env_var('DATA_DIR') }}/dbt.duckdb"
+      path: "{{ env_var('DATA_DIR') }}/local.duckdb"
       threads: 8
       extensions:
         - httpfs

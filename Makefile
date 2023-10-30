@@ -14,7 +14,7 @@ publish:
 
 clean:
 	@dbt clean --project-dir dbt;
-	@rm -rf output .quarto target dbt_packages logs
+	@rm -rf output .quarto target dbt_packages logs data/*.parquet data/*.duckdb
 
 render:
 	@quarto render
