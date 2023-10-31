@@ -5,7 +5,6 @@ import urllib.request
 
 import ijson
 import pandas as pd
-import requests
 import zstandard
 from dagster import asset
 
@@ -24,19 +23,6 @@ def raw_datacapstats_verified_clients() -> pd.DataFrame:
     df["allowanceArray"] = df["allowanceArray"]
 
     return df
-
-
-@asset(compute_kind="python")
-def raw_storage_providers_filrep() -> pd.DataFrame:
-    """
-    Storage Providers information from Filrep API.
-    """
-    url = "https://api.filrep.io/api/v1/miners"
-
-    storage_providers = pd.DataFrame(requests.get(url).json()["miners"])
-    storage_providers = storage_providers.astype(str)
-
-    return storage_providers.drop(columns=["id"])
 
 
 @asset(compute_kind="python")

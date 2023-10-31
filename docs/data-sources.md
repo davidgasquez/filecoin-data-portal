@@ -22,5 +22,4 @@ Can be derived from the [deals](#deals) table. Clients can be augmented with the
 
 Can be derived from the [deals](#deals) table. Storage Providers cab ve augmented with the following sources:
 
-- Reputation and location data from [filrep.io](https://filrep.io/) or internal sources.
-- More Storage Providers details using the different [provider.quest](https://provider.quest/) endpoints/datasets.
+- Location using the different [provider.quest](https://provider.quest/) endpoints/datasets.
