@@ -9,7 +9,8 @@ with base as (
 select
     dealid as deal_id,
     piececid."/" as piece_cid,
-    piecesize as piece_size,
+    piecesize as piece_size_bytes,
+    piecesize / pow(1024, 4) as piece_size_tibs,
     verifieddeal as is_verified,
     client as client_id,
     provider as provider_id,
@@ -26,6 +27,7 @@ select
     lastupdatedepoch as last_updated_epoch,
     to_timestamp(lastupdatedepoch * 30 + 1598306400) as last_updated_at,
     slashepoch as slash_epoch,
-    to_timestamp(slashepoch * 30 + 1598306400) as slashed_at,
-    verifiedclaim as verified_claim
+    to_timestamp(slashepoch * 30 + 1598306400) as slash_at,
+    verifiedclaim as verified_claim,
+    if(slash_epoch = -1 and to_timestamp(endepoch * 30 + 1598306400) > get_current_timestamp(), true, false) as is_active
 from base

@@ -5,6 +5,7 @@ import urllib.request
 
 import ijson
 import pandas as pd
+import requests
 import zstandard
 from dagster import asset
 
@@ -26,9 +27,19 @@ def raw_datacapstats_verified_clients() -> pd.DataFrame:
 
 
 @asset(compute_kind="python")
-def raw_storage_providers_location_jimpick() -> pd.DataFrame:
+def raw_storage_providers_filrep() -> pd.DataFrame:
+    url = "https://api.filrep.io/api/v1/miners"
+
+    storage_providers = pd.DataFrame(requests.get(url).json()["miners"])
+    storage_providers = storage_providers.astype(str)
+
+    return storage_providers.drop(columns=["id"])
+
+
+@asset(compute_kind="python")
+def raw_storage_providers_location_provider_quest() -> pd.DataFrame:
     """
-    Storage Providers location information from Jimpick's JSONs.
+    Storage Providers location information from Provider Quest (https://provider.quest).
     """
     url = "https://geoip.feeds.provider.quest/synthetic-locations-latest.json"
     df = pd.read_json(url, typ="series")
@@ -76,6 +87,7 @@ def raw_filecoin_state_market_deals(context) -> None:
     input_path = "/tmp/StateMarketDeals.json.zst"
     output_path = "/tmp/ParsedStateMarketDeals.json"
 
+    # jq --stream -c 'fromstream(1|truncate_stream(inputs))' /tmp/StateMarketDeals.json.zst > /tmp/ParsedStateMarketDeals.json
     with open(input_path, "rb") as ifh, open(output_path, "wb") as ofh:
         reader = dctx.stream_reader(ifh)
         for k, v in ijson.kvitems(reader, ""):

@@ -9,6 +9,10 @@ with base as (
         (quality_adjusted_power_bytes - raw_power_bytes) / 9 as verified_data_power_bytes,
         (quality_adjusted_power_pibs - raw_power_pibs) / 9 as verified_data_power_pibs
     from {{ source('raw_assets', 'raw_storage_provider_daily_power') }}
+),
+
+storage_providers_filrep as (
+    select * from {{ source('raw_assets', 'raw_storage_providers_filrep') }}
 )
 
 select
@@ -36,5 +40,12 @@ select
         when verified_data_power_pibs < 10 then '>1<10'
         when verified_data_power_pibs > 50 then '>50'
         else 'unknwon'
-    end as verified_data_power_pibs_bucket
+    end as verified_data_power_pibs_bucket,
+    filrep.isoCode as country_code,
+    filrep.region as region,
+    filrep.freeSpace as free_space_bytes,
+    filrep.rank as filrep_rank,
+    filrep.score as filrep_score,
 from base
+left join storage_providers_filrep as filrep
+    on base.provider_id = filrep.address
