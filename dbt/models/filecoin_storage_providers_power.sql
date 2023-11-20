@@ -47,5 +47,4 @@ select
     filrep.rank as filrep_rank,
     filrep.score as filrep_score,
 from base
-left join storage_providers_filrep as filrep
-    on base.provider_id = filrep.address
+left join storage_providers_filrep as filrep on base.provider_id = filrep.address
