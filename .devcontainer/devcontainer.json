@@ -4,9 +4,6 @@
 		"dockerfile": "../Dockerfile",
 		"context": ".."
 	},
-	"features": {
-		"ghcr.io/rocker-org/devcontainer-features/quarto-cli:latest": {}
-	},
 	"customizations": {
 		"vscode": {
 			"settings": {
@@ -16,6 +13,7 @@
 				},
 				"[python]": {
 					"editor.defaultFormatter": "charliermarsh.ruff",
+					"editor.formatOnSave": true,
 					"editor.codeActionsOnSave": {
 						"source.fixAll": true,
 						"source.organizeImports": true
@@ -23,8 +21,7 @@
 				},
 				"notebook.formatOnSave.enabled": true,
 				"python.analysis.typeCheckingMode": "basic",
-				"ruff.organizeImports": true,
-				"ruff.enableExperimentalFormatter": true
+				"python.analysis.autoImportCompletions": true
 			},
 			"extensions": [
 				"charliermarsh.ruff",

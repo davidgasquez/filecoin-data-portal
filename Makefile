@@ -13,8 +13,8 @@ publish:
 	@quarto publish gh-pages --no-prompt
 
 clean:
-	@dbt clean --project-dir dbt;
-	@rm -rf output .quarto target dbt_packages logs data/*.parquet data/*.duckdb
+	@rm -rf output .quarto target logs data/*.parquet data/*.duckdb
+	@rm -rf dbt/target dbt/logs dbt/dbt_packages
 
 render:
 	@quarto render
