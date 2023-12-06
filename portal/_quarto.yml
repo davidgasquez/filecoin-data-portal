@@ -14,12 +14,11 @@ website:
     center: "David Gasquez"
   navbar:
     logo: "https://www.pngall.com/wp-content/uploads/10/Filecoin-Crypto-Logo-180x180.png"
-    background: dark
     search: false
     pinned: true
     left:
       - text: "Docs"
-        href: /docs/data-sources.html
+        href: docs/data-sources.html
     tools:
       - icon: twitter
         href: https://twitter.com/davidgasquez/
@@ -28,6 +27,7 @@ website:
 
 format:
   html:
+    theme: simplex
     code-fold: true
     toc: true
     echo: false
