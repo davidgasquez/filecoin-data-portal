@@ -8,12 +8,15 @@ import pandas as pd
 import requests
 import zstandard
 from dagster import asset
+from dagster import MaterializeResult
+from dagster import MetadataValue
 
 from .resources import SpacescopeResource
+from dagster_duckdb import DuckDBResource
 
 
 @asset(compute_kind="python")
-def raw_datacapstats_verified_clients() -> pd.DataFrame:
+def raw_datacapstats_verified_clients(duckdb: DuckDBResource) -> MaterializeResult:
     """
     Verified Clients information from Datacapstats API.
     """
@@ -23,17 +26,54 @@ def raw_datacapstats_verified_clients() -> pd.DataFrame:
     df = pd.json_normalize(data)
     df["allowanceArray"] = df["allowanceArray"]
 
-    return df
+    with duckdb.get_connection() as conn:
+        conn.execute(
+            "create table if not exists raw_datacapstats_verified_clients as select * from df"
+        )
+
+    return MaterializeResult(
+        metadata={
+            "Sample": MetadataValue.md(df.sample(5).to_markdown()),
+        }
+    )
 
 
 @asset(compute_kind="python")
-def raw_storage_providers_filrep() -> pd.DataFrame:
+def raw_storage_providers_filrep(duckdb: DuckDBResource) -> MaterializeResult:
+    """
+    Storage Providers information from Filrep API.
+    """
     url = "https://api.filrep.io/api/v1/miners"
+
+    try:
+        requests.get(url, timeout=30).raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        return MaterializeResult(
+            metadata={
+                "Error": MetadataValue.md(
+                    f"""The Filrep API is down.
+                    ```
+                    {e}
+                    ```
+                    """
+                ),
+            }
+        )
 
     storage_providers = pd.DataFrame(requests.get(url).json()["miners"])
     storage_providers = storage_providers.astype(str)
+    storage_providers = storage_providers.drop(columns=["id"])
 
-    return storage_providers.drop(columns=["id"])
+    with duckdb.get_connection() as conn:
+        conn.execute(
+            "create table if not exists raw_storage_providers_filrep as select * from storage_providers"
+        )
+
+    return MaterializeResult(
+        metadata={
+            "Sample": MetadataValue.md(storage_providers.sample(5).to_markdown()),
+        }
+    )
 
 
 @asset(compute_kind="python")
@@ -48,7 +88,7 @@ def raw_storage_providers_location_provider_quest() -> pd.DataFrame:
 
 @asset(compute_kind="API")
 def raw_storage_provider_daily_power(
-    spacescope_api: SpacescopeResource
+    spacescope_api: SpacescopeResource,
 ) -> pd.DataFrame:
     """
     Storage Providers daily power from Spacescope API.

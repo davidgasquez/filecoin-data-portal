@@ -13,8 +13,5 @@ publish:
 	@quarto publish portal gh-pages --no-prompt
 
 clean:
-	@rm -rf output .quarto target logs data/*.parquet data/*.duckdb
+	@rm -rf portal/.quarto data/*.parquet data/*.duckdb
 	@rm -rf dbt/target dbt/logs dbt/dbt_packages
-
-render:
-	@quarto render portal
