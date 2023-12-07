@@ -37,31 +37,33 @@ jobs:
     name: Run
     runs-on: ubuntu-latest
     needs: build
-    container:
-      image: ghcr.io/davidgasquez/fdp:latest
-      env:
-        SPACESCOPE_TOKEN: ${{ secrets.SPACESCOPE_TOKEN }}
-      volumes:
-        - ./:/workspaces/filecoin-data-portal/
+    # container:
+    #   image: ghcr.io/davidgasquez/fdp:latest
+    #   env:
+    #     SPACESCOPE_TOKEN: ${{ secrets.SPACESCOPE_TOKEN }}
+    #   volumes:
+    #     - ./:/workspaces/filecoin-data-portal/
     steps:
         - name: Free Disk Space
           uses: jlumbroso/free-disk-space@main
           with:
-            tool-cache: false
+            tool-cache: true
             android: true
             dotnet: true
             haskell: true
             large-packages: true
             docker-images: true
             swap-storage: true
+        - name: Maximize build space
+          uses: easimon/maximize-build-space@master
+          with:
+            remove-dotnet: 'true'
         - name: Checkout
           uses: actions/checkout@v4
-        - name: Install packages
-          run: pip install -e .
         - name: Run DAG
-          run: make run
+          run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ ghcr.io/davidgasquez/fdp:latest pip install -e . && make run
         - name: Render Quarto
-          run: make render
+          run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ ghcr.io/davidgasquez/fdp:latest make render
         - name: Publish Docs
           uses: JamesIves/github-pages-deploy-action@4.0.0
           with:
