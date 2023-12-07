@@ -40,11 +40,13 @@ jobs:
     container:
       image: ghcr.io/davidgasquez/fdp:latest
       volumes:
-        - /workspaces/filecoin-data-portal/:/workspaces/filecoin-data-portal/
-    defaults:
-      run:
-        working-directory: /workspaces/filecoin-data-portal/
+        - ./:/workspaces/filecoin-data-portal/
+    # defaults:
+    #   run:
+    #     working-directory: /workspaces/filecoin-data-portal/
     steps:
+        - name: Checkout
+          uses: actions/checkout@v4
         - name: Run
           run: echo "Hello world"
         - name: PWD
