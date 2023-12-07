@@ -60,8 +60,8 @@ jobs:
           run: |
             docker run -t  \
               -v $PWD/:/workspaces/filecoin-data-portal/ \
-              ghcr.io/davidgasquez/fdp:latest \
               --entrypoint /bin/bash \
+              ghcr.io/davidgasquez/fdp:latest \
               -c "pip install -e . && make run && make render"
         - name: Publish Docs
           uses: JamesIves/github-pages-deploy-action@4.0.0
