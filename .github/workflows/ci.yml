@@ -39,16 +39,13 @@ jobs:
     needs: build
     container:
       image: ghcr.io/davidgasquez/fdp:latest
+      env:
+        SPACESCOPE_TOKEN: ${{ secrets.SPACESCOPE_TOKEN }}
       volumes:
         - ./:/workspaces/filecoin-data-portal/
-    # defaults:
-    #   run:
-    #     working-directory: /workspaces/filecoin-data-portal/
     steps:
         - name: Checkout
           uses: actions/checkout@v4
-        - name: Run
-          run: echo "Hello world"
         - name: PWD
           run: pwd
         - name: List files
@@ -59,18 +56,8 @@ jobs:
           run: make run
         - name: Render Quarto
           run: make render
-
-      # - name: Build Docker
-      #   run: docker build -t davidgasquez/fdp:latest . --build-arg SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }}
-
-      # - name: Run DAG
-      #   run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ davidgasquez/fdp:latest make run
-
-      # - name: Render Quarto
-      #   run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ davidgasquez/fdp:latest make render
-
-      # - name: Publish Docs
-      #   uses: JamesIves/github-pages-deploy-action@4.0.0
-      #   with:
-      #     branch: gh-pages
-      #     folder: .portal/quarto/_site
+        - name: Publish Docs
+          uses: JamesIves/github-pages-deploy-action@4.0.0
+          with:
+            branch: gh-pages
+            folder: .portal/quarto/_site
