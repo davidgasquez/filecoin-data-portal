@@ -7,12 +7,10 @@ import ijson
 import pandas as pd
 import requests
 import zstandard
-from dagster import asset
-from dagster import MaterializeResult
-from dagster import MetadataValue
+from dagster import MaterializeResult, MetadataValue, asset
+from dagster_duckdb import DuckDBResource
 
 from .resources import SpacescopeResource
-from dagster_duckdb import DuckDBResource
 
 
 @asset(compute_kind="python")
