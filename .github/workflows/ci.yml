@@ -39,9 +39,19 @@ jobs:
     needs: build
     container:
       image: ghcr.io/davidgasquez/fdp:latest
+      volumes:
+        - ./:/workspaces/filecoin-data-portal/
     steps:
         - name: Run
           run: echo "Hello world"
+        - name: List files
+          run: ls -la
+        - name: Install packages
+          run: pip install -e .
+        - name: Run DAG
+          run: make run
+        - name: Render Quarto
+          run: make render
 
       # - name: Build Docker
       #   run: docker build -t davidgasquez/fdp:latest . --build-arg SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }}
