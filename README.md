@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml)
 
-Proof of Concept of a fully open source, serverless, and local first data hub for Filecoin, built on top of the open data stack.
+Your open source, serverless, and local-first Data Platform for the Filecoin ecosystem! It aims to improve data access and collaboration within the community and allow users to spend more time on novel analysis and less time on data preparation.
 
 ![DAG](https://user-images.githubusercontent.com/1682202/262713531-74827dbe-b944-49c5-ae20-c6eb0e97daad.png)
 
@@ -10,7 +10,7 @@ Check out the [Filecoin Data Portal](https://davidgasquez.github.io/filecoin-dat
 
 ## 📖 Overview
 
-This repository contains code and artifacts to help anyone process Filecoin data from [diverse sources](docs/data-sources.md) (on-chain and off-chain). It is a simplified version of [Datadex](https://github.com/davidgasquez/datadex), allowing anyone to collaborate on data, models, and pipelines in a permissionless way.
+This repository contains code and artifacts to help anyone process Filecoin data from [diverse sources](portal/docs/data-sources.md) (on-chain and off-chain). It is an implementation of [Datadex](https://github.com/davidgasquez/datadex), allowing anyone to collaborate on data, models, and pipelines in a permissionless way.
 
 ### 📦 Key Features
 

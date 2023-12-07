@@ -34,5 +34,8 @@ dev = ["dagit", "ruff"]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.package-data]
+"datadex" = ["../dbt/**"]
+
 [tool.setuptools]
 packages = ["fdp"]
