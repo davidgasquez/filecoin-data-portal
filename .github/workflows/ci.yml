@@ -56,8 +56,10 @@ jobs:
             swap-storage: true
         - name: Checkout
           uses: actions/checkout@v4
+        - name: Install packages
+          run: docker run -t -v $PWD/:/workspaces/filecoin-data-portal/ ghcr.io/davidgasquez/fdp:latest pip install -e .
         - name: Run DAG
-          run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ ghcr.io/davidgasquez/fdp:latest pip install -e . && make run
+          run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ ghcr.io/davidgasquez/fdp:latest make run
         - name: Render Quarto
           run: docker run -t -e SPACESCOPE_TOKEN=${{ secrets.SPACESCOPE_TOKEN }} -v $PWD/:/workspaces/filecoin-data-portal/ ghcr.io/davidgasquez/fdp:latest make render
         - name: Publish Docs
