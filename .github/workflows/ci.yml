@@ -44,12 +44,18 @@ jobs:
       volumes:
         - ./:/workspaces/filecoin-data-portal/
     steps:
+        - name: Free Disk Space
+          uses: jlumbroso/free-disk-space@main
+          with:
+            tool-cache: false
+            android: true
+            dotnet: true
+            haskell: true
+            large-packages: true
+            docker-images: true
+            swap-storage: true
         - name: Checkout
           uses: actions/checkout@v4
-        - name: PWD
-          run: pwd
-        - name: List files
-          run: ls -la
         - name: Install packages
           run: pip install -e .
         - name: Run DAG
