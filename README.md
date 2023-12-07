@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml)
 
-Open source, serverless, and local-first Data Platform for the Filecoin ecosystem to improve data access and collaboration within the community.
+Your open source, serverless, and local-first Data Platform for the Filecoin ecosystem! It aims to improve data access and collaboration within the community and allow users to spend more time on novel analysis and less time on data preparation.
 
 ![DAG](https://user-images.githubusercontent.com/1682202/262713531-74827dbe-b944-49c5-ae20-c6eb0e97daad.png)
 

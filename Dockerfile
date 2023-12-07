@@ -20,9 +20,3 @@ ENV DATA_DIR "${WORKSPACE}/data"
 ENV DBT_PROFILES_DIR "${WORKSPACE}/dbt"
 ENV DATABASE_URL "duckdb:///${DATA_DIR}/local.duckdb"
 ENV DAGSTER_HOME "/home/vscode"
-
-# Copy Files
-COPY . .
-
-# Install Python Package
-RUN pip install -e ".[dev]"
