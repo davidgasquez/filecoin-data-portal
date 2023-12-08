@@ -140,3 +140,16 @@ def raw_filecoin_state_market_deals(context) -> None:
     os.system(
         "zstd --rm -q -f -T0 /tmp/ParsedStateMarketDeals.json -o /tmp/ParsedStateMarketDeals.json.zst"
     )
+
+
+# @asset(compute_kind="python", deps=["filecoin_state_market_deals"])
+# def filecoin_state_market_deals_parquet(duckdb: DuckDBResource) -> MaterializeResult:
+#     """
+#     Parquet file of the Filecoin Storage Providers table.
+#     """
+#     with duckdb.get_connection() as conn:
+#         conn.execute(
+#             "set memory_limit = '16GB'; copy filecoin_state_market_deals to 'filecoin_state_market_deals_ZSTD.parquet' (format 'parquet', COMPRESSION 'ZSTD', ROW_GROUP_SIZE 100000);"
+#         )
+
+#     return MaterializeResult()

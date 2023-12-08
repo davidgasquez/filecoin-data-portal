@@ -8,7 +8,7 @@ from dagster_duckdb_pandas import DuckDBPandasIOManager
 from . import assets, resources
 
 DBT_PROJECT_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../dbt/"
-DATA_DIR = os.getenv("DATA_DIR", "/workspaces/filecoin-data-portal/data/")
+DATA_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../data/"
 
 dbt_resource = dbt_cli_resource.configured(
     {"project_dir": DBT_PROJECT_DIR, "profiles_dir": DBT_PROJECT_DIR}
