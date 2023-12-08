@@ -12,7 +12,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_filecoin_state_market_deals"]
-          external_location: 'read_ndjson_auto("/tmp/ParsedStateMarketDeals.json")'
+          external_location: 'read_ndjson_auto("/tmp/ParsedStateMarketDeals.json.zst")'
       - name: raw_storage_providers_filrep
         meta:
           dagster:
