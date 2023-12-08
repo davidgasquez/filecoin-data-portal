@@ -36,6 +36,8 @@ jobs:
   run:
     name: Run
     runs-on: ubuntu-latest
+    env:
+      SPACESCOPE_TOKEN: ${{ secrets.SPACESCOPE_TOKEN }}
     # container:
     #   image: ghcr.io/davidgasquez/fdp:latest
     #   env:
@@ -61,3 +63,6 @@ jobs:
         - name: Install dependencies
           run: |
             pip install -e .
+        - name: Run
+          run: |
+            make run
