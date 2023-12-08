@@ -4,9 +4,9 @@
     "items": [
       "/dashboards/deals.html",
       "/dashboards/storage_providers.html",
-      "/reports/2023-06-21-Exploring-Filecoin-Deals.html",
-      "/reports/2023-06-14-Filecoin JSON-RPC.html",
-      "/reports/2023-06-13-Filecoin-Plus.html"
+      "/notebooks/2023-06-21-Exploring-Filecoin-Deals.html",
+      "/notebooks/2023-06-14-Filecoin JSON-RPC.html",
+      "/notebooks/2023-06-13-Filecoin-Plus.html"
     ]
   }
 ]
