@@ -58,18 +58,18 @@ def raw_storage_providers_filrep(duckdb: DuckDBResource) -> MaterializeResult:
             }
         )
 
-    storage_providers = pd.DataFrame(requests.get(url).json()["miners"])
-    storage_providers = storage_providers.astype(str)
-    storage_providers = storage_providers.drop(columns=["id"])
+    filrep = pd.DataFrame(requests.get(url).json()["miners"])
+    filrep = filrep.astype(str)
+    filrep = filrep.drop(columns=["id"])
 
     with duckdb.get_connection() as conn:
         conn.execute(
-            "create table if not exists raw_storage_providers_filrep as select * from storage_providers"
+            "create table if not exists raw_storage_providers_filrep as select * from filrep"
         )
 
     return MaterializeResult(
         metadata={
-            "Sample": MetadataValue.md(storage_providers.sample(5).to_markdown()),
+            "Sample": MetadataValue.md(filrep.sample(5).to_markdown()),
         }
     )
 
