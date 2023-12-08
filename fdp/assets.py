@@ -133,10 +133,10 @@ def raw_filecoin_state_market_deals(context) -> None:
 
     context.log.info("Decompressed and parsed StateMarketDeals.json.zst")
 
-    # Compress /tmp/ParsedStateMarketDeals.json
+    # Remove the input file
+    os.remove("/tmp/StateMarketDeals.json.zst")
+
+    # Compress the parsed file
     os.system(
         "zstd --rm -q -f -T0 /tmp/ParsedStateMarketDeals.json -o /tmp/ParsedStateMarketDeals.json.zst"
     )
-
-    # Remove the temporary files
-    os.remove("/tmp/StateMarketDeals.json.zst")
