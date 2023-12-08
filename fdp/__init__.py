@@ -20,9 +20,9 @@ all_assets = load_assets_from_modules([assets])
 resources = {
     "dbt": dbt_resource,
     "spacescope_api": resources.SpacescopeResource(),
-    "duckdb": DuckDBResource(database=DATA_DIR + "/local.duckdb"),
+    "duckdb": DuckDBResource(database=DATA_DIR + "local.duckdb"),
     "io_manager": DuckDBPandasIOManager(
-        database="/workspaces/filecoin-data-portal/data/local.duckdb",
+        database=DATA_DIR + "local.duckdb",
     ),
 }
 
