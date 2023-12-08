@@ -131,7 +131,12 @@ def raw_filecoin_state_market_deals(context) -> None:
             v["DealID"] = k
             ofh.write(json.dumps(v).encode("utf-8") + b"\n")
 
-    context.log.info("Decompressed StateMarketDeals.json.zst")
+    context.log.info("Decompressed and parsed StateMarketDeals.json.zst")
+
+    # Compress /tmp/ParsedStateMarketDeals.json
+    os.system(
+        "zstd --rm -q -f -T0 /tmp/ParsedStateMarketDeals.json -o /tmp/ParsedStateMarketDeals.json.zst"
+    )
 
     # Remove the temporary files
     os.remove("/tmp/StateMarketDeals.json.zst")

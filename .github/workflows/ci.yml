@@ -37,3 +37,11 @@ jobs:
         - name: Run
           run: |
             make run
+        - name: Render
+          run: |
+            make render
+        - name: Publish Docs
+          uses: JamesIves/github-pages-deploy-action@4.0.0
+          with:
+            branch: gh-pages
+            folder: .portal/quarto/_site
