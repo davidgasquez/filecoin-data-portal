@@ -2,7 +2,7 @@ import os
 
 import duckdb
 
-DATA_DIR = os.getenv("DATA_DIR", "../data")
+DATA_DIR = os.getenv("DATA_DIR", "../../data")
 
 
 def query(sql):

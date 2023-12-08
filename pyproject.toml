@@ -1,6 +1,7 @@
 [project]
 name = "fdp"
 version = "0.1.0"
+authors = [{ name = "David Gasquez" }]
 dependencies = [
     "altair",
     "dbt-core",
@@ -26,6 +27,12 @@ dependencies = [
 requires-python = ">=3.10, <3.12"
 readme = "README.md"
 license = { text = "MIT" }
+
+[project.urls]
+Homepage = "https://davidgasquez.github.io/filecoin-data-portal/"
+Changelog = "https://github.com/davidgasquez/filecoin-data-portal/commits/main/"
+Issues = "https://github.com/davidgasquez/filecoin-data-portal/issues"
+CI = "https://github.com/davidgasquez/filecoin-data-portal/actions"
 
 [project.optional-dependencies]
 dev = ["dagit", "ruff"]

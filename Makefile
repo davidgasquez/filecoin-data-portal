@@ -9,8 +9,11 @@ dev:
 preview:
 	@quarto preview portal
 
+render:
+	@quarto render portal
+
 publish:
-	@quarto publish portal gh-pages --no-prompt
+	@quarto publish gh-pages --no-prompt portal
 
 clean:
 	@rm -rf portal/.quarto data/*.parquet data/*.duckdb
