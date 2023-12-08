@@ -5,7 +5,6 @@ import urllib.request
 
 import ijson
 import pandas as pd
-import requests
 import zstandard
 from dagster import MaterializeResult, MetadataValue, asset
 from dagster_duckdb import DuckDBResource
@@ -36,42 +35,42 @@ def raw_datacapstats_verified_clients(duckdb: DuckDBResource) -> MaterializeResu
     )
 
 
-@asset(compute_kind="python")
-def raw_storage_providers_filrep(duckdb: DuckDBResource) -> MaterializeResult:
-    """
-    Storage Providers information from Filrep API.
-    """
-    url = "https://api.filrep.io/api/v1/miners"
+# @asset(compute_kind="python")
+# def raw_storage_providers_filrep(duckdb: DuckDBResource) -> MaterializeResult:
+#     """
+#     Storage Providers information from Filrep API.
+#     """
+#     url = "https://api.filrep.io/api/v1/miners"
 
-    try:
-        requests.get(url, timeout=30).raise_for_status()
-    except requests.exceptions.HTTPError as e:
-        return MaterializeResult(
-            metadata={
-                "Error": MetadataValue.md(
-                    f"""The Filrep API is down.
-                    ```
-                    {e}
-                    ```
-                    """
-                ),
-            }
-        )
+#     try:
+#         requests.get(url, timeout=30).raise_for_status()
+#     except requests.exceptions.HTTPError as e:
+#         return MaterializeResult(
+#             metadata={
+#                 "Error": MetadataValue.md(
+#                     f"""The Filrep API is down.
+#                     ```
+#                     {e}
+#                     ```
+#                     """
+#                 ),
+#             }
+#         )
 
-    filrep = pd.DataFrame(requests.get(url).json()["miners"])
-    filrep = filrep.astype(str)
-    filrep = filrep.drop(columns=["id"])
+#     filrep = pd.DataFrame(requests.get(url).json()["miners"])
+#     filrep = filrep.astype(str)
+#     filrep = filrep.drop(columns=["id"])
 
-    with duckdb.get_connection() as conn:
-        conn.execute(
-            "create table if not exists raw_storage_providers_filrep as select * from filrep"
-        )
+#     with duckdb.get_connection() as conn:
+#         conn.execute(
+#             "create table if not exists raw_storage_providers_filrep as select * from filrep"
+#         )
 
-    return MaterializeResult(
-        metadata={
-            "Sample": MetadataValue.md(filrep.sample(5).to_markdown()),
-        }
-    )
+#     return MaterializeResult(
+#         metadata={
+#             "Sample": MetadataValue.md(filrep.sample(5).to_markdown()),
+#         }
+#     )
 
 
 @asset(compute_kind="python")
