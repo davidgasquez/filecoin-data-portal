@@ -4,7 +4,7 @@
 
 Your open source, serverless, and local-first Data Platform for the Filecoin ecosystem! It aims to improve data access and collaboration within the community and allow users to spend more time on novel analysis and less time on data preparation.
 
-![DAG](https://user-images.githubusercontent.com/1682202/262713531-74827dbe-b944-49c5-ae20-c6eb0e97daad.png)
+![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/82b2f19e-0e2e-43a4-b2e4-9de6340060f8)
 
 Check out the [Filecoin Data Portal](https://davidgasquez.github.io/filecoin-data-portal/) website for dashboards and reports!
 
