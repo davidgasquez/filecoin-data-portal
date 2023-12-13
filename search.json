@@ -67,7 +67,7 @@
     "href": "dashboards/storage_providers.html",
     "title": "Network Power",
     "section": "",
-    "text": "Updated on 2023-12-09\n\n\n\nActive Storage Providers\n3057\n\n\nTotal Raw Power\n9069.78 PiBs\n\n\nTotal Quality Adjusted PiB Power\n24999.87 PiBs\n\n\n\n\n\n\nStorage Provider Raw PiB Power\n\n\n\n\n\n\n\n\nStorage Provider Quality Adjusted PiB Power\n\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time\n\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power Growth Rate (7 Days Rolling Mean)\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time Growth Rate (7 Days Rolling Mean)"
+    "text": "Updated on 2023-12-11\n\n\n\nActive Storage Providers\n3219\n\n\nTotal Raw Power\n9226.40 PiBs\n\n\nTotal Quality Adjusted PiB Power\n25479.33 PiBs\n\n\n\n\n\n\nStorage Provider Raw PiB Power\n\n\n\n\n\n\n\n\nStorage Provider Quality Adjusted PiB Power\n\n\n\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time\n\n\n\n\n\n\n\n\n\n\n\n\n\nStorage Provider Raw PiB Power Growth Rate (7 Days Rolling Mean)\n\n\n\n\n\n\n\n\nStorage Providers With Power over Time Growth Rate (7 Days Rolling Mean)"
   },
   {
     "objectID": "index.html",
@@ -88,7 +88,7 @@
     "href": "index.html#notebooks",
     "title": "Filecoin Data Portal",
     "section": "Notebooks",
-    "text": "Notebooks\n\n\n\n\n  \n\n\n\n\nExploring State Filecoin Deals\n\n\n\n\n\n\n\n\n\n\n\n\n2023-12-11\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Chain Data via JSON-RPC\n\n\n\n\n\nSmall exploration around the Filecoin chain data available via JSON-RPC\n\n\n\n\n\n\n2023-06-14\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Plus\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-13\n\n\nDavid Gasquez\n\n\n\n\n\n\nNo matching items"
+    "text": "Notebooks\n\n\n\n\n  \n\n\n\n\nExploring State Filecoin Deals\n\n\n\n\n\n\n\n\n\n\n\n\n2023-12-13\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Chain Data via JSON-RPC\n\n\n\n\n\nSmall exploration around the Filecoin chain data available via JSON-RPC\n\n\n\n\n\n\n2023-06-14\n\n\nDavid Gasquez\n\n\n\n\n\n\n  \n\n\n\n\nFilecoin Plus\n\n\n\n\n\n\n\n\n\n\n\n\n2023-06-13\n\n\nDavid Gasquez\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "notebooks/2023-06-21-Exploring-Filecoin-Deals.html",
