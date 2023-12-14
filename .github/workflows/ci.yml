@@ -41,11 +41,11 @@ jobs:
         - name: Render
           run: |
             make render
-            - name: Publish Docs
-              uses: JamesIves/github-pages-deploy-action@4.0.0
-              with:
-                branch: gh-pages
-                folder: portal/.quarto/_site
+        - name: Publish Docs
+          uses: JamesIves/github-pages-deploy-action@4.0.0
+          with:
+            branch: gh-pages
+            folder: portal/.quarto/_site
         - name: Export Tables
           run: |
             python -c 'from fdp.db import export; export("data/local.duckdb", "tables")'
