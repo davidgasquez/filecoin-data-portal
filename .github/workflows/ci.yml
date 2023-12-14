@@ -49,6 +49,7 @@ jobs:
         - name: Export Tables
           run: |
             python -c 'from fdp.db import export; export("data/local.duckdb", "tables")'
+            rm tables/filecoin_state_market_deals.parquet
             ls -lh tables
         - name: Upload to IPFS
           uses: aquiladev/ipfs-action@master
