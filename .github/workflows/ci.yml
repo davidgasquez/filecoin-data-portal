@@ -41,12 +41,35 @@ jobs:
         - name: Render
           run: |
             make render
+            - name: Publish Docs
+              uses: JamesIves/github-pages-deploy-action@4.0.0
+              with:
+                branch: gh-pages
+                folder: portal/.quarto/_site
         - name: Export Tables
           run: |
-            python -c 'from fdp.db import export; export("data/local.duckdb", "db")'
-            ls -lh db
-        - name: Publish Docs
-          uses: JamesIves/github-pages-deploy-action@4.0.0
+            python -c 'from fdp.db import export; export("data/local.duckdb", "tables")'
+            ls -lh tables
+        - name: Upload to IPFS
+          uses: aquiladev/ipfs-action@master
+          id: ipfs
           with:
-            branch: gh-pages
-            folder: portal/.quarto/_site
+            path: ./tables
+            service: filebase
+            pinName: filecoin-data-portal-tables
+            filebaseBucket: filecoin-data-portal
+            filebaseKey: ${{ secrets.FILEBASE_KEY }}
+            filebaseSecret: ${{ secrets.FILEBASE_SECRET }}
+        - name: Create CID file
+          run: echo ${{ steps.ipfs.outputs.cid }} > data/IPFS_CID
+        - name: Commit and Push
+          run: |
+            git config --global user.name "GitHub Action"
+            git config --global user.email "actions@users.noreply.github.com"
+            git add data/IPFS_CID
+            if git diff-index --quiet HEAD --; then
+              echo "No changes to commit"
+            else
+              git commit -m "chore: :id: Update CID"
+              git push
+            fi
