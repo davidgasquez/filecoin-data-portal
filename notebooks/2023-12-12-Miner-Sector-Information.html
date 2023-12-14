@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="David Gasquez">
+<meta name="dcterms.date" content="2023-12-12">
+
+<title>Filecoin Data Portal - Miner Sector Information</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<link href="../favicon.ico" rel="icon">
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="https://www.pngall.com/wp-content/uploads/10/Filecoin-Crypto-Logo-180x180.png" alt="" class="navbar-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Filecoin Data Portal</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../docs/data-sources.html" rel="" target="">
+ <span class="menu-text">Docs</span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools ms-auto">
+    <a href="https://twitter.com/davidgasquez/" rel="" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-twitter"></i></a>
+    <a href="https://github.com/davidgasquez/filecoin-data-portal" rel="" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Miner Sector Information</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>David Gasquez </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 12, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="cell" data-execution_count="4">
+<div class="cell-output cell-output-stdout">
+<pre><code>Latest epoch is 3472632</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="5">
+<div class="cell-output cell-output-stdout">
+<pre><code>Total number of miners is 612905</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="6">
+<div class="cell-output cell-output-display" data-execution_count="6">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">SectorNumber</th>
+<th data-quarto-table-cell-role="th">SealProof</th>
+<th data-quarto-table-cell-role="th">SealedCID</th>
+<th data-quarto-table-cell-role="th">DealIDs</th>
+<th data-quarto-table-cell-role="th">Activation</th>
+<th data-quarto-table-cell-role="th">Expiration</th>
+<th data-quarto-table-cell-role="th">DealWeight</th>
+<th data-quarto-table-cell-role="th">VerifiedDealWeight</th>
+<th data-quarto-table-cell-role="th">InitialPledge</th>
+<th data-quarto-table-cell-role="th">ExpectedDayReward</th>
+<th data-quarto-table-cell-role="th">ExpectedStoragePledge</th>
+<th data-quarto-table-cell-role="th">ReplacedSectorAge</th>
+<th data-quarto-table-cell-role="th">ReplacedDayReward</th>
+<th data-quarto-table-cell-role="th">SectorKeyCID</th>
+<th data-quarto-table-cell-role="th">SimpleQAPower</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">60110</td>
+<td>901448</td>
+<td>8</td>
+<td>{'/': 'bagboea4b5abcaimztuk5b4zfk647ym2xxzjri2...</td>
+<td>None</td>
+<td>1375386</td>
+<td>3159720</td>
+<td>0</td>
+<td>0</td>
+<td>147891627031854455</td>
+<td>691015329331277</td>
+<td>13593616660539049</td>
+<td>0</td>
+<td>0</td>
+<td>None</td>
+<td>False</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">51471</td>
+<td>706607</td>
+<td>8</td>
+<td>{'/': 'bagboea4b5abcb4w3fcyj27skfregixatne5xrh...</td>
+<td>None</td>
+<td>1397924</td>
+<td>3182867</td>
+<td>0</td>
+<td>0</td>
+<td>148949142844069778</td>
+<td>681659617724107</td>
+<td>13531686513627846</td>
+<td>0</td>
+<td>0</td>
+<td>None</td>
+<td>False</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">77737</td>
+<td>1101579</td>
+<td>8</td>
+<td>{'/': 'bagboea4b5abcarxa5j2gscomovfd474qpwndjc...</td>
+<td>None</td>
+<td>1620605</td>
+<td>3342960</td>
+<td>0</td>
+<td>0</td>
+<td>158764913569939844</td>
+<td>594574059570375</td>
+<td>11739598187102572</td>
+<td>0</td>
+<td>0</td>
+<td>None</td>
+<td>False</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">26698</td>
+<td>400946</td>
+<td>8</td>
+<td>{'/': 'bagboea4b5abcaaeefztz7gxpeu2usmdevgzmwt...</td>
+<td>None</td>
+<td>1375623</td>
+<td>3159720</td>
+<td>0</td>
+<td>0</td>
+<td>147889104216986747</td>
+<td>690870682561322</td>
+<td>13585881471918062</td>
+<td>0</td>
+<td>0</td>
+<td>None</td>
+<td>False</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">114117</td>
+<td>5015641</td>
+<td>8</td>
+<td>{'/': 'bagboea4b5abcac42e44cb37smjm7wq4fcbn6wi...</td>
+<td>[55633165]</td>
+<td>3236503</td>
+<td>4324334</td>
+<td>0</td>
+<td>37377588548599808</td>
+<td>1899995191011097709</td>
+<td>2146490162356217</td>
+<td>42027255114188709</td>
+<td>0</td>
+<td>0</td>
+<td>None</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="19">
+<div class="cell-output cell-output-display" data-execution_count="19">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">AllSectors</th>
+<th data-quarto-table-cell-role="th">FaultySectors</th>
+<th data-quarto-table-cell-role="th">RecoveringSectors</th>
+<th data-quarto-table-cell-role="th">LiveSectors</th>
+<th data-quarto-table-cell-role="th">ActiveSectors</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>[3, 8, 1, 3, 1, 7, 1, 5, 1, 11, 2, 2, 1, 3, 1,...</td>
+<td>[0]</td>
+<td>[0]</td>
+<td>[0]</td>
+<td>[0]</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>[5014864, 3, 1, 28, 1, 2, 723, 2, 2, 2, 1, 24,...</td>
+<td>[0]</td>
+<td>[0]</td>
+<td>[5014864, 3, 1, 28, 1, 2, 723, 2, 2, 2, 1, 24,...</td>
+<td>[5014864, 3, 1, 28, 1, 2, 723, 2, 2, 2, 1, 24,...</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="7">
+<div class="cell-output cell-output-display" data-execution_count="7">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">MinerPower</th>
+<th data-quarto-table-cell-role="th">TotalPower</th>
+<th data-quarto-table-cell-role="th">HasMinPower</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">RawBytePower</td>
+<td>3141407799771136</td>
+<td>10149576889514065920</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">QualityAdjPower</td>
+<td>31355404038176768</td>
+<td>28283031234541748224</td>
+<td>True</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="13">
+<div class="cell-output cell-output-error">
+<pre><code>CatalogException: Catalog Error: Table with name raw_storage_provider_daily_power does not exist!
+Did you mean "public.raw_storage_providers_location_provider_quest"?</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="15">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+[notice] A new release of pip is available: 23.2.1 -&gt; 23.3.1
+[notice] To update, run: pip install --upgrade pip
+Note: you may need to restart the kernel to use updated packages.</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="17">
+<div class="cell-output cell-output-display" data-execution_count="17">
+<pre><code>{'args': {},
+ 'headers': {'Accept': '*/*',
+  'Accept-Encoding': 'gzip, deflate',
+  'Host': 'httpbin.org',
+  'User-Agent': 'python-httpx/0.25.2',
+  'X-Amzn-Trace-Id': 'Root=1-6579df8c-529f6562083d9b6c62d1b021'},
+ 'origin': '83.60.226.183',
+ 'url': 'https://httpbin.org/get'}</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="33">
+<div class="cell-output cell-output-display" data-execution_count="33">
+<pre><code>{'jsonrpc': '2.0',
+ 'result': {'Cids': [{'/': 'bafy2bzacednou3obfgftqedzaw3uxqrht6kgsnlyari73myagihwsio2uwb4m'},
+   {'/': 'bafy2bzacedjbwqotzvekzyha7wyq3brfn5fw64zkcnisyxrktep4cypode5ss'},
+   {'/': 'bafy2bzacebsnhegv5tinhl4iedteaxtsa36ucaau2jcslpiacq6tonkfgkrgk'},
+   {'/': 'bafy2bzacebkqjzd6ty4v5lhnmcpbttuvy4hgz4v2xygrysx4lsixu5phje7v4'}],
+  'Blocks': [{'Miner': 'f01981603',
+    'Ticket': {'VRFProof': 'gc/wabtcjVc9Pb9EQKZ3qw3NB/Qst1b63Aw1STtTLN5AGIjqmBTOHhmdOpBucY1SD0azhL03CG33JYslEMsBcyGB8WHr3/NiP92NyE+H9brH6w8nyZNNmYbxIdgyT3iv'},
+    'ElectionProof': {'WinCount': 1,
+     'VRFProof': 't8De6UsNotIXdQ7iMCShCb9/geB69LV9cB6a5eVOWdd0/23jcCnVsGGxv9JyO8S/Cbf+HaLdFy5K6LrmfC1xmcCqlI4ghLjHqJVPt+QCAakQ16zysTpO6pC7MuucFdgI'},
+    'BeaconEntries': [{'Round': 3568507,
+      'Data': 'ky457BzAo/jx2Y0FtMVt6/41rxn0EpK9AYWE9yyhpKKADIdI9ew6TQFyKHTaXwkqBIrVVnzpMGSBgUQQ+ygPkvJLi7Kdyzd1NXnAOK+ljik7n7hEI3vvVON4zoXQQzWF'}],
+    'WinPoStProof': [{'PoStProof': 3,
+      'ProofBytes': 'l65dqne4TlgOveM41NI+8foojBa8THobltOLyA955z0qZr5b6kNHk0qOHqwTVqrLkHjGRWRLGggYB7phKnGUDqqnyZ54sP9zdzs9ObgS8s99LCELcvzSu/9zABzKU6luDtXzryOd4TsoacsIjGVG6ZAbziae6DXwWPSoGEwFkVZEizA0FQkec9QrR5OeU+KtjR6eTS58NIMjqDtRyPmyTnHdDT0HVqq5fS/SBxCzEXNo2H4tbJgbLzRybQeK8MWC'}],
+    'Parents': [{'/': 'bafy2bzaceacnagju4z2mb32zhvusi4gerduny5px3vzx6xhhibotlx7t7ajvk'},
+     {'/': 'bafy2bzacec3l4ha6deq6xx4hzpjle4jwtsxdgbeeeoraxycaetvnpcbhhwmfe'},
+     {'/': 'bafy2bzacedpe5gdr5mftngyin4yq3r6b77b5o7s53bc5yvkmkyq6yqe2qyona'},
+     {'/': 'bafy2bzaceb3eseh5gcnlepuc7nr5vzon2zrm2ebi2mjursjkiyw42m2egskxo'},
+     {'/': 'bafy2bzacedjq7rbmnli5p7tv62cfgr6b6iai43shoaif6lcfw4quczdni5ivc'},
+     {'/': 'bafy2bzaced3a7otnbc27e75t2hc32vldmaaicqbqprjnktqq6rxdgp233krzg'}],
+    'ParentWeight': '82241292301',
+    'Height': 3472662,
+    'ParentStateRoot': {'/': 'bafy2bzacebgje2eepcopvmv4xhdz32acudg7lkpkzzavqhpqvvoczdx26xjrk'},
+    'ParentMessageReceipts': {'/': 'bafy2bzacec6u2sutfjqv7jhinrbqvc65xfbfay5omr2mm7bmjoowgb5c5wp4i'},
+    'Messages': {'/': 'bafy2bzacedk3ngcfo4atvl4rv5rxaif5xacm44zuifrpezp6pqpubvxzdx6ni'},
+    'BLSAggregate': {'Type': 2,
+     'Data': 'sO+gNd6A3PbRx8mg2b8ysdVVHInLxq9QbYkVyH0Cqs/ocBL9sIDzFsxSAoLjaAbDF7ERdzyeKpLCWhVNm2CELbF/NN6UQqvYRCXV56qUa5uiK2bAYsXrj4JlMzfJpIKV'},
+    'Timestamp': 1702486260,
+    'BlockSig': {'Type': 2,
+     'Data': 'jjq+zvKWEWeK/uBcJq2XcGCkVCaQDAAnjQWLi0KcDQmJki2nShfB0RdoJQjvvXvwFJDt3OtNT0yN0csk2gGb6PTg8M3eiNtxEoVQmx/vMgNnGYhyLHBGa+PtgT1JwOF5'},
+    'ForkSignaling': 0,
+    'ParentBaseFee': '100'},
+   {'Miner': 'f01690363',
+    'Ticket': {'VRFProof': 'lyZksts3YDTQag1RV3Oo6uLdwsstrsw4Ry0An5fvLDf5AKWLYrLg03gxGi2kIb+SBuq1D7xMyGRderB6NPcZod5QwBVtgbxT+y5GCIBShSygCUgrHwdLvIAkctVpG/7S'},
+    'ElectionProof': {'WinCount': 1,
+     'VRFProof': 'lwL13ot5qFs9Xwmck2fgB4IANFgzWT72TTxE/9bA8b9fk+459ai4fWsBYNpOzaZNDpOne3ptQmBUg2SqEQNa9TyECtSeDpmAALnVDUyFSYYAbV98w3S83A4L7ClA8QtF'},
+    'BeaconEntries': [{'Round': 3568507,
+      'Data': 'ky457BzAo/jx2Y0FtMVt6/41rxn0EpK9AYWE9yyhpKKADIdI9ew6TQFyKHTaXwkqBIrVVnzpMGSBgUQQ+ygPkvJLi7Kdyzd1NXnAOK+ljik7n7hEI3vvVON4zoXQQzWF'}],
+    'WinPoStProof': [{'PoStProof': 3,
+      'ProofBytes': 'rgpAOnxLXjJNOK4rgkb8cvOoz8FY9nsx06pr/mXlVWsMce+0kCzyOKsrG8jVZRTqr7QyaHPpO7mz94qMHED4tceFGLoTpDFOAJIFyHo28lKDKIA1iZqiTGk1oG4/1f/PAHeG5tk28q24WmhJ+K2F2O7lf/m4oe2pgxQGvbNEfTJs0RkpmisOqdzbCfksD2rJg4uUk3CfSEarDaRbCJsYGaMfnD9m7dHrxxIQy/vJeAlS++eSZtoW7AlsT4FkJhQR'}],
+    'Parents': [{'/': 'bafy2bzaceacnagju4z2mb32zhvusi4gerduny5px3vzx6xhhibotlx7t7ajvk'},
+     {'/': 'bafy2bzacec3l4ha6deq6xx4hzpjle4jwtsxdgbeeeoraxycaetvnpcbhhwmfe'},
+     {'/': 'bafy2bzacedpe5gdr5mftngyin4yq3r6b77b5o7s53bc5yvkmkyq6yqe2qyona'},
+     {'/': 'bafy2bzaceb3eseh5gcnlepuc7nr5vzon2zrm2ebi2mjursjkiyw42m2egskxo'},
+     {'/': 'bafy2bzacedjq7rbmnli5p7tv62cfgr6b6iai43shoaif6lcfw4quczdni5ivc'},
+     {'/': 'bafy2bzaced3a7otnbc27e75t2hc32vldmaaicqbqprjnktqq6rxdgp233krzg'}],
+    'ParentWeight': '82241292301',
+    'Height': 3472662,
+    'ParentStateRoot': {'/': 'bafy2bzacebgje2eepcopvmv4xhdz32acudg7lkpkzzavqhpqvvoczdx26xjrk'},
+    'ParentMessageReceipts': {'/': 'bafy2bzacec6u2sutfjqv7jhinrbqvc65xfbfay5omr2mm7bmjoowgb5c5wp4i'},
+    'Messages': {'/': 'bafy2bzaceczghkta4k4hqrekxuqmow77tujtfb54mgfrbbj3qv4to546f7xc2'},
+    'BLSAggregate': {'Type': 2,
+     'Data': 's9JiLVjcpQ2YFPiUo8OHsr9/OUUPojOgZDCapFHt69FMyAoc7UAGGdpezGzJ6ZL8CCgQEemQGbffIiN0TFF+BiWDa01bfTkzaoPMDNSGd038/k2ADxgCJZmY7vbfLPNq'},
+    'Timestamp': 1702486260,
+    'BlockSig': {'Type': 2,
+     'Data': 'qAtpBJwQPASuNqEPqaiJP8hsJ7teuZWStNytIFzy5AXApduOLqsAE1FLsWysFdYSDyf3VHHfIxe8aByJVhBRjPTFyLelkjiGjXbOHM+H+60AX8qwZUJqUlz8Ifmoghw7'},
+    'ForkSignaling': 0,
+    'ParentBaseFee': '100'},
+   {'Miner': 'f01926802',
+    'Ticket': {'VRFProof': 'riwaE0uwA8JjPDKbYippWTAnnQ5mjohYLVIAbl6MqAxUUNd/BPdaFiPoHC7avQjdFjvXTZTuMnVrHiRZ/wYLDQHoMVw8xN2k2OhDtcoah8BYjaAzYxyp7rom3KrKx7Ex'},
+    'ElectionProof': {'WinCount': 1,
+     'VRFProof': 'qPqVkjOdQaS8ri6DwD1jSPKSi4VwqAqyXDH8fjn3OoHKVJoiPoNCrhUu/Nn3VigqEiE46e314r/Ecoch+ebX7iIGPmaTE+a4VnQeioYMy/p47Oh4Wfh0Z+T5JtHq09KV'},
+    'BeaconEntries': [{'Round': 3568507,
+      'Data': 'ky457BzAo/jx2Y0FtMVt6/41rxn0EpK9AYWE9yyhpKKADIdI9ew6TQFyKHTaXwkqBIrVVnzpMGSBgUQQ+ygPkvJLi7Kdyzd1NXnAOK+ljik7n7hEI3vvVON4zoXQQzWF'}],
+    'WinPoStProof': [{'PoStProof': 3,
+      'ProofBytes': 'haOduOvZsR6DvIxgVVwNmaYa5WLZrtuZ2XH8lpEK0sAbhh/WtEv3Voxj+Oj5bqOxqc4p8c6t2FZ3qei/BY5JyOV5B+BGA5Haxi0ErtVG0S+ds2kSHWd58SJI/Hv2VRYfEHXg9HvWW5SGU5Ke8TtbPsxp42obLf6Nu2LvJA+9JnGPhhIoLnq2m56uiyu56vkPi2ge3voDq/NoRXx+uWKZj21z1A2NbeHTh6GHSvuiGYKeTopvI71d/PChyEB8kbMB'}],
+    'Parents': [{'/': 'bafy2bzaceacnagju4z2mb32zhvusi4gerduny5px3vzx6xhhibotlx7t7ajvk'},
+     {'/': 'bafy2bzacec3l4ha6deq6xx4hzpjle4jwtsxdgbeeeoraxycaetvnpcbhhwmfe'},
+     {'/': 'bafy2bzacedpe5gdr5mftngyin4yq3r6b77b5o7s53bc5yvkmkyq6yqe2qyona'},
+     {'/': 'bafy2bzaceb3eseh5gcnlepuc7nr5vzon2zrm2ebi2mjursjkiyw42m2egskxo'},
+     {'/': 'bafy2bzacedjq7rbmnli5p7tv62cfgr6b6iai43shoaif6lcfw4quczdni5ivc'},
+     {'/': 'bafy2bzaced3a7otnbc27e75t2hc32vldmaaicqbqprjnktqq6rxdgp233krzg'}],
+    'ParentWeight': '82241292301',
+    'Height': 3472662,
+    'ParentStateRoot': {'/': 'bafy2bzacebgje2eepcopvmv4xhdz32acudg7lkpkzzavqhpqvvoczdx26xjrk'},
+    'ParentMessageReceipts': {'/': 'bafy2bzacec6u2sutfjqv7jhinrbqvc65xfbfay5omr2mm7bmjoowgb5c5wp4i'},
+    'Messages': {'/': 'bafy2bzacebjgflqy67prweifk47gq4aokzeqrvvvsotzdy4upl2w7gmmlz3wa'},
+    'BLSAggregate': {'Type': 2,
+     'Data': 's8HLicLFA0l0zfLdZdwvxWe9bfJoC0lJ6YkC5ysYznFkFPmT3+Xl2bvQHj6Q5JcNGT9dng6sdAi6iY7/oto+LP0RJUfl3qzKpuzp7jiTy7hI3oybDJU2kHHKI4PmSRYM'},
+    'Timestamp': 1702486260,
+    'BlockSig': {'Type': 2,
+     'Data': 'oabGq+amUA3FK3VB3yk+CP4zxgdEIASnkQaCXU9kYDwS0JmAT1pgSp13XhnCpmuEFHJZGStHhkH9R3061/OeytODKTr9OZcLhO6LyQrgHhyirNV818EI94IWJHE7SKFf'},
+    'ForkSignaling': 0,
+    'ParentBaseFee': '100'},
+   {'Miner': 'f01915287',
+    'Ticket': {'VRFProof': 'tsLISo4LYRkQWoV3s7MOm3Oxeg3kZsXzhkj7dBZFr9lagXHw9UZrDKKGv9awfl0vAgvIEnzYLifwAADpWOfmpjjYC4mWkZyKkHFBiuDf99snMiBH+mcl5fT6++U7mt6F'},
+    'ElectionProof': {'WinCount': 1,
+     'VRFProof': 'tv1D/+MrtUPv/aj+iBpxwa7frQ/RgFIndtaeOw9zLoS0Jry4pb5BX30iW9nfWLFyE1B2h8YjRMuzm9Eu05cjSDVgEVaIsCQODMcy3SjVNblBsEslwCR1cvshixuTWFK0'},
+    'BeaconEntries': [{'Round': 3568507,
+      'Data': 'ky457BzAo/jx2Y0FtMVt6/41rxn0EpK9AYWE9yyhpKKADIdI9ew6TQFyKHTaXwkqBIrVVnzpMGSBgUQQ+ygPkvJLi7Kdyzd1NXnAOK+ljik7n7hEI3vvVON4zoXQQzWF'}],
+    'WinPoStProof': [{'PoStProof': 3,
+      'ProofBytes': 'sK4YbQJHr7O+2sT1sWbAtrdcnVZu8o1xdwT9yuRUEtGwkEjwclyGbeT0ECSaanBUgUR3n9j4GVZKcdd2pqvu5OhTvkUPdAvxuyuFPTGJQZbVonmbfWHUSwsOqsnFUMLeCD0E4RZW9j+53ek/BdlGhi4XW4buoIGbByPgCq0pcymxsm1AMO+/5mSeKQSnM32voxWCuW5TwMLi+jPh3CRs8R29L8e+vOLX3Me+xo6FltSz4neyTPYoSSKGbf7RtLqY'}],
+    'Parents': [{'/': 'bafy2bzaceacnagju4z2mb32zhvusi4gerduny5px3vzx6xhhibotlx7t7ajvk'},
+     {'/': 'bafy2bzacec3l4ha6deq6xx4hzpjle4jwtsxdgbeeeoraxycaetvnpcbhhwmfe'},
+     {'/': 'bafy2bzacedpe5gdr5mftngyin4yq3r6b77b5o7s53bc5yvkmkyq6yqe2qyona'},
+     {'/': 'bafy2bzaceb3eseh5gcnlepuc7nr5vzon2zrm2ebi2mjursjkiyw42m2egskxo'},
+     {'/': 'bafy2bzacedjq7rbmnli5p7tv62cfgr6b6iai43shoaif6lcfw4quczdni5ivc'},
+     {'/': 'bafy2bzaced3a7otnbc27e75t2hc32vldmaaicqbqprjnktqq6rxdgp233krzg'}],
+    'ParentWeight': '82241292301',
+    'Height': 3472662,
+    'ParentStateRoot': {'/': 'bafy2bzacebgje2eepcopvmv4xhdz32acudg7lkpkzzavqhpqvvoczdx26xjrk'},
+    'ParentMessageReceipts': {'/': 'bafy2bzacec6u2sutfjqv7jhinrbqvc65xfbfay5omr2mm7bmjoowgb5c5wp4i'},
+    'Messages': {'/': 'bafy2bzacea2gbcjelqvakq7q3krdtpiuleluenkb3ghxduf7py5nf2rs3qs3u'},
+    'BLSAggregate': {'Type': 2,
+     'Data': 'rCMiy40X7gBTc+BfwjDoA6WftrMeneoHOAXmSBHI/CadRN7bhy+AEhRvpEjMab20A1eKEsUmQnxEQ2gA9nO2l4Pziy2Sw78rwfmBSdWqgR5EQ6GcFR1p7Lro8Yrbj7e6'},
+    'Timestamp': 1702486260,
+    'BlockSig': {'Type': 2,
+     'Data': 'oLOry3H/rZWhkyKldTt+aiyvGYWKAim4fTKo7lb5ytCp+GszbOAE6JP+D4Wosw7TDpABO8wXZmPtjWhC3Vl/QB03lbO9gLFSzGcULMfaf1+C9IOGhoeilpqYn0q9DVww'},
+    'ForkSignaling': 0,
+    'ParentBaseFee': '100'}],
+  'Height': 3472662},
+ 'id': 1}</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="31">
+<div class="cell-output cell-output-stdout">
+<pre><code>bafy2bzacednou3obfgftqedzaw3uxqrht6kgsnlyari73myagihwsio2uwb4m
+bafy2bzacedjbwqotzvekzyha7wyq3brfn5fw64zkcnisyxrktep4cypode5ss
+bafy2bzacebsnhegv5tinhl4iedteaxtsa36ucaau2jcslpiacq6tonkfgkrgk
+bafy2bzacebkqjzd6ty4v5lhnmcpbttuvy4hgz4v2xygrysx4lsixu5phje7v4</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="36">
+<div class="cell-output cell-output-display" data-execution_count="36">
+<pre><code>3472632</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="68">
+<div class="cell-output cell-output-display" data-execution_count="68">
+<pre><code>&lt;coroutine object do_tasks at 0x7fc628f84c40&gt;</code></pre>
+</div>
+</div>
+
+
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">David Gasquez<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.dev/davidgasquez/filecoin-data-portal/blob/main/notebooks/2023-12-12-Miner-Sector-Information.ipynb" class="toc-action">Edit this page</a></p><p><a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new" class="toc-action">Report an issue</a></p></div></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
