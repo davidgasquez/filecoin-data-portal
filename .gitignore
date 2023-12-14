@@ -164,11 +164,7 @@ cython_debug/
 .jupyter_cache/
 _freeze/
 
-# Ignore everything in data except the .gitkeep file
+# Ignore data files
 data/*
 !data/.gitkeep
-
-# dbt
-target/
-dbt_packages/
-logs/
+!data/IPFS_CID
