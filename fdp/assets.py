@@ -25,7 +25,7 @@ def raw_datacapstats_verified_clients(duckdb: DuckDBResource) -> MaterializeResu
 
     with duckdb.get_connection() as conn:
         conn.execute(
-            "create table if not exists raw_datacapstats_verified_clients as select * from df"
+            "create or replace table raw_datacapstats_verified_clients as select * from df"
         )
 
     return MaterializeResult(
@@ -63,7 +63,7 @@ def raw_datacapstats_verified_clients(duckdb: DuckDBResource) -> MaterializeResu
 
 #     with duckdb.get_connection() as conn:
 #         conn.execute(
-#             "create table if not exists raw_storage_providers_filrep as select * from filrep"
+#             "create or replace table raw_storage_providers_filrep as select * from filrep"
 #         )
 
 #     return MaterializeResult(

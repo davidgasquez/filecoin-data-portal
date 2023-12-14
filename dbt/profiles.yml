@@ -3,11 +3,10 @@ default:
     dev:
       type: duckdb
       path: ../data/local.duckdb
-      threads: 8
-      extensions:
-        - httpfs
-        - parquet
+      threads: 16
       settings:
+        temp_directory: /tmp/db.temp
+        preserve_insertion_order: false
         enable_object_cache: true
         enable_http_metadata_cache: true
       external_root: ../data
