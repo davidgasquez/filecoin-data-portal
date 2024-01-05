@@ -8,6 +8,20 @@ Your open source, serverless, and local-first Data Platform for the Filecoin eco
 
 Check out the [Filecoin Data Portal](https://davidgasquez.github.io/filecoin-data-portal/) website for dashboards and reports!
 
+## 📂 Data
+
+You can get the latest data a Parquet files from IPFS. The data lives under the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) pointer available in this repository.
+
+The following command will give you a working URL to explore the available tables.
+
+```bash
+# Get the latest IPFS CID
+LATEST_IPFS_CID=$(curl https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID)
+
+# Print the Gateway URL with all the tables
+echo https://ipfs.filebase.io/ipfs/$LATEST_IPFS_CID/
+```
+
 ## 📖 Overview
 
 This repository contains code and artifacts to help anyone process Filecoin data from [diverse sources](portal/docs/data-sources.md) (on-chain and off-chain). It is an implementation of [Datadex](https://github.com/davidgasquez/datadex), allowing anyone to collaborate on data, models, and pipelines in a permissionless way.
