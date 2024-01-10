@@ -16,12 +16,20 @@ format:
     toc: false
 ---
 
-## Dashboards
+# Filecoin Data Portal
+
+Open source, serverless, and local-first Data Platform for the Filecoin ecosystem. This data hub improves data access and empower collaboration within the community allowing users to spend more time on novel analysis and less time on data preparation!
+
+## 📂 Data
+
+Explore the latest [datasets as Parquet files from IPFS](https://ipfs.io/ipns/k51qzi5uqu5dktj2z0c6k27rxtpn2d4psdx4ph9p6481axcfn5iel2a7qehr3v/).
+
+## 📊 Dashboards
 
 :::{#dashboards}
 :::
 
-## Notebooks
+## 📓 Notebooks
 
 :::{#notebooks}
 :::

@@ -11,8 +11,8 @@ class SpacescopeResource(ConfigurableResource):
     Spacescope API resource.
     """
 
-    token = str(os.getenv("SPACESCOPE_TOKEN"))
-    endpoint = "https://api.spacescope.io/v2/"
+    token: str = str(os.getenv("SPACESCOPE_TOKEN"))
+    endpoint: str = "https://api.spacescope.io/v2/"
 
     def request(self, method: str, params: dict = {}) -> Response:
         endpoint = f"{self.endpoint}/{method}"
@@ -42,7 +42,7 @@ class DuneResource(ConfigurableResource):
     Dune API resource.
     """
 
-    DUNE_API_KEY = str(os.environ.get("DUNE_API_KEY"))
+    DUNE_API_KEY: str = str(os.environ.get("DUNE_API_KEY"))
 
     def upload_csv(self, csv_file_path: str) -> requests.Response:
         """Uploads a CSV file to Dune's API.

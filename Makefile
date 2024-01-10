@@ -6,6 +6,9 @@ run:
 dev:
 	@dagster dev -m fdp
 
+tables:
+	@python -c 'from fdp.db import export; export("data/local.duckdb", "data/tables")'
+
 preview:
 	@quarto preview portal
 
@@ -13,7 +16,7 @@ render:
 	@quarto render portal
 
 publish:
-	@quarto publish gh-pages --no-prompt portal
+	@fleek sites deploy
 
 clean:
 	@rm -rf portal/.quarto data/*.parquet data/*.duckdb

@@ -2,25 +2,15 @@
 
 [![CI](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml)
 
-Your open source, serverless, and local-first Data Platform for the Filecoin ecosystem! It aims to improve data access and collaboration within the community and allow users to spend more time on novel analysis and less time on data preparation.
+Open source, serverless, and local-first Data Platform for the Filecoin ecosystem. This data hub improves data access and empower collaboration within the community allowing users to spend more time on novel analysis and less time on data preparation!
 
-![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/82b2f19e-0e2e-43a4-b2e4-9de6340060f8)
+![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/64d6adea-48d2-4cee-b0a2-b94bee733c14)
 
 Check out the [Filecoin Data Portal](https://davidgasquez.github.io/filecoin-data-portal/) website for dashboards and reports!
 
 ## 📂 Data
 
-You can get the latest data a Parquet files from IPFS. The data lives under the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) pointer available in this repository.
-
-The following command will give you a working URL to explore the available tables.
-
-```bash
-# Get the latest IPFS CID
-LATEST_IPFS_CID=$(curl https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID)
-
-# Print the Gateway URL with all the tables
-echo https://ipfs.filebase.io/ipfs/$LATEST_IPFS_CID/
-```
+You can get the latest data a Parquet files from IPFS. The data lives under the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) pointer available in this repository and at the IPNS address [`ipns://k51qzi5uqu5dktj2z0c6k27rxtpn2d4psdx4ph9p6481axcfn5iel2a7qehr3v`](https://ipfs.io/ipns/k51qzi5uqu5dktj2z0c6k27rxtpn2d4psdx4ph9p6481axcfn5iel2a7qehr3v/)
 
 ## 📖 Overview
 

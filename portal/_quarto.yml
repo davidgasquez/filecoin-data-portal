@@ -17,8 +17,13 @@ website:
     search: false
     pinned: true
     left:
+      - text: "Data"
+        href: https://ipfs.io/ipns/k51qzi5uqu5dktj2z0c6k27rxtpn2d4psdx4ph9p6481axcfn5iel2a7qehr3v
       - text: "Docs"
         href: docs/data-sources.html
+    right:
+      - text: "Request Data"
+        href: https://github.com/davidgasquez/filecoin-data-portal/issues/new
     tools:
       - icon: twitter
         href: https://twitter.com/davidgasquez/

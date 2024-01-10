@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SPACESCOPE_TOKEN: ${{ secrets.SPACESCOPE_TOKEN }}
+      FLEEK_TOKEN: ${{ secrets.FLEEK_TOKEN }}
+      FLEEK_PROJECT_ID: ${{ secrets.FLEEK_PROJECT_ID }}
     steps:
         - name: Free Disk Space
           uses: jlumbroso/free-disk-space@main
@@ -41,25 +43,27 @@ jobs:
         - name: Render
           run: |
             make render
-        - name: Publish Docs
-          uses: JamesIves/github-pages-deploy-action@4.0.0
+        - name: Install Node.js
+          uses: actions/setup-node@v3
           with:
-            branch: gh-pages
-            folder: portal/.quarto/_site
+              node-version: 20
+        - name: Install Fleek CLI
+          run: npm i -g @fleekxyz/cli
+        - name: Build & deploy sites
+          run: fleek sites deploy
         - name: Export Tables
-          run: |
-            python -c 'from fdp.db import export; export("data/local.duckdb", "tables")'
-            ls -lh tables
-        - name: Upload to IPFS
-          uses: aquiladev/ipfs-action@master
+          run: make tables
+        - name: Push to IPFS
+          uses: filebase/ipfs-action@master
           id: ipfs
           with:
-            path: ./tables
+            path: ./data/tables
             service: filebase
             pinName: filecoin-data-portal-tables
             filebaseBucket: filecoin-data-portal
             filebaseKey: ${{ secrets.FILEBASE_KEY }}
             filebaseSecret: ${{ secrets.FILEBASE_SECRET }}
+            key: filecoin-data-portal-db
         - name: Create CID file
           run: echo ${{ steps.ipfs.outputs.cid }} > data/IPFS_CID
         - name: Commit and Push
