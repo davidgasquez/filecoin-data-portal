@@ -29,7 +29,7 @@ readme = "README.md"
 license = { text = "MIT" }
 
 [project.urls]
-Homepage = "https://davidgasquez.github.io/filecoin-data-portal/"
+Homepage = "https://filecoin-data-portal.on-fleek.app/"
 Changelog = "https://github.com/davidgasquez/filecoin-data-portal/commits/main/"
 Issues = "https://github.com/davidgasquez/filecoin-data-portal/issues"
 CI = "https://github.com/davidgasquez/filecoin-data-portal/actions"

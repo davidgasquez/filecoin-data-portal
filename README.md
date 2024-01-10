@@ -6,7 +6,7 @@ Open source, serverless, and local-first Data Platform for the Filecoin ecosyste
 
 ![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/64d6adea-48d2-4cee-b0a2-b94bee733c14)
 
-Check out the [Filecoin Data Portal](https://davidgasquez.github.io/filecoin-data-portal/) website for dashboards and reports!
+Check out the [Filecoin Data Portal](https://filecoin-data-portal.on-fleek.app/) website for dashboards and reports!
 
 ## 📂 Data
 
@@ -34,7 +34,7 @@ This repository contains code and artifacts to help anyone process Filecoin data
   - Each commit generates and pushes all table files to IPFS.
   - Easily access historical data snapshots.
   - Declarative and stateless transformations tracked in git.
-  - Static dashboards and reports available at the [Filecoin Data Portal](https://davidgasquez.github.io/filecoin-data-portal/).
+  - Static dashboards and reports available at the [Filecoin Data Portal](https://filecoin-data-portal.on-fleek.app/).
 - **Modular Flexibility**
   - Replace, extend, or remove individual components.
   - Works across various environments (laptop, cluster, browser).
@@ -42,7 +42,7 @@ This repository contains code and artifacts to help anyone process Filecoin data
 - **Low Friction Data Usage**
   - Raw and processed data is available to anyone on IPFS. Use wathever tool you want!
   - Get started with simple actions like pasting a [SQL query in your browser](https://shell.duckdb.org/) or using `pd.read_parquet(url)` in a Notebook.
-  - [Static Quarto Notebooks with embedded datasets](https://davidgasquez.github.io/filecoin-data-portal/reports/2023-06-21-Exploring-Filecoin-Deals.html) are generated with every commit, serving as documentation or a simple reporting/dashboarding layer.
+  - [Static Quarto Notebooks with embedded datasets](https://filecoin-data-portal.on-fleek.app/reports/2023-06-21-Exploring-Filecoin-Deals.html) are generated with every commit, serving as documentation or a simple reporting/dashboarding layer.
 - **Modern Data Engineering**
   - Supports data engineering essentials such as typing, testing, materialized views, and development branches.
   - Utilizes best practices, including declarative transformations, and utilizes state-of-the-art tools like DuckDB.
