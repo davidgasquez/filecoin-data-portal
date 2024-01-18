@@ -23,11 +23,11 @@ select
     providercollateral as provider_collateral,
     clientcollateral as client_collateral,
     sectorstartepoch as sector_start_epoch,
-    to_timestamp(sectorstartepoch * 30 + 1598306400) as sector_start_at,
+    case when sectorstartepoch != -1 then to_timestamp(sectorstartepoch * 30 + 1598306400) else null end as sector_start_at,
     lastupdatedepoch as last_updated_epoch,
-    to_timestamp(lastupdatedepoch * 30 + 1598306400) as last_updated_at,
+    case when lastupdatedepoch != -1 then to_timestamp(lastupdatedepoch * 30 + 1598306400) else null end as last_updated_at,
     slashepoch as slash_epoch,
-    to_timestamp(slashepoch * 30 + 1598306400) as slash_at,
+    case when slashepoch != -1 then to_timestamp(slashepoch * 30 + 1598306400) else null end as slash_at,
     verifiedclaim as verified_claim,
-    if(slash_epoch = -1 and to_timestamp(endepoch * 30 + 1598306400) > get_current_timestamp(), true, false) as is_active
+    if(sector_start_epoch != -1 and slash_epoch = -1 and to_timestamp(endepoch * 30 + 1598306400) > get_current_timestamp(), true, false) as is_active
 from base

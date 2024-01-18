@@ -8,6 +8,10 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_storage_provider_daily_power"]
+      - name: raw_datacapstats_verified_clients
+        meta:
+          dagster:
+            asset_key: ["raw_datacapstats_verified_clients"]
       - name: raw_filecoin_state_market_deals
         meta:
           dagster:

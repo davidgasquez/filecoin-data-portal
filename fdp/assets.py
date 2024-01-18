@@ -5,15 +5,15 @@ import urllib.request
 
 import ijson
 import pandas as pd
+import requests
 import zstandard
-from dagster import MaterializeResult, MetadataValue, asset
-from dagster_duckdb import DuckDBResource
+from dagster import MetadataValue, Output, asset
 
 from .resources import SpacescopeResource
 
 
 @asset(compute_kind="python")
-def raw_datacapstats_verified_clients(duckdb: DuckDBResource) -> MaterializeResult:
+def raw_datacapstats_verified_clients() -> Output[pd.DataFrame]:
     """
     Verified Clients information from Datacapstats API.
     """
@@ -23,54 +23,27 @@ def raw_datacapstats_verified_clients(duckdb: DuckDBResource) -> MaterializeResu
     df = pd.json_normalize(data)
     df["allowanceArray"] = df["allowanceArray"]
 
-    with duckdb.get_connection() as conn:
-        conn.execute(
-            "create or replace table raw_datacapstats_verified_clients as select * from df"
-        )
+    return Output(df, metadata={"Sample": MetadataValue.md(df.sample(5).to_markdown())})
 
-    return MaterializeResult(
-        metadata={
-            "Sample": MetadataValue.md(df.sample(5).to_markdown()),
-        }
+
+@asset(compute_kind="python")
+def raw_storage_providers_filrep() -> Output[pd.DataFrame]:
+    """
+    Storage Providers information from Filrep API.
+    """
+    url = "https://api.filrep.io/api/v1/miners"
+
+    try:
+        filrep = pd.DataFrame(requests.get(url).json()["miners"])
+        filrep = filrep.astype(str)
+        filrep = filrep.drop(columns=["id"])
+    except Exception:
+        return Output(pd.DataFrame())
+
+    return Output(
+        filrep,
+        metadata={"Sample": MetadataValue.md(filrep.sample(5).to_markdown())},
     )
-
-
-# @asset(compute_kind="python")
-# def raw_storage_providers_filrep(duckdb: DuckDBResource) -> MaterializeResult:
-#     """
-#     Storage Providers information from Filrep API.
-#     """
-#     url = "https://api.filrep.io/api/v1/miners"
-
-#     try:
-#         requests.get(url, timeout=30).raise_for_status()
-#     except requests.exceptions.HTTPError as e:
-#         return MaterializeResult(
-#             metadata={
-#                 "Error": MetadataValue.md(
-#                     f"""The Filrep API is down.
-#                     ```
-#                     {e}
-#                     ```
-#                     """
-#                 ),
-#             }
-#         )
-
-#     filrep = pd.DataFrame(requests.get(url).json()["miners"])
-#     filrep = filrep.astype(str)
-#     filrep = filrep.drop(columns=["id"])
-
-#     with duckdb.get_connection() as conn:
-#         conn.execute(
-#             "create or replace table raw_storage_providers_filrep as select * from filrep"
-#         )
-
-#     return MaterializeResult(
-#         metadata={
-#             "Sample": MetadataValue.md(filrep.sample(5).to_markdown()),
-#         }
-#     )
 
 
 @asset(compute_kind="python")
@@ -140,16 +113,3 @@ def raw_filecoin_state_market_deals(context) -> None:
     os.system(
         "zstd --rm -q -f -T0 /tmp/ParsedStateMarketDeals.json -o /tmp/ParsedStateMarketDeals.json.zst"
     )
-
-
-# @asset(compute_kind="python", deps=["filecoin_state_market_deals"])
-# def filecoin_state_market_deals_parquet(duckdb: DuckDBResource) -> MaterializeResult:
-#     """
-#     Parquet file of the Filecoin Storage Providers table.
-#     """
-#     with duckdb.get_connection() as conn:
-#         conn.execute(
-#             "set memory_limit = '16GB'; copy filecoin_state_market_deals to 'filecoin_state_market_deals_ZSTD.parquet' (format 'parquet', COMPRESSION 'ZSTD', ROW_GROUP_SIZE 100000);"
-#         )
-
-#     return MaterializeResult()

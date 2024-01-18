@@ -11,7 +11,7 @@ class SpacescopeResource(ConfigurableResource):
     Spacescope API resource.
     """
 
-    token: str = str(os.getenv("SPACESCOPE_TOKEN"))
+    token: str = os.getenv("SPACESCOPE_TOKEN", "")
     endpoint: str = "https://api.spacescope.io/v2/"
 
     def request(self, method: str, params: dict = {}) -> Response:
@@ -26,7 +26,7 @@ class SpacescopeResource(ConfigurableResource):
 
         if r.status_code != 200:
             raise Exception(
-                f"Spacescope API returned {r.status_code} with message: {r.json()['message']}"
+                f"API returned {r.status_code} with message: {r.json()['message']}"
             )
 
         return r
@@ -34,6 +34,11 @@ class SpacescopeResource(ConfigurableResource):
     def get_storage_provider_power(self, storage_provider=None, date=None):
         params = {"state_date": date, "miner_id": storage_provider}
         r = self.request(method="storage_provider/power", params=params).json()
+        return r["data"]
+
+    def get_storage_provider_token_balance(self, storage_provider=None, date=None):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(method="storage_provider/token_balance", params=params).json()
         return r["data"]
 
 
