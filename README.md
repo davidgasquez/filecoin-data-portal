@@ -10,7 +10,7 @@ Check out the [Filecoin Data Portal](https://filecoin-data-portal.on-fleek.app/)
 
 ## 📂 Data
 
-You can get the latest data a Parquet files from IPFS. The data lives under the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) pointer available in this repository and at the IPNS address [`ipns://k51qzi5uqu5dktj2z0c6k27rxtpn2d4psdx4ph9p6481axcfn5iel2a7qehr3v`](https://ipfs.io/ipns/k51qzi5uqu5dktj2z0c6k27rxtpn2d4psdx4ph9p6481axcfn5iel2a7qehr3v/)
+You can get the latest data a Parquet files from IPFS. The data lives under the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) pointer available in this repository and at the IPNS address [`ipns://k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k`](https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/)
 
 ## 📖 Overview
 

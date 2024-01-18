@@ -22,7 +22,7 @@ Open source, serverless, and local-first Data Platform for the Filecoin ecosyste
 
 ## 📂 Data
 
-Explore the latest [datasets as Parquet files from IPFS](https://ipfs.io/ipns/k51qzi5uqu5dktj2z0c6k27rxtpn2d4psdx4ph9p6481axcfn5iel2a7qehr3v/).
+Explore the latest [datasets as Parquet files from IPFS](https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/).
 
 ## 📊 Dashboards
 
