@@ -11,10 +11,6 @@ with base as (
     from {{ source('raw_assets', 'raw_storage_provider_daily_power') }}
 )
 
-{# storage_providers_filrep as (
-    select * from {{ source('raw_assets', 'raw_storage_providers_filrep') }}
-) #}
-
 select
     date,
     base.provider_id,

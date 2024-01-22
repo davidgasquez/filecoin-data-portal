@@ -5,7 +5,6 @@ import urllib.request
 
 import ijson
 import pandas as pd
-import requests
 import zstandard
 from dagster import MetadataValue, Output, asset
 
@@ -24,26 +23,6 @@ def raw_datacapstats_verified_clients() -> Output[pd.DataFrame]:
     df["allowanceArray"] = df["allowanceArray"]
 
     return Output(df, metadata={"Sample": MetadataValue.md(df.sample(5).to_markdown())})
-
-
-@asset(compute_kind="python")
-def raw_storage_providers_filrep() -> Output[pd.DataFrame]:
-    """
-    Storage Providers information from Filrep API.
-    """
-    url = "https://api.filrep.io/api/v1/miners"
-
-    try:
-        filrep = pd.DataFrame(requests.get(url).json()["miners"])
-        filrep = filrep.astype(str)
-        filrep = filrep.drop(columns=["id"])
-    except Exception:
-        return Output(pd.DataFrame())
-
-    return Output(
-        filrep,
-        metadata={"Sample": MetadataValue.md(filrep.sample(5).to_markdown())},
-    )
 
 
 @asset(compute_kind="python")
