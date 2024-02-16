@@ -50,7 +50,8 @@ class DuneResource(ConfigurableResource):
     DUNE_API_KEY: str = str(os.environ.get("DUNE_API_KEY"))
 
     def upload_csv(self, csv_file_path: str) -> requests.Response:
-        """Uploads a CSV file to Dune's API.
+        """
+        Uploads a CSV file to Dune's API.
 
         Args:
             csv_file_path (str): The path to the CSV file to upload.

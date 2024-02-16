@@ -26,19 +26,20 @@ def raw_datacapstats_verified_clients() -> Output[pd.DataFrame]:
 
 
 @asset(compute_kind="python")
-def raw_storage_providers_location_provider_quest() -> pd.DataFrame:
+def raw_storage_providers_location_provider_quest() -> Output[pd.DataFrame]:
     """
     Storage Providers location information from Provider Quest (https://provider.quest).
     """
     url = "https://geoip.feeds.provider.quest/synthetic-locations-latest.json"
-    df = pd.read_json(url, typ="series")
-    return pd.json_normalize(df["providerLocations"])
+    all_df = pd.read_json(url, typ="series")
+    df = pd.json_normalize(all_df["providerLocations"])
+    return Output(df, metadata={"Sample": MetadataValue.md(df.sample(5).to_markdown())})
 
 
 @asset(compute_kind="API")
 def raw_storage_provider_daily_power(
     spacescope_api: SpacescopeResource,
-) -> pd.DataFrame:
+) -> Output[pd.DataFrame]:
     """
     Storage Providers daily power from Spacescope API.
     """
@@ -57,7 +58,10 @@ def raw_storage_provider_daily_power(
             [df_power_data, pd.DataFrame(power_data)], ignore_index=True
         )
 
-    return df_power_data
+    return Output(
+        df_power_data,
+        metadata={"Sample": MetadataValue.md(df_power_data.sample(5).to_markdown())},
+    )
 
 
 @asset(compute_kind="python")

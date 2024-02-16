@@ -46,3 +46,11 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = ["fdp"]
+
+[tool.dagster]
+module_name = "fdp"
+
+[tool.ruff.lint.isort]
+case-sensitive = true
+combine-as-imports = true
+length-sort = true

@@ -2,15 +2,17 @@
 
 [![CI](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml)
 
-Open source, serverless, and local-first Data Platform for the Filecoin ecosystem. This data hub improves data access and empower collaboration within the community allowing users to spend more time on novel analysis and less time on data preparation!
+Open source, serverless, and local-first Data Platform for the Filecoin ecosystem. The goal with this portal is to improve data access and empower more people conducting research to drives the community forward!
 
-![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/64d6adea-48d2-4cee-b0a2-b94bee733c14)
+![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/581155f3-0d23-45fa-a67a-bb373df7078a)
 
 Check out the [Filecoin Data Portal](https://filecoin-data-portal.on-fleek.app/) website for dashboards and reports!
 
 ## 📂 Data
 
-You can get the latest data a Parquet files from IPFS. The data lives under the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) pointer available in this repository and at the IPNS address [`ipns://k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k`](https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/)
+> 🔍 [Explore the latest data on IPFS]((https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/))!
+
+The data lives under the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) pointer available in this repository and the [`ipns://k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k`](https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/) IPNS address.
 
 ## 📖 Overview
 
@@ -47,24 +49,40 @@ This repository contains code and artifacts to help anyone process Filecoin data
   - Supports data engineering essentials such as typing, testing, materialized views, and development branches.
   - Utilizes best practices, including declarative transformations, and utilizes state-of-the-art tools like DuckDB.
 
-## 💻 Getting Started
+## 🛠️ Contributing
 
-The easiest way to get started is to use Visuel Studio Code and rely on the Development Container configuration provided in this repository. Alternatively, you can install the dependencies locally or reuse the Dockerfile provided.
+This project is in active development. You can help by giving ideas, answering questions, reporting bugs, proposing enhancements, improving the documentation, and fixing bugs. Feel free to open issues and pull requests!
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/davidgasquez/filecoin-data-platform)
+Some ways you can contribute to this project:
+- Adding new data sources.
+- Improving the data quality of existing datasets.
+- Adding tests to the data pipelines.
 
-You'll need the following secrets in your environment:
+## ⚙️ Development
+
+You can run the entire Filecoin Data Portal locally using Python Virtual Environment or VSCode Development Containers. You'll need the following secrets in your environment:
 
 - A `SPACESCOPE_TOKEN` to access [Spacescope](https://spacescope.io/) API.
 
-## 🛠️ Contributing
+### 🐍 Python Virtual Environment
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. There are multiple interesting ways to contribute to this project:
+Clone the repository and run the following commands (or `make setup`) from the root folder:
 
-- Add new data sources!
-- Improve [dbt project](dbt/) models.
-- Write a one off [report](reports/).
-- Build a [dashboard](dashboards/).
+```bash
+# Create a virtual environment
+pip install uv && uv venv
+
+# Install the package and dependencies
+uv pip install -U -e .[dev]
+```
+
+Now, you should be able to spin up Dagster UI (`make dev`) and [access it locally](http://127.0.0.1:3000).
+
+### 🐳 Dev Container
+
+You can jump into the repository [Development Container](https://code.visualstudio.com/docs/remote/containers). Once inside the develpment environment, you'll only need to run `make dev` to spin up the [Dagster UI locally](http://127.0.0.1:3000). The development environment can also run in your browser thanks to GitHub Codespaces!
+
+[![](https://github.com/codespaces/badge.svg)](https://codespaces.new/davidgasquez/filecoin-data-portal)
 
 ## 📝 License
 

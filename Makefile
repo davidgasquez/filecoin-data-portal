@@ -4,7 +4,12 @@ run:
 	@dagster asset materialize --select \* -m fdp
 
 dev:
-	@dagster dev -m fdp
+	@dagster dev
+
+setup:
+	@command -v uv >/dev/null 2>&1 || pip install -U uv
+	@uv venv
+	@uv pip install -U -e ".[dev]"
 
 tables:
 	@python -c 'from fdp.db import export; export("data/local.duckdb", "data/tables")'
