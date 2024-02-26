@@ -23,7 +23,7 @@ datacap_clients as (
         nullif(region, '') as region,
         nullif(industry, '') as industry,
         initialallowance as initial_datacap,
-        coalesce(allowance, 0) as current_datacap,
+        coalesce(try_cast(allowance as numeric), 0) as current_datacap,
         verifieraddressid as verifier_id,
     from {{ source("raw_assets", "raw_datacapstats_verified_clients") }}
     qualify row_number() over (partition by addressid order by createdatheight desc) = 1

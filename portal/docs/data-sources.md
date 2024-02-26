@@ -34,3 +34,8 @@ Can be derived from the [deals](#deals) table. Storage Providers cab ve augmente
 - [Filecoin CID Checker](https://filecoin.tools/)
 - [File.app](https://file.app/)
 - [Gliff Explorer](https://explorer.glif.io/)
+
+## Notebooks
+
+- [BlockScience](https://github.com/BlockScience)
+- [Filecoin Mecha Twin](https://github.com/protocol/filecoin-mecha-twin)

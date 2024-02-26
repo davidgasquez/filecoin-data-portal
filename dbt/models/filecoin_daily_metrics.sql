@@ -5,8 +5,8 @@ with deal_metrics as (
     from {{ ref('filecoin_state_market_deals') }}
     where
         sector_start_epoch > 0 and slash_epoch = -1
-        and sector_start_at < current_date
-        and sector_start_at > '2022-01-01'
+        and sector_start_at::date < current_date
+        and sector_start_at::date > '2022-01-01'
     group by 1
     order by 1
 )

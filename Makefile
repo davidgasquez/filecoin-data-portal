@@ -12,7 +12,8 @@ setup:
 	@uv pip install -U -e ".[dev]"
 
 tables:
-	@python -c 'from fdp.db import export; export("data/local.duckdb", "data/tables")'
+	@mkdir -p portal/.quarto/_site/data
+	@python -c 'from fdp.db import export; export("data/local.duckdb", "portal/.quarto/_site/data")'
 
 preview:
 	@quarto preview portal

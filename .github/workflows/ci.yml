@@ -68,7 +68,7 @@ jobs:
           uses: filebase/ipfs-action@master
           id: ipfs
           with:
-            path: ./data/tables
+            path: portal/.quarto/_site
             service: filebase
             pinName: filecoin-data-portal-tables
             filebaseBucket: filecoin-data-portal
