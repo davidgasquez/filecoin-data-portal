@@ -20,9 +20,10 @@ all_assets = load_assets_from_modules([assets])
 resources = {
     "dbt": dbt_resource,
     "spacescope_api": resources.SpacescopeResource(),
+    "starboard_databricks": resources.StarboardDatabricksResource(),
     "duckdb": DuckDBResource(database=DATA_DIR + "local.duckdb"),
     "io_manager": DuckDBPandasIOManager(
-        database=DATA_DIR + "local.duckdb",
+        database=DATA_DIR + "local.duckdb", schema="main"
     ),
 }
 

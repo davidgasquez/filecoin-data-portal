@@ -1,9 +1,0 @@
-{
-    "sites": [
-        {
-            "slug": "filecoin-data-portal",
-            "distDir": "./portal/.quarto/_site",
-            "buildCommand": ""
-        }
-    ]
-}

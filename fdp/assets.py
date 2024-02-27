@@ -1,14 +1,10 @@
 import datetime
-import json
-import os
-import urllib.request
 
-import ijson
 import pandas as pd
-import zstandard
-from dagster import MetadataValue, Output, asset
+from dagster import Output, MetadataValue, asset
+from dagster_duckdb import DuckDBResource
 
-from .resources import SpacescopeResource
+from .resources import SpacescopeResource, StarboardDatabricksResource
 
 
 @asset(compute_kind="python")
@@ -64,35 +60,118 @@ def raw_storage_provider_daily_power(
     )
 
 
+# @asset(compute_kind="python")
+# def raw_filecoin_state_market_deals(context) -> None:
+#     """
+#     State Market Deals snapshot from Gliff S3 JSON.
+#     """
+#     urllib.request.urlretrieve(
+#         "https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst",
+#         "/tmp/StateMarketDeals.json.zst",
+#     )
+
+#     context.log.info("Downloaded StateMarketDeals.json.zst")
+
+#     dctx = zstandard.ZstdDecompressor()
+#     input_path = "/tmp/StateMarketDeals.json.zst"
+#     output_path = "/tmp/ParsedStateMarketDeals.json"
+
+#     # jq --stream -c 'fromstream(1|truncate_stream(inputs))' /tmp/StateMarketDeals.json.zst > /tmp/ParsedStateMarketDeals.json
+#     with open(input_path, "rb") as ifh, open(output_path, "wb") as ofh:
+#         reader = dctx.stream_reader(ifh)
+#         for k, v in ijson.kvitems(reader, ""):
+#             v["DealID"] = k
+#             ofh.write(json.dumps(v).encode("utf-8") + b"\n")
+
+#     context.log.info("Decompressed and parsed StateMarketDeals.json.zst")
+
+#     # Remove the input file
+#     os.remove("/tmp/StateMarketDeals.json.zst")
+
+#     # Compress the parsed file
+#     os.system(
+#         "zstd --rm -q -f -T0 /tmp/ParsedStateMarketDeals.json -o /tmp/ParsedStateMarketDeals.json.zst"
+#     )
+
+
 @asset(compute_kind="python")
-def raw_filecoin_state_market_deals(context) -> None:
+def raw_filecoin_state_market_deals(
+    starboard_databricks: StarboardDatabricksResource,
+    duckdb: DuckDBResource,
+) -> None:
     """
-    State Market Deals snapshot from Gliff S3 JSON.
+    State Market Deals derived from Lily's market_deal_proposals and market_deal_states tables.
     """
-    urllib.request.urlretrieve(
-        "https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst",
-        "/tmp/StateMarketDeals.json.zst",
+    databricks_con = starboard_databricks.get_connection()
+    duckdb.get_connection()
+
+    cursor = databricks_con.cursor()
+    batch_size = 5000000
+
+    r = cursor.execute(
+        """
+        with market_deals as (
+            select
+                *
+            from lily.market_deal_proposals
+            qualify row_number() over (partition by deal_id order by height desc) = 1
+        ),
+
+        market_chain_activity as (
+            select
+                *
+            from lily.market_deal_states
+            qualify row_number() over (partition by deal_id order by height desc) = 1
+        )
+
+        select
+            d.height,
+            d.deal_id,
+            d.state_root,
+            d.piece_cid,
+            d.padded_piece_size,
+            d.unpadded_piece_size,
+            d.is_verified,
+            d.client_id,
+            d.provider_id,
+            d.start_epoch,
+            d.end_epoch,
+            d.slashed_epoch,
+            d.storage_price_per_epoch,
+            d.provider_collateral,
+            d.client_collateral,
+            d.label,
+            a.sector_start_epoch,
+            a.slash_epoch
+        from market_deals as d
+        left join market_chain_activity as a on d.deal_id = a.deal_id
+        order by d.provider_id desc, d.client_id desc, d.height desc
+    """
     )
 
-    context.log.info("Downloaded StateMarketDeals.json.zst")
+    print("Fetched market deals and chain activity")
 
-    dctx = zstandard.ZstdDecompressor()
-    input_path = "/tmp/StateMarketDeals.json.zst"
-    output_path = "/tmp/ParsedStateMarketDeals.json"
+    with duckdb.get_connection() as duckdb_con:
+        data = r.fetchmany_arrow(batch_size)
+        duckdb_con.execute(
+            """
+            create or replace table raw_filecoin_state_market_deals as (
+                select * from data
+            )
+            """
+        )
 
-    # jq --stream -c 'fromstream(1|truncate_stream(inputs))' /tmp/StateMarketDeals.json.zst > /tmp/ParsedStateMarketDeals.json
-    with open(input_path, "rb") as ifh, open(output_path, "wb") as ofh:
-        reader = dctx.stream_reader(ifh)
-        for k, v in ijson.kvitems(reader, ""):
-            v["DealID"] = k
-            ofh.write(json.dumps(v).encode("utf-8") + b"\n")
+        print(f"Persisted {data.num_rows} rows")
 
-    context.log.info("Decompressed and parsed StateMarketDeals.json.zst")
+        while data.num_rows > 0:
+            data = r.fetchmany_arrow(batch_size)
+            duckdb_con.sql(
+                """
+                insert into raw_filecoin_state_market_deals
+                select
+                    *
+                from data
+                """
+            )
 
-    # Remove the input file
-    os.remove("/tmp/StateMarketDeals.json.zst")
-
-    # Compress the parsed file
-    os.system(
-        "zstd --rm -q -f -T0 /tmp/ParsedStateMarketDeals.json -o /tmp/ParsedStateMarketDeals.json.zst"
-    )
+            print(f"Persisted {data.num_rows} rows")

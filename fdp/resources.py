@@ -1,9 +1,11 @@
-import json
 import os
+import json
 
 import requests
 from dagster import ConfigurableResource
 from requests import Response
+from databricks import sql
+from databricks.sql.client import Connection
 
 
 class SpacescopeResource(ConfigurableResource):
@@ -77,3 +79,18 @@ class DuneResource(ConfigurableResource):
             print("Response content:", response.content)
 
         return response
+
+
+class StarboardDatabricksResource(ConfigurableResource):
+    DATABRICKS_SERVER_HOSTNAME: str = str(os.environ.get("DATABRICKS_SERVER_HOSTNAME"))
+    DATABRICKS_HTTP_PATH: str = str(os.environ.get("DATABRICKS_HTTP_PATH"))
+    DATABRICKS_ACCESS_TOKEN: str = str(os.environ.get("DATABRICKS_ACCESS_TOKEN"))
+
+    def get_connection(self) -> Connection:
+        conn = sql.connect(
+            server_hostname=self.DATABRICKS_SERVER_HOSTNAME,
+            http_path=self.DATABRICKS_HTTP_PATH,
+            access_token=self.DATABRICKS_ACCESS_TOKEN,
+        )
+
+        return conn

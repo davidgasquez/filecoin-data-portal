@@ -1,8 +1,8 @@
 with state_market_deals_metrics as (
     select distinct
         client_id,
-        sum(piece_size_bytes) / pow(1024, 4) as total_data_uploaded_tibs,
-        sum(case when is_active then piece_size_bytes else 0 end) / pow(1024, 4) as total_active_data_uploaded_tibs,
+        sum(unpadded_piece_size_tib) / pow(1024, 4) as total_data_uploaded_tibs,
+        sum(case when is_active then unpadded_piece_size_tib else 0 end) / pow(1024, 4) as total_active_data_uploaded_tibs,
         count(distinct deal_id) as total_deals,
         count(case when is_active then 1 else 0 end) as total_active_deals,
         count(case when is_active and is_verified then 1 else 0 end) as total_active_verified_deals,
@@ -11,6 +11,7 @@ with state_market_deals_metrics as (
         min(sector_start_at) as first_deal_at,
         max(sector_start_at) as last_deal_at
     from {{ ref("filecoin_state_market_deals") }}
+    where sector_start_epoch is not null
     group by 1
 ),
 
