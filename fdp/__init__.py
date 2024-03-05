@@ -8,7 +8,9 @@ from dagster_duckdb_pandas import DuckDBPandasIOManager
 from . import assets, resources
 
 DBT_PROJECT_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../dbt/"
-DATA_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../data/"
+DATABASE_PATH = os.getenv(
+    "DATABASE_PATH", os.path.dirname(os.path.abspath(__file__)) + "/../data/"
+)
 
 dbt_resource = dbt_cli_resource.configured(
     {"project_dir": DBT_PROJECT_DIR, "profiles_dir": DBT_PROJECT_DIR}
@@ -21,10 +23,8 @@ resources = {
     "dbt": dbt_resource,
     "spacescope_api": resources.SpacescopeResource(),
     "starboard_databricks": resources.StarboardDatabricksResource(),
-    "duckdb": DuckDBResource(database=DATA_DIR + "local.duckdb"),
-    "io_manager": DuckDBPandasIOManager(
-        database=DATA_DIR + "local.duckdb", schema="main"
-    ),
+    "duckdb": DuckDBResource(database=DATABASE_PATH),
+    "io_manager": DuckDBPandasIOManager(database=DATABASE_PATH, schema="main"),
 }
 
 defs = Definitions(assets=[*dbt_assets, *all_assets], resources=resources)

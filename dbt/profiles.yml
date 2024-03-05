@@ -2,14 +2,12 @@ default:
   outputs:
     dev:
       type: duckdb
-      path: ../data/local.duckdb
+      path: "{{ env_var('DATABASE_PATH', '../data/database.duckdb') }}"
       threads: 16
       settings:
-        temp_directory: /tmp/db.temp
         preserve_insertion_order: false
         enable_object_cache: true
         enable_http_metadata_cache: true
-      external_root: ../data
   target: dev
 
 config:
