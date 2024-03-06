@@ -1,8 +1,9 @@
 import datetime
 
 import pandas as pd
-from dagster import Output, MetadataValue, asset
+from dagster import AssetExecutionContext, Output, MetadataValue, asset
 from dagster_duckdb import DuckDBResource
+from duckdb import CatalogException
 
 from .resources import SpacescopeResource, StarboardDatabricksResource
 
@@ -34,30 +35,74 @@ def raw_storage_providers_location_provider_quest() -> Output[pd.DataFrame]:
 
 @asset(compute_kind="API")
 def raw_storage_provider_daily_power(
+    context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
-) -> Output[pd.DataFrame]:
+    duckdb: DuckDBResource,
+) -> None:
     """
     Storage Providers daily power from Spacescope API.
     """
+
     FILECOIN_FIRST_DAY = datetime.date(2020, 10, 15)
 
-    today = datetime.date.today()
-    latest_day = today - datetime.timedelta(days=2)
+    with duckdb.get_connection() as conn:
+        try:
+            from_day = (
+                conn.execute(
+                    "select max(stat_date) as max_date from main.raw_storage_provider_daily_power"
+                )
+                .df()["max_date"]
+                .values[0]
+            )
+            if from_day:
+                from_day = pd.to_datetime(from_day).date()
+        except CatalogException:
+            from_day = FILECOIN_FIRST_DAY
+            conn.execute(
+                """
+                create table main.raw_storage_provider_daily_power(
+                    stat_date VARCHAR,
+                    miner_id VARCHAR,
+                    raw_byte_power BIGINT,
+                    quality_adj_power BIGINT
+                );
+                """
+            )
 
-    df_power_data = pd.DataFrame()
+        from_day = from_day or FILECOIN_FIRST_DAY
 
-    for day in pd.date_range(FILECOIN_FIRST_DAY, latest_day, freq="d"):
-        power_data = spacescope_api.get_storage_provider_power(
-            date=day.strftime("%Y-%m-%d"), storage_provider=None
+        to_day = datetime.date.today() - datetime.timedelta(days=2)
+
+        if from_day >= to_day:
+            context.log.info(
+                f"Storage provider power data is up to date. Last update was on {from_day}"
+            )
+            return
+
+        context.log.info(
+            f"Fetching storage provider power data from {from_day} to {to_day}"
         )
-        df_power_data = pd.concat(
-            [df_power_data, pd.DataFrame(power_data)], ignore_index=True
+
+        df_power_data = pd.DataFrame()
+
+        for day in pd.date_range(FILECOIN_FIRST_DAY, to_day, freq="d"):
+            power_data = spacescope_api.get_storage_provider_power(
+                date=day.strftime("%Y-%m-%d"), storage_provider=None
+            )
+            df_power_data = pd.concat(
+                [df_power_data, pd.DataFrame(power_data)], ignore_index=True
+            )
+
+        conn.execute(
+            """
+            insert into main.raw_storage_provider_daily_power
+            select * from df_power_data
+            """
         )
 
-    return Output(
-        df_power_data,
-        metadata={"Sample": MetadataValue.md(df_power_data.sample(5).to_markdown())},
-    )
+        context.log.info(
+            f"Persisted {df_power_data.shape[0]} rows of storage provider power data"
+        )
 
 
 # @asset(compute_kind="python")
@@ -96,6 +141,7 @@ def raw_storage_provider_daily_power(
 
 @asset(compute_kind="python")
 def raw_filecoin_state_market_deals(
+    context: AssetExecutionContext,
     starboard_databricks: StarboardDatabricksResource,
     duckdb: DuckDBResource,
 ) -> None:
@@ -149,7 +195,7 @@ def raw_filecoin_state_market_deals(
     """
     )
 
-    print("Fetched market deals and chain activity")
+    context.log.info("Fetched market deals and chain activity")
 
     with duckdb.get_connection() as duckdb_con:
         data = r.fetchmany_arrow(batch_size)
@@ -161,7 +207,7 @@ def raw_filecoin_state_market_deals(
             """
         )
 
-        print(f"Persisted {data.num_rows} rows")
+        context.log.info(f"Persisted {data.num_rows} rows")
 
         while data.num_rows > 0:
             data = r.fetchmany_arrow(batch_size)
@@ -174,4 +220,4 @@ def raw_filecoin_state_market_deals(
                 """
             )
 
-            print(f"Persisted {data.num_rows} rows")
+            context.log.info(f"Persisted {data.num_rows} rows")

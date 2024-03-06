@@ -11,6 +11,6 @@ where provider_id = '${params.provider_id}'
 
 <BarChart
   data={filtered_provider_metrics}
-  y=proposed_data_tibs
-  title = "Proposed Data (TiBs)"
+  y=onboarded_data_tibs
+  title = "Onboarded Data (TiBs)"
 />

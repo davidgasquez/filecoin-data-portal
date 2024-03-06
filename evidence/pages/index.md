@@ -22,8 +22,8 @@ from daily_metrics
 ```sql daily_metrics
 select
   date,
-  proposed_data_tibs,
-  proposed_deals,
+  onboarded_data_tibs,
+  deals,
   unique_clients,
   unique_providers
 from daily_metrics
@@ -33,14 +33,14 @@ order by date desc
 
 <LineChart
   data={daily_metrics}
-  y=proposed_data_tibs
-  title = "Proposed Data (TiBs)"
+  y=onboarded_data_tibs
+  title = "Onboarded Data (TiBs)"
 />
 
 <LineChart
   data={daily_metrics}
-  y=proposed_deals
-  title = "Unique Proposed Deals"
+  y=deals
+  title = "Unique onboarded Deals"
 />
 
 <LineChart
@@ -62,8 +62,10 @@ order by date desc
 select
   provider_id,
   '/provider/' || provider_id as link,
-  proposed_data_tibs
+  sum(onboarded_data_tibs)
 from provider_metrics
+where extract(year from date) like '${inputs.year}'
+group by provider_id, link
 order by 3 desc
 limit 20
 ```

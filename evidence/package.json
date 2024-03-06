@@ -4,7 +4,7 @@
   "scripts": {
     "build": "evidence build",
     "build:strict": "evidence build:strict",
-    "dev": "evidence dev --open /",
+    "dev": "evidence dev --open / --port 4000",
     "test": "evidence build",
     "sources": "evidence sources",
     "preview": "evidence preview"

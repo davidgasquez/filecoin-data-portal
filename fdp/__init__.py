@@ -4,12 +4,14 @@ from dagster import Definitions, load_assets_from_modules
 from dagster_dbt import dbt_cli_resource, load_assets_from_dbt_project
 from dagster_duckdb import DuckDBResource
 from dagster_duckdb_pandas import DuckDBPandasIOManager
+from dagster import EnvVar
 
 from . import assets, resources
 
 DBT_PROJECT_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../dbt/"
 DATABASE_PATH = os.getenv(
-    "DATABASE_PATH", os.path.dirname(os.path.abspath(__file__)) + "/../data/"
+    "DATABASE_PATH",
+    os.path.dirname(os.path.abspath(__file__)) + "/../data/database.duckdb",
 )
 
 dbt_resource = dbt_cli_resource.configured(
@@ -21,8 +23,14 @@ all_assets = load_assets_from_modules([assets])
 
 resources = {
     "dbt": dbt_resource,
-    "spacescope_api": resources.SpacescopeResource(),
-    "starboard_databricks": resources.StarboardDatabricksResource(),
+    "spacescope_api": resources.SpacescopeResource(
+        SPACESCOPE_TOKEN=EnvVar("SPACESCOPE_TOKEN")
+    ),
+    "starboard_databricks": resources.StarboardDatabricksResource(
+        DATABRICKS_SERVER_HOSTNAME=EnvVar("DATABRICKS_SERVER_HOSTNAME"),
+        DATABRICKS_HTTP_PATH=EnvVar("DATABRICKS_HTTP_PATH"),
+        DATABRICKS_ACCESS_TOKEN=EnvVar("DATABRICKS_ACCESS_TOKEN"),
+    ),
     "duckdb": DuckDBResource(database=DATABASE_PATH),
     "io_manager": DuckDBPandasIOManager(database=DATABASE_PATH, schema="main"),
 }

@@ -5,7 +5,7 @@ with storage_provider_location as (
 stats as (
     select
         provider_id,
-        sum(piece_size_tibs) as onboarded_tibs,
+        sum(padded_piece_size_bytes) as onboarded_tibs,
         count(distinct deal_id) as total_deals,
         count(distinct client_id) as total_clients,
         min(sector_start_at) as first_deal_at,
