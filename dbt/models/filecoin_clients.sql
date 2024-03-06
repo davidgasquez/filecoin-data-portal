@@ -1,8 +1,8 @@
 with state_market_deals_metrics as (
     select distinct
         client_id,
-        sum(unpadded_piece_size_tib) / pow(1024, 4) as total_data_uploaded_tibs,
-        sum(case when is_active then unpadded_piece_size_tib else 0 end) / pow(1024, 4) as total_active_data_uploaded_tibs,
+        sum(unpadded_piece_size_tibs) / pow(1024, 4) as total_data_uploaded_tibs,
+        sum(case when is_active then unpadded_piece_size_tibs else 0 end) / pow(1024, 4) as total_active_data_uploaded_tibs,
         count(distinct deal_id) as total_deals,
         count(case when is_active then 1 else 0 end) as total_active_deals,
         count(case when is_active and is_verified then 1 else 0 end) as total_active_verified_deals,

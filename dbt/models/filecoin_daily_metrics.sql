@@ -1,7 +1,7 @@
 with deal_metrics as (
     select
         date_trunc('day', sector_start_at) as date,
-        sum(padded_piece_size_tib) as onboarded_data_tibs,
+        sum(padded_piece_size_tibs) as onboarded_data_tibs,
         count(distinct deal_id) as deals,
         count(distinct client_id) as unique_clients,
         count(distinct provider_id) as unique_providers
