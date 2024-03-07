@@ -10,11 +10,8 @@ website:
   repo-url: https://github.com/davidgasquez/filecoin-data-portal
   repo-actions: [edit, issue]
   search: false
-  page-footer:
-    center: "David Gasquez"
   navbar:
-    logo: "https://www.pngall.com/wp-content/uploads/10/Filecoin-Crypto-Logo-180x180.png"
-    search: false
+    logo: favicon.ico
     pinned: false
     left:
       - text: "Data"
@@ -22,7 +19,7 @@ website:
       - text: "Docs"
         href: docs/data-sources.html
     right:
-      - text: "Request Data"
+      - text: "New Request"
         href: https://github.com/davidgasquez/filecoin-data-portal/issues/new
     tools:
       - icon: twitter

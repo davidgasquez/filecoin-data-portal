@@ -1,16 +1,4 @@
 ---
-listing:
-  - id: dashboards
-    contents: "dashboards"
-    type: grid
-    image-placeholder: https://www.transparentpng.com/thumb/business-growth-chart/business-graph-business-growth-growth-icon-pictures-8.png
-  - id: notebooks
-    contents: "notebooks"
-    sort: date desc
-    sort-ui: false
-    date-format: "YYYY-MM-DD"
-    filter-ui: false
-    image-height: 120px
 format:
   html:
     toc: false
@@ -20,16 +8,10 @@ format:
 
 Open source, serverless, and local-first Data Platform for the Filecoin ecosystem. The goal with this portal is to improve data access and empower more people conducting research to drives the community forward!
 
+<br>
+
 <center>
-    [Get the Data](https://ipfs.filebase.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/){.btn .btn-outline-primary .btn role="button"}
+  [Get the Data](/data){.btn .btn-outline-primary .btn role="button"}
 </center>
 
-## 📊 Dashboards
-
-:::{#dashboards}
-:::
-
-## 📓 Notebooks
-
-:::{#notebooks}
-:::
+<br>

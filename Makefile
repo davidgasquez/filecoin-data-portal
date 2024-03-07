@@ -13,7 +13,7 @@ setup:
 
 tables:
 	@mkdir -p data/tables/
-	@python -c 'from fdp.db import export; export("data/local.duckdb", "data/tables/")'
+	@python -c 'from fdp.db import export; export("data/database.duckdb", "data/tables/")'
 
 preview:
 	@quarto preview portal
