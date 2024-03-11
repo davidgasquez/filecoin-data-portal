@@ -37,10 +37,4 @@ select
         when verified_data_power_pibs > 50 then '>50'
         else 'unknwon'
     end as verified_data_power_pibs_bucket,
-    {# filrep.isoCode as country_code,
-    filrep.region as region,
-    filrep.freeSpace as free_space_bytes,
-    filrep.rank as filrep_rank,
-    filrep.score as filrep_score, #}
 from base
-{# left join storage_providers_filrep as filrep on base.provider_id = filrep.address #}

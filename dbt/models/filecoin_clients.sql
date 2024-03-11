@@ -1,15 +1,19 @@
 with state_market_deals_metrics as (
     select distinct
         client_id,
-        sum(unpadded_piece_size_tibs) / pow(1024, 4) as total_data_uploaded_tibs,
-        sum(case when is_active then unpadded_piece_size_tibs else 0 end) / pow(1024, 4) as total_active_data_uploaded_tibs,
         count(distinct deal_id) as total_deals,
-        count(case when is_active then 1 else 0 end) as total_active_deals,
-        count(case when is_active and is_verified then 1 else 0 end) as total_active_verified_deals,
-        count(distinct piece_cid) as total_unique_piece_cids,
         count(distinct provider_id) as total_unique_providers,
+        count(distinct piece_cid) as total_unique_piece_cids,
+        sum(unpadded_piece_size_tib) as total_data_uploaded_tibs,
+        sum(case when is_active then unpadded_piece_size_tib else 0 end) as total_active_data_uploaded_tibs,
+        count(case when is_active then 1 else 0 end) as total_active_deals,
+        count(case when is_verified then 1 else 0 end) as total_verified_deals,
+        count(case when is_active and is_verified then 1 else 0 end) as total_active_verified_deals,
         min(sector_start_at) as first_deal_at,
-        max(sector_start_at) as last_deal_at
+        min(case when is_active then sector_start_at else null end) as first_active_deal_at,
+        max(sector_start_at) as last_deal_at,
+        max(case when is_active then sector_start_at else null end) as last_active_deal_at,
+        sum(case when sector_start_at > current_date() - interval '30 days' then unpadded_piece_size_tib else 0 end) as data_uploaded_tibs_30d
     from {{ ref("filecoin_state_market_deals") }}
     where sector_start_epoch is not null
     group by 1
@@ -40,14 +44,18 @@ select
     c.initial_datacap,
     c.current_datacap,
     c.verifier_id,
+    m.total_deals,
+    m.total_unique_providers,
+    m.total_unique_piece_cids,
     m.total_data_uploaded_tibs,
     m.total_active_data_uploaded_tibs,
-    m.total_deals,
+    m.total_verified_deals,
     m.total_active_deals,
     m.total_active_verified_deals,
-    m.total_unique_piece_cids,
-    m.total_unique_providers,
     m.first_deal_at,
-    m.last_deal_at
+    m.last_deal_at,
+    m.first_active_deal_at,
+    m.last_active_deal_at,
+    m.data_uploaded_tibs_30d
 from state_market_deals_metrics m
 left join datacap_clients c on m.client_id = c.client_id

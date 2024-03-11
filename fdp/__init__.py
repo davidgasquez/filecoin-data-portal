@@ -1,10 +1,9 @@
 import os
 
-from dagster import Definitions, load_assets_from_modules
+from dagster import EnvVar, Definitions, load_assets_from_modules
 from dagster_dbt import dbt_cli_resource, load_assets_from_dbt_project
 from dagster_duckdb import DuckDBResource
 from dagster_duckdb_pandas import DuckDBPandasIOManager
-from dagster import EnvVar
 
 from . import assets, resources
 

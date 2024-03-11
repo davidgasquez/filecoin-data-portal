@@ -1,9 +1,9 @@
 import datetime
 
 import pandas as pd
-from dagster import AssetExecutionContext, Output, MetadataValue, asset
-from dagster_duckdb import DuckDBResource
 from duckdb import CatalogException
+from dagster import Output, MetadataValue, AssetExecutionContext, asset
+from dagster_duckdb import DuckDBResource
 
 from .resources import SpacescopeResource, StarboardDatabricksResource
 

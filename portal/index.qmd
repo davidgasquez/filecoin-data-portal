@@ -4,14 +4,21 @@ format:
     toc: false
 ---
 
-# Filecoin Data Portal
+<center>
+  <h1>Filecoin Data Portal</h1>
+</center>
 
-Open source, serverless, and local-first Data Platform for the Filecoin ecosystem. The goal with this portal is to improve data access and empower more people conducting research to drives the community forward!
+<div class="text-center">
+<img src="logo.svg" class="rounded img-fluid w-50" alt="My Happy SVG"/>
+</div>
+
+<br>
+
+Open source, serverless, and local-first Data Platform for the Filecoin ecosystem. Seamlessy access the data you need to conduct research and drive the community forward!
 
 <br>
 
 <center>
-  [Get the Data](/data){.btn .btn-outline-primary .btn role="button"}
+<a href="/data" role="button" class="btn btn-primary btn-outline-dark btn-lg btn-block mx-4">Get the Data</a>
+<a href="https://github.com/davidgasquez/filecoin-data-portal" role="button" class="btn btn-primary btn-outline-dark btn-lg btn-block mx-4">Contribute</a>
 </center>
-
-<br>
