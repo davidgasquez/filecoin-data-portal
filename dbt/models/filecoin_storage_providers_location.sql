@@ -3,11 +3,11 @@ with source as (
 )
 
 select
-    {{ adapter.quote("provider") }} as provider_id,
-    {{ adapter.quote("region") }},
-    {{ adapter.quote("long") }} as longitude,
-    {{ adapter.quote("lat") }} as latitude,
-    {{ adapter.quote("country") }},
-    {{ adapter.quote("city") }}
+    provider as provider_id,
+    region,
+    long as longitude,
+    lat as latitude,
+    country,
+    city
 from source
-qualify row_number() over (partition by {{ adapter.quote("provider") }}) = 1
+qualify row_number() over (partition by provider order by region desc) = 1

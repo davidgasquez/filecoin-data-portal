@@ -5,7 +5,8 @@ from dagster_dbt import dbt_cli_resource, load_assets_from_dbt_project
 from dagster_duckdb import DuckDBResource
 from dagster_duckdb_pandas import DuckDBPandasIOManager
 
-from . import assets, resources
+from . import resources
+from .assets import lily, other, datacap, spacescope
 
 DBT_PROJECT_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../dbt/"
 DATABASE_PATH = os.getenv(
@@ -18,7 +19,7 @@ dbt_resource = dbt_cli_resource.configured(
 )
 
 dbt_assets = load_assets_from_dbt_project(DBT_PROJECT_DIR, DBT_PROJECT_DIR)
-all_assets = load_assets_from_modules([assets])
+all_assets = load_assets_from_modules([other, datacap, lily, spacescope])
 
 resources = {
     "dbt": dbt_resource,
