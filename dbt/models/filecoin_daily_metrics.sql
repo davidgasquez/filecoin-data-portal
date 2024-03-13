@@ -21,9 +21,9 @@ deal_metrics as (
 users_with_active_deals as (
     select
         dc.day,
-        count(distinct deals.deal_id) as active_deals,
-        count(distinct deals.client_id) as clients_with_active_deals,
-        count(distinct deals.provider_id) as providers_with_active_deals
+        approx_count_distinct(deals.deal_id) as active_deals,
+        approx_count_distinct(deals.client_id) as clients_with_active_deals,
+        approx_count_distinct(deals.provider_id) as providers_with_active_deals
     from date_calendar as dc
     left join {{ ref('filecoin_state_market_deals') }} as deals
         on dc.day between deals.sector_start_at and least(deals.end_at, deals.slash_at)
