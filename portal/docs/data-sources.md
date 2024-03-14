@@ -22,11 +22,22 @@ Storage Providers be derived from the [deals](#deals) dataset. More information 
 
 - Location using the different [provider.quest](https://provider.quest/) endpoints/datasets.
 
+## FVM
+
+Filecoin Virtual Machine data is trickier to get. Some sources:
+
+- Directly from the [FVM](https://fvm.starboard.ventures/) dashboard.
+- Some metrics are available in the [Spacescope API](https://docs.spacescope.io/version_history#v240-on-march-16-2023)
+
+## Messages
+
+A few teams across the ecosystem are indexing Filecoin Messages. The most comprehensive source are [Beriz](https://beryx.zondax.ch/) and [FilInfo](https://filinfo.io/docs).
+
 # Data Sources
 
 - [Starboard](https://dashboard.starboard.ventures/dashboard) - [FVM](https://fvm.starboard.ventures/)
 - [Dev Storage](https://dev.storage/)
-- [Beryz](https://beryx.zondax.ch/)
+- [Beryx](https://beryx.zondax.ch/)
 - [Spacegap](https://spacegap.github.io)
 - [Filecoin Green](https://filecoin.energy/)
 - [Filecoin CID Checker](https://filecoin.tools/)
