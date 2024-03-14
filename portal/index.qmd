@@ -21,4 +21,5 @@ Open source, serverless, and local-first Data Platform for the Filecoin ecosyste
 <center>
 <a href="/data" role="button" class="btn btn-primary btn-outline-dark btn-lg btn-block mx-4">Get the Data</a>
 <a href="https://github.com/davidgasquez/filecoin-data-portal" role="button" class="btn btn-primary btn-outline-dark btn-lg btn-block mx-4">Contribute</a>
+<a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new" role="button" class="btn btn-primary btn-outline-dark btn-lg btn-block mx-4">Request Dataset</a>
 </center>

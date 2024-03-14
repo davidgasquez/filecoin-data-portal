@@ -13,7 +13,8 @@ setup:
 
 tables:
 	@mkdir -p data/tables/
-	@python -c 'from fdp.db import export; export("data/database.duckdb", "data/tables/")'
+	@python -c 'from fdp.db import export; export("data/tables/")'
+	@rm data/tables/raw_*.parquet
 
 preview:
 	@quarto preview portal

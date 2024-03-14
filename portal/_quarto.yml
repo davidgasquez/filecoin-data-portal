@@ -18,8 +18,7 @@ website:
         href: https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k
       - text: "Docs"
         href: docs/data-sources.html
-    right:
-      - text: "New Request"
+      - text: "Request Dataset"
         href: https://github.com/davidgasquez/filecoin-data-portal/issues/new
     tools:
       - icon: twitter

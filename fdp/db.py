@@ -3,18 +3,18 @@ import os
 import duckdb
 
 DATA_DIR = os.getenv("DATA_DIR", "../../data")
+DATABASE_PATH = os.getenv("DATABASE_PATH", f"{DATA_DIR}/database.duckdb")
 
 
 def query(sql):
-    with duckdb.connect(database=f"{DATA_DIR}/database.duckdb") as con:
+    with duckdb.connect(database=DATABASE_PATH) as con:
         return con.sql(sql).df()
 
 
-def export(db_path, export_path):
-    with duckdb.connect(database=f"{db_path}") as con:
+def export(export_path):
+    with duckdb.connect(database=DATABASE_PATH) as con:
         export_query = f"""
-        set preserve_insertion_order = false;
-        set memory_limit = '16GB';
+        -- set preserve_insertion_order = false;
         set temp_directory = '/tmp/temp.tmp';
         export database '{export_path}' (format 'parquet', compression 'zstd', row_group_size 1000000);
         """
