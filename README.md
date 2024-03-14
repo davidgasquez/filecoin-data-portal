@@ -8,11 +8,11 @@ _Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem. 
 
 ## 📂 Data
 
-The data lives under the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) pointer available in this repository and the [`ipns://k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k`](https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/) IPNS address.
+The data lives at [`https://filecoindataportal.davidgasquez.com/data`](https://filecoindataportal.davidgasquez.com/data), which points to the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) available in this repository and also available at the [`ipns://k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k`](https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/) IPNS address.
 
 <center>
 
-<a href="https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/" target="_blank">
+<a href="https://filecoindataportal.davidgasquez.com/data" target="_blank">
     <img src="https://img.shields.io/badge/GET_THE_DATA-0090ff?style=for-the-badge" alt="GET THE DATA">
 </a>
 
@@ -40,7 +40,7 @@ This repository contains code and artifacts to process Filecoin data from [diver
   - Each commit generates and pushes all table files to IPFS.
   - Easily access historical data snapshots.
   - Declarative and stateless transformations tracked in git.
-  - Static dashboards and reports available at the [Filecoin Data Portal](https://filecoin-data-portal.on-fleek.app/).
+  - Static dashboards and reports available at the [Filecoin Data Portal](https://filecoindataportal.davidgasquez.com/).
 - **Modular Flexibility**
   - Replace, extend, or remove individual components.
   - Works across various environments (laptop, cluster, browser).
@@ -48,7 +48,7 @@ This repository contains code and artifacts to process Filecoin data from [diver
 - **Low Friction Data Usage**
   - Raw and processed data is available to anyone on IPFS. Use wathever tool you want!
   - Get started with simple actions like pasting a [SQL query in your browser](https://shell.duckdb.org/) or using `pd.read_parquet(url)` in a Notebook.
-  - [Static Quarto Notebooks with embedded datasets](https://filecoin-data-portal.on-fleek.app/reports/2023-06-21-Exploring-Filecoin-Deals.html) are generated with every commit, serving as documentation or a simple reporting/dashboarding layer.
+  - Static Quarto Notebooks with embedded datasets are generated with every commit, serving as documentation or a simple reporting/dashboarding layer.
 - **Modern Data Engineering**
   - Supports data engineering essentials such as typing, testing, materialized views, and development branches.
   - Utilizes best practices, including declarative transformations, and utilizes state-of-the-art tools like DuckDB.
