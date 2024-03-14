@@ -2,11 +2,9 @@
 
 [![CI](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml)
 
-Open source, serverless, and local-first Data Platform for the Filecoin ecosystem. The goal with this portal is to improve data access and empower more people conducting research to drives the community forward!
+_Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem. Seamlessy access the data you need to drive the community forward!_
 
 ![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/581155f3-0d23-45fa-a67a-bb373df7078a)
-
-Check out the [Filecoin Data Portal](https://filecoin-data-portal.on-fleek.app/) website for dashboards and reports!
 
 ## 📂 Data
 
@@ -22,7 +20,7 @@ The data lives under the [IPFS CID](https://raw.githubusercontent.com/davidgasqu
 
 ## 📖 Overview
 
-This repository contains code and artifacts to help anyone process Filecoin data from [diverse sources](portal/docs/data-sources.md) (on-chain and off-chain). It is an implementation of [Datadex](https://github.com/davidgasquez/datadex), allowing anyone to collaborate on data, models, and pipelines in a permissionless way.
+This repository contains code and artifacts to process Filecoin data from [diverse sources](portal/docs/data-sources.md) (on-chain and off-chain). It is an instance of [Datadex](https://github.com/davidgasquez/datadex).
 
 ### 📦 Key Features
 
@@ -60,13 +58,14 @@ This repository contains code and artifacts to help anyone process Filecoin data
 This project is in active development. You can help by giving ideas, answering questions, reporting bugs, proposing enhancements, improving the documentation, and fixing bugs. Feel free to open issues and pull requests!
 
 Some ways you can contribute to this project:
+
 - Adding new data sources.
 - Improving the data quality of existing datasets.
 - Adding tests to the data pipelines.
 
 ## ⚙️ Development
 
-You can run the entire Filecoin Data Portal locally using Python Virtual Environment or VSCode Development Containers. You'll need the following secrets in your environment:
+You can run the Filecoin Data Portal locally using Python Virtual Environment or VSCode Development Containers. You'll need the following secrets in your environment:
 
 - A `SPACESCOPE_TOKEN` to access [Spacescope](https://spacescope.io/) API.
 

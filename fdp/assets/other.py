@@ -1,28 +1,11 @@
-import datetime
-import json
 import os
+import json
 import urllib.request
 
 import ijson
 import pandas as pd
 import zstandard
-from dagster import MetadataValue, Output, asset
-
-from .resources import SpacescopeResource
-
-
-@asset(compute_kind="python")
-def raw_datacapstats_verified_clients() -> Output[pd.DataFrame]:
-    """
-    Verified Clients information from Datacapstats API.
-    """
-    url = "https://api.datacapstats.io/api/getVerifiedClients"
-
-    data = pd.read_json(url, typ="series")["data"]
-    df = pd.json_normalize(data)
-    df["allowanceArray"] = df["allowanceArray"]
-
-    return Output(df, metadata={"Sample": MetadataValue.md(df.sample(5).to_markdown())})
+from dagster import Output, MetadataValue, asset
 
 
 @asset(compute_kind="python")
@@ -36,36 +19,8 @@ def raw_storage_providers_location_provider_quest() -> Output[pd.DataFrame]:
     return Output(df, metadata={"Sample": MetadataValue.md(df.sample(5).to_markdown())})
 
 
-@asset(compute_kind="API")
-def raw_storage_provider_daily_power(
-    spacescope_api: SpacescopeResource,
-) -> Output[pd.DataFrame]:
-    """
-    Storage Providers daily power from Spacescope API.
-    """
-    FILECOIN_FIRST_DAY = datetime.date(2020, 10, 15)
-
-    today = datetime.date.today()
-    latest_day = today - datetime.timedelta(days=2)
-
-    df_power_data = pd.DataFrame()
-
-    for day in pd.date_range(FILECOIN_FIRST_DAY, latest_day, freq="d"):
-        power_data = spacescope_api.get_storage_provider_power(
-            date=day.strftime("%Y-%m-%d"), storage_provider=None
-        )
-        df_power_data = pd.concat(
-            [df_power_data, pd.DataFrame(power_data)], ignore_index=True
-        )
-
-    return Output(
-        df_power_data,
-        metadata={"Sample": MetadataValue.md(df_power_data.sample(5).to_markdown())},
-    )
-
-
 @asset(compute_kind="python")
-def raw_filecoin_state_market_deals(context) -> None:
+def raw_filecoin_state_market_deals_snapshot(context) -> None:
     """
     State Market Deals snapshot from Gliff S3 JSON.
     """

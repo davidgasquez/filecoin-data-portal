@@ -1,35 +1,25 @@
 ---
-listing:
-  - id: dashboards
-    contents: "dashboards"
-    type: grid
-    image-placeholder: https://www.transparentpng.com/thumb/business-growth-chart/business-graph-business-growth-growth-icon-pictures-8.png
-  - id: notebooks
-    contents: "notebooks"
-    sort: date desc
-    sort-ui: false
-    date-format: "YYYY-MM-DD"
-    filter-ui: false
-    image-height: 120px
 format:
   html:
     toc: false
 ---
 
-# Filecoin Data Portal
-
-Open source, serverless, and local-first Data Platform for the Filecoin ecosystem. The goal with this portal is to improve data access and empower more people conducting research to drives the community forward!
-
 <center>
-    [Get the Data](https://ipfs.filebase.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/){.btn .btn-outline-primary .btn role="button"}
+  <h1>Filecoin Data Portal</h1>
 </center>
 
-## 📊 Dashboards
+<div class="text-center">
+<img src="logo.svg" class="rounded img-fluid w-50" alt="My Happy SVG"/>
+</div>
 
-:::{#dashboards}
-:::
+<br>
 
-## 📓 Notebooks
+Open source, serverless, and local-first Data Platform for the Filecoin ecosystem. Seamlessy access the data you need to conduct research and drive the community forward!
 
-:::{#notebooks}
-:::
+<br>
+
+<center>
+<a href="/data" role="button" class="btn btn-primary btn-outline-dark btn-lg btn-block mx-4">Get the Data</a>
+<a href="https://github.com/davidgasquez/filecoin-data-portal" role="button" class="btn btn-primary btn-outline-dark btn-lg btn-block mx-4">Contribute</a>
+<a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new" role="button" class="btn btn-primary btn-outline-dark btn-lg btn-block mx-4">Request Dataset</a>
+</center>

@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: raw_assets
-    schema: public
+    schema: main
     tables:
       - name: raw_storage_provider_daily_power
         meta:
@@ -16,7 +16,6 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_filecoin_state_market_deals"]
-          external_location: 'read_ndjson_auto("/tmp/ParsedStateMarketDeals.json.zst")'
       - name: raw_storage_providers_location_provider_quest
         meta:
           dagster:

@@ -4,12 +4,13 @@ version = "0.1.0"
 authors = [{ name = "David Gasquez" }]
 dependencies = [
     "altair",
-    "dbt-core",
-    "dbt-duckdb",
-    "dagster",
     "dagster-dbt",
     "dagster-duckdb-pandas",
-    "duckdb",
+    "dagster",
+    "databricks-sql-connector",
+    "dbt-core",
+    "dbt-duckdb",
+    "duckdb==0.9.2",
     "ijson",
     "ipykernel",
     "ipywidgets",
@@ -20,8 +21,8 @@ dependencies = [
     "pandas",
     "pyarrow",
     "regex",
-    "tqdm",
     "toml",
+    "tqdm",
     "zstandard",
 ]
 requires-python = ">=3.10, <3.12"

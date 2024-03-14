@@ -1,9 +1,10 @@
 import json
-import os
 
 import requests
 from dagster import ConfigurableResource
 from requests import Response
+from databricks import sql
+from databricks.sql.client import Connection
 
 
 class SpacescopeResource(ConfigurableResource):
@@ -11,12 +12,12 @@ class SpacescopeResource(ConfigurableResource):
     Spacescope API resource.
     """
 
-    token: str = os.getenv("SPACESCOPE_TOKEN", "")
-    endpoint: str = "https://api.spacescope.io/v2/"
+    SPACESCOPE_TOKEN: str
+    ENDPOINT: str = "https://api.spacescope.io/v2/"
 
     def request(self, method: str, params: dict = {}) -> Response:
-        endpoint = f"{self.endpoint}/{method}"
-        headers = {"Authorization": f"Bearer {self.token}"}
+        endpoint = f"{self.ENDPOINT}/{method}"
+        headers = {"Authorization": f"Bearer {self.SPACESCOPE_TOKEN}"}
 
         r = requests.get(
             endpoint,
@@ -47,7 +48,7 @@ class DuneResource(ConfigurableResource):
     Dune API resource.
     """
 
-    DUNE_API_KEY: str = str(os.environ.get("DUNE_API_KEY"))
+    DUNE_API_KEY: str
 
     def upload_csv(self, csv_file_path: str) -> requests.Response:
         """
@@ -77,3 +78,18 @@ class DuneResource(ConfigurableResource):
             print("Response content:", response.content)
 
         return response
+
+
+class StarboardDatabricksResource(ConfigurableResource):
+    DATABRICKS_SERVER_HOSTNAME: str
+    DATABRICKS_HTTP_PATH: str
+    DATABRICKS_ACCESS_TOKEN: str
+
+    def get_connection(self) -> Connection:
+        conn = sql.connect(
+            server_hostname=self.DATABRICKS_SERVER_HOSTNAME,
+            http_path=self.DATABRICKS_HTTP_PATH,
+            access_token=self.DATABRICKS_ACCESS_TOKEN,
+        )
+
+        return conn

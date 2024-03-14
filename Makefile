@@ -12,14 +12,16 @@ setup:
 	@uv pip install -U -e ".[dev]"
 
 tables:
-	@mkdir -p portal/.quarto/_site/data
-	@python -c 'from fdp.db import export; export("data/local.duckdb", "portal/.quarto/_site/data")'
+	@mkdir -p data/tables/
+	@python -c 'from fdp.db import export; export("data/tables/")'
+	@rm data/tables/raw_*.parquet
 
 preview:
 	@quarto preview portal
 
 render:
 	@quarto render portal
+	@cp -r data/tables portal/.quarto/_site/data
 
 publish:
 	@fleek sites deploy
