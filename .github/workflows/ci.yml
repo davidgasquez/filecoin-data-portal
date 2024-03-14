@@ -14,8 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SPACESCOPE_TOKEN: ${{ secrets.SPACESCOPE_TOKEN }}
-      FLEEK_TOKEN: ${{ secrets.FLEEK_TOKEN }}
-      FLEEK_PROJECT_ID: ${{ secrets.FLEEK_PROJECT_ID }}
+      DATABASE_PATH: ${{ secrets.DATABASE_PATH }}
+      motherduck_token: ${{ secrets.motherduck_token }}
+      DATABRICKS_SERVER_HOSTNAME: ${{ secrets.DATABRICKS_SERVER_HOSTNAME }}
+      DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+      DATABRICKS_ACCESS_TOKEN: ${{ secrets.DATABRICKS_ACCESS_TOKEN }}
 
     steps:
         - name: Free Disk Space
