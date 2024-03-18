@@ -7,7 +7,7 @@ with base as (
         quality_adj_power as quality_adjusted_power_bytes,
         quality_adj_power / 1024 ^ 5 as quality_adjusted_power_pibs,
         (quality_adjusted_power_bytes - raw_power_bytes) / 9 as verified_data_power_bytes,
-        (quality_adjusted_power_pibs - raw_power_pibs) / 9 as verified_data_power_pibs
+        (quality_adjusted_power_pibs - raw_power_pibs) / 9 as verified_data_power_pibs,
     from {{ source('raw_assets', 'raw_storage_provider_daily_power') }}
 )
 
@@ -20,21 +20,5 @@ select
     quality_adjusted_power_pibs,
     verified_data_power_bytes,
     verified_data_power_pibs,
-    case
-        when raw_power_pibs = 0 then '=0'
-        when raw_power_pibs < 0.1 then '<0.1'
-        when raw_power_pibs < 0.1 then '>0.1<1'
-        when raw_power_pibs < 1 then '>1<10'
-        when raw_power_pibs < 10 then '>10<50'
-        when raw_power_pibs > 50 then '>50'
-        else 'unknwon'
-    end as raw_power_pibs_bucket,
-    case
-        when verified_data_power_pibs = 0 then '=0'
-        when verified_data_power_pibs < 0.1 then '<0.1 '
-        when verified_data_power_pibs < 1 then '>0.1<1'
-        when verified_data_power_pibs < 10 then '>1<10'
-        when verified_data_power_pibs > 50 then '>50'
-        else 'unknwon'
-    end as verified_data_power_pibs_bucket,
 from base
+order by date desc, raw_power_bytes desc
