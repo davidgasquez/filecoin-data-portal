@@ -21,7 +21,7 @@ preview:
 
 render:
 	@quarto render portal
-	@cp -r data/tables portal/.quarto/_site/data
+	@mv data/tables portal/.quarto/_site/data
 
 publish:
 	@fleek sites deploy

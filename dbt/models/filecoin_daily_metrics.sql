@@ -7,7 +7,7 @@ with date_calendar as (
 deal_metrics as (
     select
         date_trunc('day', sector_start_at) as date,
-        sum(padded_piece_size_tibs) as onboarded_data_tibs,
+        sum(padded_piece_size_tibs / 1024) as onboarded_data_pibs,
         count(distinct deal_id) as deals,
         count(distinct client_id) as unique_deal_making_clients,
         count(distinct provider_id) as unique_deal_making_providers
@@ -21,7 +21,7 @@ deal_metrics as (
 users_with_active_deals as (
     select
         dc.day,
-        sum(padded_piece_size_tibs) as data_on_active_deals_tibs,
+        sum(padded_piece_size_tibs / 1024) as data_on_active_deals_pibs,
         approx_count_distinct(deals.deal_id) as active_deals,
         approx_count_distinct(deals.client_id) as clients_with_active_deals,
         approx_count_distinct(deals.provider_id) as providers_with_active_deals
@@ -45,8 +45,8 @@ daily_power as (
 
 select
     date_calendar.day as date,
-    onboarded_data_tibs,
-    data_on_active_deals_tibs,
+    onboarded_data_pibs,
+    data_on_active_deals_pibs,
     deals,
     unique_deal_making_clients,
     unique_deal_making_providers,
@@ -55,7 +55,8 @@ select
     providers_with_active_deals,
     raw_power_pibs,
     quality_adjusted_power_pibs,
-    verified_data_power_pibs
+    verified_data_power_pibs,
+    data_on_active_deals_pibs / raw_power_pibs * 100 as network_utilization
 from date_calendar
 left join deal_metrics on date_calendar.day = deal_metrics.date
 left join users_with_active_deals on date_calendar.day = users_with_active_deals.day

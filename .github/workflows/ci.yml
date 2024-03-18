@@ -8,6 +8,10 @@ on:
     - cron: "0 10 * * 1"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   run:
     name: Run
@@ -47,6 +51,9 @@ jobs:
         - name: Run
           run: make run
 
+        - name: Export Tables
+          run: make tables
+
         - name: Install Quarto
           uses: quarto-dev/quarto-actions/setup@v2
 
@@ -63,9 +70,6 @@ jobs:
 
         - name: Build & deploy sites
           run: fleek sites deploy
-
-        - name: Export Tables
-          run: make tables
 
         - name: Push to IPFS
           uses: filebase/ipfs-action@master
