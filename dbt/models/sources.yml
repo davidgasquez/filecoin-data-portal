@@ -20,3 +20,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_storage_providers_location_provider_quest"]
+      - name: raw_storage_providers_reputation
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_reputation"]

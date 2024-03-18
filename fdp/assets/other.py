@@ -1,4 +1,5 @@
 import pandas as pd
+import requests
 from dagster import Output, MetadataValue, asset
 
 
@@ -13,31 +14,24 @@ def raw_storage_providers_location_provider_quest() -> Output[pd.DataFrame]:
     return Output(df, metadata={"Sample": MetadataValue.md(df.sample(5).to_markdown())})
 
 
-# @asset(compute_kind="python")
-# def raw_deal_tags(duckdb: DuckDBResource) -> MaterializeResult:
-#     """
-#     Deal tags from CID checker.
-#     """
+@asset(compute_kind="python")
+def raw_storage_providers_reputation() -> Output[pd.DataFrame]:
+    """
+    Storage Provider reputation data from Filrep (https://filrep.io).
+    """
 
-#     STATEMARKETDEALS_POSTGRES_HOST = os.getenv("STATEMARKETDEALS_POSTGRES_HOST")
-#     STATEMARKETDEALS_POSTGRES_PORT = os.getenv("STATEMARKETDEALS_POSTGRES_PORT")
-#     STATEMARKETDEALS_POSTGRES_DATABASE = os.getenv("STATEMARKETDEALS_POSTGRES_DATABASE")
-#     STATEMARKETDEALS_POSTGRES_USERNAME = os.getenv("STATEMARKETDEALS_POSTGRES_USERNAME")
-#     STATEMARKETDEALS_POSTGRES_PASSWORD = os.getenv("STATEMARKETDEALS_POSTGRES_PASSWORD")
+    url = "https://api.filrep.io/api/v1/miners"
 
-#     with duckdb.get_connection() as con:
-#         con.execute(
-#             f"""
-#             INSTALL postgres_scanner;
-#             LOAD postgres_scanner;
-#             CALL postgres_attach('dbname={STATEMARKETDEALS_POSTGRES_DATABASE} user={STATEMARKETDEALS_POSTGRES_USERNAME} password={STATEMARKETDEALS_POSTGRES_PASSWORD} host={STATEMARKETDEALS_POSTGRES_HOST} port={STATEMARKETDEALS_POSTGRES_PORT}');
-#             create or replace table raw_deal_tags as (select * from deal_tags);
-#             """
-#         )
+    storage_providers = pd.DataFrame(requests.get(url).json()["miners"])
+    storage_providers["name"] = storage_providers["tag"].apply(lambda x: x.get("name"))
+    storage_providers = storage_providers.convert_dtypes()
 
-#     return MaterializeResult(
-#         metadata={"Sample": MetadataValue.md("select * from raw_deal_tags limit 5;")},
-#     )
+    return Output(
+        storage_providers.drop(columns=["id"]),
+        metadata={
+            "Sample": MetadataValue.md(storage_providers.sample(5).to_markdown())
+        },
+    )
 
 
 # @asset(compute_kind="python")

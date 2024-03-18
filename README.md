@@ -4,7 +4,7 @@
 
 _Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem. Seamlessy access the data you need to drive the community forward!_
 
-![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/581155f3-0d23-45fa-a67a-bb373df7078a)
+![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/582faffc-1263-40b5-95cf-44243c58ae75)
 
 ## 📂 Data
 

@@ -6,7 +6,7 @@ stats as (
     select
         provider_id,
         count(distinct deal_id) as total_deals,
-        count(distinct provider_id) as total_unique_providers,
+        count(distinct client_id) as total_unique_clients,
         count(distinct piece_cid) as total_unique_piece_cids,
         sum(unpadded_piece_size_tibs) as total_data_uploaded_tibs,
         sum(case when is_active then unpadded_piece_size_tibs else 0 end) as total_active_data_uploaded_tibs,
@@ -21,12 +21,23 @@ stats as (
     from {{ ref("filecoin_state_market_deals") }}
     group by 1
     order by 2 desc
+),
+
+reputation_data as (
+    select
+        address as provider_id,
+        if(reachability = 'reachable', true, false) as is_reachable,
+        name as provider_name,
+        uptimeaverage as uptime_average,
+        score as score,
+        rank
+    from {{ source('raw_assets', 'raw_storage_providers_reputation') }}
 )
 
 select
     stats.provider_id,
     stats.total_deals,
-    stats.total_unique_providers,
+    stats.total_unique_clients,
     stats.total_unique_piece_cids,
     stats.total_data_uploaded_tibs,
     stats.total_active_data_uploaded_tibs,
@@ -41,7 +52,12 @@ select
     storage_provider_location.region,
     storage_provider_location.country,
     storage_provider_location.latitude,
-    storage_provider_location.longitude
+    storage_provider_location.longitude,
+    reputation_data.provider_name,
+    reputation_data.is_reachable,
+    reputation_data.uptime_average,
+    reputation_data.score,
+    reputation_data.rank
 from stats
-left join storage_provider_location
-    on stats.provider_id = storage_provider_location.provider_id
+left join storage_provider_location on stats.provider_id = storage_provider_location.provider_id
+left join reputation_data on stats.provider_id = reputation_data.provider_id
