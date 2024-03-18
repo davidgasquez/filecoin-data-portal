@@ -21,6 +21,7 @@ deal_metrics as (
 users_with_active_deals as (
     select
         dc.day,
+        sum(padded_piece_size_tibs) as data_on_active_deals_tibs,
         approx_count_distinct(deals.deal_id) as active_deals,
         approx_count_distinct(deals.client_id) as clients_with_active_deals,
         approx_count_distinct(deals.provider_id) as providers_with_active_deals
@@ -45,6 +46,7 @@ daily_power as (
 select
     date_calendar.day as date,
     onboarded_data_tibs,
+    data_on_active_deals_tibs,
     deals,
     unique_deal_making_clients,
     unique_deal_making_providers,
