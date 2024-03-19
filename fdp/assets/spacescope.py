@@ -44,6 +44,7 @@ def raw_storage_provider_daily_power(
                 """
             )
 
+        from_day = from_day + datetime.timedelta(days=1)
         from_day = from_day or FILECOIN_FIRST_DAY
 
         to_day = datetime.date.today() - datetime.timedelta(days=2)
