@@ -14,7 +14,8 @@ def query(sql):
 def export(export_path):
     with duckdb.connect(database=DATABASE_PATH) as con:
         export_query = f"""
-        -- set preserve_insertion_order = false;
+        set preserve_insertion_order = false;
+        set memory_limit = '12GB';
         set temp_directory = '/tmp/temp.tmp';
         export database '{export_path}' (format 'parquet', compression 'zstd', row_group_size 1000000);
         """
