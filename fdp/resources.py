@@ -1,5 +1,7 @@
+import io
 import json
 
+import pandas as pd
 import requests
 from dagster import ConfigurableResource
 from requests import Response
@@ -50,32 +52,31 @@ class DuneResource(ConfigurableResource):
 
     DUNE_API_KEY: str
 
-    def upload_csv(self, csv_file_path: str) -> requests.Response:
+    def upload_df(self, df: pd.DataFrame, name: str) -> requests.Response:
         """
-        Uploads a CSV file to Dune's API.
+        Uploads a DataFrame file to Dune's API.
 
         Args:
-            csv_file_path (str): The path to the CSV file to upload.
+            df (pd.DataFrame): The DataFrame to upload.
+            name (str): The name of the table to create.
         """
 
         url = "https://api.dune.com/api/v1/table/upload/csv"
 
-        with open(csv_file_path) as open_file:
-            data = open_file.read()
+        file_buffer = io.StringIO()
+        df.to_csv(file_buffer, index=False)
+        file_buffer.seek(0)
+        df_csv = file_buffer.getvalue()
 
-            headers = {"X-Dune-Api-Key": self.DUNE_API_KEY}
+        headers = {"X-Dune-Api-Key": self.DUNE_API_KEY}
+        payload = {
+            "table_name": name,
+            "is_private": False,
+            "data": df_csv,
+        }
 
-            payload = {
-                "table_name": "example_table",
-                "description": "test_description",
-                "is_private": False,
-                "data": str(data),
-            }
-
-            response = requests.post(url, data=json.dumps(payload), headers=headers)
-
-            print("Response status code:", response.status_code)
-            print("Response content:", response.content)
+        response = requests.post(url, data=json.dumps(payload), headers=headers)
+        response.raise_for_status()
 
         return response
 

@@ -2,6 +2,8 @@ import pandas as pd
 import requests
 from dagster import Output, MetadataValue, asset
 
+from fdp.resources import DuneResource
+
 
 @asset(compute_kind="python")
 def raw_storage_providers_location_provider_quest() -> Output[pd.DataFrame]:
@@ -66,3 +68,11 @@ def raw_storage_providers_reputation() -> Output[pd.DataFrame]:
 #     os.system(
 #         "zstd --rm -q -f -T0 /tmp/ParsedStateMarketDeals.json -o /tmp/ParsedStateMarketDeals.json.zst"
 #     )
+
+
+@asset(compute_kind="API")
+def dune_metrics(dune: DuneResource, filecoin_daily_metrics: pd.DataFrame) -> None:
+    """
+    Uploads allo deployments to Dune.
+    """
+    dune.upload_df(filecoin_daily_metrics, "filecoin_daily_metrics")

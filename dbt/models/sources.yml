@@ -24,3 +24,11 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_storage_providers_reputation"]
+      - name: raw_verified_registry_verifiers
+        meta:
+          dagster:
+            asset_key: ["raw_verified_registry_verifiers"]
+      - name: raw_datacapstats_verifiers
+        meta:
+          dagster:
+            asset_key: ["raw_datacapstats_verifiers"]

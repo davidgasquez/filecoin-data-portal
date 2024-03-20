@@ -33,6 +33,7 @@ resources = {
     ),
     "duckdb": DuckDBResource(database=DATABASE_PATH),
     "io_manager": DuckDBPandasIOManager(database=DATABASE_PATH, schema="main"),
+    "dune": resources.DuneResource(DUNE_API_KEY=EnvVar("DUNE_API_KEY")),
 }
 
 defs = Definitions(assets=[*dbt_assets, *all_assets], resources=resources)

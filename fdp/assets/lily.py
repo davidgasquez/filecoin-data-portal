@@ -103,3 +103,40 @@ def raw_filecoin_state_market_deals(
             )
 
             context.log.info(f"Persisted {data.num_rows} rows")
+
+
+@asset(compute_kind="python")
+def raw_verified_registry_verifiers(
+    context: AssetExecutionContext,
+    starboard_databricks: StarboardDatabricksResource,
+    duckdb: DuckDBResource,
+) -> None:
+    """
+    Verifiers on-chain DataCap changes from lily.verified_registry_verifiers
+    """
+    databricks_con = starboard_databricks.get_connection()
+    duckdb.get_connection()
+
+    cursor = databricks_con.cursor()
+
+    r = cursor.execute(
+        """
+        select
+        *
+        from lily.verified_registry_verifiers
+        """
+    )
+
+    context.log.info("Fetched verified registry verifiers")
+
+    with duckdb.get_connection() as duckdb_con:
+        data = r.fetchall_arrow()
+        duckdb_con.execute(
+            """
+            create or replace table raw_verified_registry_verifiers as (
+                select * from data
+            )
+            """
+        )
+
+        context.log.info(f"Persisted {data.num_rows} rows")
