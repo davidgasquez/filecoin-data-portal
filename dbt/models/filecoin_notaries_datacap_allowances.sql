@@ -23,7 +23,7 @@ select
     to_timestamp(height::numeric * 30 + 1598306400)::timestamp as height_at,
     message_cid,
     retries,
-    allowance::bigint as allowance_bits,
+    allowance::bigint as allowance_bytes,
     allowance::bigint / power(1024, 4) as allowance_tibs,
     audit_trail,
     verifier_address_id,

@@ -9,6 +9,11 @@ with source as (
 )
 
 select
-    *
+    height,
+    updated_at,
+    notary_id,
+    try_cast(datacap as bigint) as datacap_bytes,
+    try_cast(datacap as bigint) / power(1024, 4) as datacap_tibs,
+    event_type
 from source
 order by 1 desc
