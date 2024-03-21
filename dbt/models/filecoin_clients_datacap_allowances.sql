@@ -49,6 +49,6 @@ select
     searched_by_proposal,
     to_timestamp(issue_create_timestamp::numeric) as issue_created_at,
     has_remaining_allowance,
-    to_timestamp(create_message_timestamp::numeric) as message_sent_at
+    to_timestamp(create_message_timestamp::numeric) as messaged_created_at
 from source
 order by height desc
