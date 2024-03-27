@@ -6,7 +6,6 @@ _Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem. 
 
 ![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/0b6e15b4-bf42-41b2-b4c9-d75a2530c261)
 
-
 ## 📂 Data
 
 The data lives at [`https://filecoindataportal.davidgasquez.com/data`](https://filecoindataportal.davidgasquez.com/data), which points to the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) available in this repository and also available at the [`ipns://k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k`](https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/) IPNS address.
@@ -69,6 +68,10 @@ Some ways you can contribute to this project:
 You can run the Filecoin Data Portal locally using Python Virtual Environment or VSCode Development Containers. You'll need the following secrets in your environment:
 
 - A `SPACESCOPE_TOKEN` to access [Spacescope](https://spacescope.io/) API.
+- A `DATABRICKS_SERVER_HOSTNAME` for connecting to Databricks.
+- A `DATABRICKS_HTTP_PATH` for the Databricks environment.
+- A `DATABRICKS_ACCESS_TOKEN` for authentication with Databricks.
+- A `DUNE_API_KEY` for accessing Dune Analytics.
 
 ### 🐍 Python Virtual Environment
 
