@@ -48,8 +48,8 @@ jobs:
         - name: Install dependencies
           run: pip install -e .
 
-        # - name: Run
-        #   run: make run
+        - name: Run
+          run: make run
 
         - name: Export Tables
           run: make tables
