@@ -11,11 +11,9 @@ _Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem. 
 The data lives at [`https://filecoindataportal.davidgasquez.com/data`](https://filecoindataportal.davidgasquez.com/data), which points to the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) available in this repository and also available at the [`ipns://k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k`](https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/) IPNS address.
 
 <center>
-
-<a href="https://filecoindataportal.davidgasquez.com/data" target="_blank">
-    <img src="https://img.shields.io/badge/GET_THE_DATA-0090ff?style=for-the-badge" alt="GET THE DATA">
-</a>
-
+  <a href="https://filecoindataportal.davidgasquez.com/data" target="_blank">
+      <img src="https://img.shields.io/badge/GET_THE_DATA-0090ff?style=for-the-badge" alt="GET THE DATA">
+  </a>
 </center>
 
 ## 📖 Overview
@@ -91,7 +89,7 @@ Now, you should be able to spin up Dagster UI (`make dev`) and [access it locall
 
 You can jump into the repository [Development Container](https://code.visualstudio.com/docs/remote/containers). Once inside the develpment environment, you'll only need to run `make dev` to spin up the [Dagster UI locally](http://127.0.0.1:3000). The development environment can also run in your browser thanks to GitHub Codespaces!
 
-[![](https://github.com/codespaces/badge.svg)](https://codespaces.new/davidgasquez/filecoin-data-portal)
+[![Development Container Badge](https://github.com/codespaces/badge.svg)](https://codespaces.new/davidgasquez/filecoin-data-portal)
 
 ## 📝 License
 
