@@ -11,6 +11,9 @@
 				"files.associations": {
 					"*.sql": "jinja-sql"
 				},
+				"[jinja-sql]": {
+					"editor.formatOnSave": false
+				},
 				"[python]": {
 					"editor.defaultFormatter": "charliermarsh.ruff",
 					"editor.formatOnSave": true,
@@ -28,7 +31,6 @@
 				"innoverio.vscode-dbt-power-user",
 				"ms-python.python",
 				"ms-python.vscode-pylance",
-				"ms-toolsai.datawrangler",
 				"ms-toolsai.jupyter",
 				"quarto.quarto",
 				"redhat.vscode-yaml",
