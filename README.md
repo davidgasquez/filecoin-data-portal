@@ -6,6 +6,11 @@ _Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem. 
 
 ![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/0b6e15b4-bf42-41b2-b4c9-d75a2530c261)
 
+## 🚀 Powering
+
+- [Filecoin Pulse Website](https://filecoinpulse.pages.dev/)
+- [Filecoin Metrics Dune Dashboard](https://dune.com/kalen/filecoin-daily-metrics)
+
 ## 📂 Data
 
 The data lives at [`https://filecoindataportal.davidgasquez.com/data`](https://filecoindataportal.davidgasquez.com/data), which points to the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) available in this repository and also available at the [`ipns://k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k`](https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/) IPNS address.
