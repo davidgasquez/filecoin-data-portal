@@ -1,6 +1,7 @@
 # 🗂️ Filecoin Data Portal
 
 [![CI](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml)
+[![IPFS](https://img.shields.io/badge/IPNS-blue?logo=ipfs)](https://filecoindataportal.davidgasquez.com)
 
 _Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem. Seamlessy access the data you need to drive the community forward!_
 
