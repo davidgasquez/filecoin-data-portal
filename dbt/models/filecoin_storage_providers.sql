@@ -17,7 +17,9 @@ stats as (
         min(case when is_active then sector_start_at else null end) as first_active_deal_at,
         max(sector_start_at) as last_deal_at,
         max(case when is_active then sector_start_at else null end) as last_active_deal_at,
-        sum(case when sector_start_at > current_date() - interval '30 days' then unpadded_piece_size_tibs else 0 end) as data_uploaded_tibs_30d
+        sum(case when sector_start_at > current_date() - interval '30 days' then unpadded_piece_size_tibs else 0 end) as data_uploaded_tibs_30d,
+        sum(unpadded_piece_size_tibs) filter (piece_provider_replication_order = 1) as unique_data_uploaded_tibs,
+        unique_data_uploaded_tibs / sum(unpadded_piece_size_tibs) as unique_data_uploaded_percentage
     from {{ ref("filecoin_state_market_deals") }}
     group by 1
     order by 2 desc
@@ -49,6 +51,8 @@ select
     stats.last_deal_at,
     stats.last_active_deal_at,
     stats.data_uploaded_tibs_30d,
+    stats.unique_data_uploaded_tibs,
+    stats.unique_data_uploaded_percentage,
     storage_provider_location.region,
     storage_provider_location.country,
     storage_provider_location.latitude,

@@ -8,6 +8,7 @@ deal_metrics as (
     select
         date_trunc('day', sector_start_at) as date,
         sum(padded_piece_size_tibs / 1024) as onboarded_data_pibs,
+        sum(padded_piece_size_tibs / 1024) filter (piece_client_replication_order = 1 and piece_provider_replication_order = 1) as unique_data_onboarded_data_pibs,
         count(distinct deal_id) as deals,
         count(distinct client_id) as unique_deal_making_clients,
         count(distinct provider_id) as unique_deal_making_providers
@@ -22,6 +23,7 @@ users_with_active_deals as (
     select
         dc.day,
         sum(padded_piece_size_tibs / 1024) as data_on_active_deals_pibs,
+        sum(padded_piece_size_tibs / 1024) filter (piece_client_replication_order = 1 and piece_provider_replication_order = 1) as unique_data_on_active_deals_pibs,
         approx_count_distinct(deals.deal_id) as active_deals,
         approx_count_distinct(deals.client_id) as clients_with_active_deals,
         approx_count_distinct(deals.provider_id) as providers_with_active_deals
@@ -46,7 +48,9 @@ daily_power as (
 select
     date_calendar.day as date,
     onboarded_data_pibs,
+    unique_data_onboarded_data_pibs,
     data_on_active_deals_pibs,
+    unique_data_on_active_deals_pibs,
     deals,
     unique_deal_making_clients,
     unique_deal_making_providers,
