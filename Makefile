@@ -23,9 +23,6 @@ render:
 	@quarto render portal
 	@mv data/tables portal/.quarto/_site/data
 
-publish:
-	@fleek sites deploy
-
 clean:
 	@rm -rf portal/.quarto data/*.parquet data/*.duckdb
 	@rm -rf dbt/target dbt/logs dbt/dbt_packages
