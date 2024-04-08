@@ -1,8 +1,10 @@
 # Data Sources
 
-Most of the data used through the portal comes from the Filecoin chain itself. There is also some off-chain data like [Datacap Applications](https://docs.filecoin.io/basics/how-storage-works/filecoin-plus) or [Storage Provider's Reputation scores](https://filecoin.io/blog/posts/reputation-systems-in-filecoin/) that are collected from other places.
+Most of the data used through the portal comes from the Filecoin chain. There is also some off-chain data like [Datacap Applications](https://docs.filecoin.io/basics/how-storage-works/filecoin-plus) or [Storage Provider's Reputation scores](https://filecoin.io/blog/posts/reputation-systems-in-filecoin/) that are collected from other places.
 
-## Deals
+## Entities
+
+### Deals
 
 Deals data is available on chain and can be obtained in different ways:
 
@@ -10,30 +12,34 @@ Deals data is available on chain and can be obtained in different ways:
 - Using an [oracle like `fil-naive-marketwatch`](https://github.com/ribasushi/fil-naive-marketwatch).
 - Reconstructing the deals state [from Lily](https://lilium.sh/) tables.
 
-## Clients
+### Clients
 
 Clients can be derived from the [deals](#deals) dataset and expanded with the following sources:
 
 - Datacap. From [Datacap Stats API](https://datacapstats.io/) calling `https://api.datacapstats.io/api/getVerifiedClients`. You get a JSON of verified clients in the FIL+ program that contains client names, Datacap application data and other self-reported data. Alternatively, this data can be obtained by parsing the relevant GitHub repositories issues and comments.
 
-## Storage Providers
+### Storage Providers
 
 Storage Providers be derived from the [deals](#deals) dataset. More information about proviers can be collected in the following sources:
 
 - Location using the different [provider.quest](https://provider.quest/) endpoints/datasets.
 
-## FVM
+### FVM
 
 Filecoin Virtual Machine data is trickier to get. Some sources:
 
 - Directly from the [FVM](https://fvm.starboard.ventures/) dashboard.
 - Some metrics are available in the [Spacescope API](https://docs.spacescope.io/version_history#v240-on-march-16-2023)
 
-## Messages
+### Messages
 
 A few teams across the ecosystem are indexing Filecoin Messages. The most comprehensive source are [Beriz](https://beryx.zondax.ch/) and [FilInfo](https://filinfo.io/docs).
 
-# Data Sources
+### Reputation Data
+
+Reputation is both obtained from [FilRep](https://filrep.io/) and augmented with custom metrics around deals. For example, what is the average replication of a deal for the SP?
+
+## Data Indexers
 
 - [Starboard](https://dashboard.starboard.ventures/dashboard) - [FVM](https://fvm.starboard.ventures/)
 - [Dev Storage](https://dev.storage/)
@@ -46,7 +52,7 @@ A few teams across the ecosystem are indexing Filecoin Messages. The most compre
 - [DMOB Messages Database](https://digitalmob.ro/) powering [FilInfo](https://filinfo.io/docs)
 - [Filrep](https://filrep.io/)
 
-## Notebooks
+### Notebooks
 
 - [BlockScience](https://github.com/BlockScience)
 - [Filecoin Mecha Twin](https://github.com/protocol/filecoin-mecha-twin)
