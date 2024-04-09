@@ -20,11 +20,23 @@ deal_metrics as (
     order by 1
 ),
 
-deal_expirations as (
+deal_ends as (
     select
-        cast(coalesce(slash_at, end_at) as date) as date,
-        count(distinct deal_id) as deal_expirations,
-        sum(padded_piece_size_tibs / 1024) as expired_data_pibs
+        cast(end_at as date) as date,
+        count(distinct deal_id) as deal_ends,
+        coalesce(sum(padded_piece_size_tibs / 1024), 0) as ended_data_pibs
+    from {{ ref('filecoin_state_market_deals') }}
+    where 1 = 1
+        and sector_start_at is not null
+    group by 1
+    order by 1
+),
+
+deal_slashes as (
+    select
+        cast(slash_at as date) as date,
+        count(distinct deal_id) as deal_slashes,
+        coalesce(sum(padded_piece_size_tibs / 1024), 0) as slashed_data_pibs
     from {{ ref('filecoin_state_market_deals') }}
     where 1 = 1
         and sector_start_at is not null
@@ -95,13 +107,17 @@ select
     data_on_active_deals_pibs / raw_power_pibs as network_utilization_percentage,
     new_client_ids,
     new_provider_ids,
-    deal_expirations,
-    expired_data_pibs
+    coalesce(deal_ends, 0) as deal_ends,
+    coalesce(deal_slashes, 0) as deal_slashes,
+    coalesce(ended_data_pibs, 0) as ended_data_pibs,
+    coalesce(slashed_data_pibs, 0) as slashed_data_pibs,
+    coalesce(ended_data_pibs, 0) + coalesce(slashed_data_pibs, 0) as terminated_deals_pibs,
 from date_calendar
 left join deal_metrics on date_calendar.day = deal_metrics.date
 left join users_with_active_deals on date_calendar.day = users_with_active_deals.day
 left join daily_power on date_calendar.day = daily_power.date
 left join new_clients on date_calendar.day = new_clients.date
 left join new_providers on date_calendar.day = new_providers.date
-left join deal_expirations on date_calendar.day = deal_expirations.date
+left join deal_ends on date_calendar.day = deal_ends.date
+left join deal_slashes on date_calendar.day = deal_slashes.date
 order by date_calendar.day desc
