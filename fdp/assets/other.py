@@ -29,7 +29,18 @@ def raw_storage_providers_reputation() -> Output[pd.DataFrame]:
     storage_providers = storage_providers.convert_dtypes()
 
     return Output(
-        storage_providers.drop(columns=["id"]),
+        storage_providers.drop(
+            columns=[
+                "id",
+                "price",
+                "verifiedPrice",
+                "minPieceSize",
+                "maxPieceSize",
+                "rawPower",
+                "qualityAdjPower",
+                "creditScore",
+            ]
+        ),
         metadata={
             "Sample": MetadataValue.md(storage_providers.sample(5).to_markdown())
         },
