@@ -24,6 +24,7 @@ jobs:
       DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
       DATABRICKS_ACCESS_TOKEN: ${{ secrets.DATABRICKS_ACCESS_TOKEN }}
       DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+      REPUTATION_MONGODB_URI: ${{ secrets.REPUTATION_MONGODB_URI }}
 
     steps:
         - name: Free Disk Space

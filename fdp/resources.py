@@ -4,8 +4,10 @@ import json
 import pandas as pd
 import requests
 from dagster import ConfigurableResource
+from pymongo import MongoClient
 from requests import Response
 from databricks import sql
+from pymongo.collection import Collection
 from databricks.sql.client import Connection
 
 
@@ -42,6 +44,11 @@ class SpacescopeResource(ConfigurableResource):
     def get_storage_provider_token_balance(self, storage_provider=None, date=None):
         params = {"state_date": date, "miner_id": storage_provider}
         r = self.request(method="storage_provider/token_balance", params=params).json()
+        return r["data"]
+
+    def get_storage_provider_rewards(self, storage_provider=None, date=None):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(method="storage_provider/rewards", params=params).json()
         return r["data"]
 
 
@@ -94,3 +101,13 @@ class StarboardDatabricksResource(ConfigurableResource):
         )
 
         return conn
+
+
+class MongoDBResource(ConfigurableResource):
+    MONGODB_URI: str
+
+    def get_collection(self, database_name: str, collection_name: str) -> Collection:
+        client = MongoClient(self.MONGODB_URI)
+        db = client.get_database(database_name)
+        collection = db[collection_name]
+        return collection

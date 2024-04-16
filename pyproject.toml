@@ -20,6 +20,7 @@ dependencies = [
     "nbformat",
     "pandas",
     "pyarrow",
+    "pymongo",
     "regex",
     "toml",
     "tqdm",

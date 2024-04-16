@@ -2,12 +2,12 @@ version: 2
 
 sources:
   - name: raw_assets
-    schema: main
+    schema: raw
     tables:
-      - name: raw_storage_provider_daily_power
+      - name: raw_storage_providers_daily_power
         meta:
           dagster:
-            asset_key: ["raw_storage_provider_daily_power"]
+            asset_key: ["raw_storage_providers_daily_power"]
       - name: raw_datacapstats_verified_clients
         meta:
           dagster:
@@ -20,10 +20,10 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_storage_providers_location_provider_quest"]
-      - name: raw_storage_providers_reputation
+      - name: raw_storage_providers_filrep_reputation
         meta:
           dagster:
-            asset_key: ["raw_storage_providers_reputation"]
+            asset_key: ["raw_storage_providers_filrep_reputation"]
       - name: raw_verified_registry_verifiers
         meta:
           dagster:
@@ -32,3 +32,11 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_datacapstats_verifiers"]
+      - name: raw_storage_providers_token_balances
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_token_balances"]
+      - name: raw_storage_providers_rewards
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_rewards"]

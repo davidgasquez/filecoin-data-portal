@@ -43,10 +43,10 @@ reputation_data as (
         address as provider_id,
         if(reachability = 'reachable', true, false) as is_reachable,
         name as provider_name,
-        uptimeaverage as uptime_average,
-        score as score,
-        rank
-    from {{ source('raw_assets', 'raw_storage_providers_reputation') }}
+        uptimeaverage as filrep_uptime_average,
+        score as filrep_score,
+        rank as filrep_rank
+    from {{ source('raw_assets', 'raw_storage_providers_filrep_reputation') }}
 ),
 
 power_data as (
@@ -57,6 +57,29 @@ power_data as (
         verified_data_power_pibs,
     from {{ ref("filecoin_storage_providers_power") }}
     qualify row_number() over (partition by provider_id order by date desc) = 1
+),
+
+token_balance_data as (
+    select
+        miner_id as provider_id,
+        balance,
+        initial_pledge,
+        locked_funds,
+        pre_commit_deposits,
+        provider_collateral,
+        fee_debt
+    from {{ source("raw_assets", "raw_storage_providers_token_balances") }}
+    qualify row_number() over (partition by provider_id order by stat_date desc) = 1
+),
+
+rewards_data as (
+    select
+        miner_id as provider_id,
+        blocks_mined,
+        win_count,
+        rewards,
+    from {{ source("raw_assets", "raw_storage_providers_rewards") }}
+    qualify row_number() over (partition by provider_id order by stat_date desc) = 1
 )
 
 select
@@ -70,10 +93,21 @@ select
     storage_provider_location.longitude,
     reputation_data.provider_name,
     reputation_data.is_reachable,
-    reputation_data.uptime_average,
-    reputation_data.score,
-    reputation_data.rank
+    reputation_data.filrep_uptime_average,
+    reputation_data.filrep_score,
+    reputation_data.filrep_rank,
+    token_balance_data.balance,
+    token_balance_data.initial_pledge,
+    token_balance_data.locked_funds,
+    token_balance_data.pre_commit_deposits,
+    token_balance_data.provider_collateral,
+    token_balance_data.fee_debt,
+    rewards_data.blocks_mined,
+    rewards_data.win_count,
+    rewards_data.rewards
 from stats
 left join storage_provider_location on stats.provider_id = storage_provider_location.provider_id
 left join reputation_data on stats.provider_id = reputation_data.provider_id
 left join power_data on stats.provider_id = power_data.provider_id
+left join token_balance_data on stats.provider_id = token_balance_data.provider_id
+left join rewards_data on stats.provider_id = rewards_data.provider_id
