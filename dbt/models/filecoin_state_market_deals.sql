@@ -31,7 +31,9 @@ replication_factor as (
         row_number() over (partition by provider_id, piece_cid order by sector_start_epoch) as piece_provider_replication_order,
         count(1) over (partition by provider_id, piece_cid) as piece_provider_replication_factor,
         row_number() over (partition by client_id, piece_cid order by sector_start_epoch) as piece_client_replication_order,
-        count(1) over (partition by client_id, piece_cid) as piece_client_replication_factor
+        count(1) over (partition by client_id, piece_cid) as piece_client_replication_factor,
+        min(sector_start_epoch) over (partition by piece_cid) as piece_first_sector_start_epoch,
+        max(sector_start_epoch) over (partition by piece_cid) as piece_last_sector_start_epoch
     from base
     where sector_start_epoch > 0
 )
@@ -67,7 +69,11 @@ select
     replication_factor.piece_provider_replication_factor,
     replication_factor.piece_client_replication_order,
     replication_factor.piece_client_replication_factor,
-    replication_factor.piece_replication_factor
+    replication_factor.piece_replication_factor,
+    replication_factor.piece_first_sector_start_epoch,
+    replication_factor.piece_last_sector_start_epoch,
+    to_timestamp(replication_factor.piece_first_sector_start_epoch * 30 + 1598306400)::timestamp as piece_first_sector_start_at,
+    to_timestamp(replication_factor.piece_last_sector_start_epoch * 30 + 1598306400)::timestamp as piece_last_sector_start_at
 from base as b
 left join replication_factor
     on b.deal_id = replication_factor.deal_id

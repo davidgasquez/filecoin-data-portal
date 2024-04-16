@@ -19,7 +19,7 @@ def raw_datacapstats_verified_clients() -> Output[pd.DataFrame]:
 @asset(compute_kind="python")
 def raw_datacapstats_verifiers() -> Output[pd.DataFrame]:
     """
-    Verifies information from Datacapstats API.
+    Allocator (verifiers) information from Datacapstats API.
     """
     url = "https://api.datacapstats.io/api/getVerifiers"
 

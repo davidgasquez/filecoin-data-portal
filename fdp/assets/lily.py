@@ -112,7 +112,7 @@ def raw_verified_registry_verifiers(
     duckdb: DuckDBResource,
 ) -> None:
     """
-    Verifiers on-chain DataCap changes from lily.verified_registry_verifiers
+    Allocators (verifiers) on-chain DataCap changes from lily.verified_registry_verifiers
     """
     databricks_con = starboard_databricks.get_connection()
     duckdb.get_connection()
@@ -122,7 +122,7 @@ def raw_verified_registry_verifiers(
     r = cursor.execute(
         """
         select
-        *
+            *
         from lily.verified_registry_verifiers
         """
     )

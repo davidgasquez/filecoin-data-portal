@@ -1,8 +1,10 @@
+{{ config(enabled=true) }}
+
 with source as (
     select
         height,
         to_timestamp(height * 30 + 1598306400)::timestamp as updated_at,
-        address as notary_id,
+        address as allocator_id,
         data_cap as datacap,
         event as event_type
     from {{ source('raw_assets', 'raw_verified_registry_verifiers') }}
@@ -11,7 +13,7 @@ with source as (
 select
     height,
     updated_at,
-    notary_id,
+    allocator_id,
     try_cast(datacap as bigint) as datacap_bytes,
     try_cast(datacap as bigint) / power(1024, 4) as datacap_tibs,
     event_type

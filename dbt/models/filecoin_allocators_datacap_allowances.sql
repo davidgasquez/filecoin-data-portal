@@ -1,6 +1,6 @@
 with source as (
     select
-        addressId as notary_id,
+        addressId as allocator_id,
         aa ->> '$.allowanceArray.id' as allowance_id,
         aa ->> '$.allowanceArray.error' as allowance_error,
         aa ->> '$.allowanceArray.height' as height,
@@ -16,7 +16,7 @@ with source as (
 
 select
     allowance_id::numeric as allowance_id,
-    notary_id,
+    allocator_id,
     allowance_error,
     if(nullif(allowance_error, '') is null, true, false) as is_valid,
     height::numeric as height,

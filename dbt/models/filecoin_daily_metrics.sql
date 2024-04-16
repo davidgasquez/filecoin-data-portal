@@ -9,8 +9,9 @@ deal_metrics as (
         cast(sector_start_at as date) as date,
         sum(padded_piece_size_tibs / 1024) as onboarded_data_pibs,
         sum(padded_piece_size_tibs / 1024) filter (piece_client_replication_order = 1 and piece_provider_replication_order = 1) as unique_data_onboarded_data_pibs,
-        unique_data_onboarded_data_pibs / onboarded_data_pibs as unique_data_onboarded_data_percentage,
+        unique_data_onboarded_data_pibs / onboarded_data_pibs as unique_data_onboarded_ratio,
         count(distinct deal_id) as deals,
+        count(distinct piece_cid) as unique_piece_cids,
         count(distinct client_id) as unique_deal_making_clients,
         count(distinct provider_id) as unique_deal_making_providers
     from {{ ref('filecoin_state_market_deals') }}
@@ -86,16 +87,26 @@ new_providers as (
     from {{ ref('filecoin_storage_providers') }}
     group by 1
     order by 1 desc
+),
+
+new_pieces as (
+    select
+        cast(piece_first_sector_start_at as date) as date,
+        coalesce(count(distinct piece_cid), 0) as new_piece_cids
+    from {{ ref('filecoin_state_market_deals') }}
+    group by 1
+    order by 1 desc
 )
 
 select
     date_calendar.day as date,
     onboarded_data_pibs,
     unique_data_onboarded_data_pibs,
-    unique_data_onboarded_data_percentage,
+    unique_data_onboarded_ratio,
     data_on_active_deals_pibs,
     unique_data_on_active_deals_pibs,
     deals,
+    unique_piece_cids,
     unique_deal_making_clients,
     unique_deal_making_providers,
     active_deals,
@@ -107,6 +118,7 @@ select
     data_on_active_deals_pibs / raw_power_pibs as network_utilization_percentage,
     new_client_ids,
     new_provider_ids,
+    new_piece_cids,
     coalesce(deal_ends, 0) as deal_ends,
     coalesce(deal_slashes, 0) as deal_slashes,
     coalesce(ended_data_pibs, 0) as ended_data_pibs,
@@ -118,6 +130,7 @@ left join users_with_active_deals on date_calendar.day = users_with_active_deals
 left join daily_power on date_calendar.day = daily_power.date
 left join new_clients on date_calendar.day = new_clients.date
 left join new_providers on date_calendar.day = new_providers.date
+left join new_pieces on date_calendar.day = new_pieces.date
 left join deal_ends on date_calendar.day = deal_ends.date
 left join deal_slashes on date_calendar.day = deal_slashes.date
 order by date_calendar.day desc
