@@ -24,7 +24,7 @@ def raw_storage_providers_daily_power(
         try:
             from_day = (
                 conn.execute(
-                    "select max(stat_date) as max_date from main.raw_storage_providers_daily_power"
+                    "select max(stat_date) as max_date from raw.raw_storage_providers_daily_power"
                 )
                 .df()["max_date"]
                 .values[0]
@@ -35,7 +35,7 @@ def raw_storage_providers_daily_power(
             from_day = FILECOIN_FIRST_DAY
             conn.execute(
                 """
-                create table main.raw_storage_providers_daily_power(
+                create table raw.raw_storage_providers_daily_power(
                     stat_date VARCHAR,
                     miner_id VARCHAR,
                     raw_byte_power BIGINT,
@@ -80,7 +80,7 @@ def raw_storage_providers_daily_power(
 
         conn.execute(
             """
-            insert into main.raw_storage_providers_daily_power
+            insert into raw.raw_storage_providers_daily_power
             select * from df_power_data
             """
         )
@@ -111,7 +111,7 @@ def raw_storage_providers_token_balances(
         try:
             from_day = (
                 conn.execute(
-                    "select max(stat_date) as max_date from main.raw_storage_providers_token_balances"
+                    "select max(stat_date) as max_date from raw.raw_storage_providers_token_balances"
                 )
                 .df()["max_date"]
                 .values[0]
@@ -123,7 +123,7 @@ def raw_storage_providers_token_balances(
 
             conn.execute(
                 """
-                create table main.raw_storage_providers_token_balances (
+                create table raw.raw_storage_providers_token_balances (
                     stat_date VARCHAR,
                     miner_id VARCHAR,
                     balance NUMERIC,
@@ -173,7 +173,7 @@ def raw_storage_providers_token_balances(
 
         conn.execute(
             """
-            insert into main.raw_storage_providers_token_balances
+            insert into raw.raw_storage_providers_token_balances
             select * from df_token_balance_data
             """
         )
@@ -200,11 +200,13 @@ def raw_storage_providers_rewards(
     Storage Providers rewards from Spacescope API.
     """
 
+    FILECOIN_FIRST_DAY = datetime.date(2020, 10, 15)
+
     with duckdb.get_connection() as conn:
         try:
             from_day = (
                 conn.execute(
-                    "select max(stat_date) as max_date from main.raw_storage_providers_rewards"
+                    "select max(stat_date) as max_date from raw.raw_storage_providers_rewards"
                 )
                 .df()["max_date"]
                 .values[0]
@@ -216,7 +218,7 @@ def raw_storage_providers_rewards(
 
             conn.execute(
                 """
-                create table main.raw_storage_providers_rewards (
+                create table raw.raw_storage_providers_rewards (
                     stat_date VARCHAR,
                     miner_id VARCHAR,
                     blocks_mined BIGINT,
@@ -263,7 +265,7 @@ def raw_storage_providers_rewards(
 
         conn.execute(
             """
-            insert into main.raw_storage_providers_rewards
+            insert into raw.raw_storage_providers_rewards
             select * from df_rewards_data
             """
         )

@@ -83,7 +83,7 @@ def raw_filecoin_state_market_deals(
         data = r.fetchmany_arrow(batch_size)
         duckdb_con.execute(
             """
-            create or replace table raw_filecoin_state_market_deals as (
+            create or replace table raw.raw_filecoin_state_market_deals as (
                 select * from data
             )
             """
@@ -95,7 +95,7 @@ def raw_filecoin_state_market_deals(
             data = r.fetchmany_arrow(batch_size)
             duckdb_con.sql(
                 """
-                insert into raw_filecoin_state_market_deals
+                insert into raw.raw_filecoin_state_market_deals
                 select
                     *
                 from data
@@ -133,7 +133,7 @@ def raw_verified_registry_verifiers(
         data = r.fetchall_arrow()
         duckdb_con.execute(
             """
-            create or replace table raw_verified_registry_verifiers as (
+            create or replace table raw.raw_verified_registry_verifiers as (
                 select * from data
             )
             """

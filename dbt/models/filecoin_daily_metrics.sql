@@ -115,7 +115,7 @@ select
     raw_power_pibs,
     quality_adjusted_power_pibs,
     verified_data_power_pibs,
-    data_on_active_deals_pibs / raw_power_pibs as network_utilization_percentage,
+    data_on_active_deals_pibs / raw_power_pibs as network_utilization_ratio,
     new_client_ids,
     new_provider_ids,
     new_piece_cids,
