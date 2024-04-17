@@ -46,7 +46,7 @@ datacap_clients as (
         initialallowance::bigint / power(1024, 4) as initial_datacap_tibs,
         coalesce(try_cast(allowance as numeric), 0) as current_datacap_bytes,
         coalesce(try_cast(allowance as numeric), 0) / power(1024, 4) as current_datacap_tibs,
-        verifieraddressid as verifier_id,
+        verifieraddressid as allocator_id,
     from {{ source("raw_assets", "raw_datacapstats_verified_clients") }}
     qualify row_number() over (partition by addressid order by createdatheight desc) = 1
 )
@@ -62,6 +62,6 @@ select
     c.initial_datacap_tibs,
     c.current_datacap_bytes,
     c.current_datacap_tibs,
-    c.verifier_id
+    c.allocator_id
 from state_market_deals_metrics m
 left join datacap_clients c on m.client_id = c.client_id

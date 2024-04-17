@@ -75,11 +75,20 @@ token_balance_data as (
 rewards_data as (
     select
         miner_id as provider_id,
-        blocks_mined,
-        win_count,
-        rewards,
+        sum(blocks_mined) as total_blocks_mined,
+        sum(win_count) as total_win_count,
+        sum(rewards) as total_rewards_fil,
     from {{ source("raw_assets", "raw_storage_providers_rewards") }}
-    qualify row_number() over (partition by provider_id order by stat_date desc) = 1
+    group by provider_id
+),
+
+retrieval_data as (
+    select
+        provider_id,
+        mean(success_rate) as mean_spark_retrieval_success_rate,
+        stddev(success_rate) as stddev_spark_retrieval_success_rate
+    from {{ source("raw_assets", "raw_spark_retrieval_success_rate") }}
+    group by 1
 )
 
 select
@@ -102,12 +111,15 @@ select
     token_balance_data.pre_commit_deposits,
     token_balance_data.provider_collateral,
     token_balance_data.fee_debt,
-    rewards_data.blocks_mined,
-    rewards_data.win_count,
-    rewards_data.rewards
+    rewards_data.total_blocks_mined,
+    rewards_data.total_win_count,
+    rewards_data.total_rewards_fil,
+    retrieval_data.mean_spark_retrieval_success_rate,
+    retrieval_data.stddev_spark_retrieval_success_rate
 from stats
 left join storage_provider_location on stats.provider_id = storage_provider_location.provider_id
 left join reputation_data on stats.provider_id = reputation_data.provider_id
 left join power_data on stats.provider_id = power_data.provider_id
 left join token_balance_data on stats.provider_id = token_balance_data.provider_id
 left join rewards_data on stats.provider_id = rewards_data.provider_id
+left join retrieval_data on stats.provider_id = retrieval_data.provider_id
