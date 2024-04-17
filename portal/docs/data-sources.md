@@ -24,6 +24,18 @@ Storage Providers be derived from the [deals](#deals) dataset. More information 
 
 - Location using the different [provider.quest](https://provider.quest/) endpoints/datasets.
 
+#### Retrieval Data
+
+Retrieval data is available from the [Spark API](https://spark-api.super.site/).
+
+#### Reputation Data
+
+Reputation is both obtained from [FilRep](https://filrep.io/) and augmented with custom metrics around deals. For example, what is the average replication of a deal for the SP?
+
+#### Energy Data
+
+Energy data is available from [Filecoin Green](https://filecoin.energy/) ([Model API](https://api.filecoin.energy/docs) and [Green Scores API](https://sp-outputs-api.vercel.app/api-docs/))
+
 ### FVM
 
 Filecoin Virtual Machine data is trickier to get. Some sources:
@@ -33,11 +45,7 @@ Filecoin Virtual Machine data is trickier to get. Some sources:
 
 ### Messages
 
-A few teams across the ecosystem are indexing Filecoin Messages. The most comprehensive source are [Beriz](https://beryx.zondax.ch/) and [FilInfo](https://filinfo.io/docs).
-
-### Reputation Data
-
-Reputation is both obtained from [FilRep](https://filrep.io/) and augmented with custom metrics around deals. For example, what is the average replication of a deal for the SP?
+A few teams across the ecosystem are indexing Filecoin Messages. The most comprehensive source are [Beryx](https://beryx.zondax.ch/) and [FilInfo](https://filinfo.io/docs).
 
 ## Data Indexers
 
@@ -51,6 +59,9 @@ Reputation is both obtained from [FilRep](https://filrep.io/) and augmented with
 - [Gliff Explorer](https://explorer.glif.io/)
 - [DMOB Messages Database](https://digitalmob.ro/) powering [FilInfo](https://filinfo.io/docs)
 - [Filrep](https://filrep.io/)
+- [FilecoinGreen](https://filecoin.energy/)
+- [FilFox](https://filfox.info) and [API](https://filfox.info/api)
+- [FilScan](https://filscan.io) and [API](https://api-v2.filscan.io/api)
 
 ### Notebooks
 

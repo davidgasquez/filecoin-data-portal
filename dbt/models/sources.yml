@@ -44,3 +44,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_spark_retrieval_success_rate"]
+      - name: raw_datacap_allocators_registry
+        meta:
+          dagster:
+            asset_key: ["raw_datacap_allocators_registry"]
