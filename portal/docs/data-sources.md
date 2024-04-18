@@ -63,6 +63,14 @@ A few teams across the ecosystem are indexing Filecoin Messages. The most compre
 - [FilFox](https://filfox.info) and [API](https://filfox.info/api)
 - [FilScan](https://filscan.io) and [API](https://api-v2.filscan.io/api)
 
+### JSON-RPC Endpoints
+
+- Glif - `https://api.node.glif.io`
+- Zondax - `https://api.zondax.ch/fil/node/mainnet/rpc/v1`
+- Laconic - `https://fil-mainnet-1.rpc.laconic.com/rpc/v1`
+- Provider Quest - `https://lotus.miner.report/mainnet_api/0/node/rpc/v0`
+- More at [Chainlist](https://chainlist.org/chain/314)!
+
 ### Notebooks
 
 - [BlockScience](https://github.com/BlockScience)
