@@ -47,7 +47,7 @@ def raw_storage_providers_daily_power(
         from_day = from_day + datetime.timedelta(days=1)
         from_day = from_day or FILECOIN_FIRST_DAY
 
-        to_day = datetime.date.today() - datetime.timedelta(days=1)
+        to_day = datetime.date.today() - datetime.timedelta(days=2)
 
         if from_day >= to_day:
             context.log.info(
@@ -139,7 +139,7 @@ def raw_storage_providers_token_balances(
         from_day = from_day + datetime.timedelta(days=1)
         from_day = from_day or FILECOIN_FIRST_DAY
 
-        to_day = datetime.date.today() - datetime.timedelta(days=1)
+        to_day = datetime.date.today() - datetime.timedelta(days=2)
 
         if from_day >= to_day:
             context.log.info(
@@ -231,7 +231,7 @@ def raw_storage_providers_rewards(
         from_day = from_day + datetime.timedelta(days=1)
         from_day = from_day or FILECOIN_FIRST_DAY
 
-        to_day = datetime.date.today() - datetime.timedelta(days=1)
+        to_day = datetime.date.today() - datetime.timedelta(days=2)
 
         if from_day >= to_day:
             context.log.info(
