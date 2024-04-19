@@ -74,7 +74,7 @@ token_balance_data as (
 
 rewards_data as (
     select
-        miner_id as provider_id,
+        trim(miner_id) as provider_id,
         sum(blocks_mined) as total_blocks_mined,
         sum(win_count) as total_win_count,
         sum(rewards) as total_rewards_fil,
@@ -84,11 +84,19 @@ rewards_data as (
 
 retrieval_data as (
     select
-        provider_id,
+        trim(provider_id) as provider_id,
         mean(success_rate) as mean_spark_retrieval_success_rate,
         stddev(success_rate) as stddev_spark_retrieval_success_rate
     from {{ source("raw_assets", "raw_spark_retrieval_success_rate") }}
     group by 1
+),
+
+energy_name_mapping as (
+    select
+        trim(provider_id) as provider_id,
+        storage_provider_name,
+        green_score
+    from {{ source("raw_assets", "raw_storage_providers_energy_name_mapping") }}
 )
 
 select
@@ -100,7 +108,7 @@ select
     storage_provider_location.country,
     storage_provider_location.latitude,
     storage_provider_location.longitude,
-    reputation_data.provider_name,
+    coalesce(energy_name_mapping.storage_provider_name, reputation_data.provider_name) as provider_name,
     reputation_data.is_reachable,
     reputation_data.filrep_uptime_average,
     reputation_data.filrep_score,
@@ -115,7 +123,8 @@ select
     rewards_data.total_win_count,
     rewards_data.total_rewards_fil,
     retrieval_data.mean_spark_retrieval_success_rate,
-    retrieval_data.stddev_spark_retrieval_success_rate
+    retrieval_data.stddev_spark_retrieval_success_rate,
+    energy_name_mapping.green_score
 from stats
 left join storage_provider_location on stats.provider_id = storage_provider_location.provider_id
 left join reputation_data on stats.provider_id = reputation_data.provider_id
@@ -123,3 +132,4 @@ left join power_data on stats.provider_id = power_data.provider_id
 left join token_balance_data on stats.provider_id = token_balance_data.provider_id
 left join rewards_data on stats.provider_id = rewards_data.provider_id
 left join retrieval_data on stats.provider_id = retrieval_data.provider_id
+left join energy_name_mapping on stats.provider_id = energy_name_mapping.provider_id

@@ -1,4 +1,5 @@
 import pandas as pd
+import requests
 from dagster import Output, MetadataValue, asset
 from dagster_duckdb import DuckDBResource
 
@@ -13,6 +14,37 @@ def raw_storage_providers_location_provider_quest() -> Output[pd.DataFrame]:
     url = "https://geoip.feeds.provider.quest/synthetic-locations-latest.json"
     all_df = pd.read_json(url, typ="series")
     df = pd.json_normalize(all_df["providerLocations"])
+    return Output(df, metadata={"Sample": MetadataValue.md(df.sample(5).to_markdown())})
+
+
+@asset(compute_kind="python")
+def raw_storage_providers_evp_outputs() -> Output[pd.DataFrame]:
+    """
+    Storage Providers Retrieves all existing Energy Validation Process outputs.
+    """
+    r = requests.get("https://sp-outputs-api.vercel.app/api/evp-outputs")
+    r.raise_for_status()
+
+    df = pd.DataFrame(r.json()["data"])
+
+    return Output(df, metadata={"Sample": MetadataValue.md(df.sample(5).to_markdown())})
+
+
+@asset(compute_kind="python")
+def raw_storage_providers_energy_name_mapping(
+    raw_storage_providers_evp_outputs: pd.DataFrame,
+) -> Output[pd.DataFrame]:
+    """
+    Storage Providers Entities Mapping to Provider IDs.
+    """
+    raw_storage_providers_evp_outputs["provider_id"] = (
+        raw_storage_providers_evp_outputs["miner_ids"].str.split(",")
+    )
+
+    df = raw_storage_providers_evp_outputs.explode("provider_id")[
+        ["storage_provider_name", "provider_id", "green_score"]
+    ].drop_duplicates(subset=["provider_id"])
+
     return Output(df, metadata={"Sample": MetadataValue.md(df.sample(5).to_markdown())})
 
 
