@@ -1,4 +1,26 @@
-with storage_provider_location as (
+with base_providers as (
+    select
+        distinct provider_id
+    from {{ ref("filecoin_storage_providers_power") }}
+    where provider_id is not null
+    union
+    select
+        distinct provider_id
+    from {{ ref("filecoin_state_market_deals") }}
+    where provider_id is not null
+    union
+    select
+        distinct trim(miner_id) as provider_id
+    from {{ source("raw_assets", "raw_storage_providers_token_balances") }}
+    where provider_id is not null
+    union
+    select distinct
+        trim(provider_id) as provider_id
+    from {{ source("raw_assets", "raw_spark_retrieval_success_rate") }}
+    where provider_id is not null
+),
+
+storage_provider_location as (
     select * from {{ ref("filecoin_storage_providers_location") }}
 ),
 
@@ -100,7 +122,30 @@ energy_name_mapping as (
 )
 
 select
-    stats.*,
+    base.provider_id,
+    stats.total_deals,
+    stats.total_verified_deals,
+    stats.total_active_deals,
+    stats.total_active_verified_deals,
+    stats.total_unique_piece_cids,
+    stats.total_verified_unique_piece_cids,
+    stats.total_active_unique_piece_cids,
+    stats.total_active_verified_unique_piece_cids,
+    stats.total_data_uploaded_tibs,
+    stats.total_active_data_uploaded_tibs,
+    stats.unique_data_uploaded_tibs,
+    stats.unique_active_data_uploaded_tibs,
+    stats.unique_data_uploaded_ratio,
+    stats.total_unique_clients,
+    stats.total_active_unique_clients,
+    stats.total_active_verified_unique_clients,
+    stats.first_deal_at,
+    stats.first_active_deal_at,
+    stats.last_deal_at,
+    stats.last_active_deal_at,
+    stats.data_uploaded_tibs_30d,
+    stats.data_uploaded_tibs_6m,
+    stats.data_uploaded_tibs_1y,
     power_data.raw_power_pibs,
     power_data.quality_adjusted_power_pibs,
     power_data.verified_data_power_pibs,
@@ -125,11 +170,12 @@ select
     retrieval_data.mean_spark_retrieval_success_rate,
     retrieval_data.stddev_spark_retrieval_success_rate,
     energy_name_mapping.green_score
-from stats
-left join storage_provider_location on stats.provider_id = storage_provider_location.provider_id
-left join reputation_data on stats.provider_id = reputation_data.provider_id
-left join power_data on stats.provider_id = power_data.provider_id
-left join token_balance_data on stats.provider_id = token_balance_data.provider_id
-left join rewards_data on stats.provider_id = rewards_data.provider_id
-left join retrieval_data on stats.provider_id = retrieval_data.provider_id
-left join energy_name_mapping on stats.provider_id = energy_name_mapping.provider_id
+from base_providers as base
+left join stats on base.provider_id = stats.provider_id
+left join storage_provider_location on base.provider_id = storage_provider_location.provider_id
+left join reputation_data on base.provider_id = reputation_data.provider_id
+left join power_data on base.provider_id = power_data.provider_id
+left join token_balance_data on base.provider_id = token_balance_data.provider_id
+left join rewards_data on base.provider_id = rewards_data.provider_id
+left join retrieval_data on base.provider_id = retrieval_data.provider_id
+left join energy_name_mapping on base.provider_id = energy_name_mapping.provider_id

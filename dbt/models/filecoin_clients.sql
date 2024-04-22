@@ -1,4 +1,16 @@
-with state_market_deals_metrics as (
+with base_clients as (
+    select
+        distinct nullif(trim(addressid), '') as client_id
+    from {{ source("raw_assets", "raw_datacapstats_verified_clients") }}
+    where client_id is not null
+    union
+    select
+        distinct client_id
+    from {{ ref("filecoin_state_market_deals") }}
+    where client_id is not null
+),
+
+state_market_deals_metrics as (
     select distinct
         client_id,
         count(distinct deal_id) as total_deals,
@@ -52,7 +64,30 @@ datacap_clients as (
 )
 
 select
-    m.*,
+    b.client_id,
+    m.total_deals,
+    m.total_verified_deals,
+    m.total_active_deals,
+    m.total_active_verified_deals,
+    m.total_unique_piece_cids,
+    m.total_verified_unique_piece_cids,
+    m.total_active_unique_piece_cids,
+    m.total_active_verified_unique_piece_cids,
+    m.total_data_uploaded_tibs,
+    m.total_active_data_uploaded_tibs,
+    m.unique_data_uploaded_tibs,
+    m.unique_active_data_uploaded_tibs,
+    m.unique_data_uploaded_percentage,
+    m.total_unique_providers,
+    m.total_active_unique_providers,
+    m.total_active_verified_unique_providers,
+    m.first_deal_at,
+    m.first_active_deal_at,
+    m.last_deal_at,
+    m.last_active_deal_at,
+    m.data_uploaded_tibs_30d,
+    m.data_uploaded_tibs_6m,
+    m.data_uploaded_tibs_1y,
     c.client_address,
     c.client_name,
     c.organization_name,
@@ -63,5 +98,6 @@ select
     c.current_datacap_bytes,
     c.current_datacap_tibs,
     c.allocator_id
-from state_market_deals_metrics m
-left join datacap_clients c on m.client_id = c.client_id
+from base_clients as b
+left join state_market_deals_metrics as m on m.client_id = b.client_id
+left join datacap_clients c on c.client_id = b.client_id
