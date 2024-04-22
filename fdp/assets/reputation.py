@@ -2,38 +2,64 @@ import datetime
 
 import pandas as pd
 import requests
-from dagster import Output, MetadataValue, AssetExecutionContext, asset
+from dagster import (
+    Output,
+    MetadataValue,
+    MaterializeResult,
+    AssetExecutionContext,
+    asset,
+)
+from dagster_duckdb import DuckDBResource
 
 
 @asset(compute_kind="python")
-def raw_storage_providers_filrep_reputation() -> Output[pd.DataFrame]:
+def raw_storage_providers_filrep_reputation(
+    context: AssetExecutionContext,
+    duckdb: DuckDBResource,
+) -> MaterializeResult:
     """
     Storage Provider reputation data from Filrep (https://filrep.io).
     """
 
     url = "https://api.filrep.io/api/v1/miners"
 
-    storage_providers = pd.DataFrame(requests.get(url).json()["miners"])
+    r = requests.get(url)
+
+    try:
+        storage_providers = pd.DataFrame(r.json()["miners"])
+    except Exception:
+        context.log.error(f"Error fetching data from {url}. Reason: {r.reason}")
+        return MaterializeResult()
+
+    query = f"""
+    create or replace table raw.{context.asset_key} as (
+        select
+            *
+        from storage_providers
+    );
+    """
+
+    context.log.info(f"Creating table {context.asset_key}")
+
     storage_providers["name"] = storage_providers["tag"].apply(lambda x: x.get("name"))
     storage_providers = storage_providers.convert_dtypes()
-
-    return Output(
-        storage_providers.drop(
-            columns=[
-                "id",
-                "price",
-                "verifiedPrice",
-                "minPieceSize",
-                "maxPieceSize",
-                "rawPower",
-                "qualityAdjPower",
-                "creditScore",
-            ]
-        ),
-        metadata={
-            "Sample": MetadataValue.md(storage_providers.sample(5).to_markdown())
-        },
+    storage_providers = storage_providers.drop(
+        columns=[
+            "id",
+            "price",
+            "verifiedPrice",
+            "minPieceSize",
+            "maxPieceSize",
+            "rawPower",
+            "qualityAdjPower",
+            "creditScore",
+        ]
     )
+
+    with duckdb.get_connection() as conn:
+        conn.execute(query)
+
+    return MaterializeResult()
 
 
 @asset(compute_kind="python")
