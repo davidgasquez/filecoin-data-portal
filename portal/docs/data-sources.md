@@ -71,7 +71,8 @@ A few teams across the ecosystem are indexing Filecoin Messages. The most compre
 - Provider Quest - `https://lotus.miner.report/mainnet_api/0/node/rpc/v0`
 - More at [Chainlist](https://chainlist.org/chain/314)!
 
-### Notebooks
+### Code
 
 - [BlockScience](https://github.com/BlockScience)
 - [Filecoin Mecha Twin](https://github.com/protocol/filecoin-mecha-twin)
+- [PyLotus](https://github.com/FilForge/pylotus-rpc/)
