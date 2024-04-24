@@ -107,10 +107,9 @@ rewards_data as (
 retrieval_data as (
     select
         trim(provider_id) as provider_id,
-        mean(success_rate) as mean_spark_retrieval_success_rate,
-        stddev(success_rate) as stddev_spark_retrieval_success_rate
+        mean(success_rate) over(partition by provider_id order by date desc rows between 6 preceding and current row) as mean_spark_retrieval_success_rate_7d,
+        stddev(success_rate) over(partition by provider_id order by date desc rows between 6 preceding and current row) as stddev_spark_retrieval_success_rate_7d
     from {{ source("raw_assets", "raw_spark_retrieval_success_rate") }}
-    group by 1
 ),
 
 energy_name_mapping as (
@@ -167,8 +166,8 @@ select
     rewards_data.total_blocks_mined,
     rewards_data.total_win_count,
     rewards_data.total_rewards_fil,
-    retrieval_data.mean_spark_retrieval_success_rate,
-    retrieval_data.stddev_spark_retrieval_success_rate,
+    retrieval_data.mean_spark_retrieval_success_rate_7d,
+    retrieval_data.stddev_spark_retrieval_success_rate_7d,
     energy_name_mapping.green_score
 from base_providers as base
 left join stats on base.provider_id = stats.provider_id
