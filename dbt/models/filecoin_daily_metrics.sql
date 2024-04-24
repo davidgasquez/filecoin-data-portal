@@ -1,7 +1,7 @@
 with date_calendar as (
   select
     cast(range as date) as day
-  from range(date '2020-09-12', current_date() - interval '2 day', interval '1 day')
+  from range(date '2020-09-12', current_date() - interval '1 day', interval '1 day')
 ),
 
 deal_metrics as (
@@ -96,6 +96,16 @@ new_pieces as (
     from {{ ref('filecoin_state_market_deals') }}
     group by 1
     order by 1 desc
+),
+
+retrieval_metrics as (
+    select
+        date,
+        mean(success_rate) as mean_spark_retrieval_success_rate,
+        count(distinct provider_id) filter (success_rate > 0) as providers_with_successful_retrieval,
+        count(distinct provider_id) as providers_with_retrieval_attempts
+    from {{ source("raw_assets", "raw_spark_retrieval_success_rate") }}
+    group by 1
 )
 
 select
@@ -124,6 +134,10 @@ select
     coalesce(ended_data_pibs, 0) as ended_data_pibs,
     coalesce(slashed_data_pibs, 0) as slashed_data_pibs,
     coalesce(ended_data_pibs, 0) + coalesce(slashed_data_pibs, 0) as terminated_deals_pibs,
+    mean_spark_retrieval_success_rate,
+    providers_with_successful_retrieval,
+    providers_with_retrieval_attempts,
+    providers_with_successful_retrieval / providers_with_retrieval_attempts as providers_with_successful_retrieval_ratio
 from date_calendar
 left join deal_metrics on date_calendar.day = deal_metrics.date
 left join users_with_active_deals on date_calendar.day = users_with_active_deals.day
@@ -133,4 +147,5 @@ left join new_providers on date_calendar.day = new_providers.date
 left join new_pieces on date_calendar.day = new_pieces.date
 left join deal_ends on date_calendar.day = deal_ends.date
 left join deal_slashes on date_calendar.day = deal_slashes.date
+left join retrieval_metrics on date_calendar.day = retrieval_metrics.date
 order by date_calendar.day desc

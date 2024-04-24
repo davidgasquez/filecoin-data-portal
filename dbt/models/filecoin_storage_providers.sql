@@ -69,6 +69,7 @@ reputation_data as (
         score as filrep_score,
         rank as filrep_rank
     from {{ source('raw_assets', 'raw_storage_providers_filrep_reputation') }}
+    qualify row_number() over (partition by address order by name desc) = 1
 ),
 
 power_data as (
@@ -110,6 +111,7 @@ retrieval_data as (
         mean(success_rate) over(partition by provider_id order by date desc rows between 6 preceding and current row) as mean_spark_retrieval_success_rate_7d,
         stddev(success_rate) over(partition by provider_id order by date desc rows between 6 preceding and current row) as stddev_spark_retrieval_success_rate_7d
     from {{ source("raw_assets", "raw_spark_retrieval_success_rate") }}
+    qualify row_number() over (partition by provider_id order by date desc) = 1
 ),
 
 energy_name_mapping as (
@@ -118,6 +120,7 @@ energy_name_mapping as (
         storage_provider_name,
         green_score
     from {{ source("raw_assets", "raw_storage_providers_energy_name_mapping") }}
+    qualify row_number() over (partition by trim(provider_id) order by green_score desc) = 1
 )
 
 select
