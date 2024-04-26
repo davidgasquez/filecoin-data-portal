@@ -1,7 +1,7 @@
 with base_providers as (
     select
         distinct provider_id
-    from {{ ref("filecoin_storage_providers_power") }}
+    from {{ ref("filecoin_daily_storage_providers_metrics") }}
     where provider_id is not null
     union
     select
@@ -72,28 +72,28 @@ reputation_data as (
     qualify row_number() over (partition by address order by name desc) = 1
 ),
 
-power_data as (
+latest_sp_data as (
     select distinct
         provider_id,
         raw_power_pibs,
         quality_adjusted_power_pibs,
         verified_data_power_pibs,
-    from {{ ref("filecoin_storage_providers_power") }}
-    qualify row_number() over (partition by provider_id order by date desc) = 1
-),
-
-token_balance_data as (
-    select
-        miner_id as provider_id,
         balance,
         initial_pledge,
         locked_funds,
         pre_commit_deposits,
         provider_collateral,
         fee_debt
+    from {{ ref("filecoin_daily_storage_providers_metrics") }}
+    qualify row_number() over (partition by provider_id order by date desc) = 1
+),
+
+{# latest_sp_data as (
+    select
+        miner_id as provider_id,
     from {{ source("raw_assets", "raw_storage_providers_token_balances") }}
     qualify row_number() over (partition by provider_id order by stat_date desc) = 1
-),
+), #}
 
 rewards_data as (
     select
@@ -148,9 +148,15 @@ select
     stats.data_uploaded_tibs_30d,
     stats.data_uploaded_tibs_6m,
     stats.data_uploaded_tibs_1y,
-    power_data.raw_power_pibs,
-    power_data.quality_adjusted_power_pibs,
-    power_data.verified_data_power_pibs,
+    latest_sp_data.raw_power_pibs,
+    latest_sp_data.quality_adjusted_power_pibs,
+    latest_sp_data.verified_data_power_pibs,
+    latest_sp_data.balance,
+    latest_sp_data.initial_pledge,
+    latest_sp_data.locked_funds,
+    latest_sp_data.pre_commit_deposits,
+    latest_sp_data.provider_collateral,
+    latest_sp_data.fee_debt,
     storage_provider_location.region,
     storage_provider_location.country,
     storage_provider_location.latitude,
@@ -160,12 +166,6 @@ select
     reputation_data.filrep_uptime_average,
     reputation_data.filrep_score,
     reputation_data.filrep_rank,
-    token_balance_data.balance,
-    token_balance_data.initial_pledge,
-    token_balance_data.locked_funds,
-    token_balance_data.pre_commit_deposits,
-    token_balance_data.provider_collateral,
-    token_balance_data.fee_debt,
     rewards_data.total_blocks_mined,
     rewards_data.total_win_count,
     rewards_data.total_rewards_fil,
@@ -176,8 +176,8 @@ from base_providers as base
 left join stats on base.provider_id = stats.provider_id
 left join storage_provider_location on base.provider_id = storage_provider_location.provider_id
 left join reputation_data on base.provider_id = reputation_data.provider_id
-left join power_data on base.provider_id = power_data.provider_id
-left join token_balance_data on base.provider_id = token_balance_data.provider_id
+left join latest_sp_data on base.provider_id = latest_sp_data.provider_id
+{# left join latest_sp_data on base.provider_id = latest_sp_data.provider_id #}
 left join rewards_data on base.provider_id = rewards_data.provider_id
 left join retrieval_data on base.provider_id = retrieval_data.provider_id
 left join energy_name_mapping on base.provider_id = energy_name_mapping.provider_id

@@ -6,7 +6,7 @@ dependencies = [
     "altair",
     "dagster-dbt",
     "dagster-duckdb-pandas",
-    "dagster==1.7.2",
+    "dagster==1.7.3",
     "databricks-sql-connector",
     "dbt-core",
     "dbt-duckdb",

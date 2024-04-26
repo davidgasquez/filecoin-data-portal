@@ -28,3 +28,19 @@ models:
         tests:
           - unique
           - not_null
+
+  - name: filecoin_daily_storage_providers_metrics
+    columns:
+      - name: date
+        tests:
+          - not_null
+      # - name: provider_id
+      #   tests:
+      #     - not_null
+
+  - name: filecoin_daily_metrics
+    columns:
+      - name: date
+        tests:
+          - unique
+          - not_null

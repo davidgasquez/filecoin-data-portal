@@ -15,6 +15,7 @@ deal_metrics as (
     from {{ ref('filecoin_state_market_deals') }}
     where 1 = 1
         and sector_start_at is not null
+        and provider_id is not null
     group by 1, 2
 ),
 
@@ -29,6 +30,7 @@ storage_providers_power as (
         (quality_adjusted_power_bytes - raw_power_bytes) / 9 as verified_data_power_bytes,
         (quality_adjusted_power_pibs - raw_power_pibs) / 9 as verified_data_power_pibs,
     from {{ source('raw_assets', 'raw_storage_providers_daily_power') }}
+    where date is not null and provider_id is not null
 ),
 
 token_balance_data as (
@@ -42,6 +44,7 @@ token_balance_data as (
         provider_collateral,
         fee_debt
     from {{ source("raw_assets", "raw_storage_providers_token_balances") }}
+    where date is not null and provider_id is not null
 ),
 
 rewards_data as (
@@ -52,11 +55,12 @@ rewards_data as (
         win_count,
         rewards
     from {{ source("raw_assets", "raw_storage_providers_rewards") }}
+    where date is not null and provider_id is not null
 )
 
 select
     dc.date,
-    dm.provider_id,
+    coalesce(dm.provider_id, spp.provider_id, tbd.provider_id, rd.provider_id) as provider_id,
     dm.onboarded_data_tibs,
     dm.deals,
     dm.unique_piece_cids,
@@ -81,4 +85,5 @@ full outer join deal_metrics dm on dc.date = dm.date
 full outer join storage_providers_power spp on dc.date = spp.date and dm.provider_id = spp.provider_id
 full outer join token_balance_data tbd on dc.date = tbd.date and dm.provider_id = tbd.provider_id
 full outer join rewards_data rd on dc.date = rd.date and dm.provider_id = rd.provider_id
+where dc.date >= '2020-09-12'
 order by dc.date desc

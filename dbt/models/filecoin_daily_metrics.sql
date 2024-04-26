@@ -59,13 +59,22 @@ users_with_active_deals as (
     group by dc.day
 ),
 
-daily_power as (
+daily_provider_metrics as (
     select
         date,
         sum(raw_power_pibs) as raw_power_pibs,
         sum(quality_adjusted_power_pibs) as quality_adjusted_power_pibs,
         sum(verified_data_power_pibs) as verified_data_power_pibs,
-    from {{ ref('filecoin_storage_providers_power') }}
+        sum(balance) as total_storage_providers_balance,
+        sum(initial_pledge) as total_storage_providers_initial_pledge,
+        sum(locked_funds) as total_storage_providers_locked_funds,
+        sum(pre_commit_deposits) as total_storage_providers_pre_commit_deposits,
+        sum(provider_collateral) as total_storage_providers_provider_collateral,
+        sum(fee_debt) as total_storage_providers_fee_debt,
+        sum(blocks_mined) as total_storage_providers_blocks_mined,
+        sum(win_count) as total_storage_providers_win_count,
+        sum(rewards) as total_storage_providers_rewards
+    from {{ ref('filecoin_daily_storage_providers_metrics') }}
     where 1 = 1
     group by 1
     order by 1
@@ -125,6 +134,15 @@ select
     raw_power_pibs,
     quality_adjusted_power_pibs,
     verified_data_power_pibs,
+    total_storage_providers_balance,
+    total_storage_providers_initial_pledge,
+    total_storage_providers_locked_funds,
+    total_storage_providers_pre_commit_deposits,
+    total_storage_providers_provider_collateral,
+    total_storage_providers_fee_debt,
+    total_storage_providers_blocks_mined,
+    total_storage_providers_win_count,
+    total_storage_providers_rewards,
     data_on_active_deals_pibs / raw_power_pibs as network_utilization_ratio,
     new_client_ids,
     new_provider_ids,
@@ -141,7 +159,7 @@ select
 from date_calendar
 left join deal_metrics on date_calendar.day = deal_metrics.date
 left join users_with_active_deals on date_calendar.day = users_with_active_deals.day
-left join daily_power on date_calendar.day = daily_power.date
+left join daily_provider_metrics on date_calendar.day = daily_provider_metrics.date
 left join new_clients on date_calendar.day = new_clients.date
 left join new_providers on date_calendar.day = new_providers.date
 left join new_pieces on date_calendar.day = new_pieces.date
