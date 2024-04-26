@@ -41,6 +41,75 @@ class SpacescopeResource(ConfigurableResource):
         r = self.request(method="storage_provider/power", params=params).json()
         return r["data"]
 
+    def get_storage_provider_sector_total(self, storage_provider=None, date=None):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(method="storage_provider/sector/total", params=params).json()
+        return r["data"]
+
+    def get_storage_provider_sector_commits_count(
+        self, storage_provider=None, date=None
+    ):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(
+            method="storage_provider/sector/commit_sector_count", params=params
+        ).json()
+        return r["data"]
+
+    def get_storage_provider_sector_commits_size(
+        self, storage_provider=None, date=None
+    ):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(
+            method="storage_provider/sector/commit_sector_size", params=params
+        ).json()
+        return r["data"]
+
+    def get_storage_provider_sector_terminations(
+        self, storage_provider=None, date=None
+    ):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(method="storage_provider/sector/terminate", params=params)
+        r = r.json()
+        return r["data"]
+
+    def get_storage_provider_sector_faults(self, storage_provider=None, date=None):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(method="storage_provider/sector/fault", params=params)
+        r = r.json()
+        return r["data"]
+
+    def get_storage_provider_sector_recoveries(self, storage_provider=None, date=None):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(method="storage_provider/sector/recover", params=params)
+        r = r.json()
+        return r["data"]
+
+    def get_storage_provider_sector_expirations(self, storage_provider=None, date=None):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(method="storage_provider/sector/expire", params=params)
+        r = r.json()
+        return r["data"]
+
+    def get_storage_provider_sector_extensions(self, storage_provider=None, date=None):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(method="storage_provider/sector/extend", params=params)
+        r = r.json()
+        return r["data"]
+
+    def get_storage_provider_sector_snaps(self, storage_provider=None, date=None):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(method="storage_provider/sector/snap", params=params)
+        r = r.json()
+        return r["data"]
+
+    def get_storage_provider_sector_durations(self, storage_provider=None, date=None):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(
+            method="storage_provider/sector/sector_duration", params=params
+        )
+        r = r.json()
+        return r["data"]
+
     def get_storage_provider_token_balance(self, storage_provider=None, date=None):
         params = {"state_date": date, "miner_id": storage_provider}
         r = self.request(method="storage_provider/token_balance", params=params).json()

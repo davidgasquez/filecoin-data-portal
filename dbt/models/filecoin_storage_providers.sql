@@ -88,13 +88,6 @@ latest_sp_data as (
     qualify row_number() over (partition by provider_id order by date desc) = 1
 ),
 
-{# latest_sp_data as (
-    select
-        miner_id as provider_id,
-    from {{ source("raw_assets", "raw_storage_providers_token_balances") }}
-    qualify row_number() over (partition by provider_id order by stat_date desc) = 1
-), #}
-
 rewards_data as (
     select
         trim(miner_id) as provider_id,
@@ -177,7 +170,6 @@ left join stats on base.provider_id = stats.provider_id
 left join storage_provider_location on base.provider_id = storage_provider_location.provider_id
 left join reputation_data on base.provider_id = reputation_data.provider_id
 left join latest_sp_data on base.provider_id = latest_sp_data.provider_id
-{# left join latest_sp_data on base.provider_id = latest_sp_data.provider_id #}
 left join rewards_data on base.provider_id = rewards_data.provider_id
 left join retrieval_data on base.provider_id = retrieval_data.provider_id
 left join energy_name_mapping on base.provider_id = energy_name_mapping.provider_id

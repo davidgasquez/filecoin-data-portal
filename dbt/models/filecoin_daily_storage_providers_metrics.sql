@@ -1,7 +1,7 @@
 with date_calendar as (
   select
     cast(range as date) as date
-  from range(date '2020-09-12', current_date() - interval '2 day', interval '1 day')
+  from range(date '2020-09-12', current_date() - interval '1 day', interval '1 day')
 ),
 
 deal_metrics as (
@@ -47,6 +47,131 @@ token_balance_data as (
     where date is not null and provider_id is not null
 ),
 
+{# sector_totals as (
+    select
+        stat_date::date as date,
+        trim(miner_id) as provider_id,
+        total_num_sector,
+        daily_sector_onboarding_count,
+        total_sector_rbp / 1024 ^ 4 as total_sector_raw_power_tibs,
+        total_sector_qap / 1024 ^ 4 as total_sector_quality_adjusted_power_tibs,
+        daily_sector_onboarding_rbp / 1024 ^ 4 as daily_sector_onboarding_raw_power_tibs,
+        daily_sector_onboarding_qap / 1024 ^ 4 as daily_sector_onboarding_quality_adjusted_power_tibs,
+    from {{ source("raw_assets", "raw_storage_providers_sector_totals") }}
+    where date is not null and provider_id is not null
+),
+
+sector_commits_count as (
+    select
+        stat_date::date as date,
+        trim(miner_id) as provider_id,
+        total_sealed_sector_count,
+        precommit_sector_count,
+        precommit_batch_sector_count,
+        avg_precommit_batch_sector_count,
+        provecommit_sector_count,
+        provecommit_batch_sector_count,
+        avg_provecommit_batch_sector_count
+    from {{ source("raw_assets", "raw_storage_providers_sector_commits_count") }}
+    where date is not null and provider_id is not null
+),
+
+sector_commits_size as (
+    select
+        stat_date::date as date,
+        trim(miner_id) as provider_id,
+        precommit_sector_rbp / 1024 ^ 4 as precommit_sector_raw_power_tibs,
+        precommit_sector_qap / 1024 ^ 4 as precommit_sector_quality_adjusted_power_tibs,
+        precommit_batch_sector_rbp / 1024 ^ 4 as precommit_batch_sector_raw_power_tibs,
+        precommit_batch_sector_qap / 1024 ^ 4 as precommit_batch_sector_quality_adjusted_power_tibs,
+        provecommit_sector_rbp / 1024 ^ 4 as provecommit_sector_raw_power_tibs,
+        provecommit_sector_qap / 1024 ^ 4 as provecommit_sector_quality_adjusted_power_tibs,
+        provecommit_batch_sector_rbp / 1024 ^ 4 as provecommit_batch_sector_raw_power_tibs,
+    from {{ source("raw_assets", "raw_storage_providers_sector_commits_size") }}
+    where date is not null and provider_id is not null
+),
+
+sector_terminations as (
+    select
+        stat_date::date as date,
+        trim(miner_id) as provider_id,
+        daily_new_terminate_rbp / 1024 ^ 4 as daily_new_terminated_raw_power_tibs,
+        daily_new_terminate_qap / 1024 ^ 4 as daily_new_terminated_quality_adjusted_power_tibs,
+        total_terminate_rbp / 1024 ^ 4 as total_terminated_raw_power_tibs,
+        total_terminate_qap / 1024 ^ 4 as total_terminated_quality_adjusted_power_tibs,
+        daily_new_active_terminate_rbp / 1024 ^ 4 as daily_new_active_terminated_raw_power_tibs,
+        daily_new_active_terminate_qap / 1024 ^ 4 as daily_new_active_terminated_quality_adjusted_power_tibs,
+        total_active_terminate_rbp / 1024 ^ 4 as total_active_terminated_raw_power_tibs,
+        total_active_terminate_qap / 1024 ^ 4 as total_active_terminated_quality_adjusted_power_tibs,
+        daily_new_passive_terminate_rbp / 1024 ^ 4 as daily_new_passive_terminated_raw_power_tibs,
+        daily_new_passive_terminate_qap / 1024 ^ 4 as daily_new_passive_terminated_quality_adjusted_power_tibs,
+        total_passive_terminate_rbp / 1024 ^ 4 as total_passive_terminated_raw_power_tibs,
+        total_passive_terminate_qap / 1024 ^ 4 as total_passive_terminated_quality_adjusted_power_tibs
+    from {{ source("raw_assets", "raw_storage_providers_sector_terminations") }}
+    where date is not null and provider_id is not null
+),
+
+sector_faults as (
+    select
+        stat_date::date as date,
+        trim(miner_id) as provider_id,
+        daily_new_fault_rbp / 1024 ^ 4 as daily_new_fault_raw_power_tibs,
+        daily_new_fault_qap / 1024 ^ 4 as daily_new_fault_quality_adjusted_power_tibs,
+        active_fault_rbp / 1024 ^ 4 as active_fault_raw_power_tibs,
+        active_fault_qap / 1024 ^ 4 as active_fault_quality_adjusted_power_tibs,
+    from {{ source("raw_assets", "raw_storage_providers_sector_faults") }}
+    where date is not null and provider_id is not null
+),
+
+sector_recoveries as (
+    select
+        stat_date::date as date,
+        trim(miner_id) as provider_id,
+        daily_new_recover_rbp / 1024 ^ 4 as daily_new_recover_raw_power_tibs,
+        daily_new_recover_qap / 1024 ^ 4 as daily_new_recover_quality_adjusted_power_tibs,
+    from {{ source("raw_assets", "raw_storage_providers_sector_recoveries") }}
+),
+
+sector_expirations as (
+    select
+        stat_date::date as date,
+        trim(miner_id) as provider_id,
+        daily_new_expire_rbp / 1024 ^ 4 as daily_new_expire_raw_power_tibs,
+        daily_new_expire_qap / 1024 ^ 4 as daily_new_expire_quality_adjusted_power_tibs,
+        total_expire_rbp / 1024 ^ 4 as total_expire_raw_power_tibs,
+        total_expire_qap / 1024 ^ 4 as total_expire_quality_adjusted_power_tibs
+    from {{ source("raw_assets", "raw_storage_providers_sector_expirations") }}
+),
+
+sector_extensions as (
+    select
+        stat_date::date as date,
+        trim(miner_id) as provider_id,
+        daily_new_extend_rbp / 1024 ^ 4 as daily_new_extend_raw_power_tibs,
+        daily_new_extend_qap / 1024 ^ 4 as daily_new_extend_quality_adjusted_power_tibs
+    from {{ source("raw_assets", "raw_storage_providers_sector_extensions") }}
+),
+
+sector_snaps as (
+    select
+        stat_date::date as date,
+        trim(miner_id) as provider_id,
+        daily_new_snap_rbp / 1024 ^ 4 as daily_new_snap_raw_power_tibs,
+        daily_new_snap_qap / 1024 ^ 4 as daily_new_snap_quality_adjusted_power_tibs,
+        total_snap_rbp / 1024 ^ 4 as total_snap_raw_power_tibs,
+        total_snap_qap / 1024 ^ 4 as total_snap_quality_adjusted_power_tibs
+    from {{ source("raw_assets", "raw_storage_providers_sector_snaps") }}
+),
+
+sector_durations as (
+    select
+        stat_date::date as date,
+        trim(miner_id) as provider_id,
+        avg_active_sector_duration_days,
+        std_active_sector_duration_days
+    from {{ source("raw_assets", "raw_storage_providers_sector_durations") }}
+), #}
+
 rewards_data as (
     select
         stat_date::date as date,
@@ -81,9 +206,9 @@ select
     rd.win_count,
     rd.rewards
 from date_calendar dc
-full outer join deal_metrics dm on dc.date = dm.date
-full outer join storage_providers_power spp on dc.date = spp.date and dm.provider_id = spp.provider_id
-full outer join token_balance_data tbd on dc.date = tbd.date and dm.provider_id = tbd.provider_id
-full outer join rewards_data rd on dc.date = rd.date and dm.provider_id = rd.provider_id
+full outer join storage_providers_power spp on dc.date = spp.date
+full outer join deal_metrics dm on dc.date = dm.date and spp.provider_id = dm.provider_id
+full outer join token_balance_data tbd on dc.date = tbd.date and spp.provider_id = tbd.provider_id
+full outer join rewards_data rd on dc.date = rd.date and spp.provider_id = rd.provider_id
 where dc.date >= '2020-09-12'
 order by dc.date desc

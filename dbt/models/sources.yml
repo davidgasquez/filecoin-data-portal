@@ -52,3 +52,43 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_storage_providers_energy_name_mapping"]
+      - name: raw_storage_providers_sector_totals
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_sector_totals"]
+      - name: raw_storage_providers_sector_terminations
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_sector_terminations"]
+      - name: raw_storage_providers_sector_faults
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_sector_faults"]
+      - name: raw_storage_providers_sector_recoveries
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_sector_recoveries"]
+      - name: raw_storage_providers_sector_expirations
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_sector_expirations"]
+      - name: raw_storage_providers_sector_extensions
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_sector_extensions"]
+      - name: raw_storage_providers_sector_snaps
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_sector_snaps"]
+      - name: raw_storage_providers_sector_durations
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_sector_durations"]
+      - name: raw_storage_providers_sector_commits_count
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_sector_commits_count"]
+      - name: raw_storage_providers_sector_commits_size
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_sector_commits_size"]

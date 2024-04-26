@@ -1,7 +1,7 @@
 with date_calendar as (
   select
     cast(range as date) as day
-  from range(date '2020-09-12', current_date() - interval '1 day', interval '1 day')
+  from range(date '2021-09-12', current_date() - interval '1 day', interval '1 day')
 ),
 
 deal_metrics as (
@@ -155,7 +155,7 @@ select
     mean_spark_retrieval_success_rate,
     providers_with_successful_retrieval,
     providers_with_retrieval_attempts,
-    providers_with_successful_retrieval / providers_with_retrieval_attempts as providers_with_successful_retrieval_ratio
+    -- providers_with_successful_retrieval / providers_with_retrieval_attempts as providers_with_successful_retrieval_ratio
 from date_calendar
 left join deal_metrics on date_calendar.day = deal_metrics.date
 left join users_with_active_deals on date_calendar.day = users_with_active_deals.day
