@@ -30,7 +30,7 @@ Retrieval data is available from the [Spark API](https://spark-api.super.site/).
 
 #### Reputation Data
 
-Reputation is both obtained from [FilRep](https://filrep.io/) and augmented with custom metrics around deals. For example, what is the average replication of a deal for the SP?
+Reputation is both obtained from [FilRep](https://filrep.io/) ([methodology](https://filrep.io/methodology)) and augmented with custom metrics around deals. For example, what is the average replication of a deal for the SP?
 
 #### Energy Data
 
