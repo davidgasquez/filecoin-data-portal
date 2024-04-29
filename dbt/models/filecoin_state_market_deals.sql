@@ -28,16 +28,19 @@ replication_factor as (
         sector_start_epoch,
         deal_id,
         count(1) over (partition by piece_cid) as piece_replication_factor,
-        row_number() over (partition by provider_id, piece_cid order by sector_start_epoch) as piece_provider_replication_order,
-        count(1) over (partition by provider_id, piece_cid) as piece_provider_replication_factor,
-        row_number() over (partition by client_id, piece_cid order by sector_start_epoch) as piece_client_replication_order,
-        count(1) over (partition by client_id, piece_cid) as piece_client_replication_factor,
+        row_number() over provider_pieces as piece_provider_replication_order,
+        count(1) over provider_pieces as piece_provider_replication_factor,
+        row_number() over client_pieces as piece_client_replication_order,
+        count(1) over client_pieces as piece_client_replication_factor,
         min(sector_start_epoch) over (partition by piece_cid) as piece_first_sector_start_epoch,
         max(sector_start_epoch) over (partition by piece_cid) as piece_last_sector_start_epoch,
         approx_count_distinct(provider_id) over (partition by piece_cid) as piece_distinct_provider_count,
         approx_count_distinct(client_id) over (partition by piece_cid) as piece_distinct_client_count
     from base
     where sector_start_epoch > 0
+    window
+        provider_pieces as (partition by provider_id, piece_cid order by sector_start_epoch),
+        client_pieces as (partition by client_id, piece_cid order by sector_start_epoch)
 )
 
 select
@@ -79,7 +82,4 @@ select
     to_timestamp(replication_factor.piece_first_sector_start_epoch * 30 + 1598306400)::timestamp as piece_first_sector_start_at,
     to_timestamp(replication_factor.piece_last_sector_start_epoch * 30 + 1598306400)::timestamp as piece_last_sector_start_at
 from base as b
-left join replication_factor
-    on b.deal_id = replication_factor.deal_id
-        and b.deal_id = replication_factor.deal_id
-        and b.piece_cid = replication_factor.piece_cid
+left join replication_factor on b.deal_id = replication_factor.deal_id and b.deal_id = replication_factor.deal_id
