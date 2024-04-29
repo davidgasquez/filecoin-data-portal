@@ -3,7 +3,7 @@ default:
     dev:
       type: duckdb
       path: "{{ env_var('DATABASE_PATH', '../data/database.duckdb') }}"
-      threads: 16
+      threads: 1
       settings:
         preserve_insertion_order: false
         enable_object_cache: true
