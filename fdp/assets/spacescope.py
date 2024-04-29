@@ -2,7 +2,13 @@ import datetime
 
 import pandas as pd
 from duckdb import CatalogException
-from dagster import MaterializeResult, AssetExecutionContext, asset
+from dagster import (
+    Backoff,
+    MaterializeResult,
+    AssetExecutionContext,
+    RetryPolicy,
+    asset,
+)
 from dagster_duckdb import DuckDBResource
 
 from ..resources import SpacescopeResource
@@ -65,7 +71,10 @@ def fetch_and_persist_data(
         return MaterializeResult()
 
 
-@asset(compute_kind="API")
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
 def raw_storage_providers_daily_power(
     context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
@@ -95,7 +104,10 @@ def raw_storage_providers_daily_power(
     )
 
 
-@asset(compute_kind="API")
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
 def raw_storage_providers_token_balances(
     context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
@@ -188,7 +200,10 @@ def raw_storage_providers_token_balances(
         )
 
 
-@asset(compute_kind="API")
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
 def raw_storage_providers_rewards(
     context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
@@ -278,7 +293,10 @@ def raw_storage_providers_rewards(
         )
 
 
-@asset(compute_kind="API")
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
 def raw_storage_providers_sector_totals(
     context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
@@ -347,7 +365,10 @@ def raw_storage_providers_sector_totals(
         return MaterializeResult()
 
 
-@asset(compute_kind="API")
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
 def raw_storage_providers_sector_terminations(
     context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
@@ -422,7 +443,10 @@ def raw_storage_providers_sector_terminations(
         return MaterializeResult()
 
 
-@asset(compute_kind="API")
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
 def raw_storage_providers_sector_faults(
     context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
@@ -454,7 +478,10 @@ def raw_storage_providers_sector_faults(
     )
 
 
-@asset(compute_kind="API")
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
 def raw_storage_providers_sector_recoveries(
     context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
@@ -484,7 +511,10 @@ def raw_storage_providers_sector_recoveries(
     )
 
 
-@asset(compute_kind="API")
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
 def raw_storage_providers_sector_expirations(
     context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
@@ -516,7 +546,10 @@ def raw_storage_providers_sector_expirations(
     )
 
 
-@asset(compute_kind="API")
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
 def raw_storage_providers_sector_extensions(
     context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
@@ -546,7 +579,10 @@ def raw_storage_providers_sector_extensions(
     )
 
 
-@asset(compute_kind="API")
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
 def raw_storage_providers_sector_snaps(
     context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
@@ -578,7 +614,10 @@ def raw_storage_providers_sector_snaps(
     )
 
 
-@asset(compute_kind="API")
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
 def raw_storage_providers_sector_durations(
     context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
@@ -608,7 +647,10 @@ def raw_storage_providers_sector_durations(
     )
 
 
-@asset(compute_kind="API")
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
 def raw_storage_providers_sector_commits_count(
     context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
@@ -643,7 +685,10 @@ def raw_storage_providers_sector_commits_count(
     )
 
 
-@asset(compute_kind="API")
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
 def raw_storage_providers_sector_commits_size(
     context: AssetExecutionContext,
     spacescope_api: SpacescopeResource,
