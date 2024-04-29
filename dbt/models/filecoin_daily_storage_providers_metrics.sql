@@ -47,7 +47,7 @@ token_balance_data as (
     where date is not null and provider_id is not null
 ),
 
-{# sector_totals as (
+sector_totals as (
     select
         stat_date::date as date,
         trim(miner_id) as provider_id,
@@ -170,7 +170,15 @@ sector_durations as (
         avg_active_sector_duration_days,
         std_active_sector_duration_days
     from {{ source("raw_assets", "raw_storage_providers_sector_durations") }}
-), #}
+),
+
+spark_retrievals as (
+    select
+        date,
+        provider_id,
+        success_rate as spark_retrieval_success_rate
+    from {{ source("raw_assets", "raw_spark_retrieval_success_rate") }}
+),
 
 rewards_data as (
     select
@@ -202,13 +210,75 @@ select
     tbd.pre_commit_deposits,
     tbd.provider_collateral,
     tbd.fee_debt,
+    total_num_sector,
+    st.daily_sector_onboarding_count,
+    st.total_sector_raw_power_tibs,
+    st.total_sector_quality_adjusted_power_tibs,
+    st.daily_sector_onboarding_raw_power_tibs,
+    st.daily_sector_onboarding_quality_adjusted_power_tibs,
+    scc.total_sealed_sector_count,
+    scc.precommit_sector_count,
+    scc.precommit_batch_sector_count,
+    scc.avg_precommit_batch_sector_count,
+    scc.provecommit_sector_count,
+    scc.provecommit_batch_sector_count,
+    scc.avg_provecommit_batch_sector_count,
+    scs.precommit_sector_raw_power_tibs,
+    scs.precommit_sector_quality_adjusted_power_tibs,
+    scs.precommit_batch_sector_raw_power_tibs,
+    scs.precommit_batch_sector_quality_adjusted_power_tibs,
+    scs.provecommit_sector_raw_power_tibs,
+    scs.provecommit_sector_quality_adjusted_power_tibs,
+    scs.provecommit_batch_sector_raw_power_tibs,
+    daily_new_terminated_raw_power_tibs,
+    sterm.daily_new_terminated_quality_adjusted_power_tibs,
+    sterm.total_terminated_raw_power_tibs,
+    sterm.total_terminated_quality_adjusted_power_tibs,
+    sterm.daily_new_active_terminated_raw_power_tibs,
+    sterm.daily_new_active_terminated_quality_adjusted_power_tibs,
+    sterm.total_active_terminated_raw_power_tibs,
+    sterm.total_active_terminated_quality_adjusted_power_tibs,
+    sterm.daily_new_passive_terminated_raw_power_tibs,
+    sterm.daily_new_passive_terminated_quality_adjusted_power_tibs,
+    sterm.total_passive_terminated_raw_power_tibs,
+    sterm.total_passive_terminated_quality_adjusted_power_tibs,
+    sf.daily_new_fault_raw_power_tibs,
+    sf.daily_new_fault_quality_adjusted_power_tibs,
+    sf.active_fault_raw_power_tibs,
+    sf.active_fault_quality_adjusted_power_tibs,
+    sr.daily_new_recover_raw_power_tibs,
+    sr.daily_new_recover_quality_adjusted_power_tibs,
+    sexp.daily_new_expire_raw_power_tibs,
+    sexp.daily_new_expire_quality_adjusted_power_tibs,
+    sexp.total_expire_raw_power_tibs,
+    sexp.total_expire_quality_adjusted_power_tibs,
+    sext.daily_new_extend_raw_power_tibs,
+    sext.daily_new_extend_quality_adjusted_power_tibs,
+    ss.daily_new_snap_raw_power_tibs,
+    ss.daily_new_snap_quality_adjusted_power_tibs,
+    ss.total_snap_raw_power_tibs,
+    ss.total_snap_quality_adjusted_power_tibs,
     rd.blocks_mined,
     rd.win_count,
-    rd.rewards
+    rd.rewards,
+    sd.avg_active_sector_duration_days,
+    sd.std_active_sector_duration_days,
+    spark.spark_retrieval_success_rate,
 from date_calendar dc
 full outer join storage_providers_power spp on dc.date = spp.date
 full outer join deal_metrics dm on dc.date = dm.date and spp.provider_id = dm.provider_id
 full outer join token_balance_data tbd on dc.date = tbd.date and spp.provider_id = tbd.provider_id
+full outer join sector_totals st on dc.date = st.date and spp.provider_id = st.provider_id
+full outer join sector_commits_count scc on dc.date = scc.date and spp.provider_id = scc.provider_id
+full outer join sector_commits_size scs on dc.date = scs.date and spp.provider_id = scs.provider_id
+full outer join sector_terminations sterm on dc.date = sterm.date and spp.provider_id = sterm.provider_id
+full outer join sector_faults sf on dc.date = sf.date and spp.provider_id = sf.provider_id
+full outer join sector_recoveries sr on dc.date = sr.date and spp.provider_id = sr.provider_id
+full outer join sector_expirations sexp on dc.date = sexp.date and spp.provider_id = sexp.provider_id
+full outer join sector_extensions sext on dc.date = sext.date and spp.provider_id = sext.provider_id
+full outer join sector_snaps ss on dc.date = ss.date and spp.provider_id = ss.provider_id
+full outer join sector_durations sd on dc.date = sd.date and spp.provider_id = sd.provider_id
 full outer join rewards_data rd on dc.date = rd.date and spp.provider_id = rd.provider_id
+full outer join spark_retrievals spark on dc.date = spark.date and spp.provider_id = spark.provider_id
 where dc.date >= '2020-09-12'
 order by dc.date desc
