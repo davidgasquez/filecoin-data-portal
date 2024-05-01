@@ -65,6 +65,8 @@ A few teams across the ecosystem are indexing Filecoin Messages. The most compre
 
 ### JSON-RPC Endpoints
 
+Nodes usually implement all the [JSON-RPC methods](https://github.com/filecoin-project/lotus/blob/master/documentation/en/api-v0-methods.md) needed to get the data.
+
 - Glif - `https://api.node.glif.io`
 - Zondax - `https://api.zondax.ch/fil/node/mainnet/rpc/v1`
 - Laconic - `https://fil-mainnet-1.rpc.laconic.com/rpc/v1`
