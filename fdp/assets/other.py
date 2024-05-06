@@ -55,7 +55,7 @@ def dune_metrics(dune: DuneResource, duckdb: DuckDBResource) -> None:
     """
     with duckdb.get_connection() as conn:
         filecoin_daily_metrics = conn.execute(
-            "select * from filecoin_daily_metrics"
+            "select * from filecoin_daily_metrics where date > '2021-01-01'"
         ).df()
 
     dune.upload_df(filecoin_daily_metrics, "filecoin_daily_metrics")

@@ -1,7 +1,7 @@
 with date_calendar as (
   select
     cast(range as date) as day
-  from range(date '2021-09-12', current_date() - interval '1 day', interval '1 day')
+  from range(date '2020-09-12', current_date() - interval '1 day', interval '1 day')
 ),
 
 deal_metrics as (
@@ -73,7 +73,10 @@ daily_provider_metrics as (
         sum(fee_debt) as total_storage_providers_fee_debt,
         sum(blocks_mined) as total_storage_providers_blocks_mined,
         sum(win_count) as total_storage_providers_win_count,
-        sum(rewards) as total_storage_providers_rewards
+        sum(rewards) as total_storage_providers_rewards,
+        sum(daily_sector_onboarding_count) as total_storage_providers_sectors_onboarded,
+        sum(daily_new_terminated_raw_power_tibs / 1024) as terminated_raw_power_pibs,
+        sum(daily_new_terminated_quality_adjusted_power_tibs / 1024) as terminated_quality_adjusted_power_pibs
     from {{ ref('filecoin_daily_storage_providers_metrics') }}
     where 1 = 1
     group by 1
@@ -143,6 +146,9 @@ select
     total_storage_providers_blocks_mined,
     total_storage_providers_win_count,
     total_storage_providers_rewards,
+    total_storage_providers_sectors_onboarded,
+    terminated_raw_power_pibs,
+    terminated_quality_adjusted_power_pibs,
     data_on_active_deals_pibs / raw_power_pibs as network_utilization_ratio,
     new_client_ids,
     new_provider_ids,
@@ -155,7 +161,6 @@ select
     mean_spark_retrieval_success_rate,
     providers_with_successful_retrieval,
     providers_with_retrieval_attempts,
-    -- providers_with_successful_retrieval / providers_with_retrieval_attempts as providers_with_successful_retrieval_ratio
 from date_calendar
 left join deal_metrics on date_calendar.day = deal_metrics.date
 left join users_with_active_deals on date_calendar.day = users_with_active_deals.day

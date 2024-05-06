@@ -52,7 +52,7 @@ sector_totals as (
         stat_date::date as date,
         trim(miner_id) as provider_id,
         total_num_sector,
-        daily_sector_onboarding_count,
+        daily_sector_onboarding_count - lag(daily_sector_onboarding_count) over (partition by provider_id order by date) as daily_sector_onboarding_count,
         total_sector_rbp / 1024 ^ 4 as total_sector_raw_power_tibs,
         total_sector_qap / 1024 ^ 4 as total_sector_quality_adjusted_power_tibs,
         daily_sector_onboarding_rbp / 1024 ^ 4 as daily_sector_onboarding_raw_power_tibs,
