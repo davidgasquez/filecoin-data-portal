@@ -94,8 +94,8 @@ def raw_datacap_github_applications(
                     )
                     if file_response.status_code == 200:
                         a = file_response.json()
-                        a["organization"] = n.split("/")[0]
-                        a["repository"] = n.split("/")[1]
+                        a["github_organization"] = n.split("/")[0]
+                        a["github_repository"] = n.split("/")[1]
                         applications.append(a)
 
     df = pd.DataFrame(applications)

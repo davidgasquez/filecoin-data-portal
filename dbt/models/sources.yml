@@ -92,3 +92,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_storage_providers_sector_commits_size"]
+      - name: raw_datacap_github_applications
+        meta:
+          dagster:
+            asset_key: ["raw_datacap_github_applications"]

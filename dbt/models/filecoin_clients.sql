@@ -61,6 +61,19 @@ datacap_clients as (
         verifieraddressid as allocator_id,
     from {{ source("raw_assets", "raw_datacapstats_verified_clients") }}
     qualify row_number() over (partition by addressid order by createdatheight desc) = 1
+),
+
+datacap_github_applications as (
+    select
+        id as client_address,
+        client->>'$.Name' as client_name,
+        client->>'$.Region' as client_region,
+        client->>'$.Industry' as client_industry,
+        client->>'$.Website' as client_website,
+        client->>'$.Social Media' as client_social_media,
+        client->>'$.Social Media Type' as client_social_media_type,
+        client->>'$.Role' as client_role,
+    from {{ source("raw_assets", "raw_datacap_github_applications") }}
 )
 
 select
@@ -89,10 +102,14 @@ select
     m.data_uploaded_tibs_6m,
     m.data_uploaded_tibs_1y,
     c.client_address,
-    c.client_name,
+    coalesce(c.client_name, g.client_name) as client_name,
     c.organization_name,
-    c.region,
-    c.industry,
+    coalesce(c.region, g.client_region) as region,
+    coalesce(c.industry, g.client_industry) as industry,
+    g.client_website,
+    g.client_social_media,
+    g.client_social_media_type,
+    g.client_role,
     c.initial_datacap_bytes,
     c.initial_datacap_tibs,
     c.current_datacap_bytes,
@@ -101,3 +118,5 @@ select
 from base_clients as b
 left join state_market_deals_metrics as m on m.client_id = b.client_id
 left join datacap_clients c on c.client_id = b.client_id
+left join datacap_github_applications g on g.client_address = c.client_address
+order by last_deal_at desc

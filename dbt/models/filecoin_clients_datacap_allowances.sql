@@ -35,6 +35,8 @@ select
     retries,
     allowance::bigint as allowance_bytes,
     allowance::bigint / power(1024, 4) as allowance_tibs,
+    sum(allowance_bytes) over (partition by client_id order by height rows between unbounded preceding and current row) as client_total_received_datacap_bytes,
+    client_total_received_datacap_bytes / power(1024, 4) as client_total_received_datacap_tibs,
     audit_trail,
     allowance_ttd::numeric as allowance_ttd,
     if(is_data_public = 'yes', true, false) as is_data_public,
