@@ -1,7 +1,7 @@
 with date_calendar as (
   select
     cast(range as date) as day
-  from range(date '2020-09-12', current_date() - interval '1 day', interval '1 day')
+  from range(date '2020-09-12', current_date() - interval '2 day', interval '1 day')
 ),
 
 deal_metrics as (

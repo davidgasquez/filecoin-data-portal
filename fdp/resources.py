@@ -170,13 +170,3 @@ class StarboardDatabricksResource(ConfigurableResource):
         )
 
         return conn
-
-
-class MongoDBResource(ConfigurableResource):
-    MONGODB_URI: str
-
-    def get_collection(self, database_name: str, collection_name: str) -> Collection:
-        client = MongoClient(self.MONGODB_URI)
-        db = client.get_database(database_name)
-        collection = db[collection_name]
-        return collection

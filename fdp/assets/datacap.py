@@ -1,3 +1,6 @@
+import os
+
+import httpx
 import pandas as pd
 import requests
 from dagster import Output, MetadataValue, asset
@@ -50,3 +53,52 @@ def raw_datacap_allocators_registry() -> Output[pd.DataFrame]:
     df = pd.DataFrame(files_data[:-1])
 
     return Output(df, metadata={"Sample": MetadataValue.md(df.sample(5).to_markdown())})
+
+
+@asset(compute_kind="python")
+def raw_datacap_github_applications(
+    raw_datacap_allocators_registry: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Applications information from the allocator repositories.
+    """
+
+    allocator_applications = pd.json_normalize(
+        raw_datacap_allocators_registry["application"]  # type: ignore
+    )
+
+    allocator_repositories = allocator_applications["allocation_bookkeeping"]
+    allocator_repositories = allocator_repositories.dropna()
+
+    token = str(os.getenv("GITHUB_TOKEN"))
+
+    transport = httpx.HTTPTransport(retries=2)
+    client = httpx.Client(transport=transport, timeout=30)
+
+    applications = []
+
+    for repository in allocator_repositories:
+        n = repository.split(".com/")[1]
+        response = client.get(
+            "https://api.github.com/repos/" + n + "/contents/applications",
+            timeout=30,
+            headers={"Authorization": "Bearer " + token},
+        )
+        if response.status_code == 200:
+            for file in response.json():
+                if file["name"].endswith(".json"):
+                    file_response = client.get(
+                        file["download_url"],
+                        timeout=30,
+                        headers={"Authorization": "Bearer " + token},
+                    )
+                    if file_response.status_code == 200:
+                        a = file_response.json()
+                        a["organization"] = n.split("/")[0]
+                        a["repository"] = n.split("/")[1]
+                        applications.append(a)
+
+    df = pd.DataFrame(applications)
+    df = df.rename(columns=lambda x: x.lower().replace(" ", "_"))
+
+    return df

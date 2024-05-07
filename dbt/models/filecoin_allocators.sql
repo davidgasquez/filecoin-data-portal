@@ -66,7 +66,7 @@ select
     dar.application->>'$.allocations.standardized' as standardized,
     dar.application->>'$.target_clients' as target_clients,
     json_array_length(dar.application->>'$.target_clients') as number_of_target_clients,
-    dar.application->>'$.required_sps' as required_sps,
+    dar.application->>'$.required_sps' as required_sps, -- try_cast(trim('+' from required_sps) as int) as minimum_storage_povider_replication,
     dar.application->>'$.required_replicas' as required_replicas,
     dar.application->>'$.tooling' as tooling,
     dar.application->>'$.data_types' as data_types,
