@@ -18,7 +18,6 @@ select
     allowance_id::numeric as allowance_id,
     allocator_id,
     allowance_error,
-    if(nullif(allowance_error, '') is null, true, false) as is_valid,
     height::numeric as height,
     to_timestamp(height::numeric * 30 + 1598306400)::timestamp as height_at,
     message_cid,

@@ -23,6 +23,21 @@ with source as (
         aa ->> '$.allowanceArray.hasRemainingAllowance' as has_remaining_allowance,
         aa ->> '$.allowanceArray.createMessageTimestamp' as create_message_timestamp,
     from {{ source("raw_assets", "raw_datacapstats_verified_clients") }}, unnest(allowanceArray) as aa
+),
+
+github_applications_allocations as (
+    select
+        ar ->> '$.allocation_requests.Signers[0].Message CID' as message_cid,
+        ar ->> '$.allocation_requests.Signers[0].Github Username' as allocation_request_github_username,
+        ar ->> '$.allocation_requests.Signers[0].Signing Address' as allocation_request_signing_address,
+        ar ->> '$.allocation_requests.ID' as allocation_request_id,
+        ar ->> '$.allocation_requests.Request Type' as allocation_request_type,
+        ar ->> '$.allocation_requests.Created At' as allocation_request_created_at,
+        ar ->> '$.allocation_requests.Updated At' as allocation_request_updated_at,
+        ar ->> '$.allocation_requests.Active' as allocation_request_is_active,
+        ar ->> '$.allocation_requests.Allocation Amount' as allocation_request_amount,
+    from raw.raw_datacap_github_applications, unnest(allocation_requests) as ar
+    where message_cid is not null
 )
 
 select
@@ -31,7 +46,7 @@ select
     allowance_error,
     height::numeric as height,
     to_timestamp(height::numeric * 30 + 1598306400)::timestamp as height_at,
-    message_cid,
+    s.message_cid,
     retries,
     allowance::bigint as allowance_bytes,
     allowance::bigint / power(1024, 4) as allowance_tibs,
@@ -51,6 +66,15 @@ select
     searched_by_proposal,
     to_timestamp(issue_create_timestamp::numeric) as issue_created_at,
     has_remaining_allowance,
-    to_timestamp(create_message_timestamp::numeric) as messaged_created_at
-from source
+    to_timestamp(create_message_timestamp::numeric) as messaged_created_at,
+    gaa.allocation_request_github_username,
+    gaa.allocation_request_signing_address,
+    gaa.allocation_request_id,
+    gaa.allocation_request_type,
+    gaa.allocation_request_created_at,
+    gaa.allocation_request_updated_at,
+    gaa.allocation_request_is_active,
+    gaa.allocation_request_amount
+from source as s
+left join github_applications_allocations as gaa on s.message_cid = gaa.message_cid
 order by height desc
