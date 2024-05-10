@@ -88,6 +88,7 @@ jobs:
             git config --global user.name "GitHub Action"
             git config --global user.email "actions@users.noreply.github.com"
             git config --global push.autoSetupRemote true
+            git pull
             git add data/IPFS_CID
             if git diff-index --quiet HEAD --; then
               echo "No changes to commit"
