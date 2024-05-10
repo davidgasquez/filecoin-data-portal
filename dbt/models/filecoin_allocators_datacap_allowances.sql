@@ -29,4 +29,5 @@ select
     to_timestamp(issue_created_at::numeric) as issue_created_at,
     to_timestamp(messaged_created_at::numeric) as messaged_created_at
 from source
+qualify row_number() over (partition by message_cid, height order by height desc) = 1
 order by height desc

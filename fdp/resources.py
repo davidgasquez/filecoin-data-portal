@@ -4,10 +4,8 @@ import json
 import pandas as pd
 import requests
 from dagster import ConfigurableResource
-from pymongo import MongoClient
 from requests import Response
 from databricks import sql
-from pymongo.collection import Collection
 from databricks.sql.client import Connection
 
 
