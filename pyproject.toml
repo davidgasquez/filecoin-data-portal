@@ -6,7 +6,7 @@ dependencies = [
     "altair",
     "dagster-dbt",
     "dagster-duckdb-pandas",
-    "dagster==1.7.3",
+    "dagster==1.7.5",
     "databricks-sql-connector",
     "dbt-core",
     "dbt-duckdb",
@@ -38,7 +38,7 @@ Issues = "https://github.com/davidgasquez/filecoin-data-portal/issues"
 CI = "https://github.com/davidgasquez/filecoin-data-portal/actions"
 
 [project.optional-dependencies]
-dev = ["dagit", "ruff"]
+dev = ["dagster-webserver", "ruff"]
 
 [build-system]
 requires = ["setuptools"]
