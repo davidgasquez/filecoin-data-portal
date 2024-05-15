@@ -3,7 +3,7 @@
 [![CI](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml)
 [![IPFS](https://img.shields.io/badge/IPNS-blue?logo=ipfs)](https://filecoindataportal.davidgasquez.com)
 
-_Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem. Seamlessy access the data you need to drive the community forward!_
+_Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem. Seamlessly access the data you need to drive the community forward!_
 
 ![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/0b6e15b4-bf42-41b2-b4c9-d75a2530c261)
 
@@ -16,6 +16,7 @@ _Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem. 
 
 The data lives at [`https://filecoindataportal.davidgasquez.com/data`](https://filecoindataportal.davidgasquez.com/data), which points to the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) available in this repository and also available at the [`ipns://k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k`](https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/) IPNS address.
 
+<!-- markdownlint-disable MD033 -->
 <center>
   <a href="https://filecoindataportal.davidgasquez.com/data" target="_blank">
       <img src="https://img.shields.io/badge/GET_THE_DATA-0090ff?style=for-the-badge" alt="GET THE DATA">
@@ -50,7 +51,7 @@ This repository contains code and artifacts to process Filecoin data from [diver
   - Works across various environments (laptop, cluster, browser).
   - Compatible with tons of tools. At the end of the day, tables are Parquet/CSV files.
 - **Low Friction Data Usage**
-  - Raw and processed data is available to anyone on IPFS. Use wathever tool you want!
+  - Raw and processed data is available to anyone on IPFS. Use whatever tool you want!
   - Get started with simple actions like pasting a [SQL query in your browser](https://shell.duckdb.org/) or using `pd.read_parquet(url)` in a Notebook.
   - Static Quarto Notebooks with embedded datasets are generated with every commit, serving as documentation or a simple reporting/dashboarding layer.
 - **Modern Data Engineering**

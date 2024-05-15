@@ -96,3 +96,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_datacap_github_applications"]
+      - name: raw_network_user_address_count
+        meta:
+          dagster:
+            asset_key: ["raw_network_user_address_count"]

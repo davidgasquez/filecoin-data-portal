@@ -101,6 +101,23 @@ new_providers as (
     order by 1 desc
 ),
 
+network_user_address_count as (
+    select
+        cast(stat_date as date) as date,
+        total_address_count,
+        active_address_count_daily,
+        active_address_count_weekly,
+        active_address_count_monthly,
+        total_address_count_100,
+        total_address_count_1000,
+        total_address_count_10000,
+        total_address_count_100000,
+        total_address_count_1000000
+    from {{ source("raw_assets", "raw_network_user_address_count") }}
+    order by 1 desc
+),
+
+
 new_pieces as (
     select
         cast(piece_first_sector_start_at as date) as date,
@@ -161,6 +178,13 @@ select
     mean_spark_retrieval_success_rate,
     providers_with_successful_retrieval,
     providers_with_retrieval_attempts,
+    total_address_count,
+    active_address_count_daily,
+    total_address_count_100,
+    total_address_count_1000,
+    total_address_count_10000,
+    total_address_count_100000,
+    total_address_count_1000000
 from date_calendar
 left join deal_metrics on date_calendar.day = deal_metrics.date
 left join users_with_active_deals on date_calendar.day = users_with_active_deals.day
@@ -171,4 +195,5 @@ left join new_pieces on date_calendar.day = new_pieces.date
 left join deal_ends on date_calendar.day = deal_ends.date
 left join deal_slashes on date_calendar.day = deal_slashes.date
 left join retrieval_metrics on date_calendar.day = retrieval_metrics.date
+left join network_user_address_count on date_calendar.day = network_user_address_count.date
 order by date_calendar.day desc

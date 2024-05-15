@@ -118,6 +118,12 @@ class SpacescopeResource(ConfigurableResource):
         r = self.request(method="storage_provider/rewards", params=params).json()
         return r["data"]
 
+    def get_network_user_address_count(self, start_date=None, end_date=None):
+        params = {"start_date": start_date, "end_date": end_date}
+        r = self.request(method="network_user/address_count", params=params)
+        r = r.json()
+        return r["data"]
+
 
 class DuneResource(ConfigurableResource):
     """
