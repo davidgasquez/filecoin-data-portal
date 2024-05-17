@@ -34,9 +34,6 @@ models:
       - name: date
         tests:
           - not_null
-      # - name: provider_id
-      #   tests:
-      #     - not_null
 
   - name: filecoin_daily_metrics
     columns:

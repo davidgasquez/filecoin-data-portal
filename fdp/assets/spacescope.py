@@ -222,8 +222,12 @@ def raw_storage_providers_rewards(
                 .df()["max_date"]
                 .values[0]
             )
+
             if from_day:
                 from_day = pd.to_datetime(from_day).date()
+            else:
+                from_day = FILECOIN_FIRST_DAY
+
         except CatalogException:
             from_day = FILECOIN_FIRST_DAY
 
@@ -238,6 +242,8 @@ def raw_storage_providers_rewards(
                 );
                 """
             )
+
+        context.log.info(f"Last update was on {from_day}")
 
         from_day = from_day + datetime.timedelta(days=1)
         from_day = from_day or FILECOIN_FIRST_DAY
