@@ -84,6 +84,9 @@ latest_sp_data as (
         pre_commit_deposits,
         provider_collateral,
         fee_debt,
+        total_blocks_mined,
+        total_win_count,
+        total_rewards as total_rewards_fil,
         total_num_sector,
         total_sector_raw_power_tibs,
         total_sector_quality_adjusted_power_tibs,
@@ -115,16 +118,6 @@ latest_sp_data as (
     qualify row_number() over (partition by provider_id order by date desc) = 1
 ),
 
-rewards_data as (
-    select
-        trim(miner_id) as provider_id,
-        sum(blocks_mined) as total_blocks_mined,
-        sum(win_count) as total_win_count,
-        sum(rewards) as total_rewards_fil,
-    from {{ source("raw_assets", "raw_storage_providers_rewards") }}
-    group by provider_id
-),
-
 retrieval_data as (
     select
         trim(provider_id) as provider_id,
@@ -145,29 +138,29 @@ energy_name_mapping as (
 
 select
     base.provider_id,
-    stats.total_deals,
-    stats.total_verified_deals,
-    stats.total_active_deals,
-    stats.total_active_verified_deals,
-    stats.total_unique_piece_cids,
-    stats.total_verified_unique_piece_cids,
-    stats.total_active_unique_piece_cids,
-    stats.total_active_verified_unique_piece_cids,
-    stats.total_data_uploaded_tibs,
-    stats.total_active_data_uploaded_tibs,
-    stats.unique_data_uploaded_tibs,
-    stats.unique_active_data_uploaded_tibs,
-    stats.unique_data_uploaded_ratio,
-    stats.total_unique_clients,
-    stats.total_active_unique_clients,
-    stats.total_active_verified_unique_clients,
+    coalesce(stats.total_deals, 0) as total_deals,
+    coalesce(stats.total_verified_deals, 0) as total_verified_deals,
+    coalesce(stats.total_active_deals, 0) as total_active_deals,
+    coalesce(stats.total_active_verified_deals, 0) as total_active_verified_deals,
+    coalesce(stats.total_unique_piece_cids, 0) as total_unique_piece_cids,
+    coalesce(stats.total_verified_unique_piece_cids, 0) as total_verified_unique_piece_cids,
+    coalesce(stats.total_active_unique_piece_cids, 0) as total_active_unique_piece_cids,
+    coalesce(stats.total_active_verified_unique_piece_cids, 0) as total_active_verified_unique_piece_cids,
+    coalesce(stats.total_data_uploaded_tibs, 0) as total_data_uploaded_tibs,
+    coalesce(stats.total_active_data_uploaded_tibs, 0) as total_active_data_uploaded_tibs,
+    coalesce(stats.unique_data_uploaded_tibs, 0) as unique_data_uploaded_tibs,
+    coalesce(stats.unique_active_data_uploaded_tibs, 0) as unique_active_data_uploaded_tibs,
+    coalesce(stats.unique_data_uploaded_ratio, 0) as unique_data_uploaded_ratio,
+    coalesce(stats.total_unique_clients, 0) as total_unique_clients,
+    coalesce(stats.total_active_unique_clients, 0) as total_active_unique_clients,
+    coalesce(stats.total_active_verified_unique_clients, 0) as total_active_verified_unique_clients,
     stats.first_deal_at,
     stats.first_active_deal_at,
     stats.last_deal_at,
     stats.last_active_deal_at,
-    stats.data_uploaded_tibs_30d,
-    stats.data_uploaded_tibs_6m,
-    stats.data_uploaded_tibs_1y,
+    coalesce(stats.data_uploaded_tibs_30d, 0) as data_uploaded_tibs_30d,
+    coalesce(stats.data_uploaded_tibs_6m, 0) as data_uploaded_tibs_6m,
+    coalesce(stats.data_uploaded_tibs_1y, 0) as data_uploaded_tibs_1y,
     latest_sp_data.raw_power_pibs,
     latest_sp_data.quality_adjusted_power_pibs,
     latest_sp_data.verified_data_power_pibs,
@@ -204,6 +197,9 @@ select
     latest_sp_data.total_expire_quality_adjusted_power_tibs,
     latest_sp_data.total_snap_raw_power_tibs,
     latest_sp_data.total_snap_quality_adjusted_power_tibs,
+    latest_sp_data.total_blocks_mined,
+    latest_sp_data.total_win_count,
+    latest_sp_data.total_rewards_fil,
     storage_provider_location.region,
     storage_provider_location.country,
     storage_provider_location.latitude,
@@ -213,9 +209,6 @@ select
     reputation_data.filrep_uptime_average,
     reputation_data.filrep_score,
     reputation_data.filrep_rank,
-    rewards_data.total_blocks_mined,
-    rewards_data.total_win_count,
-    rewards_data.total_rewards_fil,
     retrieval_data.mean_spark_retrieval_success_rate_7d,
     retrieval_data.stddev_spark_retrieval_success_rate_7d,
     energy_name_mapping.green_score
@@ -224,6 +217,5 @@ left join stats on base.provider_id = stats.provider_id
 left join storage_provider_location on base.provider_id = storage_provider_location.provider_id
 left join reputation_data on base.provider_id = reputation_data.provider_id
 left join latest_sp_data on base.provider_id = latest_sp_data.provider_id
-left join rewards_data on base.provider_id = rewards_data.provider_id
 left join retrieval_data on base.provider_id = retrieval_data.provider_id
 left join energy_name_mapping on base.provider_id = energy_name_mapping.provider_id

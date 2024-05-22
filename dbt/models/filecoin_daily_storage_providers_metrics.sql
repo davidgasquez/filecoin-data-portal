@@ -184,9 +184,12 @@ rewards_data as (
     select
         stat_date::date as date,
         miner_id as provider_id,
-        blocks_mined,
-        win_count,
-        rewards
+        blocks_mined as total_blocks_mined,
+        win_count as total_win_count,
+        rewards as total_rewards,
+        lag(total_rewards) over (partition by miner_id order by date) as rewards,
+        lag(total_blocks_mined) over (partition by miner_id order by date) as blocks_mined,
+        lag(total_win_count) over (partition by miner_id order by date) as win_count,
     from {{ source("raw_assets", "raw_storage_providers_rewards") }}
     where date is not null and provider_id is not null
 )
@@ -194,10 +197,10 @@ rewards_data as (
 select
     dc.date,
     coalesce(dm.provider_id, spp.provider_id, tbd.provider_id, rd.provider_id) as provider_id,
-    dm.onboarded_data_tibs,
-    dm.deals,
-    dm.unique_piece_cids,
-    dm.unique_deal_making_clients,
+    coalesce(dm.onboarded_data_tibs, 0) as onboarded_data_tibs,
+    coalesce(dm.deals, 0) as deals,
+    coalesce(dm.unique_piece_cids, 0) as unique_piece_cids,
+    coalesce(dm.unique_deal_making_clients, 0) as unique_deal_making_clients,
     spp.raw_power_bytes,
     spp.raw_power_pibs,
     spp.quality_adjusted_power_bytes,
@@ -261,6 +264,9 @@ select
     rd.blocks_mined,
     rd.win_count,
     rd.rewards,
+    rd.total_blocks_mined,
+    rd.total_win_count,
+    rd.total_rewards,
     sd.avg_active_sector_duration_days,
     sd.std_active_sector_duration_days,
     spark.spark_retrieval_success_rate,
