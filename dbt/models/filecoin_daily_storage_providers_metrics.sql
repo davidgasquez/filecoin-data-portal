@@ -9,9 +9,9 @@ deal_metrics as (
         cast(sector_start_at as date) as date,
         provider_id,
         sum(padded_piece_size_tibs) as onboarded_data_tibs,
-        count(distinct deal_id) as deals,
-        count(distinct piece_cid) as unique_piece_cids,
-        count(distinct client_id) as unique_deal_making_clients,
+        approx_count_distinct(deal_id) as deals,
+        approx_count_distinct(piece_cid) as unique_piece_cids,
+        approx_count_distinct(client_id) as unique_deal_making_clients,
     from {{ ref('filecoin_state_market_deals') }}
     where 1 = 1
         and sector_start_at is not null
@@ -38,10 +38,14 @@ token_balance_data as (
         stat_date::date as date,
         miner_id as provider_id,
         balance,
+        balance - lag(balance) over (partition by provider_id order by date) as balance_change,
         initial_pledge,
+        initial_pledge - lag(initial_pledge) over (partition by provider_id order by date) as initial_pledge_change,
         locked_funds,
+        locked_funds - lag(locked_funds) over (partition by provider_id order by date) as locked_funds_change,
         pre_commit_deposits,
         provider_collateral,
+        provider_collateral - lag(provider_collateral) over (partition by provider_id order by date) as provider_collateral_change,
         fee_debt
     from {{ source("raw_assets", "raw_storage_providers_token_balances") }}
     where date is not null and provider_id is not null
@@ -51,12 +55,12 @@ sector_totals as (
     select
         stat_date::date as date,
         trim(miner_id) as provider_id,
-        total_num_sector,
-        daily_sector_onboarding_count - lag(daily_sector_onboarding_count) over (partition by provider_id order by date) as daily_sector_onboarding_count,
-        total_sector_rbp / 1024 ^ 4 as total_sector_raw_power_tibs,
-        total_sector_qap / 1024 ^ 4 as total_sector_quality_adjusted_power_tibs,
-        daily_sector_onboarding_rbp / 1024 ^ 4 as daily_sector_onboarding_raw_power_tibs,
-        daily_sector_onboarding_qap / 1024 ^ 4 as daily_sector_onboarding_quality_adjusted_power_tibs,
+        total_num_sector as daily_sector_onboarding_count,
+        total_sector_rbp / 1024 ^ 4 as daily_sector_onboarding_raw_power_tibs,
+        total_sector_qap / 1024 ^ 4 as daily_sector_onboarding_quality_adjusted_power_tibs,
+        daily_sector_onboarding_count as total_sector_onboarded_count,
+        daily_sector_onboarding_rbp / 1024 ^ 4 as total_sector_onboarding_raw_power_tibs,
+        daily_sector_onboarding_qap / 1024 ^ 4 as total_sector_onboarding_quality_adjusted_power_tibs,
     from {{ source("raw_assets", "raw_storage_providers_sector_totals") }}
     where date is not null and provider_id is not null
 ),
@@ -66,11 +70,11 @@ sector_commits_count as (
         stat_date::date as date,
         trim(miner_id) as provider_id,
         total_sealed_sector_count,
-        precommit_sector_count,
-        precommit_batch_sector_count,
+        precommit_sector_count as total_precommit_sector_count,
+        precommit_batch_sector_count as total_precommit_batch_sector_count,
         avg_precommit_batch_sector_count,
-        provecommit_sector_count,
-        provecommit_batch_sector_count,
+        provecommit_sector_count as total_provecommit_sector_count,
+        provecommit_batch_sector_count as total_provecommit_batch_sector_count,
         avg_provecommit_batch_sector_count
     from {{ source("raw_assets", "raw_storage_providers_sector_commits_count") }}
     where date is not null and provider_id is not null
@@ -80,13 +84,13 @@ sector_commits_size as (
     select
         stat_date::date as date,
         trim(miner_id) as provider_id,
-        precommit_sector_rbp / 1024 ^ 4 as precommit_sector_raw_power_tibs,
-        precommit_sector_qap / 1024 ^ 4 as precommit_sector_quality_adjusted_power_tibs,
-        precommit_batch_sector_rbp / 1024 ^ 4 as precommit_batch_sector_raw_power_tibs,
-        precommit_batch_sector_qap / 1024 ^ 4 as precommit_batch_sector_quality_adjusted_power_tibs,
-        provecommit_sector_rbp / 1024 ^ 4 as provecommit_sector_raw_power_tibs,
-        provecommit_sector_qap / 1024 ^ 4 as provecommit_sector_quality_adjusted_power_tibs,
-        provecommit_batch_sector_rbp / 1024 ^ 4 as provecommit_batch_sector_raw_power_tibs,
+        precommit_sector_rbp / 1024 ^ 4 as total_precommit_sector_raw_power_tibs,
+        precommit_sector_qap / 1024 ^ 4 as total_precommit_sector_quality_adjusted_power_tibs,
+        precommit_batch_sector_rbp / 1024 ^ 4 as total_precommit_batch_sector_raw_power_tibs,
+        precommit_batch_sector_qap / 1024 ^ 4 as total_precommit_batch_sector_quality_adjusted_power_tibs,
+        provecommit_sector_rbp / 1024 ^ 4 as total_provecommit_sector_raw_power_tibs,
+        provecommit_sector_qap / 1024 ^ 4 as total_provecommit_sector_quality_adjusted_power_tibs,
+        provecommit_batch_sector_rbp / 1024 ^ 4 as total_provecommit_batch_sector_raw_power_tibs,
     from {{ source("raw_assets", "raw_storage_providers_sector_commits_size") }}
     where date is not null and provider_id is not null
 ),
@@ -187,9 +191,9 @@ rewards_data as (
         blocks_mined as total_blocks_mined,
         win_count as total_win_count,
         rewards as total_rewards,
-        lag(total_rewards) over (partition by miner_id order by date) as rewards,
-        lag(total_blocks_mined) over (partition by miner_id order by date) as blocks_mined,
-        lag(total_win_count) over (partition by miner_id order by date) as win_count,
+        total_rewards - lag(total_rewards) over (partition by miner_id order by date) as daily_rewards,
+        total_blocks_mined - lag(total_blocks_mined) over (partition by miner_id order by date) as daily_blocks_mined,
+        total_win_count - lag(total_win_count) over (partition by miner_id order by date) as daily_win_count,
     from {{ source("raw_assets", "raw_storage_providers_rewards") }}
     where date is not null and provider_id is not null
 )
@@ -213,26 +217,26 @@ select
     tbd.pre_commit_deposits,
     tbd.provider_collateral,
     tbd.fee_debt,
-    st.total_num_sector,
     st.daily_sector_onboarding_count,
-    st.total_sector_raw_power_tibs,
-    st.total_sector_quality_adjusted_power_tibs,
     st.daily_sector_onboarding_raw_power_tibs,
     st.daily_sector_onboarding_quality_adjusted_power_tibs,
+    st.total_sector_onboarded_count,
+    st.total_sector_onboarding_raw_power_tibs,
+    st.total_sector_onboarding_quality_adjusted_power_tibs,
     scc.total_sealed_sector_count,
-    scc.precommit_sector_count,
-    scc.precommit_batch_sector_count,
+    scc.total_precommit_sector_count,
+    scc.total_precommit_batch_sector_count,
     scc.avg_precommit_batch_sector_count,
-    scc.provecommit_sector_count,
-    scc.provecommit_batch_sector_count,
+    scc.total_provecommit_sector_count,
+    scc.total_provecommit_batch_sector_count,
     scc.avg_provecommit_batch_sector_count,
-    scs.precommit_sector_raw_power_tibs,
-    scs.precommit_sector_quality_adjusted_power_tibs,
-    scs.precommit_batch_sector_raw_power_tibs,
-    scs.precommit_batch_sector_quality_adjusted_power_tibs,
-    scs.provecommit_sector_raw_power_tibs,
-    scs.provecommit_sector_quality_adjusted_power_tibs,
-    scs.provecommit_batch_sector_raw_power_tibs,
+    scs.total_precommit_sector_raw_power_tibs,
+    scs.total_precommit_sector_quality_adjusted_power_tibs,
+    scs.total_precommit_batch_sector_raw_power_tibs,
+    scs.total_precommit_batch_sector_quality_adjusted_power_tibs,
+    scs.total_provecommit_sector_raw_power_tibs,
+    scs.total_provecommit_sector_quality_adjusted_power_tibs,
+    scs.total_provecommit_batch_sector_raw_power_tibs,
     sterm.daily_new_terminated_raw_power_tibs,
     sterm.daily_new_terminated_quality_adjusted_power_tibs,
     sterm.total_terminated_raw_power_tibs,
@@ -261,9 +265,9 @@ select
     ss.daily_new_snap_quality_adjusted_power_tibs,
     ss.total_snap_raw_power_tibs,
     ss.total_snap_quality_adjusted_power_tibs,
-    rd.blocks_mined,
-    rd.win_count,
-    rd.rewards,
+    rd.daily_blocks_mined,
+    rd.daily_win_count,
+    rd.daily_rewards,
     rd.total_blocks_mined,
     rd.total_win_count,
     rd.total_rewards,
@@ -286,5 +290,12 @@ full outer join sector_snaps ss on dc.date = ss.date and spp.provider_id = ss.pr
 full outer join sector_durations sd on dc.date = sd.date and spp.provider_id = sd.provider_id
 full outer join rewards_data rd on dc.date = rd.date and spp.provider_id = rd.provider_id
 full outer join spark_retrievals spark on dc.date = spark.date and spp.provider_id = spark.provider_id
-where dc.date >= '2020-09-12'
+where 1=1
+    and dc.date >= '2020-09-12'
+    and (
+        dm.provider_id is not null
+        or spp.provider_id is not null
+        or tbd.provider_id is not null
+        or rd.provider_id is not null
+    )
 order by dc.date desc
