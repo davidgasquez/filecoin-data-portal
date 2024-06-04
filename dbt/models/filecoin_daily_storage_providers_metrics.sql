@@ -25,12 +25,27 @@ storage_providers_power as (
         miner_id as provider_id,
         raw_byte_power as raw_power_bytes,
         raw_byte_power / 1024 ^ 5 as raw_power_pibs,
+        avg(raw_power_pibs) over provider_last_30 as lagging_30_days_avg_raw_power_pibs,
         quality_adj_power as quality_adjusted_power_bytes,
         quality_adj_power / 1024 ^ 5 as quality_adjusted_power_pibs,
+        avg(quality_adjusted_power_pibs) over provider_last_30 as lagging_30_days_avg_quality_adjusted_power_pibs,
         (quality_adjusted_power_bytes - raw_power_bytes) / 9 as verified_data_power_bytes,
         (quality_adjusted_power_pibs - raw_power_pibs) / 9 as verified_data_power_pibs,
+        avg(verified_data_power_pibs) over provider_last_30 as lagging_30_days_avg_verified_data_power_pibs,
     from {{ source('raw_assets', 'raw_storage_providers_daily_power') }}
     where date is not null and provider_id is not null
+    window provider_last_30 as (partition by provider_id order by date rows between 29 preceding and current row)
+),
+
+storage_providers_power_growth as (
+    select
+        date,
+        provider_id,
+        lagging_30_days_avg_raw_power_pibs - lag(lagging_30_days_avg_raw_power_pibs) over providers as smoothed_raw_power_growth_pibs,
+        lagging_30_days_avg_quality_adjusted_power_pibs - lag(lagging_30_days_avg_quality_adjusted_power_pibs) over providers as smoothed_quality_adjusted_power_growth_pibs,
+        lagging_30_days_avg_verified_data_power_pibs - lag(lagging_30_days_avg_verified_data_power_pibs) over providers as smoothed_verified_data_power_growth_pibs
+    from storage_providers_power
+    window providers as (partition by provider_id order by date)
 ),
 
 token_balance_data as (
@@ -207,10 +222,16 @@ select
     coalesce(dm.unique_deal_making_clients, 0) as unique_deal_making_clients,
     spp.raw_power_bytes,
     spp.raw_power_pibs,
+    spp.lagging_30_days_avg_raw_power_pibs,
     spp.quality_adjusted_power_bytes,
     spp.quality_adjusted_power_pibs,
+    spp.lagging_30_days_avg_quality_adjusted_power_pibs,
     spp.verified_data_power_bytes,
     spp.verified_data_power_pibs,
+    spp.lagging_30_days_avg_verified_data_power_pibs,
+    spg.smoothed_raw_power_growth_pibs,
+    spg.smoothed_quality_adjusted_power_growth_pibs,
+    spg.smoothed_verified_data_power_growth_pibs,
     tbd.balance,
     tbd.initial_pledge,
     tbd.locked_funds,
@@ -276,6 +297,7 @@ select
     spark.spark_retrieval_success_rate,
 from date_calendar dc
 full outer join storage_providers_power spp on dc.date = spp.date
+full outer join storage_providers_power_growth spg on dc.date = spg.date and spp.provider_id = spg.provider_id
 full outer join deal_metrics dm on dc.date = dm.date and spp.provider_id = dm.provider_id
 full outer join token_balance_data tbd on dc.date = tbd.date and spp.provider_id = tbd.provider_id
 full outer join sector_totals st on dc.date = st.date and spp.provider_id = st.provider_id

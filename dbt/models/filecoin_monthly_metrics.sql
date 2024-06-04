@@ -26,6 +26,23 @@ daily_to_monthly_aggs as (
         sum(daily_new_terminated_quality_adjusted_power_tibs) / 1024 as sector_terminated_quality_adjusted_power_pibs
     from {{ ref('filecoin_daily_storage_providers_metrics') }}
     group by 1
+),
+
+providers_adding_capacity as (
+    with pwp as (
+        select
+            provider_id,
+            min(date) as started_providing_power_date
+        from {{ ref('filecoin_daily_storage_providers_metrics') }}
+        where raw_power_pibs > 0
+        group by provider_id
+    )
+
+    select
+        time_bucket(interval '1 month', started_providing_power_date, date '2020-09-01') as date,
+        count(distinct provider_id) as new_providers_providing_capacity
+    from pwp
+    group by 1
 )
 
 select
@@ -42,8 +59,9 @@ select
     sector_onboarding_raw_power_pibs,
     sector_onboarding_quality_adjusted_power_pibs,
     sector_terminated_raw_power_pibs,
-    sector_terminated_quality_adjusted_power_pibs
+    sector_terminated_quality_adjusted_power_pibs,
+    new_providers_providing_capacity
 from deal_metrics
-left join daily_to_monthly_aggs
-    on deal_metrics.date = daily_to_monthly_aggs.date
+left join daily_to_monthly_aggs on deal_metrics.date = daily_to_monthly_aggs.date
+left join providers_adding_capacity on deal_metrics.date = providers_adding_capacity.date
 order by deal_metrics.date desc

@@ -145,11 +145,30 @@ latest_sp_data as (
     qualify row_number() over (partition by provider_id order by date desc) = 1
 ),
 
+power_growth_averages as (
+    select
+        provider_id,
+        stddev(raw_power_pibs) filter(where date > current_date() - interval '30 days') as stddev_raw_power_pibs_30d,
+        stddev(quality_adjusted_power_pibs) filter(where date > current_date() - interval '30 days') as stddev_quality_adjusted_power_pibs_30d,
+        stddev(verified_data_power_pibs) filter(where date > current_date() - interval '30 days') as stddev_verified_data_power_pibs_30d,
+        avg(smoothed_raw_power_growth_pibs) filter(where date > current_date() - interval '30 days') as avg_smoothed_raw_power_growth_pibs_30d,
+        avg(smoothed_quality_adjusted_power_growth_pibs) filter(where date > current_date() - interval '30 days') as avg_smoothed_quality_adjusted_power_growth_pibs_30d,
+        avg(smoothed_verified_data_power_growth_pibs) filter(where date > current_date() - interval '30 days') as avg_smoothed_verified_data_power_growth_pibs_30d,
+        stddev(raw_power_pibs) filter(where date > current_date() - interval '6 months') as stddev_raw_power_pibs_6m,
+        stddev(quality_adjusted_power_pibs) filter(where date > current_date() - interval '6 months') as stddev_quality_adjusted_power_pibs_6m,
+        stddev(verified_data_power_pibs) filter(where date > current_date() - interval '6 months') as stddev_verified_data_power_pibs_6m,
+        avg(smoothed_raw_power_growth_pibs) filter(where date > current_date() - interval '6 months') as avg_smoothed_raw_power_growth_pibs_6m,
+        avg(smoothed_quality_adjusted_power_growth_pibs) filter(where date > current_date() - interval '6 months') as avg_smoothed_quality_adjusted_power_growth_pibs_6m,
+        avg(smoothed_verified_data_power_growth_pibs) filter(where date > current_date() - interval '6 months') as avg_smoothed_verified_data_power_growth_pibs_6m,
+    from {{ ref("filecoin_daily_storage_providers_metrics") }}
+    group by provider_id
+),
+
 retrieval_data as (
     select
         trim(provider_id) as provider_id,
-        mean(success_rate) over(partition by provider_id order by date desc rows between 6 preceding and current row) as mean_spark_retrieval_success_rate_7d,
-        stddev(success_rate) over(partition by provider_id order by date desc rows between 6 preceding and current row) as stddev_spark_retrieval_success_rate_7d
+        mean(success_rate) over (partition by provider_id order by date desc rows between 6 preceding and current row) as mean_spark_retrieval_success_rate_7d,
+        stddev(success_rate) over (partition by provider_id order by date desc rows between 6 preceding and current row) as stddev_spark_retrieval_success_rate_7d
     from {{ source("raw_assets", "raw_spark_retrieval_success_rate") }}
     qualify row_number() over (partition by provider_id order by date desc) = 1
 ),
@@ -265,7 +284,19 @@ select
     reputation_data.filrep_rank,
     retrieval_data.mean_spark_retrieval_success_rate_7d,
     retrieval_data.stddev_spark_retrieval_success_rate_7d,
-    energy_name_mapping.green_score
+    energy_name_mapping.green_score,
+    power_growth_averages.stddev_raw_power_pibs_30d,
+    power_growth_averages.stddev_quality_adjusted_power_pibs_30d,
+    power_growth_averages.stddev_verified_data_power_pibs_30d,
+    power_growth_averages.avg_smoothed_raw_power_growth_pibs_30d,
+    power_growth_averages.avg_smoothed_quality_adjusted_power_growth_pibs_30d,
+    power_growth_averages.avg_smoothed_verified_data_power_growth_pibs_30d,
+    power_growth_averages.stddev_raw_power_pibs_6m,
+    power_growth_averages.stddev_quality_adjusted_power_pibs_6m,
+    power_growth_averages.stddev_verified_data_power_pibs_6m,
+    power_growth_averages.avg_smoothed_raw_power_growth_pibs_6m,
+    power_growth_averages.avg_smoothed_quality_adjusted_power_growth_pibs_6m,
+    power_growth_averages.avg_smoothed_verified_data_power_growth_pibs_6m,
 from base_providers as base
 left join stats on base.provider_id = stats.provider_id
 left join storage_provider_location on base.provider_id = storage_provider_location.provider_id
@@ -273,3 +304,4 @@ left join reputation_data on base.provider_id = reputation_data.provider_id
 left join latest_sp_data on base.provider_id = latest_sp_data.provider_id
 left join retrieval_data on base.provider_id = retrieval_data.provider_id
 left join energy_name_mapping on base.provider_id = energy_name_mapping.provider_id
+left join power_growth_averages on base.provider_id = power_growth_averages.provider_id
