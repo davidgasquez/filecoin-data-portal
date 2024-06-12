@@ -2,7 +2,6 @@ import os
 
 import httpx
 import pandas as pd
-import requests
 from dagster import Output, MetadataValue, asset
 
 
@@ -39,14 +38,18 @@ def raw_datacap_allocators_registry() -> Output[pd.DataFrame]:
     Allocators information from Datacap Registry API.
     """
     github_data_url = "https://api.github.com/repos/filecoin-project/Allocator-Registry/contents/Allocators"
-    response = requests.get(github_data_url)
+
+    transport = httpx.HTTPTransport(retries=2)
+    client = httpx.Client(transport=transport, timeout=30)
+
+    response = client.get(github_data_url)
 
     files_data = []
 
     if response.status_code == 200:
         for file in response.json():
             if file["name"].endswith(".json"):
-                file_response = requests.get(file["download_url"])
+                file_response = client.get(file["download_url"])
                 if file_response.status_code == 200:
                     files_data.append(file_response.json())
 
