@@ -52,6 +52,9 @@ stats as (
         max(sector_start_at) as last_deal_at,
         max(case when is_active then sector_start_at else null end) as last_active_deal_at,
 
+        max(end_at) as last_deal_end_at,
+        max(slash_at) as last_deal_slash_at,
+
         sum(unpadded_piece_size_tibs) filter(where sector_start_at > current_date() - interval '30 days') as data_uploaded_tibs_30d,
         sum(unpadded_piece_size_tibs) filter(where sector_start_at > current_date() - interval '6 months') as data_uploaded_tibs_6m,
         sum(unpadded_piece_size_tibs) filter(where sector_start_at > current_date() - interval '1 year') as data_uploaded_tibs_1y,
@@ -145,21 +148,52 @@ latest_sp_data as (
     qualify row_number() over (partition by provider_id order by date desc) = 1
 ),
 
-power_growth_averages as (
+provider_metrics_aggregations as (
     select
         provider_id,
+
+        -- Power Aggregations for the last 30 days
         stddev(raw_power_pibs) filter(where date > current_date() - interval '30 days') as stddev_raw_power_pibs_30d,
         stddev(quality_adjusted_power_pibs) filter(where date > current_date() - interval '30 days') as stddev_quality_adjusted_power_pibs_30d,
         stddev(verified_data_power_pibs) filter(where date > current_date() - interval '30 days') as stddev_verified_data_power_pibs_30d,
         avg(smoothed_raw_power_growth_pibs) filter(where date > current_date() - interval '30 days') as avg_smoothed_raw_power_growth_pibs_30d,
         avg(smoothed_quality_adjusted_power_growth_pibs) filter(where date > current_date() - interval '30 days') as avg_smoothed_quality_adjusted_power_growth_pibs_30d,
         avg(smoothed_verified_data_power_growth_pibs) filter(where date > current_date() - interval '30 days') as avg_smoothed_verified_data_power_growth_pibs_30d,
-        stddev(raw_power_pibs) filter(where date > current_date() - interval '6 months') as stddev_raw_power_pibs_6m,
-        stddev(quality_adjusted_power_pibs) filter(where date > current_date() - interval '6 months') as stddev_quality_adjusted_power_pibs_6m,
-        stddev(verified_data_power_pibs) filter(where date > current_date() - interval '6 months') as stddev_verified_data_power_pibs_6m,
-        avg(smoothed_raw_power_growth_pibs) filter(where date > current_date() - interval '6 months') as avg_smoothed_raw_power_growth_pibs_6m,
-        avg(smoothed_quality_adjusted_power_growth_pibs) filter(where date > current_date() - interval '6 months') as avg_smoothed_quality_adjusted_power_growth_pibs_6m,
-        avg(smoothed_verified_data_power_growth_pibs) filter(where date > current_date() - interval '6 months') as avg_smoothed_verified_data_power_growth_pibs_6m,
+
+        -- Power Aggregations for the last 3 months
+        stddev(raw_power_pibs) filter(where date > current_date() - interval '3 months') as stddev_raw_power_pibs_3m,
+        stddev(quality_adjusted_power_pibs) filter(where date > current_date() - interval '3 months') as stddev_quality_adjusted_power_pibs_3m,
+        stddev(verified_data_power_pibs) filter(where date > current_date() - interval '3 months') as stddev_verified_data_power_pibs_3m,
+        avg(smoothed_raw_power_growth_pibs) filter(where date > current_date() - interval '3 months') as avg_smoothed_raw_power_growth_pibs_3m,
+        avg(smoothed_quality_adjusted_power_growth_pibs) filter(where date > current_date() - interval '3 months') as avg_smoothed_quality_adjusted_power_growth_pibs_3m,
+        avg(smoothed_verified_data_power_growth_pibs) filter(where date > current_date() - interval '3 months') as avg_smoothed_verified_data_power_growth_pibs_3m,
+
+        -- Power Aggregations for the previous 3 months (mont 6 to 3)
+        stddev(raw_power_pibs) filter(where date > current_date() - interval '6 months' and date <= current_date() - interval '3 months') as stddev_raw_power_pibs_3m_6m,
+        stddev(quality_adjusted_power_pibs) filter(where date > current_date() - interval '6 months' and date <= current_date() - interval '3 months') as stddev_quality_adjusted_power_pibs_3m_6m,
+        stddev(verified_data_power_pibs) filter(where date > current_date() - interval '6 months' and date <= current_date() - interval '3 months') as stddev_verified_data_power_pibs_3m_6m,
+        avg(smoothed_raw_power_growth_pibs) filter(where date > current_date() - interval '6 months' and date <= current_date() - interval '3 months') as avg_smoothed_raw_power_growth_pibs_3m_6m,
+        avg(smoothed_quality_adjusted_power_growth_pibs) filter(where date > current_date() - interval '6 months' and date <= current_date() - interval '3 months') as avg_smoothed_quality_adjusted_power_growth_pibs_3m_6m,
+        avg(smoothed_verified_data_power_growth_pibs) filter(where date > current_date() - interval '6 months' and date <= current_date() - interval '3 months') as avg_smoothed_verified_data_power_growth_pibs_3m_6m,
+
+        -- Power Aggregations for the previous 3 months (mont 9 to 6)
+        stddev(raw_power_pibs) filter(where date > current_date() - interval '9 months' and date <= current_date() - interval '6 months') as stddev_raw_power_pibs_6m_9m,
+        stddev(quality_adjusted_power_pibs) filter(where date > current_date() - interval '9 months' and date <= current_date() - interval '6 months') as stddev_quality_adjusted_power_pibs_6m_9m,
+        stddev(verified_data_power_pibs) filter(where date > current_date() - interval '9 months' and date <= current_date() - interval '6 months') as stddev_verified_data_power_pibs_6m_9m,
+        avg(smoothed_raw_power_growth_pibs) filter(where date > current_date() - interval '9 months' and date <= current_date() - interval '6 months') as avg_smoothed_raw_power_growth_pibs_6m_9m,
+        avg(smoothed_quality_adjusted_power_growth_pibs) filter(where date > current_date() - interval '9 months' and date <= current_date() - interval '6 months') as avg_smoothed_quality_adjusted_power_growth_pibs_6m_9m,
+        avg(smoothed_verified_data_power_growth_pibs) filter(where date > current_date() - interval '9 months' and date <= current_date() - interval '6 months') as avg_smoothed_verified_data_power_growth_pibs_6m_9m,
+
+        -- Power Aggregations for the previous 3 months (mont 12 to 9)
+        stddev(raw_power_pibs) filter(where date > current_date() - interval '12 months' and date <= current_date() - interval '9 months') as stddev_raw_power_pibs_9m_12m,
+        stddev(quality_adjusted_power_pibs) filter(where date > current_date() - interval '12 months' and date <= current_date() - interval '9 months') as stddev_quality_adjusted_power_pibs_9m_12m,
+        stddev(verified_data_power_pibs) filter(where date > current_date() - interval '12 months' and date <= current_date() - interval '9 months') as stddev_verified_data_power_pibs_9m_12m,
+        avg(smoothed_raw_power_growth_pibs) filter(where date > current_date() - interval '12 months' and date <= current_date() - interval '9 months') as avg_smoothed_raw_power_growth_pibs_9m_12m,
+        avg(smoothed_quality_adjusted_power_growth_pibs) filter(where date > current_date() - interval '12 months' and date <= current_date() - interval '9 months') as avg_smoothed_quality_adjusted_power_growth_pibs_9m_12m,
+        avg(smoothed_verified_data_power_growth_pibs) filter(where date > current_date() - interval '12 months' and date <= current_date() - interval '9 months') as avg_smoothed_verified_data_power_growth_pibs_9m_12m,
+
+        -- When they started providing power
+        min(date) filter (where raw_power_pibs > 0) as started_providing_power_at,
     from {{ ref("filecoin_daily_storage_providers_metrics") }}
     group by provider_id
 ),
@@ -204,6 +238,8 @@ select
     stats.first_active_deal_at,
     stats.last_deal_at,
     stats.last_active_deal_at,
+    stats.last_deal_end_at,
+    stats.last_deal_slash_at,
     coalesce(stats.data_uploaded_tibs_30d, 0) as data_uploaded_tibs_30d,
     coalesce(stats.data_uploaded_tibs_6m, 0) as data_uploaded_tibs_6m,
     coalesce(stats.data_uploaded_tibs_1y, 0) as data_uploaded_tibs_1y,
@@ -285,18 +321,37 @@ select
     retrieval_data.mean_spark_retrieval_success_rate_7d,
     retrieval_data.stddev_spark_retrieval_success_rate_7d,
     energy_name_mapping.green_score,
-    power_growth_averages.stddev_raw_power_pibs_30d,
-    power_growth_averages.stddev_quality_adjusted_power_pibs_30d,
-    power_growth_averages.stddev_verified_data_power_pibs_30d,
-    power_growth_averages.avg_smoothed_raw_power_growth_pibs_30d,
-    power_growth_averages.avg_smoothed_quality_adjusted_power_growth_pibs_30d,
-    power_growth_averages.avg_smoothed_verified_data_power_growth_pibs_30d,
-    power_growth_averages.stddev_raw_power_pibs_6m,
-    power_growth_averages.stddev_quality_adjusted_power_pibs_6m,
-    power_growth_averages.stddev_verified_data_power_pibs_6m,
-    power_growth_averages.avg_smoothed_raw_power_growth_pibs_6m,
-    power_growth_averages.avg_smoothed_quality_adjusted_power_growth_pibs_6m,
-    power_growth_averages.avg_smoothed_verified_data_power_growth_pibs_6m,
+    provider_metrics_aggregations.stddev_raw_power_pibs_30d,
+    provider_metrics_aggregations.stddev_quality_adjusted_power_pibs_30d,
+    provider_metrics_aggregations.stddev_verified_data_power_pibs_30d,
+    provider_metrics_aggregations.avg_smoothed_raw_power_growth_pibs_30d,
+    provider_metrics_aggregations.avg_smoothed_quality_adjusted_power_growth_pibs_30d,
+    provider_metrics_aggregations.avg_smoothed_verified_data_power_growth_pibs_30d,
+    provider_metrics_aggregations.stddev_raw_power_pibs_3m,
+    provider_metrics_aggregations.stddev_quality_adjusted_power_pibs_3m,
+    provider_metrics_aggregations.stddev_verified_data_power_pibs_3m,
+    provider_metrics_aggregations.avg_smoothed_raw_power_growth_pibs_3m,
+    provider_metrics_aggregations.avg_smoothed_quality_adjusted_power_growth_pibs_3m,
+    provider_metrics_aggregations.avg_smoothed_verified_data_power_growth_pibs_3m,
+    provider_metrics_aggregations.stddev_raw_power_pibs_3m_6m,
+    provider_metrics_aggregations.stddev_quality_adjusted_power_pibs_3m_6m,
+    provider_metrics_aggregations.stddev_verified_data_power_pibs_3m_6m,
+    provider_metrics_aggregations.avg_smoothed_raw_power_growth_pibs_3m_6m,
+    provider_metrics_aggregations.avg_smoothed_quality_adjusted_power_growth_pibs_3m_6m,
+    provider_metrics_aggregations.avg_smoothed_verified_data_power_growth_pibs_3m_6m,
+    provider_metrics_aggregations.stddev_raw_power_pibs_6m_9m,
+    provider_metrics_aggregations.stddev_quality_adjusted_power_pibs_6m_9m,
+    provider_metrics_aggregations.stddev_verified_data_power_pibs_6m_9m,
+    provider_metrics_aggregations.avg_smoothed_raw_power_growth_pibs_6m_9m,
+    provider_metrics_aggregations.avg_smoothed_quality_adjusted_power_growth_pibs_6m_9m,
+    provider_metrics_aggregations.avg_smoothed_verified_data_power_growth_pibs_6m_9m,
+    provider_metrics_aggregations.stddev_raw_power_pibs_9m_12m,
+    provider_metrics_aggregations.stddev_quality_adjusted_power_pibs_9m_12m,
+    provider_metrics_aggregations.stddev_verified_data_power_pibs_9m_12m,
+    provider_metrics_aggregations.avg_smoothed_raw_power_growth_pibs_9m_12m,
+    provider_metrics_aggregations.avg_smoothed_quality_adjusted_power_growth_pibs_9m_12m,
+    provider_metrics_aggregations.avg_smoothed_verified_data_power_growth_pibs_9m_12m,
+    provider_metrics_aggregations.started_providing_power_at
 from base_providers as base
 left join stats on base.provider_id = stats.provider_id
 left join storage_provider_location on base.provider_id = storage_provider_location.provider_id
@@ -304,4 +359,4 @@ left join reputation_data on base.provider_id = reputation_data.provider_id
 left join latest_sp_data on base.provider_id = latest_sp_data.provider_id
 left join retrieval_data on base.provider_id = retrieval_data.provider_id
 left join energy_name_mapping on base.provider_id = energy_name_mapping.provider_id
-left join power_growth_averages on base.provider_id = power_growth_averages.provider_id
+left join provider_metrics_aggregations on base.provider_id = provider_metrics_aggregations.provider_id
