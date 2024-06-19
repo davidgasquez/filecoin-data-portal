@@ -2,7 +2,7 @@ import os
 
 import httpx
 import pandas as pd
-from dagster import Output, MetadataValue, asset
+from dagster import AssetExecutionContext, Output, MetadataValue, asset
 
 
 @asset(compute_kind="python")
@@ -60,6 +60,7 @@ def raw_datacap_allocators_registry() -> Output[pd.DataFrame]:
 
 @asset(compute_kind="python")
 def raw_datacap_github_applications(
+    context: AssetExecutionContext,
     raw_datacap_allocators_registry: pd.DataFrame,
 ) -> pd.DataFrame:
     """
@@ -73,6 +74,8 @@ def raw_datacap_github_applications(
     allocator_repositories = allocator_applications["allocation_bookkeeping"]
     allocator_repositories = allocator_repositories.dropna()
 
+    context.log.info(f"Found {len(allocator_repositories)} allocator repositories.")
+
     token = str(os.getenv("GITHUB_TOKEN"))
 
     transport = httpx.HTTPTransport(retries=2)
@@ -82,17 +85,19 @@ def raw_datacap_github_applications(
 
     for repository in allocator_repositories:
         n = repository.split(".com/")[1]
+
+        context.log.info(f"Fetching applications from {n}.")
         response = client.get(
             "https://api.github.com/repos/" + n + "/contents/applications",
             timeout=30,
             headers={"Authorization": "Bearer " + token},
         )
+
         if response.status_code == 200:
             for file in response.json():
                 if file["name"].endswith(".json"):
                     file_response = client.get(
                         file["download_url"],
-                        timeout=30,
                         headers={"Authorization": "Bearer " + token},
                     )
                     if file_response.status_code == 200:
@@ -100,6 +105,14 @@ def raw_datacap_github_applications(
                         a["github_organization"] = n.split("/")[0]
                         a["github_repository"] = n.split("/")[1]
                         applications.append(a)
+                    else:
+                        context.log.error(f"Failed to fetch file: {file['download_url']}.")
+                        context.log.error(f"Status code: {file_response.status_code}")
+                        context.log.error(f"Response: {file_response.json()}")
+        else:
+            context.log.error(f"Failed to fetch applications from {n}.")
+            context.log.error(f"Status code: {response.status_code}")
+            context.log.error(f"Response: {response.json()}")
 
     df = pd.DataFrame(applications)
     df = df.rename(columns=lambda x: x.lower().replace(" ", "_"))
