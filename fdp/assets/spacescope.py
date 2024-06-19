@@ -43,9 +43,9 @@ def fetch_and_persist_data(
             conn.execute(create_table_query)
 
         from_day = from_day or FILECOIN_FIRST_DAY
-        to_day = datetime.date.today() - datetime.timedelta(days=2)
+        to_day = datetime.date.today() - datetime.timedelta(days=1)
 
-        if from_day >= to_day:
+        if from_day > to_day:
             context.log.info(f"Data is up to date. Last update was on {from_day}")
             return MaterializeResult()
 
@@ -149,9 +149,9 @@ def raw_storage_providers_token_balances(
         from_day = from_day + datetime.timedelta(days=1)
         from_day = from_day or FILECOIN_FIRST_DAY
 
-        to_day = datetime.date.today() - datetime.timedelta(days=2)
+        to_day = datetime.date.today() - datetime.timedelta(days=1)
 
-        if from_day >= to_day:
+        if from_day > to_day:
             context.log.info(
                 f"Storage provider token balance data is up to date. Last update was on {from_day}"
             )
@@ -248,9 +248,9 @@ def raw_storage_providers_rewards(
         from_day = from_day + datetime.timedelta(days=1)
         from_day = from_day or FILECOIN_FIRST_DAY
 
-        to_day = datetime.date.today() - datetime.timedelta(days=2)
+        to_day = datetime.date.today() - datetime.timedelta(days=1)
 
-        if from_day >= to_day:
+        if from_day > to_day:
             context.log.info(
                 f"Storage provider rewards data is up to date. Last update was on {from_day}"
             )
@@ -341,9 +341,9 @@ def raw_storage_providers_sector_totals(
 
         from_day = from_day or FILECOIN_FIRST_DAY
 
-        to_day = datetime.date.today() - datetime.timedelta(days=2)
+        to_day = datetime.date.today() - datetime.timedelta(days=1)
 
-        if from_day >= to_day:
+        if from_day > to_day:
             context.log.info(f"Data is up to date. Last update was on {from_day}")
             return MaterializeResult()
 
@@ -419,9 +419,9 @@ def raw_storage_providers_sector_terminations(
 
         from_day = from_day or FILECOIN_FIRST_DAY
 
-        to_day = datetime.date.today() - datetime.timedelta(days=2)
+        to_day = datetime.date.today() - datetime.timedelta(days=1)
 
-        if from_day >= to_day:
+        if from_day > to_day:
             context.log.info(f"Data is up to date. Last update was on {from_day}")
             return MaterializeResult()
 
