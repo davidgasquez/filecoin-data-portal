@@ -30,6 +30,8 @@ stats as (
         count(distinct deal_id) as total_deals,
         count(distinct deal_id) filter (where is_verified) as total_verified_deals,
         count(distinct deal_id) filter (where is_active) as total_active_deals,
+        count(distinct deal_id) filter (where slash_at is not null) as total_slashed_deals,
+        count(distinct deal_id) filter (where not is_active) as total_finished_deals,
         count(distinct deal_id) filter (where is_active and is_verified) as total_active_verified_deals,
 
         count(distinct piece_cid) as total_unique_piece_cids,
@@ -221,6 +223,8 @@ select
     coalesce(stats.total_deals, 0) as total_deals,
     coalesce(stats.total_verified_deals, 0) as total_verified_deals,
     coalesce(stats.total_active_deals, 0) as total_active_deals,
+    coalesce(stats.total_slashed_deals, 0) as total_slashed_deals,
+    coalesce(stats.total_finished_deals, 0) as total_finished_deals,
     coalesce(stats.total_active_verified_deals, 0) as total_active_verified_deals,
     coalesce(stats.total_unique_piece_cids, 0) as total_unique_piece_cids,
     coalesce(stats.total_verified_unique_piece_cids, 0) as total_verified_unique_piece_cids,
