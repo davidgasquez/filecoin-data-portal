@@ -140,3 +140,40 @@ def raw_verified_registry_verifiers(
         )
 
         context.log.info(f"Persisted {data.num_rows} rows")
+
+
+@asset(compute_kind="python")
+def raw_id_addresses(
+    context: AssetExecutionContext,
+    starboard_databricks: StarboardDatabricksResource,
+    duckdb: DuckDBResource,
+) -> None:
+    """
+    Allocators (verifiers) on-chain DataCap changes from lily.id_addresses
+    """
+    databricks_con = starboard_databricks.get_connection()
+    duckdb.get_connection()
+
+    cursor = databricks_con.cursor()
+
+    r = cursor.execute(
+        """
+        select
+            *
+        from lily.id_addresses
+        """
+    )
+
+    context.log.info("Fetching id_addresses table records")
+
+    with duckdb.get_connection() as duckdb_con:
+        data = r.fetchall_arrow()
+        duckdb_con.execute(
+            """
+            create or replace table raw.raw_id_addresses as (
+                select * from data
+            )
+            """
+        )
+
+        context.log.info(f"Persisted {data.num_rows} rows")

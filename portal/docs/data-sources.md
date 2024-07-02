@@ -62,6 +62,7 @@ A few teams across the ecosystem are indexing Filecoin Messages. The most compre
 - [FilecoinGreen](https://filecoin.energy/)
 - [FilFox](https://filfox.info) and [API](https://filfox.info/api)
 - [FilScan](https://filscan.io) and [API](https://api-v2.filscan.io/api)
+- [Blockscout](https://filecoin.blockscout.com/) and [API](https://filecoin.blockscout.com/api-docs) for FEVM.
 
 ### JSON-RPC Endpoints
 

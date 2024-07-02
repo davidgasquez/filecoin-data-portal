@@ -7,8 +7,6 @@ _Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem. 
 
 ![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/25d50ad6-859d-4635-880a-b2a704fcf7a0)
 
-
-
 ## 🚀 Powering
 
 - [Filecoin Pulse Website](https://filecoinpulse.pages.dev/)
@@ -99,6 +97,10 @@ Now, you should be able to spin up Dagster UI (`make dev`) and [access it locall
 You can jump into the repository [Development Container](https://code.visualstudio.com/docs/remote/containers). Once inside the develpment environment, you'll only need to run `make dev` to spin up the [Dagster UI locally](http://127.0.0.1:3000). The development environment can also run in your browser thanks to GitHub Codespaces!
 
 [![Development Container Badge](https://github.com/codespaces/badge.svg)](https://codespaces.new/davidgasquez/filecoin-data-portal)
+
+## 📃 Disclaimer
+
+The datasets provided by this service are made available "as is", without any warranties or guarantees of any kind, either expressed or implied. By using these datasets, you agree that you do so at your own risk.
 
 ## 📝 License
 
