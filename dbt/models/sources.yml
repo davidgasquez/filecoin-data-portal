@@ -100,3 +100,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_network_user_address_count"]
+      - name: raw_id_addresses
+        meta:
+          dagster:
+            asset_key: ["raw_id_addresses"]

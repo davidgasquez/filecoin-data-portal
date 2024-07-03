@@ -216,6 +216,14 @@ energy_name_mapping as (
         green_score
     from {{ source("raw_assets", "raw_storage_providers_energy_name_mapping") }}
     qualify row_number() over (partition by trim(provider_id) order by green_score desc) = 1
+),
+
+addresses_mapping as (
+    select
+        id,
+        address
+    from {{ source("raw_assets", "raw_id_addresses") }}
+    qualify row_number() over (partition by id order by height desc) = 1
 )
 
 select
@@ -355,7 +363,8 @@ select
     provider_metrics_aggregations.avg_smoothed_raw_power_growth_pibs_9m_12m,
     provider_metrics_aggregations.avg_smoothed_quality_adjusted_power_growth_pibs_9m_12m,
     provider_metrics_aggregations.avg_smoothed_verified_data_power_growth_pibs_9m_12m,
-    provider_metrics_aggregations.started_providing_power_at
+    provider_metrics_aggregations.started_providing_power_at,
+    addresses_mapping.address
 from base_providers as base
 left join stats on base.provider_id = stats.provider_id
 left join storage_provider_location on base.provider_id = storage_provider_location.provider_id
@@ -364,3 +373,4 @@ left join latest_sp_data on base.provider_id = latest_sp_data.provider_id
 left join retrieval_data on base.provider_id = retrieval_data.provider_id
 left join energy_name_mapping on base.provider_id = energy_name_mapping.provider_id
 left join provider_metrics_aggregations on base.provider_id = provider_metrics_aggregations.provider_id
+left join addresses_mapping on base.provider_id = addresses_mapping.id
