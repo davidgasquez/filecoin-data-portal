@@ -18,6 +18,8 @@ website:
         href: /data
       - text: "Docs"
         href: docs/data-sources.html
+      - text: "Using Datasets"
+        href: docs/using-datasets.html
       - text: "Request Dataset"
         href: https://github.com/davidgasquez/filecoin-data-portal/issues/new
     tools:
