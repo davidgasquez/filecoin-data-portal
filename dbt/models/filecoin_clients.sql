@@ -41,6 +41,10 @@ state_market_deals_metrics as (
         sum(unpadded_piece_size_tibs) filter(where sector_start_at > current_date() - interval '30 days') as data_uploaded_tibs_30d,
         sum(unpadded_piece_size_tibs) filter(where sector_start_at > current_date() - interval '6 months') as data_uploaded_tibs_6m,
         sum(unpadded_piece_size_tibs) filter(where sector_start_at > current_date() - interval '1 year') as data_uploaded_tibs_1y,
+
+        sum(unpadded_piece_size_tibs) filter(where end_at between current_date() - interval '30 days' and current_date()) as data_expired_tibs_30d,
+        sum(unpadded_piece_size_tibs) filter(where end_at between current_date() - interval '6 months' and current_date()) as data_expired_tibs_6m,
+        sum(unpadded_piece_size_tibs) filter(where end_at between current_date() - interval '1 year' and current_date()) as data_expired_tibs_1y,
     from {{ ref("filecoin_state_market_deals") }}
     where sector_start_epoch is not null
     group by 1
@@ -101,6 +105,9 @@ select
     m.data_uploaded_tibs_30d,
     m.data_uploaded_tibs_6m,
     m.data_uploaded_tibs_1y,
+    m.data_expired_tibs_30d,
+    m.data_expired_tibs_6m,
+    m.data_expired_tibs_1y,
     c.client_address,
     coalesce(c.client_name, g.client_name) as client_name,
     c.organization_name,
