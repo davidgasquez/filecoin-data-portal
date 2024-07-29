@@ -4,40 +4,40 @@ models:
   - name: filecoin_state_market_deals
     columns:
       - name: deal_id
-        tests:
+        data_tests:
           - unique
           - not_null
 
   - name: filecoin_storage_providers
     columns:
       - name: provider_id
-        tests:
+        data_tests:
           - unique
           - not_null
 
   - name: filecoin_clients
     columns:
       - name: client_id
-        tests:
+        data_tests:
           - unique
           - not_null
 
   - name: filecoin_allocators
     columns:
       - name: allocator_id
-        tests:
+        data_tests:
           - unique
           - not_null
 
   - name: filecoin_daily_storage_providers_metrics
     columns:
       - name: date
-        tests:
+        data_tests:
           - not_null
 
   - name: filecoin_daily_metrics
     columns:
       - name: date
-        tests:
+        data_tests:
           - unique
           - not_null
