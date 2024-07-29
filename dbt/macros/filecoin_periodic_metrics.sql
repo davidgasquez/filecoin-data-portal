@@ -84,7 +84,9 @@ provider_metrics as (
         sum(daily_sector_onboarding_raw_power_tibs) / 1024 as sector_onboarding_raw_power_pibs,
         sum(daily_sector_onboarding_quality_adjusted_power_tibs) / 1024 as sector_onboarding_quality_adjusted_power_pibs,
         sum(daily_new_terminated_raw_power_tibs) / 1024 as sector_terminated_raw_power_pibs,
-        sum(daily_new_terminated_quality_adjusted_power_tibs) / 1024 as sector_terminated_quality_adjusted_power_pibs
+        sum(daily_new_terminated_quality_adjusted_power_tibs) / 1024 as sector_terminated_quality_adjusted_power_pibs,
+        sum(daily_new_extend_raw_power_tibs) / 1024 as sector_extended_raw_power_pibs,
+        sum(daily_new_extend_quality_adjusted_power_tibs) / 1024 as sector_extended_quality_adjusted_power_pibs
     from {{ ref('filecoin_daily_storage_providers_metrics') }}
     where 1 = 1
     group by 1
@@ -201,6 +203,8 @@ select
     sector_onboarding_quality_adjusted_power_pibs,
     sector_terminated_raw_power_pibs,
     sector_terminated_quality_adjusted_power_pibs,
+    sector_extended_raw_power_pibs,
+    sector_extended_quality_adjusted_power_pibs,
     new_client_ids,
     new_provider_ids,
     active_address_count_daily,
