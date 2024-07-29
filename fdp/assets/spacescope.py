@@ -37,7 +37,8 @@ def fetch_and_persist_data(
             ).fetchone()[0]  # type: ignore
 
             if from_day:
-                from_day = pd.to_datetime(from_day).date() + datetime.timedelta(days=1)
+                from_day = pd.to_datetime(
+                    from_day).date() + datetime.timedelta(days=1)
         except CatalogException:
             from_day = FILECOIN_FIRST_DAY
             conn.execute(create_table_query)
@@ -46,7 +47,8 @@ def fetch_and_persist_data(
         to_day = datetime.date.today() - datetime.timedelta(days=1)
 
         if from_day > to_day:
-            context.log.info(f"Data is up to date. Last update was on {from_day}")
+            context.log.info(
+                f"Data is up to date. Last update was on {from_day}")
             return MaterializeResult()
 
         context.log.info(f"Fetching data from {from_day} to {to_day}")
@@ -55,7 +57,8 @@ def fetch_and_persist_data(
 
         for day in pd.date_range(from_day, to_day, freq="d"):
             context.log.info(f"Fetching data for {day}")
-            day_df = api_call(date=day.strftime("%Y-%m-%d"), storage_provider=None)
+            day_df = api_call(date=day.strftime(
+                "%Y-%m-%d"), storage_provider=None)
             df = pd.concat([df, pd.DataFrame(day_df)], ignore_index=True)
             context.log.info(f"Fetched {len(day_df)} rows for {day}")
 
@@ -73,7 +76,8 @@ def fetch_and_persist_data(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_storage_providers_daily_power(
     context: AssetExecutionContext,
@@ -106,7 +110,8 @@ def raw_storage_providers_daily_power(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_storage_providers_token_balances(
     context: AssetExecutionContext,
@@ -169,7 +174,8 @@ def raw_storage_providers_token_balances(
         df_token_balance_data = pd.DataFrame()
 
         for day in pd.date_range(from_day, to_day, freq="d"):
-            context.log.info(f"Fetching storage provider token balance data for {day}")
+            context.log.info(
+                f"Fetching storage provider token balance data for {day}")
             token_balance_data = spacescope_api.get_storage_provider_token_balance(
                 date=day.strftime("%Y-%m-%d"), storage_provider=None
             )
@@ -202,7 +208,8 @@ def raw_storage_providers_token_balances(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_storage_providers_rewards(
     context: AssetExecutionContext,
@@ -268,7 +275,8 @@ def raw_storage_providers_rewards(
         df_rewards_data = pd.DataFrame()
 
         for day in pd.date_range(from_day, to_day, freq="d"):
-            context.log.info(f"Fetching storage provider rewards data for {day}")
+            context.log.info(
+                f"Fetching storage provider rewards data for {day}")
             rewards_data = spacescope_api.get_storage_provider_rewards(
                 date=day.strftime("%Y-%m-%d"), storage_provider=None
             )
@@ -301,7 +309,8 @@ def raw_storage_providers_rewards(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_storage_providers_sector_totals(
     context: AssetExecutionContext,
@@ -321,7 +330,8 @@ def raw_storage_providers_sector_totals(
             ).fetchone()[0]  # type: ignore
 
             if from_day:
-                from_day = pd.to_datetime(from_day).date() + datetime.timedelta(days=1)
+                from_day = pd.to_datetime(
+                    from_day).date() + datetime.timedelta(days=1)
         except CatalogException:
             from_day = FILECOIN_FIRST_DAY
             conn.execute(
@@ -344,7 +354,8 @@ def raw_storage_providers_sector_totals(
         to_day = datetime.date.today() - datetime.timedelta(days=1)
 
         if from_day > to_day:
-            context.log.info(f"Data is up to date. Last update was on {from_day}")
+            context.log.info(
+                f"Data is up to date. Last update was on {from_day}")
             return MaterializeResult()
 
         context.log.info(f"Fetching data from {from_day} to {to_day}")
@@ -373,7 +384,8 @@ def raw_storage_providers_sector_totals(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_storage_providers_sector_terminations(
     context: AssetExecutionContext,
@@ -393,7 +405,8 @@ def raw_storage_providers_sector_terminations(
             ).fetchone()[0]  # type: ignore
 
             if from_day:
-                from_day = pd.to_datetime(from_day).date() + datetime.timedelta(days=1)
+                from_day = pd.to_datetime(
+                    from_day).date() + datetime.timedelta(days=1)
         except CatalogException:
             from_day = FILECOIN_FIRST_DAY
             conn.execute(
@@ -422,7 +435,8 @@ def raw_storage_providers_sector_terminations(
         to_day = datetime.date.today() - datetime.timedelta(days=1)
 
         if from_day > to_day:
-            context.log.info(f"Data is up to date. Last update was on {from_day}")
+            context.log.info(
+                f"Data is up to date. Last update was on {from_day}")
             return MaterializeResult()
 
         context.log.info(f"Fetching data from {from_day} to {to_day}")
@@ -451,7 +465,8 @@ def raw_storage_providers_sector_terminations(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_storage_providers_sector_faults(
     context: AssetExecutionContext,
@@ -486,7 +501,8 @@ def raw_storage_providers_sector_faults(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_storage_providers_sector_recoveries(
     context: AssetExecutionContext,
@@ -519,7 +535,8 @@ def raw_storage_providers_sector_recoveries(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_storage_providers_sector_expirations(
     context: AssetExecutionContext,
@@ -554,7 +571,8 @@ def raw_storage_providers_sector_expirations(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_storage_providers_sector_extensions(
     context: AssetExecutionContext,
@@ -587,7 +605,8 @@ def raw_storage_providers_sector_extensions(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_storage_providers_sector_snaps(
     context: AssetExecutionContext,
@@ -622,7 +641,8 @@ def raw_storage_providers_sector_snaps(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_storage_providers_sector_durations(
     context: AssetExecutionContext,
@@ -655,7 +675,8 @@ def raw_storage_providers_sector_durations(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_storage_providers_sector_commits_count(
     context: AssetExecutionContext,
@@ -693,7 +714,8 @@ def raw_storage_providers_sector_commits_count(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_storage_providers_sector_commits_size(
     context: AssetExecutionContext,
@@ -731,7 +753,8 @@ def raw_storage_providers_sector_commits_size(
 
 @asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
 )
 def raw_network_user_address_count(
     context: AssetExecutionContext,
@@ -753,12 +776,69 @@ def raw_network_user_address_count(
 
     current_start_day = from_day
     while current_start_day <= to_day:
-        current_end_day = min(current_start_day + datetime.timedelta(days=89), to_day)
-        context.log.info(f"Fetching data from {current_start_day} to {current_end_day}")
+        current_end_day = min(current_start_day +
+                              datetime.timedelta(days=89), to_day)
+        context.log.info(
+            f"Fetching data from {current_start_day} to {current_end_day}")
 
         batch_df = spacescope_api.get_network_user_address_count(
             start_date=current_start_day.strftime("%Y-%m-%d"),
             end_date=current_end_day.strftime("%Y-%m-%d"),
+        )
+        df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
+        context.log.info(
+            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"
+        )
+
+        current_start_day = current_end_day + datetime.timedelta(days=1)
+
+    with duckdb.get_connection() as conn:
+        conn.execute(
+            f"""
+            create or replace table raw.{table_name} as (
+                select * from df
+            )
+            """
+        )
+
+    context.log.info(f"Persisted {df.shape[0]} rows")
+
+    return MaterializeResult()
+
+
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20,
+                             backoff=Backoff.EXPONENTIAL),
+)
+def raw_network_base_fee(
+    context: AssetExecutionContext,
+    spacescope_api: SpacescopeResource,
+    duckdb: DuckDBResource,
+) -> MaterializeResult:
+    """
+    The base fee required to send a message to the Filecoin Network.
+    """
+
+    table_name = context.asset_key.to_user_string()
+
+    from_day = FILECOIN_FIRST_DAY
+    to_day = datetime.date.today() - datetime.timedelta(days=1)
+
+    context.log.info(f"Fetching data from {from_day} to {to_day}")
+
+    df = pd.DataFrame()
+
+    current_start_day = from_day
+    while current_start_day <= to_day:
+        current_end_day = min(current_start_day +
+                              datetime.timedelta(days=30), to_day)
+        context.log.info(
+            f"Fetching data from {current_start_day} to {current_end_day}")
+
+        batch_df = spacescope_api.get_network_base_fee(
+            start_hour=current_start_day.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            end_hour=current_end_day.strftime("%Y-%m-%dT%H:%M:%SZ"),
         )
         df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
         context.log.info(

@@ -124,6 +124,12 @@ class SpacescopeResource(ConfigurableResource):
         r = r.json()
         return r["data"]
 
+    def get_network_base_fee(self, start_hour=None, end_hour=None):
+        params = {"start_hour": start_hour, "end_hour": end_hour}
+        r = self.request(method="gas/network_base_fee", params=params)
+        r = r.json()
+        return r["data"]
+
 
 class DuneResource(ConfigurableResource):
     """
