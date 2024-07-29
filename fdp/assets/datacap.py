@@ -2,7 +2,7 @@ import os
 
 import httpx
 import pandas as pd
-from dagster import AssetExecutionContext, Output, MetadataValue, asset
+from dagster import Output, MetadataValue, AssetExecutionContext, asset
 
 
 @asset(compute_kind="python")
@@ -33,7 +33,9 @@ def raw_datacapstats_verifiers() -> Output[pd.DataFrame]:
 
 
 @asset(compute_kind="python")
-def raw_datacap_allocators_registry() -> Output[pd.DataFrame]:
+def raw_datacap_allocators_registry(
+    context: AssetExecutionContext,
+) -> Output[pd.DataFrame]:
     """
     Allocators information from Datacap Registry API.
     """
@@ -51,7 +53,11 @@ def raw_datacap_allocators_registry() -> Output[pd.DataFrame]:
             if file["name"].endswith(".json"):
                 file_response = client.get(file["download_url"])
                 if file_response.status_code == 200:
-                    files_data.append(file_response.json())
+                    try:
+                        files_data.append(file_response.json())
+                    except Exception as e:
+                        context.log.error(f"Failed to parse JSON: {e}")
+                        context.log.error(f"Response: {file_response.text}")
 
     df = pd.DataFrame(files_data[:-1])
 
@@ -106,7 +112,9 @@ def raw_datacap_github_applications(
                         a["github_repository"] = n.split("/")[1]
                         applications.append(a)
                     else:
-                        context.log.error(f"Failed to fetch file: {file['download_url']}.")
+                        context.log.error(
+                            f"Failed to fetch file: {file['download_url']}."
+                        )
                         context.log.error(f"Status code: {file_response.status_code}")
                         context.log.error(f"Response: {file_response.json()}")
         else:
