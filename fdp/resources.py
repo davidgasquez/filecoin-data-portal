@@ -172,7 +172,11 @@ class DuneResource(ConfigurableResource):
         file_buffer.seek(0)
         df_csv = file_buffer.getvalue()
 
-        headers = {"X-Dune-Api-Key": self.DUNE_API_KEY}
+        headers = {
+            "X-Dune-Api-Key": self.DUNE_API_KEY,
+            "Content-Type": "application/json",
+        }
+
         payload = {
             "table_name": name,
             "is_private": False,
