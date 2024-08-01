@@ -34,15 +34,25 @@ class SpacescopeResource(ConfigurableResource):
 
         return r
 
+    def _extract_data(self, r: Response):
+        r_json = r.json()
+
+        if r_json["code"] == 30004:
+            return None
+
+        return r_json["data"]
+
     def get_storage_provider_power(self, storage_provider=None, date=None):
         params = {"state_date": date, "miner_id": storage_provider}
-        r = self.request(method="storage_provider/power", params=params).json()
-        return r["data"]
+        r = self.request(method="storage_provider/power", params=params)
+
+        return self._extract_data(r)
 
     def get_storage_provider_sector_total(self, storage_provider=None, date=None):
         params = {"state_date": date, "miner_id": storage_provider}
-        r = self.request(method="storage_provider/sector/total", params=params).json()
-        return r["data"]
+        r = self.request(method="storage_provider/sector/total", params=params)
+
+        return self._extract_data(r)
 
     def get_storage_provider_sector_commits_count(
         self, storage_provider=None, date=None
@@ -50,8 +60,9 @@ class SpacescopeResource(ConfigurableResource):
         params = {"state_date": date, "miner_id": storage_provider}
         r = self.request(
             method="storage_provider/sector/commit_sector_count", params=params
-        ).json()
-        return r["data"]
+        )
+
+        return self._extract_data(r)
 
     def get_storage_provider_sector_commits_size(
         self, storage_provider=None, date=None
@@ -59,76 +70,83 @@ class SpacescopeResource(ConfigurableResource):
         params = {"state_date": date, "miner_id": storage_provider}
         r = self.request(
             method="storage_provider/sector/commit_sector_size", params=params
-        ).json()
-        return r["data"]
+        )
+
+        return self._extract_data(r)
 
     def get_storage_provider_sector_terminations(
         self, storage_provider=None, date=None
     ):
         params = {"state_date": date, "miner_id": storage_provider}
         r = self.request(method="storage_provider/sector/terminate", params=params)
-        r = r.json()
-        return r["data"]
+
+        return self._extract_data(r)
 
     def get_storage_provider_sector_faults(self, storage_provider=None, date=None):
         params = {"state_date": date, "miner_id": storage_provider}
         r = self.request(method="storage_provider/sector/fault", params=params)
-        r = r.json()
-        return r["data"]
+
+        return self._extract_data(r)
 
     def get_storage_provider_sector_recoveries(self, storage_provider=None, date=None):
         params = {"state_date": date, "miner_id": storage_provider}
         r = self.request(method="storage_provider/sector/recover", params=params)
-        r = r.json()
-        return r["data"]
+
+        return self._extract_data(r)
 
     def get_storage_provider_sector_expirations(self, storage_provider=None, date=None):
         params = {"state_date": date, "miner_id": storage_provider}
         r = self.request(method="storage_provider/sector/expire", params=params)
-        r = r.json()
-        return r["data"]
+
+        return self._extract_data(r)
 
     def get_storage_provider_sector_extensions(self, storage_provider=None, date=None):
         params = {"state_date": date, "miner_id": storage_provider}
         r = self.request(method="storage_provider/sector/extend", params=params)
-        r = r.json()
-        return r["data"]
+
+        return self._extract_data(r)
 
     def get_storage_provider_sector_snaps(self, storage_provider=None, date=None):
         params = {"state_date": date, "miner_id": storage_provider}
         r = self.request(method="storage_provider/sector/snap", params=params)
-        r = r.json()
-        return r["data"]
+        return self._extract_data(r)
 
     def get_storage_provider_sector_durations(self, storage_provider=None, date=None):
         params = {"state_date": date, "miner_id": storage_provider}
         r = self.request(
             method="storage_provider/sector/sector_duration", params=params
         )
-        r = r.json()
-        return r["data"]
+        return self._extract_data(r)
 
     def get_storage_provider_token_balance(self, storage_provider=None, date=None):
         params = {"state_date": date, "miner_id": storage_provider}
-        r = self.request(method="storage_provider/token_balance", params=params).json()
-        return r["data"]
+        r = self.request(method="storage_provider/token_balance", params=params)
+
+        return self._extract_data(r)
 
     def get_storage_provider_rewards(self, storage_provider=None, date=None):
         params = {"state_date": date, "miner_id": storage_provider}
-        r = self.request(method="storage_provider/rewards", params=params).json()
-        return r["data"]
+        r = self.request(method="storage_provider/rewards", params=params)
+
+        return self._extract_data(r)
 
     def get_network_user_address_count(self, start_date=None, end_date=None):
         params = {"start_date": start_date, "end_date": end_date}
         r = self.request(method="network_user/address_count", params=params)
-        r = r.json()
-        return r["data"]
+
+        return self._extract_data(r)
 
     def get_network_base_fee(self, start_hour=None, end_hour=None):
         params = {"start_hour": start_hour, "end_hour": end_hour}
         r = self.request(method="gas/network_base_fee", params=params)
-        r = r.json()
-        return r["data"]
+
+        return self._extract_data(r)
+
+    def get_circulating_supply(self, start_date=None, end_date=None):
+        params = {"start_date": start_date, "end_date": end_date}
+        r = self.request(method="circulating_supply/circulating_supply", params=params)
+
+        return self._extract_data(r)
 
 
 class DuneResource(ConfigurableResource):

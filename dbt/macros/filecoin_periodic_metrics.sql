@@ -162,6 +162,19 @@ providers_adding_capacity as (
         count(distinct provider_id) as new_providers_providing_capacity
     from pwp
     group by 1
+),
+
+circulating_supply as (
+    select
+        cast(stat_date as date) as date,
+        circulating_fil,
+        mined_fil,
+        vested_fil,
+        reserve_disbursed_fil,
+        locked_fil,
+        burnt_fil
+    from {{ source("raw_assets", "raw_circulating_supply") }}
+    order by date desc
 )
 
 select
@@ -220,7 +233,13 @@ select
     mean_spark_retrieval_success_rate,
     providers_with_successful_retrieval,
     providers_with_retrieval_attempts,
-    new_providers_providing_capacity
+    new_providers_providing_capacity,
+    circulating_fil,
+    mined_fil,
+    vested_fil,
+    reserve_disbursed_fil,
+    locked_fil,
+    burnt_fil
 from date_calendar
 left join deal_metrics on date_calendar.date = deal_metrics.date
 left join users_with_active_deals on date_calendar.date = users_with_active_deals.date
@@ -233,6 +252,7 @@ left join network_user_address_count on date_calendar.date = network_user_addres
 left join new_pieces on date_calendar.date = new_pieces.date
 left join retrieval_metrics on date_calendar.date = retrieval_metrics.date
 left join providers_adding_capacity on date_calendar.date = providers_adding_capacity.date
+left join circulating_supply on date_calendar.date = circulating_supply.date
 order by date_calendar.date desc
 
 {% endmacro %}

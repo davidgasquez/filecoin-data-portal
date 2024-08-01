@@ -104,3 +104,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_id_addresses"]
+      - name: raw_circulating_supply
+        meta:
+          dagster:
+            asset_key: ["raw_circulating_supply"]
