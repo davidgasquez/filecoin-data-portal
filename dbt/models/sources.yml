@@ -108,3 +108,11 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_circulating_supply"]
+      - name: raw_block_rewards
+        meta:
+          dagster:
+            asset_key: ["raw_block_rewards"]
+      - name: raw_network_base_fee
+        meta:
+          dagster:
+            asset_key: ["raw_network_base_fee"]

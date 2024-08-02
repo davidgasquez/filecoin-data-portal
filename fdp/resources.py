@@ -34,11 +34,11 @@ class SpacescopeResource(ConfigurableResource):
 
         return r
 
-    def _extract_data(self, r: Response):
+    def _extract_data(self, r: Response) -> dict:
         r_json = r.json()
 
         if r_json["code"] == 30004:
-            return None
+            return {}
 
         return r_json["data"]
 
@@ -145,6 +145,12 @@ class SpacescopeResource(ConfigurableResource):
     def get_circulating_supply(self, start_date=None, end_date=None):
         params = {"start_date": start_date, "end_date": end_date}
         r = self.request(method="circulating_supply/circulating_supply", params=params)
+
+        return self._extract_data(r)
+
+    def get_block_rewards(self, start_date=None, end_date=None):
+        params = {"start_date": start_date, "end_date": end_date}
+        r = self.request(method="/economics/block_reward", params=params)
 
         return self._extract_data(r)
 

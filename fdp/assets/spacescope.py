@@ -922,3 +922,55 @@ def raw_network_base_fee(
     context.log.info(f"Persisted {df.shape[0]} rows")
 
     return MaterializeResult()
+
+
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
+def raw_block_rewards(
+    context: AssetExecutionContext,
+    spacescope_api: SpacescopeResource,
+    duckdb: DuckDBResource,
+) -> MaterializeResult:
+    """
+    The base fee required to send a message to the Filecoin Network.
+    """
+
+    table_name = context.asset_key.to_user_string()
+
+    from_day = FILECOIN_FIRST_DAY
+    to_day = datetime.date.today() - datetime.timedelta(days=1)
+
+    context.log.info(f"Fetching data from {from_day} to {to_day}")
+
+    df = pd.DataFrame()
+
+    current_start_day = from_day
+    while current_start_day <= to_day:
+        current_end_day = min(current_start_day + datetime.timedelta(days=89), to_day)
+        context.log.info(f"Fetching data from {current_start_day} to {current_end_day}")
+
+        batch_df = spacescope_api.get_block_rewards(
+            start_date=current_start_day.strftime("%Y-%m-%d"),
+            end_date=current_end_day.strftime("%Y-%m-%d"),
+        )
+        df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
+        context.log.info(
+            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"
+        )
+
+        current_start_day = current_end_day + datetime.timedelta(days=1)
+
+    with duckdb.get_connection() as conn:
+        conn.execute(
+            f"""
+            create or replace table raw.{table_name} as (
+                select * from df
+            )
+            """
+        )
+
+    context.log.info(f"Persisted {df.shape[0]} rows")
+
+    return MaterializeResult()

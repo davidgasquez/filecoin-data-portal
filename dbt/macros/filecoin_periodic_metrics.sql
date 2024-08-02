@@ -175,6 +175,24 @@ circulating_supply as (
         burnt_fil
     from {{ source("raw_assets", "raw_circulating_supply") }}
     order by date desc
+),
+
+block_rewards as (
+    select
+        time_bucket(interval '1 {{ period }}', cast(stat_date as date), date '2020-10-01') as date,
+        avg(reward_per_wincount) as reward_per_wincount
+    from {{ source("raw_assets", "raw_block_rewards") }}
+    group by 1
+    order by date desc
+),
+
+network_base_fee as (
+    select
+        time_bucket(interval '1 {{ period }}', cast(hour_date as timestamp), date '2020-10-01') as date,
+        avg(unit_base_fee) as unit_base_fee
+    from {{ source("raw_assets", "raw_network_base_fee") }}
+    group by 1
+    order by date desc
 )
 
 select
@@ -239,7 +257,9 @@ select
     vested_fil,
     reserve_disbursed_fil,
     locked_fil,
-    burnt_fil
+    burnt_fil,
+    reward_per_wincount,
+    unit_base_fee
 from date_calendar
 left join deal_metrics on date_calendar.date = deal_metrics.date
 left join users_with_active_deals on date_calendar.date = users_with_active_deals.date
@@ -253,6 +273,8 @@ left join new_pieces on date_calendar.date = new_pieces.date
 left join retrieval_metrics on date_calendar.date = retrieval_metrics.date
 left join providers_adding_capacity on date_calendar.date = providers_adding_capacity.date
 left join circulating_supply on date_calendar.date = circulating_supply.date
+left join block_rewards on date_calendar.date = block_rewards.date
+left join network_base_fee on date_calendar.date = network_base_fee.date
 order by date_calendar.date desc
 
 {% endmacro %}
