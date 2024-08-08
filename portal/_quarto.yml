@@ -6,20 +6,23 @@ project:
 
 website:
   title: "Filecoin Data Portal"
-  favicon: "favicon.ico"
+  favicon: "logo.svg"
   repo-url: https://github.com/davidgasquez/filecoin-data-portal
   repo-actions: [edit, issue]
   search: false
   navbar:
-    logo: favicon.ico
+    logo: logo.svg
     pinned: false
     left:
       - text: "Data"
-        href: /data
-      - text: "Docs"
+        href: data.html
+      - text: "Sources"
         href: docs/data-sources.html
-      - text: "Using Datasets"
+      - text: "Quickstart"
         href: docs/using-datasets.html
+    right:
+      - text: "About"
+        href: about.html
       - text: "Request Dataset"
         href: https://github.com/davidgasquez/filecoin-data-portal/issues/new
     tools:
