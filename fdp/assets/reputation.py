@@ -1,3 +1,4 @@
+import os
 import datetime
 
 import pandas as pd
@@ -71,6 +72,10 @@ def raw_spark_retrieval_success_rate(
     """
     Spark retrieval success rate.
     """
+    BEARER_TOKEN = os.environ.get("BEARER_TOKEN")
+
+    headers = {"Authorization": f"Bearer {BEARER_TOKEN}"}
+
     first_day = datetime.date(2024, 4, 1)
     today = datetime.date.today()
 
@@ -82,7 +87,7 @@ def raw_spark_retrieval_success_rate(
         url = "https://stats.filspark.com/miners/retrieval-success-rate/summary"
         url = f"{url}?from={date}&to={date}"
 
-        date_df = pd.DataFrame(requests.get(url).json())
+        date_df = pd.DataFrame(requests.get(url, headers=headers).json())
         date_df["date"] = day
         df = pd.concat([df, date_df], ignore_index=True)
 
