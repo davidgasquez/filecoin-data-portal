@@ -1,8 +1,8 @@
 .DEFAULT_GOAL := run
 
 run:
-	# @dagster-dbt project prepare-and-package --file fdp/resources.py
-	@dagster asset materialize --select \* -m fdp
+	@dagster-dbt project prepare-and-package --file fdp/resources.py
+	# @dagster asset materialize --select \* -m fdp
 
 dev:
 	@dagster dev
