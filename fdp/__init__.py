@@ -1,12 +1,12 @@
 import os
 
 from dagster import EnvVar, Definitions, load_assets_from_modules
-from dagster_dbt import dbt_cli_resource, load_assets_from_dbt_project
+from dagster_dbt import DbtProject, DbtCliResource
 from dagster_duckdb import DuckDBResource
 from dagster_duckdb_pandas import DuckDBPandasIOManager
 
 from . import resources
-from .assets import lily, other, datacap, reputation, spacescope
+from .assets import dbt, lily, other, datacap, reputation, spacescope
 
 DBT_PROJECT_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../dbt/"
 DATABASE_PATH = os.getenv(
@@ -14,12 +14,13 @@ DATABASE_PATH = os.getenv(
     os.path.dirname(os.path.abspath(__file__)) + "/../data/database.duckdb",
 )
 
-dbt_resource = dbt_cli_resource.configured(
-    {"project_dir": DBT_PROJECT_DIR, "profiles_dir": DBT_PROJECT_DIR}
-)
+dbt_project = DbtProject(project_dir=DBT_PROJECT_DIR)
+dbt_project.prepare_if_dev()
+dbt_resource = DbtCliResource(project_dir=dbt_project, profiles_dir=DBT_PROJECT_DIR)
 
-dbt_assets = load_assets_from_dbt_project(DBT_PROJECT_DIR, DBT_PROJECT_DIR)
-all_assets = load_assets_from_modules([other, datacap, lily, spacescope, reputation])
+all_assets = load_assets_from_modules(
+    [other, datacap, lily, spacescope, reputation, dbt]
+)
 
 resources = {
     "dbt": dbt_resource,
@@ -36,4 +37,4 @@ resources = {
     "dune": resources.DuneResource(DUNE_API_KEY=EnvVar("DUNE_API_KEY")),
 }
 
-defs = Definitions(assets=[*dbt_assets, *all_assets], resources=resources)
+defs = Definitions(assets=[*all_assets], resources=resources)

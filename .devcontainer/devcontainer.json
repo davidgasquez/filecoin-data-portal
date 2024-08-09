@@ -34,8 +34,7 @@
 				"ms-toolsai.jupyter",
 				"quarto.quarto",
 				"redhat.vscode-yaml",
-				"tamasfe.even-better-toml",
-				"VisualStudioExptTeam.vscodeintellicode"
+				"tamasfe.even-better-toml"
 			]
 		}
 	},
