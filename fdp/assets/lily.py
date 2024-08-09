@@ -1,4 +1,5 @@
 from dagster import AssetExecutionContext, asset
+from dagster_gcp import BigQueryResource
 from dagster_duckdb import DuckDBResource
 
 from ..resources import StarboardDatabricksResource
@@ -106,74 +107,60 @@ def raw_filecoin_state_market_deals(
 
 
 @asset(compute_kind="python")
-def raw_verified_registry_verifiers(
-    context: AssetExecutionContext,
-    starboard_databricks: StarboardDatabricksResource,
-    duckdb: DuckDBResource,
-) -> None:
-    """
-    Allocators (verifiers) on-chain DataCap changes from lily.verified_registry_verifiers
-    """
-    databricks_con = starboard_databricks.get_connection()
-    duckdb.get_connection()
-
-    cursor = databricks_con.cursor()
-
-    r = cursor.execute(
-        """
-        select
-            *
-        from lily.verified_registry_verifiers
-        """
-    )
-
-    context.log.info("Fetched verified registry verifiers")
-
-    with duckdb.get_connection() as duckdb_con:
-        data = r.fetchall_arrow()
-        duckdb_con.execute(
-            """
-            create or replace table raw.raw_verified_registry_verifiers as (
-                select * from data
-            )
-            """
-        )
-
-        context.log.info(f"Persisted {data.num_rows} rows")
-
-
-@asset(compute_kind="python")
 def raw_id_addresses(
     context: AssetExecutionContext,
-    starboard_databricks: StarboardDatabricksResource,
+    lily_bigquery: BigQueryResource,
     duckdb: DuckDBResource,
 ) -> None:
-    """
-    Allocators (verifiers) on-chain DataCap changes from lily.id_addresses
-    """
-    databricks_con = starboard_databricks.get_connection()
-    duckdb.get_connection()
-
-    cursor = databricks_con.cursor()
-
-    r = cursor.execute(
-        """
+    query = """
         select
             *
-        from lily.id_addresses
-        """
-    )
+        from `lily-data.lily.id_addresses`
+    """
 
-    context.log.info("Fetching id_addresses table records")
+    with lily_bigquery.get_client() as client:
+        job = client.query(query)
+        arrow_result = job.to_arrow(create_bqstorage_client=True)
+
+    context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
 
     with duckdb.get_connection() as duckdb_con:
-        data = r.fetchall_arrow()
         duckdb_con.execute(
             """
             create or replace table raw.raw_id_addresses as (
-                select * from data
+                select * from arrow_result
             )
             """
         )
 
-        context.log.info(f"Persisted {data.num_rows} rows")
+        context.log.info(f"Persisted {arrow_result.num_rows} rows")
+
+
+@asset(compute_kind="python")
+def raw_verified_registry_verifiers(
+    context: AssetExecutionContext,
+    lily_bigquery: BigQueryResource,
+    duckdb: DuckDBResource,
+) -> None:
+    query = """
+        select
+            *
+        from `lily-data.lily.verified_registry_verifiers`
+    """
+
+    with lily_bigquery.get_client() as client:
+        job = client.query(query)
+        arrow_result = job.to_arrow(create_bqstorage_client=True)
+
+    context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
+
+    with duckdb.get_connection() as duckdb_con:
+        duckdb_con.execute(
+            """
+            create or replace table raw.raw_verified_registry_verifiers as (
+                select * from arrow_result
+            )
+            """
+        )
+
+        context.log.info(f"Persisted {arrow_result.num_rows} rows")

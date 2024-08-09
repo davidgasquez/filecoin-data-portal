@@ -26,6 +26,11 @@ jobs:
       DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
       REPUTATION_MONGODB_URI: ${{ secrets.REPUTATION_MONGODB_URI }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ENCODED_GOOGLE_APPLICATION_CREDENTIALS:  ${{ secrets.ENCODED_GOOGLE_APPLICATION_CREDENTIALS }}
+      R2_ACCESS_KEY_ID : ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY : ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_ACCOUNT_ID : ${{ secrets.R2_ACCOUNT_ID }}
+      R2_BUCKET : ${{ secrets.R2_BUCKET }}
 
     steps:
         - name: Free Disk Space
@@ -45,7 +50,7 @@ jobs:
         - name: Set up Python
           uses: actions/setup-python@v5
           with:
-            python-version: 3.11
+            python-version: 3.12
             cache: pip
 
         - name: Install dependencies
@@ -96,3 +101,13 @@ jobs:
               git commit -m "chore: :id: Update CID"
               git push
             fi
+
+        - name: Upload to R2
+          uses: ryand56/r2-upload-action@latest
+          with:
+            r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+            r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+            r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+            r2-bucket: ${{ secrets.R2_BUCKET }}
+            source-dir: data/tables/
+            destination-dir: ./

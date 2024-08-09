@@ -1,4 +1,5 @@
 import io
+import os
 import json
 
 import pandas as pd
@@ -6,6 +7,7 @@ import requests
 from dagster import ConfigurableResource
 from requests import Response
 from databricks import sql
+from dagster_dbt import DbtProject, DbtCliResource
 from databricks.sql.client import Connection
 
 
@@ -208,3 +210,14 @@ class StarboardDatabricksResource(ConfigurableResource):
         )
 
         return conn
+
+
+DBT_PROJECT_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../dbt/"
+DATABASE_PATH = os.getenv(
+    "DATABASE_PATH",
+    os.path.dirname(os.path.abspath(__file__)) + "/../data/database.duckdb",
+)
+
+dbt_project = DbtProject(project_dir=DBT_PROJECT_DIR)
+dbt_project.prepare_if_dev()
+dbt_resource = DbtCliResource(project_dir=dbt_project, profiles_dir=DBT_PROJECT_DIR)
