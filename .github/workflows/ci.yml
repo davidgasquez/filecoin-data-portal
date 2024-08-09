@@ -26,6 +26,7 @@ jobs:
       DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
       REPUTATION_MONGODB_URI: ${{ secrets.REPUTATION_MONGODB_URI }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ENCODED_GOOGLE_APPLICATION_CREDENTIALS:  ${{ secrets.ENCODED_GOOGLE_APPLICATION_CREDENTIALS }}
 
     steps:
         - name: Free Disk Space
