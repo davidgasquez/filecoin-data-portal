@@ -2,24 +2,55 @@
 format:
   html:
     toc: false
+    fontsize: 1.2em
 ---
 
 <center>
-  <h1>Filecoin Data Portal</h1>
+  <h1 class="fs-1">
+    Filecoin Data Portal
+  </h1>
 </center>
 
 <div class="text-center">
-<img src="logo.svg" class="rounded img-fluid w-50" alt="My Happy SVG"/>
+<img src="logo.svg" width="160" class="rounded" alt="Filecoin Data Portal Logo"/>
 </div>
-
-<br>
 
 Open source, serverless, and local-first Data Platform for the Filecoin ecosystem. Seamlessy access the data you need to conduct research and drive the community forward!
 
 <br>
 
-<center>
-  <a href="/data" role="button" class="btn btn-primary btn-outline-dark btn-lg btn-block mx-4">Get the Data</a>
-  <a href="https://github.com/davidgasquez/filecoin-data-portal" role="button" class="btn btn-primary btn-outline-dark btn-lg btn-block mx-4">Contribute</a>
-  <a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new" role="button" class="btn btn-primary btn-outline-dark btn-lg btn-block mx-4">Request Dataset</a>
-</center>
+::: {.grid}
+
+::: {.g-col-lg-6 .g-col-sm-10}
+<div class="card card-body">
+<h5>Open Data</h5>
+<p> Explore public datasets with key metrics from the Filecoin ecosystem. </p>
+<a href="/data.html" class="btn btn-secondary">Get Datasets</a>
+</div>
+:::
+
+::: {.g-col-lg-6 .g-col-sm-10}
+<div class="card card-body">
+<h5>Contribute</h5>
+<p> Help improve the platform by contributing code or metrics. </p>
+<a href="https://github.com/davidgasquez/filecoin-data-portal" class="btn btn-secondary">Contribute</a>
+</div>
+:::
+
+::: {.g-col-lg-6 .g-col-sm-10}
+<div class="card card-body">
+<h5>Request Dataset</h5>
+<p> Need specific data? Request it to be added. </p>
+<a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new" class="btn btn-secondary">Request Dataset</a>
+</div>
+:::
+
+::: {.g-col-lg-6 .g-col-sm-10}
+<div class="card card-body">
+<h5>Support on Drips</h5>
+<p class="card-text"> Support the data platform development via Drips. </p>
+<a href="https://www.drips.network/app/projects/github/davidgasquez/filecoin-data-portal" class="btn btn-secondary"> Support </a>
+</div>
+:::
+
+:::

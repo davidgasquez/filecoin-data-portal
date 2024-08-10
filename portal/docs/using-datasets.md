@@ -1,6 +1,6 @@
 # Using Portal's Datasets
 
-The Filecoin Data Portal publishes up to date dataset on a daily bases as [static Parquet files at `/data`](https://filecoindataportal.davidgasquez.com/data). You can then use any tool you want to explore and use these datasets! Let's go through some examples.
+The Filecoin Data Portal publishes up to date dataset on a daily bases as [static Parquet files](/data.html). You can then use any tool you want to explore and use these datasets! Let's go through some examples.
 
 ## Python
 
@@ -9,7 +9,7 @@ You can use the `pandas` library to read the Parquet files. Here's an example:
 ```python
 import pandas as pd
 
-url = 'https://filecoindataportal.davidgasquez.com/data/filecoin_daily_metrics.parquet'
+url = 'https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet'
 df = pd.read_parquet(url)
 print(df)
 ```
@@ -28,9 +28,9 @@ You can use the [`duckdb` Obervable client](https://observablehq.com/@cmudig/duc
 db = DuckDBClient.of({})
 
 db.query(`
-    select
+  select
     *
-    from "https://filecoindataportal.davidgasquez.com/data/filecoin_daily_metrics.parquet"
+  from "https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet"
 `)
 ```
 

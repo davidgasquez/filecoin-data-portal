@@ -1,10 +1,13 @@
-# Data Sources
+---
+title: "Data Sources"
+format:
+  html:
+    toc: false
+---
 
 Most of the data used through the portal comes from the Filecoin chain. There is also some off-chain data like [Datacap Applications](https://docs.filecoin.io/basics/how-storage-works/filecoin-plus) or [Storage Provider's Reputation scores](https://filecoin.io/blog/posts/reputation-systems-in-filecoin/) that are collected from other places.
 
-## Entities
-
-### Deals
+## Deals
 
 Deals data is available on chain and can be obtained in different ways:
 
@@ -12,42 +15,44 @@ Deals data is available on chain and can be obtained in different ways:
 - Using an [oracle like `fil-naive-marketwatch`](https://github.com/ribasushi/fil-naive-marketwatch).
 - Reconstructing the deals state [from Lily](https://lilium.sh/) tables.
 
-### Clients
+## Clients
 
 Clients can be derived from the [deals](#deals) dataset and expanded with the following sources:
 
 - Datacap. From [Datacap Stats API](https://datacapstats.io/) calling `https://api.datacapstats.io/api/getVerifiedClients`. You get a JSON of verified clients in the FIL+ program that contains client names, Datacap application data and other self-reported data. Alternatively, this data can be obtained by parsing the relevant GitHub repositories issues and comments.
 
-### Storage Providers
+## Storage Providers
 
 Storage Providers be derived from the [deals](#deals) dataset. More information about proviers can be collected in the following sources:
 
 - Location using the different [provider.quest](https://provider.quest/) endpoints/datasets.
 
-#### Retrieval Data
+### Retrieval Data
 
 Retrieval data is available from the [Spark API](https://spark-api.super.site/).
 
-#### Reputation Data
+### Reputation Data
 
 Reputation is both obtained from [FilRep](https://filrep.io/) ([methodology](https://filrep.io/methodology)) and augmented with custom metrics around deals. For example, what is the average replication of a deal for the SP?
 
-#### Energy Data
+### Energy Data
 
 Energy data is available from [Filecoin Green](https://filecoin.energy/) ([Model API](https://api.filecoin.energy/docs) and [Green Scores API](https://sp-outputs-api.vercel.app/api-docs/))
 
-### FVM
+## FVM
 
 Filecoin Virtual Machine data is trickier to get. Some sources:
 
 - Directly from the [FVM](https://fvm.starboard.ventures/) dashboard.
 - Some metrics are available in the [Spacescope API](https://docs.spacescope.io/version_history#v240-on-march-16-2023)
 
-### Messages
+## Messages
 
 A few teams across the ecosystem are indexing Filecoin Messages. The most comprehensive source are [Beryx](https://beryx.zondax.ch/) and [FilInfo](https://filinfo.io/docs).
 
 ## Data Indexers
+
+Besides the data sources mentioned above, there are a few data indexers that provide data in a more structured way.
 
 - [Starboard](https://dashboard.starboard.ventures/dashboard) - [FVM](https://fvm.starboard.ventures/)
 - [Dev Storage](https://dev.storage/)
