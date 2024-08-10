@@ -31,6 +31,7 @@ jobs:
       R2_SECRET_ACCESS_KEY : ${{ secrets.R2_SECRET_ACCESS_KEY }}
       R2_ACCOUNT_ID : ${{ secrets.R2_ACCOUNT_ID }}
       R2_BUCKET : ${{ secrets.R2_BUCKET }}
+      CLOUDFLARE_API_TOKEN : ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
     steps:
         - name: Free Disk Space
@@ -73,6 +74,16 @@ jobs:
           with:
               node-version: 20
 
+        - name: Publish to Cloudflare Pages
+          uses: cloudflare/pages-action@v1
+          with:
+            apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+            accountId: fbe814d4a37d3d3d7fcfeec0ab929ff6
+            projectName: filecoindataportal
+            directory: portal/.quarto/_site
+            gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+            branch: main
+
         - name: Push to IPFS
           uses: filebase/ipfs-action@master
           id: ipfs
@@ -84,23 +95,6 @@ jobs:
             filebaseKey: ${{ secrets.FILEBASE_KEY }}
             filebaseSecret: ${{ secrets.FILEBASE_SECRET }}
             key: filecoin-data-portal-db
-
-        - name: Create CID file
-          run: echo ${{ steps.ipfs.outputs.cid }} > data/IPFS_CID
-
-        - name: Commit and Push
-          run: |
-            git config --global user.name "GitHub Action"
-            git config --global user.email "actions@users.noreply.github.com"
-            git config --global push.autoSetupRemote true
-            git pull
-            git add data/IPFS_CID
-            if git diff-index --quiet HEAD --; then
-              echo "No changes to commit"
-            else
-              git commit -m "chore: :id: Update CID"
-              git push
-            fi
 
         - name: Upload to R2
           uses: ryand56/r2-upload-action@latest

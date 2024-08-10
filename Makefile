@@ -22,7 +22,6 @@ preview:
 
 render:
 	@quarto render portal
-	@mv data/tables portal/.quarto/_site/data
 
 clean:
 	@rm -rf portal/.quarto data/*.parquet data/*.duckdb
