@@ -1,62 +1,44 @@
-# 🗂️ Filecoin Data Portal
+<p align="center">
+  <div align="center">
+    <img width="80px" src="https://filecoindataportal.xyz/logo.svg">
+  </div>
+  <h1 align="center">Filecoin Data Portal</h1> 
+  <p align="center">Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem.</a> </p>
+</p>
 
-[![CI](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/davidgasquez/filecoin-data-portal/actions/workflows/ci.yml)
-[![IPFS](https://img.shields.io/badge/IPNS-blue?logo=ipfs)](https://filecoindataportal.davidgasquez.com)
+<div align="center">
+  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/davidgasquez/filecoin-data-portal/ci.yml?style=flat-square">
+  <img alt="GitHub Repo stars" src="https://img.shields.io/badge/IPNS-blue?logo=ipfs&style=flat-square">
+  <img alt="GitHub" src="https://img.shields.io/github/license/davidgasquez/filecoin-data-portal?style=flat-square">
+  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/davidgasquez/filecoin-data-portal?style=flat-square">
+</div>
 
-_Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem. Seamlessly access the data you need to drive the community forward!_
-
-![DAG](https://github.com/davidgasquez/filecoin-data-portal/assets/1682202/25d50ad6-859d-4635-880a-b2a704fcf7a0)
-
-## 🚀 Powering
-
-- [Filecoin Pulse Website](https://filecoinpulse.pages.dev/)
-- [Filecoin Metrics Dune Dashboard](https://dune.com/kalen/filecoin-daily-metrics)
-
-## 📂 Data
-
-The data lives at [`https://filecoindataportal.davidgasquez.com/data`](https://filecoindataportal.davidgasquez.com/data), which points to the [IPFS CID](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/main/data/IPFS_CID) available in this repository and also available at the [`ipns://k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k`](https://ipfs.io/ipns/k51qzi5uqu5dh0eqsyw9shepsspstaduq8lgnept49epxvo4t8qfi6ridcmt8k/) IPNS address.
-
-<!-- markdownlint-disable MD033 -->
-<center>
-  <a href="https://filecoindataportal.davidgasquez.com/data" target="_blank">
-      <img src="https://img.shields.io/badge/GET_THE_DATA-0090ff?style=for-the-badge" alt="GET THE DATA">
-  </a>
-</center>
+<br>
 
 ## 📖 Overview
 
-This repository contains code and artifacts to process Filecoin data from [diverse sources](portal/docs/data-sources.md) (on-chain and off-chain). It is an instance of [Datadex](https://github.com/davidgasquez/datadex).
+This repository contains all the code and related artifacts to process Filecoin data from [diverse sources](portal/docs/data-sources.md) (on-chain and off-chain). You can go directly to the processed datasets or explore the different metrics and pipelines.
+
+<div align="center">
+  <a href="https://filecoindataportal.xyz/data" target="_blank">
+      <img src="https://img.shields.io/badge/GET_THE_DATA-0090ff?style=for-the-badge" alt="GET THE DATA">
+  </a>
+</div>
 
 ### 📦 Key Features
 
-- **Open**
-  - All code and data are open source.
-  - Utilizes open standards and formats within the Arrow ecosystem.
-- **Permissionless Collaboration**
-  - Collaborate on data, models, and pipelines like Dune, but with open-source freedom.
-  - No constraints from private APIs or platform lock-ins.
-  - Enjoy full Git features such as branching, merging, and pull requests.
-- **Decentralization Options**
-  - Run the project on a laptop, server, CI runner, or even on decentralized compute networks like Bacalhau.
-  - No local setup required; it even works seamlessly in GitHub Codespaces.
-  - Data is stored in IPFS, where datasets will become more distributed as more users run it.
-  - Multiple data sources and flexible exposure options.
-- **Data as Code**
-  - Each commit generates and pushes all table files to IPFS.
-  - Easily access historical data snapshots.
-  - Declarative and stateless transformations tracked in git.
-  - Static dashboards and reports available at the [Filecoin Data Portal](https://filecoindataportal.davidgasquez.com/).
-- **Modular Flexibility**
-  - Replace, extend, or remove individual components.
-  - Works across various environments (laptop, cluster, browser).
-  - Compatible with tons of tools. At the end of the day, tables are Parquet/CSV files.
-- **Low Friction Data Usage**
-  - Raw and processed data is available to anyone on IPFS. Use whatever tool you want!
-  - Get started with simple actions like pasting a [SQL query in your browser](https://shell.duckdb.org/) or using `pd.read_parquet(url)` in a Notebook.
-  - Static Quarto Notebooks with embedded datasets are generated with every commit, serving as documentation or a simple reporting/dashboarding layer.
-- **Modern Data Engineering**
-  - Supports data engineering essentials such as typing, testing, materialized views, and development branches.
-  - Utilizes best practices, including declarative transformations, and utilizes state-of-the-art tools like DuckDB.
+- **Open**: Code and data are open source and relies on open standards and formats.
+- **Permissionless Collaboration**: Collaborate on data, models, and pipelines. Fork the repo and run the platform locally in mintures. No constraints or platform lock-ins.
+- **Decentralization Options**: Runs on a laptop, server, CI runner, or even on decentralized compute networks like Bacalhau. No local setup required; it even works seamlessly in GitHub Codespaces.
+- **Data as Code**: Each commit generates and pushes all table files to R2.
+- **Modular Flexibility**: Replace, extend, or remove individual components. Compatible with tons of tools. At the end of the day, tables are Parquet files.
+- **Low Friction Data Usage**: Raw and processed data is available to anyone openly. Use whatever tool you want!
+- **Modern Data Engineering**: Supports data engineering essentials such as typing, testing, materialized views, and development branches. Utilizes best practices, including declarative transformations, and utilizes state-of-the-art tools like DuckDB.
+
+## 🚀 Powering
+
+- [Filecoin Pulse Website](https://pulse.filecoindataportal.xyz/)
+- [Filecoin Metrics Dune Dashboard](https://dune.com/kalen/filecoin-daily-metrics)
 
 ## 🛠️ Contributing
 
