@@ -6,9 +6,7 @@ import pandas as pd
 import requests
 from dagster import ConfigurableResource
 from requests import Response
-from databricks import sql
 from dagster_dbt import DbtProject, DbtCliResource
-from databricks.sql.client import Connection
 
 
 class SpacescopeResource(ConfigurableResource):
@@ -195,21 +193,6 @@ class DuneResource(ConfigurableResource):
         response.raise_for_status()
 
         return response
-
-
-class StarboardDatabricksResource(ConfigurableResource):
-    DATABRICKS_SERVER_HOSTNAME: str
-    DATABRICKS_HTTP_PATH: str
-    DATABRICKS_ACCESS_TOKEN: str
-
-    def get_connection(self) -> Connection:
-        conn = sql.connect(
-            server_hostname=self.DATABRICKS_SERVER_HOSTNAME,
-            http_path=self.DATABRICKS_HTTP_PATH,
-            access_token=self.DATABRICKS_ACCESS_TOKEN,
-        )
-
-        return conn
 
 
 DBT_PROJECT_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../dbt/"

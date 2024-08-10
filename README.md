@@ -73,9 +73,8 @@ Some ways you can contribute to this project:
 You can run the Filecoin Data Portal locally using Python Virtual Environment or VSCode Development Containers. You'll need the following secrets in your environment:
 
 - A `SPACESCOPE_TOKEN` to access [Spacescope](https://spacescope.io/) API.
-- A `DATABRICKS_SERVER_HOSTNAME` for connecting to Databricks.
-- A `DATABRICKS_HTTP_PATH` for the Databricks environment.
-- A `DATABRICKS_ACCESS_TOKEN` for authentication with Databricks.
+- A Google Cloud Platform `GOOGLE_APPLICATION_CREDENTIALS` for accessing BigQuery.
+- A `SPARK_API_BEARER_TOKEN` for accessing Spark retrievals API.
 - A `DUNE_API_KEY` for accessing Dune Analytics.
 
 ### 🐍 Python Virtual Environment

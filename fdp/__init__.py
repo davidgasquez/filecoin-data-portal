@@ -28,11 +28,6 @@ resources = {
     "spacescope_api": resources.SpacescopeResource(
         SPACESCOPE_TOKEN=EnvVar("SPACESCOPE_TOKEN")
     ),
-    "starboard_databricks": resources.StarboardDatabricksResource(
-        DATABRICKS_SERVER_HOSTNAME=EnvVar("DATABRICKS_SERVER_HOSTNAME"),
-        DATABRICKS_HTTP_PATH=EnvVar("DATABRICKS_HTTP_PATH"),
-        DATABRICKS_ACCESS_TOKEN=EnvVar("DATABRICKS_ACCESS_TOKEN"),
-    ),
     "duckdb": DuckDBResource(database=DATABASE_PATH),
     "io_manager": DuckDBPandasIOManager(database=DATABASE_PATH, schema="raw"),
     "dune": resources.DuneResource(DUNE_API_KEY=EnvVar("DUNE_API_KEY")),

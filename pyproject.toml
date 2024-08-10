@@ -8,7 +8,6 @@ dependencies = [
     "dagster-duckdb-pandas",
     "dagster-gcp",
     "dagster==1.8.0",
-    "databricks-sql-connector",
     "dbt-core",
     "dbt-duckdb",
     "duckdb==1.0.0",
