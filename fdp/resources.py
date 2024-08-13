@@ -154,6 +154,30 @@ class SpacescopeResource(ConfigurableResource):
 
         return self._extract_data(r)
 
+    def get_storage_provider_basic_info(self, miner_id=None):
+        params = {"miner_id": miner_id}
+        r = self.request(method="/storage_provider/basic_info", params=params)
+
+        return self._extract_data(r)
+
+    def get_storage_provider_deal_count(self, miner_id=None, state_date=None):
+        params = {"miner_id": miner_id, "state_date": state_date}
+        r = self.request(method="/storage_provider/deals/deal_count", params=params)
+
+        return self._extract_data(r)
+
+    def get_storage_provider_deal_duration(self, miner_id=None, state_date=None):
+        params = {"miner_id": miner_id, "state_date": state_date}
+        r = self.request(method="/storage_provider/deals/deal_duration", params=params)
+
+        return self._extract_data(r)
+
+    def get_storage_provider_deal_revenue(self, miner_id=None, state_date=None):
+        params = {"miner_id": miner_id, "state_date": state_date}
+        r = self.request(method="/storage_provider/deals/deal_revenue", params=params)
+
+        return self._extract_data(r)
+
 
 class DuneResource(ConfigurableResource):
     """

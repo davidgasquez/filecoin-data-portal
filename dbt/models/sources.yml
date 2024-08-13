@@ -116,3 +116,19 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_network_base_fee"]
+      - name: raw_storage_providers_basic_info
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_basic_info"]
+      - name: raw_storage_providers_deal_count
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_deal_count"]
+      - name: raw_storage_providers_deal_duration
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_deal_duration"]
+      - name: raw_storage_providers_deal_revenue
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_deal_revenue"]

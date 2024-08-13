@@ -974,3 +974,192 @@ def raw_block_rewards(
     context.log.info(f"Persisted {df.shape[0]} rows")
 
     return MaterializeResult()
+
+
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
+def raw_storage_providers_basic_info(
+    context: AssetExecutionContext,
+    spacescope_api: SpacescopeResource,
+    duckdb: DuckDBResource,
+) -> MaterializeResult:
+    """
+    Basic information on the storage providers.
+    """
+
+    table_name = context.asset_key.to_user_string()
+
+    context.log.info("Fetching data for all storage providers")
+
+    df = pd.DataFrame(spacescope_api.get_storage_provider_basic_info())
+
+    with duckdb.get_connection() as conn:
+        conn.execute(
+            f"""
+            create or replace table raw.{table_name} as (
+                select * from df
+            )
+            """
+        )
+
+    context.log.info(f"Persisted {df.shape[0]} rows")
+
+    return MaterializeResult()
+
+
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
+def raw_storage_providers_deal_count(
+    context: AssetExecutionContext,
+    spacescope_api: SpacescopeResource,
+    duckdb: DuckDBResource,
+) -> MaterializeResult:
+    """
+    The number of storage deals of the storage providers.
+    """
+
+    table_name = context.asset_key.to_user_string()
+
+    from_day = FILECOIN_FIRST_DAY
+    to_day = datetime.date.today() - datetime.timedelta(days=1)
+
+    context.log.info(f"Fetching data from {from_day} to {to_day}")
+
+    df = pd.DataFrame()
+
+    current_start_day = from_day
+    while current_start_day <= to_day:
+        current_end_day = min(current_start_day + datetime.timedelta(days=89), to_day)
+        context.log.info(f"Fetching data from {current_start_day} to {current_end_day}")
+
+        batch_df = spacescope_api.get_storage_provider_deal_count(
+            state_date=current_start_day.strftime("%Y-%m-%d"), miner_id=None
+        )
+        df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
+
+        context.log.info(
+            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"  # type: ignore
+        )
+
+        current_start_day = current_end_day + datetime.timedelta(days=1)
+
+    with duckdb.get_connection() as conn:
+        conn.execute(
+            f"""
+            create or replace table raw.{table_name} as (
+                select * from df
+            )
+            """
+        )
+
+    context.log.info(f"Persisted {df.shape[0]} rows")
+
+    return MaterializeResult()
+
+
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
+def raw_storage_providers_deal_duration(
+    context: AssetExecutionContext,
+    spacescope_api: SpacescopeResource,
+    duckdb: DuckDBResource,
+) -> MaterializeResult:
+    """
+    The number of storage deals of the storage providers.
+    """
+
+    table_name = context.asset_key.to_user_string()
+
+    from_day = FILECOIN_FIRST_DAY
+    to_day = datetime.date.today() - datetime.timedelta(days=1)
+
+    context.log.info(f"Fetching data from {from_day} to {to_day}")
+
+    df = pd.DataFrame()
+
+    current_start_day = from_day
+    while current_start_day <= to_day:
+        current_end_day = min(current_start_day + datetime.timedelta(days=89), to_day)
+        context.log.info(f"Fetching data from {current_start_day} to {current_end_day}")
+
+        batch_df = spacescope_api.get_storage_provider_deal_duration(
+            state_date=current_start_day.strftime("%Y-%m-%d"), miner_id=None
+        )
+        df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
+
+        context.log.info(
+            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"  # type: ignore
+        )
+
+        current_start_day = current_end_day + datetime.timedelta(days=1)
+
+    with duckdb.get_connection() as conn:
+        conn.execute(
+            f"""
+            create or replace table raw.{table_name} as (
+                select * from df
+            )
+            """
+        )
+
+    context.log.info(f"Persisted {df.shape[0]} rows")
+
+    return MaterializeResult()
+
+
+@asset(
+    compute_kind="API",
+    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+)
+def raw_storage_providers_deal_revenue(
+    context: AssetExecutionContext,
+    spacescope_api: SpacescopeResource,
+    duckdb: DuckDBResource,
+) -> MaterializeResult:
+    """
+    The number of storage deals of the storage providers.
+    """
+
+    table_name = context.asset_key.to_user_string()
+
+    from_day = FILECOIN_FIRST_DAY
+    to_day = datetime.date.today() - datetime.timedelta(days=1)
+
+    context.log.info(f"Fetching data from {from_day} to {to_day}")
+
+    df = pd.DataFrame()
+
+    current_start_day = from_day
+    while current_start_day <= to_day:
+        current_end_day = min(current_start_day + datetime.timedelta(days=89), to_day)
+        context.log.info(f"Fetching data from {current_start_day} to {current_end_day}")
+
+        batch_df = spacescope_api.get_storage_provider_deal_revenue(
+            state_date=current_start_day.strftime("%Y-%m-%d"), miner_id=None
+        )
+        df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
+
+        context.log.info(
+            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"  # type: ignore
+        )
+
+        current_start_day = current_end_day + datetime.timedelta(days=1)
+
+    with duckdb.get_connection() as conn:
+        conn.execute(
+            f"""
+            create or replace table raw.{table_name} as (
+                select * from df
+            )
+            """
+        )
+
+    context.log.info(f"Persisted {df.shape[0]} rows")
+
+    return MaterializeResult()

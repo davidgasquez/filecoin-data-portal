@@ -211,6 +211,42 @@ rewards_data as (
         total_win_count - lag(total_win_count) over (partition by miner_id order by date) as daily_win_count,
     from {{ source("raw_assets", "raw_storage_providers_rewards") }}
     where date is not null and provider_id is not null
+),
+
+deal_count as (
+    select
+        stat_date::date as date,
+        miner_id as provider_id,
+        total_regular_deal_count,
+        total_verified_deal_count,
+        daily_new_regular_deal_count,
+        daily_new_verified_deal_count,
+        active_regular_deal_count,
+        active_verified_deal_count,
+        total_regular_deal_free_count,
+        total_verified_deal_free_count
+    from {{ source("raw_assets", "raw_storage_providers_deal_count") }}
+    where date is not null and provider_id is not null
+),
+
+deal_duration as (
+    select
+        stat_date::date as date,
+        miner_id as provider_id,
+        avg_regular_deal_duration_days,
+        avg_verified_deal_duration_days
+    from {{ source("raw_assets", "raw_storage_providers_deal_duration") }}
+    where date is not null and provider_id is not null
+),
+
+deal_revenue as (
+    select
+        stat_date::date as date,
+        miner_id as provider_id,
+        total_regular_deal_revenue,
+        total_verified_deal_revenue
+    from {{ source("raw_assets", "raw_storage_providers_deal_revenue") }}
+    where date is not null and provider_id is not null
 )
 
 select
@@ -295,6 +331,18 @@ select
     sd.avg_active_sector_duration_days,
     sd.std_active_sector_duration_days,
     spark.spark_retrieval_success_rate,
+    dec.total_regular_deal_count,
+    dec.total_verified_deal_count,
+    dec.daily_new_regular_deal_count,
+    dec.daily_new_verified_deal_count,
+    dec.active_regular_deal_count,
+    dec.active_verified_deal_count,
+    dec.total_regular_deal_free_count,
+    dec.total_verified_deal_free_count,
+    ded.avg_regular_deal_duration_days,
+    ded.avg_verified_deal_duration_days,
+    der.total_regular_deal_revenue,
+    der.total_verified_deal_revenue
 from date_calendar dc
 full outer join storage_providers_power spp on dc.date = spp.date
 full outer join storage_providers_power_growth spg on dc.date = spg.date and spp.provider_id = spg.provider_id
@@ -312,6 +360,9 @@ full outer join sector_snaps ss on dc.date = ss.date and spp.provider_id = ss.pr
 full outer join sector_durations sd on dc.date = sd.date and spp.provider_id = sd.provider_id
 full outer join rewards_data rd on dc.date = rd.date and spp.provider_id = rd.provider_id
 full outer join spark_retrievals spark on dc.date = spark.date and spp.provider_id = spark.provider_id
+full outer join deal_count dec on dc.date = dec.date and spp.provider_id = dec.provider_id
+full outer join deal_duration ded on dc.date = ded.date and spp.provider_id = ded.provider_id
+full outer join deal_revenue der on dc.date = der.date and spp.provider_id = der.provider_id
 where 1=1
     and dc.date >= '2020-09-12'
     and (

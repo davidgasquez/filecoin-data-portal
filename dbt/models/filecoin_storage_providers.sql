@@ -145,7 +145,19 @@ latest_sp_data as (
         total_rewards,
         avg_active_sector_duration_days,
         std_active_sector_duration_days,
-        spark_retrieval_success_rate
+        spark_retrieval_success_rate,
+        total_regular_deal_count,
+        total_verified_deal_count,
+        daily_new_regular_deal_count,
+        daily_new_verified_deal_count,
+        active_regular_deal_count,
+        active_verified_deal_count,
+        total_regular_deal_free_count,
+        total_verified_deal_free_count,
+        avg_regular_deal_duration_days,
+        avg_verified_deal_duration_days,
+        total_regular_deal_revenue,
+        total_verified_deal_revenue
     from {{ ref("filecoin_daily_storage_providers_metrics") }}
     qualify row_number() over (partition by provider_id order by date desc) = 1
 ),
@@ -224,6 +236,15 @@ addresses_mapping as (
         address
     from {{ source("raw_assets", "raw_id_addresses") }}
     qualify row_number() over (partition by id order by height desc) = 1
+),
+
+basic_info as (
+    select
+        trim(miner_id) as provider_id,
+        onboarding_at,
+        sector_size
+    from {{ source("raw_assets", "raw_storage_providers_basic_info") }}
+    qualify row_number() over (partition by miner_id order by stat_date desc) = 1
 )
 
 select
@@ -321,6 +342,15 @@ select
     latest_sp_data.avg_active_sector_duration_days,
     latest_sp_data.std_active_sector_duration_days,
     latest_sp_data.spark_retrieval_success_rate,
+    latest_sp_data.total_regular_deal_count,
+    latest_sp_data.total_verified_deal_count,
+    latest_sp_data.daily_new_regular_deal_count,
+    latest_sp_data.daily_new_verified_deal_count,
+    latest_sp_data.active_regular_deal_count,
+    latest_sp_data.active_verified_deal_count,
+    latest_sp_data.total_regular_deal_free_count,
+    latest_sp_data.total_verified_deal_free_count,
+    latest_sp_data.avg_regular_deal_duration_days,
     storage_provider_location.region,
     storage_provider_location.country,
     storage_provider_location.latitude,
@@ -364,7 +394,9 @@ select
     provider_metrics_aggregations.avg_smoothed_quality_adjusted_power_growth_pibs_9m_12m,
     provider_metrics_aggregations.avg_smoothed_verified_data_power_growth_pibs_9m_12m,
     provider_metrics_aggregations.started_providing_power_at,
-    addresses_mapping.address
+    addresses_mapping.address,
+    basic_info.onboarding_at,
+    basic_info.sector_size
 from base_providers as base
 left join stats on base.provider_id = stats.provider_id
 left join storage_provider_location on base.provider_id = storage_provider_location.provider_id
@@ -374,3 +406,4 @@ left join retrieval_data on base.provider_id = retrieval_data.provider_id
 left join energy_name_mapping on base.provider_id = energy_name_mapping.provider_id
 left join provider_metrics_aggregations on base.provider_id = provider_metrics_aggregations.provider_id
 left join addresses_mapping on base.provider_id = addresses_mapping.id
+left join basic_info on base.provider_id = basic_info.provider_id
