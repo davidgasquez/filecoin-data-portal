@@ -15,6 +15,16 @@ All of these datasets are free to use. They are available to the anyone at no co
 
 All of these datasets can be used without restriction. They are released under a [CC0 license into the public domain](https://creativecommons.org/public-domain/cc0/).
 
+### Who is using these datasets?
+
+Datasets produced by the Filecoin Data Portal are used by a wide range of organizations and individuals. Some of the use cases include:
+
+- [Reppo is creating Storage Provider's Reputation models](https://www.reppo.ai/models)
+- [FIDL](https://fidl.tech) is embedding some of the data in [Allocators Compilance reports](https://compliance.allocator.tech/report/f03014641/1723421684/report.md).
+- I created two data applications to surface core datasets by creating charts and showcasing what is possible with the data.
+  - [Filecoin Pulse](https://pulse.filecoindataportal.xyz/)
+  - [Filecoin In Numbers](https://davidgasquez.github.io/filecoin-in-numbers/)
+
 ### How does the data get updated?
 
 The data is updated on a daily basis via GitHub Actions. You can see [every run and their logs on the repository](https://github.com/davidgasquez/filecoin-data-portal/actions).

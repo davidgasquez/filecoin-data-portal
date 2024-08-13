@@ -8,7 +8,9 @@ website:
   title: "Filecoin Data Portal"
   favicon: "logo.svg"
   repo-url: https://github.com/davidgasquez/filecoin-data-portal
-  repo-actions: [edit, issue]
+  open-graph: true
+  twitter-card: true
+  site-url: https://filecoindataportal.xyz/
   search: false
   navbar:
     logo: logo.svg

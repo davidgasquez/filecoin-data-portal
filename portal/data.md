@@ -14,42 +14,42 @@ These datasets offer a wide range of metrics that can be used to analyze the Fil
 
 ::: {.grid}
 
-::: {.g-col-lg-4 .g-col-sm-10}
+::: {.g-col-lg-4 .g-col-sm-12}
 
 <div class="card">
 <div class="card-body">
 <h3 class="card-title mt-2">Daily</h3>
 <p class="card-text"> Collection of Filecoin related metrics at the daily level. </p>
-<a href="https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet" class="btn btn-secondary">Download</a>
-<a href="https://docs.google.com/spreadsheets/d/1uq9J_WTJO6kAvQlrqkqR8GHfQfh3SJ84OSj88Mff6vY/edit?usp=sharing" class="btn btn-secondary">Sheet</a>
+<a href="https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet" target="_blank" class="btn btn-secondary">Download</a>
+<a href="https://docs.google.com/spreadsheets/d/1uq9J_WTJO6kAvQlrqkqR8GHfQfh3SJ84OSj88Mff6vY/edit?usp=sharing" target="_blank" class="btn btn-secondary">Sheet</a>
 </div>
 </div>
 
 :::
 
-::: {.g-col-lg-4 .g-col-sm-10}
+::: {.g-col-lg-4 .g-col-sm-12}
 <div class="card card-body">
 <h3 class="card-title mt-2">Weekly</h3>
 <p class="card-text"> Collection of Filecoin related metrics at the weekly level. </p>
-<a href="https://data.filecoindataportal.xyz/filecoin_weekly_metrics.parquet" class="btn btn-secondary">Download</a>
+<a href="https://data.filecoindataportal.xyz/filecoin_weekly_metrics.parquet" target="_blank" class="btn btn-secondary">Download</a>
 <a href="#" class="btn btn-secondary disabled">Sheet</a>
 </div>
 :::
 
-::: {.g-col-lg-4 .g-col-sm-10}
+::: {.g-col-lg-4 .g-col-sm-12}
 <div class="card card-body">
 <h3 class="card-title mt-2">Monthly</h3>
 <p class="card-text"> Collection of Filecoin related metrics at the monthly level. </p>
-<a href="https://data.filecoindataportal.xyz/filecoin_monthly_metrics.parquet" class="btn btn-secondary">Download</a>
+<a href="https://data.filecoindataportal.xyz/filecoin_monthly_metrics.parquet" target="_blank" class="btn btn-secondary">Download</a>
 <a href="#" class="btn btn-secondary disabled">Sheet</a>
 </div>
 :::
 
-::: {.g-col-lg-12 .g-col-sm-10}
+::: {.g-col-lg-12 .g-col-sm-12}
 <div class="card card-body">
 <h3 class="card-title mt-2">Storage Providers Daily</h3>
 <p class="card-text"> Storage Providers specific metrics, at the daily level. </p>
-<a href="https://data.filecoindataportal.xyz/filecoin_daily_storage_providers_metrics.parquet" class="btn btn-secondary">Download</a>
+<a href="https://data.filecoindataportal.xyz/filecoin_daily_storage_providers_metrics.parquet" target="_blank" class="btn btn-secondary">Download</a>
 </div>
 :::
 
@@ -61,44 +61,70 @@ These datasets provide information and up to date metrics about the different en
 
 ::: {.grid}
 
-::: {.g-col-lg-6 .g-col-sm-10}
+::: {.g-col-lg-6 .g-col-sm-12}
 <div class="card card-body">
 <h3 class="card-title mt-2">Storage Providers</h3>
 <p class="card-text"> Information and metrics about all the Storage Providers. </p>
-<a href="https://data.filecoindataportal.xyz/filecoin_storage_providers.parquet" class="btn btn-secondary">Download</a>
-<a href="https://docs.google.com/spreadsheets/d/1hC5HwuiqQvQcVvV06n3SH0wKkZwbw20EufGYHSyENs0/edit?usp=sharing" class="btn btn-secondary">Sheet</a>
+<a href="https://data.filecoindataportal.xyz/filecoin_storage_providers.parquet" target="_blank" class="btn btn-secondary">Download</a>
+<a href="https://docs.google.com/spreadsheets/d/1hC5HwuiqQvQcVvV06n3SH0wKkZwbw20EufGYHSyENs0/edit?usp=sharing" target="_blank" class="btn btn-secondary">Sheet</a>
 </div>
 :::
 
-::: {.g-col-lg-6 .g-col-sm-10}
+::: {.g-col-lg-6 .g-col-sm-12}
 <div class="card card-body">
 <h3 class="card-title mt-2">Clients</h3>
 <p class="card-text"> Information and metrics about all the Clients. </p>
-<a href="https://data.filecoindataportal.xyz/filecoin_clients.parquet" class="btn btn-secondary">Download</a>
-<a href="https://docs.google.com/spreadsheets/d/15xi39OheVJ-_WyI7sxwmvgMIVFkZN07NOYWLe5iKXnI/edit?usp=sharing" class="btn btn-secondary">Sheet</a>
+<a href="https://data.filecoindataportal.xyz/filecoin_clients.parquet" target="_blank" class="btn btn-secondary">Download</a>
+<a href="https://docs.google.com/spreadsheets/d/15xi39OheVJ-_WyI7sxwmvgMIVFkZN07NOYWLe5iKXnI/edit?usp=sharing" target="_blank" class="btn btn-secondary">Sheet</a>
 </div>
 :::
 
-::: {.g-col-lg-6 .g-col-sm-10}
+::: {.g-col-lg-6 .g-col-sm-12}
 
 <div class="card">
 <div class="card-body">
 <h3 class="card-title mt-2">Allocators</h3>
 <p class="card-text"> Information and metrics about all the Allocators. </p>
-<a href="https://data.filecoindataportal.xyz/filecoin_allocators.parquet" class="btn btn-secondary">Download</a>
-<a href="https://docs.google.com/spreadsheets/d/1uixeylC3pTeOkKh0L2fGsd7YKuyaA6Hse_fhWrm1BIA/edit?usp=sharing" class="btn btn-secondary">Sheet</a>
+<a href="https://data.filecoindataportal.xyz/filecoin_allocators.parquet" target="_blank" class="btn btn-secondary">Download</a>
+<a href="https://docs.google.com/spreadsheets/d/1uixeylC3pTeOkKh0L2fGsd7YKuyaA6Hse_fhWrm1BIA/edit?usp=sharing" target="_blank" class="btn btn-secondary">Sheet</a>
 </div>
 </div>
 
 :::
 
-::: {.g-col-lg-6 .g-col-sm-10}
+::: {.g-col-lg-6 .g-col-sm-12}
 
 <div class="card">
 <div class="card-body">
 <h3 class="card-title mt-2">Deals</h3>
-<p class="card-text"> Information and metrics about all the Deals. </p>
-<a href="https://data.filecoindataportal.xyz/filecoin_state_market_deals.parquet" class="btn btn-secondary">Download</a>
+<p class="card-text"> Information and metrics about all the Deals.</p>
+<a href="https://data.filecoindataportal.xyz/filecoin_state_market_deals.parquet" target="_blank" class="btn btn-secondary">Download</a>
+</div>
+</div>
+
+:::
+
+::: {.g-col-lg-6 .g-col-sm-12}
+
+<div class="card">
+<div class="card-body">
+<h3 class="card-title mt-2">Datacap Allocations</h3>
+<p class="card-text"> Details about all the Datacap Allocations.</p>
+<a href="https://data.filecoindataportal.xyz/filecoin_datacap_allocations.parquet" target="_blank" class="btn btn-secondary">Download</a>
+<a href="https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_datacap_allocations.parquet" target="_blank" class="btn btn-secondary">Preview</a>
+</div>
+</div>
+
+:::
+
+::: {.g-col-lg-6 .g-col-sm-12}
+
+<div class="card">
+<div class="card-body">
+<h3 class="card-title mt-2">Allocators Datacap Allowances</h3>
+<p class="card-text"> Details about all the Datacap Allowances for Allocators.</p>
+<a href="https://data.filecoindataportal.xyz/filecoin_allocators_datacap_allowances.parquet" target="_blank" class="btn btn-secondary">Download</a>
+<a href="https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_allocators_datacap_allowances.parquet" target="_blank" class="btn btn-secondary">Preview</a>
 </div>
 </div>
 

@@ -21,7 +21,7 @@ Open source, serverless, and local-first Data Platform for the Filecoin ecosyste
 
 ::: {.grid}
 
-::: {.g-col-lg-6 .g-col-sm-10}
+::: {.g-col-lg-6 .g-col-sm-12}
 <div class="card card-body">
 <h5>Open Data</h5>
 <p> Explore public datasets with key metrics from the Filecoin ecosystem. </p>
@@ -29,7 +29,7 @@ Open source, serverless, and local-first Data Platform for the Filecoin ecosyste
 </div>
 :::
 
-::: {.g-col-lg-6 .g-col-sm-10}
+::: {.g-col-lg-6 .g-col-sm-12}
 <div class="card card-body">
 <h5>Contribute</h5>
 <p> Help improve the platform by contributing code or metrics. </p>
@@ -37,7 +37,7 @@ Open source, serverless, and local-first Data Platform for the Filecoin ecosyste
 </div>
 :::
 
-::: {.g-col-lg-6 .g-col-sm-10}
+::: {.g-col-lg-6 .g-col-sm-12}
 <div class="card card-body">
 <h5>Request Dataset</h5>
 <p> Need specific data? Request it to be added. </p>
@@ -45,7 +45,7 @@ Open source, serverless, and local-first Data Platform for the Filecoin ecosyste
 </div>
 :::
 
-::: {.g-col-lg-6 .g-col-sm-10}
+::: {.g-col-lg-6 .g-col-sm-12}
 <div class="card card-body">
 <h5>Support on Drips</h5>
 <p class="card-text"> Support the data platform development via Drips. </p>
