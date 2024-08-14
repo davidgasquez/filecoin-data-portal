@@ -78,15 +78,15 @@ provider_metrics as (
         sum(total_win_count) as total_storage_providers_win_count,
         sum(total_rewards) as total_storage_providers_rewards,
         sum(total_sector_onboarded_count) as total_storage_providers_sectors_onboarded,
-        sum(total_terminated_raw_power_tibs / 1024) as total_terminated_raw_power_pibs,
-        sum(total_terminated_quality_adjusted_power_tibs / 1024) as total_terminated_quality_adjusted_power_pibs,
+        sum(total_sector_terminated_raw_power_tibs / 1024) as total_sector_terminated_raw_power_pibs,
+        sum(total_sector_terminated_quality_adjusted_power_tibs / 1024) as total_sector_terminated_quality_adjusted_power_pibs,
         sum(daily_sector_onboarding_count) as sector_onboarding_count,
         sum(daily_sector_onboarding_raw_power_tibs) / 1024 as sector_onboarding_raw_power_pibs,
         sum(daily_sector_onboarding_quality_adjusted_power_tibs) / 1024 as sector_onboarding_quality_adjusted_power_pibs,
-        sum(daily_new_terminated_raw_power_tibs) / 1024 as sector_terminated_raw_power_pibs,
-        sum(daily_new_terminated_quality_adjusted_power_tibs) / 1024 as sector_terminated_quality_adjusted_power_pibs,
-        sum(daily_new_extend_raw_power_tibs) / 1024 as sector_extended_raw_power_pibs,
-        sum(daily_new_extend_quality_adjusted_power_tibs) / 1024 as sector_extended_quality_adjusted_power_pibs
+        sum(daily_new_sector_terminated_raw_power_tibs) / 1024 as sector_terminated_raw_power_pibs,
+        sum(daily_new_sector_terminated_quality_adjusted_power_tibs) / 1024 as sector_terminated_quality_adjusted_power_pibs,
+        sum(daily_new_sector_extend_raw_power_tibs) / 1024 as sector_extended_raw_power_pibs,
+        sum(daily_new_sector_extend_quality_adjusted_power_tibs) / 1024 as sector_extended_quality_adjusted_power_pibs
     from {{ ref('filecoin_daily_storage_providers_metrics') }}
     where 1 = 1
     group by 1
@@ -197,45 +197,33 @@ network_base_fee as (
 
 select
     date_calendar.date as date,
+
+    -- Data Onboarding
     onboarded_data_pibs,
     unique_data_onboarded_data_pibs,
     unique_data_onboarded_ratio,
     deals,
     unique_piece_cids,
-    unique_deal_making_clients,
-    unique_deal_making_providers,
+    new_piece_cids,
     data_on_active_deals_pibs,
+    data_on_active_deals_pibs - lag(data_on_active_deals_pibs) over (order by date_calendar.date) as data_on_active_deals_pibs_delta,
     unique_data_on_active_deals_pibs,
     active_deals,
-    clients_with_active_deals,
-    providers_with_active_deals,
+    active_deals - lag(active_deals) over (order by date_calendar.date) as active_deals_delta,
+
+    -- Data Termination
     deal_ends,
     ended_data_pibs,
     deal_slashes,
     slashed_data_pibs,
-    raw_power_pibs,
-    quality_adjusted_power_pibs,
-    verified_data_power_pibs,
-    total_storage_providers_balance,
-    total_storage_providers_initial_pledge,
-    total_storage_providers_locked_funds,
-    total_storage_providers_pre_commit_deposits,
-    total_storage_providers_collateral,
-    total_storage_providers_fee_debt,
-    total_storage_providers_blocks_mined,
-    total_storage_providers_win_count,
-    total_storage_providers_rewards,
-    total_storage_providers_sectors_onboarded,
-    total_terminated_raw_power_pibs,
-    total_terminated_quality_adjusted_power_pibs,
-    data_on_active_deals_pibs / raw_power_pibs as network_utilization_ratio,
-    sector_onboarding_count,
-    sector_onboarding_raw_power_pibs,
-    sector_onboarding_quality_adjusted_power_pibs,
-    sector_terminated_raw_power_pibs,
-    sector_terminated_quality_adjusted_power_pibs,
-    sector_extended_raw_power_pibs,
-    sector_extended_quality_adjusted_power_pibs,
+
+    -- Users
+    unique_deal_making_clients,
+    unique_deal_making_providers,
+    clients_with_active_deals,
+    clients_with_active_deals - lag(clients_with_active_deals) over (order by date_calendar.date) as clients_with_active_deals_delta,
+    providers_with_active_deals,
+    providers_with_active_deals - lag(providers_with_active_deals) over (order by date_calendar.date) as providers_with_active_deals_delta,
     new_client_ids,
     new_provider_ids,
     active_address_count_daily,
@@ -247,10 +235,47 @@ select
     total_address_count_10000,
     total_address_count_100000,
     total_address_count_1000000,
-    new_piece_cids,
+
+    -- Power
+    raw_power_pibs,
+    raw_power_pibs - lag(raw_power_pibs) over (order by date_calendar.date) as raw_power_pibs_delta,
+    quality_adjusted_power_pibs,
+    quality_adjusted_power_pibs - lag(quality_adjusted_power_pibs) over (order by date_calendar.date) as quality_adjusted_power_pibs_delta,
+    verified_data_power_pibs,
+    verified_data_power_pibs - lag(verified_data_power_pibs) over (order by date_calendar.date) as verified_data_power_pibs_delta,
+
+    -- Storage Providers Totals
+    total_storage_providers_balance,
+    total_storage_providers_initial_pledge,
+    total_storage_providers_locked_funds,
+    total_storage_providers_pre_commit_deposits,
+    total_storage_providers_collateral,
+    total_storage_providers_fee_debt,
+    total_storage_providers_blocks_mined,
+    total_storage_providers_win_count,
+    total_storage_providers_rewards,
+    total_storage_providers_sectors_onboarded,
+
+    -- Others
+    data_on_active_deals_pibs / raw_power_pibs as network_utilization_ratio,
+
+    -- Sector Metrics
+    sector_onboarding_count,
+    sector_onboarding_raw_power_pibs,
+    sector_onboarding_quality_adjusted_power_pibs,
+    sector_terminated_raw_power_pibs,
+    sector_terminated_quality_adjusted_power_pibs,
+    sector_extended_raw_power_pibs,
+    sector_extended_quality_adjusted_power_pibs,
+    total_sector_terminated_raw_power_pibs,
+    total_sector_terminated_quality_adjusted_power_pibs,
+
+    -- Retrieval Metrics
     mean_spark_retrieval_success_rate,
     providers_with_successful_retrieval,
     providers_with_retrieval_attempts,
+
+    -- Economics
     new_providers_providing_capacity,
     circulating_fil,
     mined_fil,

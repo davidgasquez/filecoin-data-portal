@@ -114,18 +114,18 @@ sector_terminations as (
     select
         stat_date::date as date,
         trim(miner_id) as provider_id,
-        daily_new_terminate_rbp / 1024 ^ 4 as daily_new_terminated_raw_power_tibs,
-        daily_new_terminate_qap / 1024 ^ 4 as daily_new_terminated_quality_adjusted_power_tibs,
-        total_terminate_rbp / 1024 ^ 4 as total_terminated_raw_power_tibs,
-        total_terminate_qap / 1024 ^ 4 as total_terminated_quality_adjusted_power_tibs,
-        daily_new_active_terminate_rbp / 1024 ^ 4 as daily_new_active_terminated_raw_power_tibs,
-        daily_new_active_terminate_qap / 1024 ^ 4 as daily_new_active_terminated_quality_adjusted_power_tibs,
-        total_active_terminate_rbp / 1024 ^ 4 as total_active_terminated_raw_power_tibs,
-        total_active_terminate_qap / 1024 ^ 4 as total_active_terminated_quality_adjusted_power_tibs,
-        daily_new_passive_terminate_rbp / 1024 ^ 4 as daily_new_passive_terminated_raw_power_tibs,
-        daily_new_passive_terminate_qap / 1024 ^ 4 as daily_new_passive_terminated_quality_adjusted_power_tibs,
-        total_passive_terminate_rbp / 1024 ^ 4 as total_passive_terminated_raw_power_tibs,
-        total_passive_terminate_qap / 1024 ^ 4 as total_passive_terminated_quality_adjusted_power_tibs
+        daily_new_terminate_rbp / 1024 ^ 4 as daily_new_sector_terminated_raw_power_tibs,
+        daily_new_terminate_qap / 1024 ^ 4 as daily_new_sector_terminated_quality_adjusted_power_tibs,
+        total_terminate_rbp / 1024 ^ 4 as total_sector_terminated_raw_power_tibs,
+        total_terminate_qap / 1024 ^ 4 as total_sector_terminated_quality_adjusted_power_tibs,
+        daily_new_active_terminate_rbp / 1024 ^ 4 as daily_new_sector_active_terminated_raw_power_tibs,
+        daily_new_active_terminate_qap / 1024 ^ 4 as daily_new_sector_active_terminated_quality_adjusted_power_tibs,
+        total_active_terminate_rbp / 1024 ^ 4 as total_sector_active_terminated_raw_power_tibs,
+        total_active_terminate_qap / 1024 ^ 4 as total_sector_active_terminated_quality_adjusted_power_tibs,
+        daily_new_passive_terminate_rbp / 1024 ^ 4 as daily_new_sector_passive_terminated_raw_power_tibs,
+        daily_new_passive_terminate_qap / 1024 ^ 4 as daily_new_sector_passive_terminated_quality_adjusted_power_tibs,
+        total_passive_terminate_rbp / 1024 ^ 4 as total_sector_passive_terminated_raw_power_tibs,
+        total_passive_terminate_qap / 1024 ^ 4 as total_sector_passive_terminated_quality_adjusted_power_tibs
     from {{ source("raw_assets", "raw_storage_providers_sector_terminations") }}
     where date is not null and provider_id is not null
 ),
@@ -134,10 +134,10 @@ sector_faults as (
     select
         stat_date::date as date,
         trim(miner_id) as provider_id,
-        daily_new_fault_rbp / 1024 ^ 4 as daily_new_fault_raw_power_tibs,
-        daily_new_fault_qap / 1024 ^ 4 as daily_new_fault_quality_adjusted_power_tibs,
-        active_fault_rbp / 1024 ^ 4 as active_fault_raw_power_tibs,
-        active_fault_qap / 1024 ^ 4 as active_fault_quality_adjusted_power_tibs,
+        daily_new_fault_rbp / 1024 ^ 4 as daily_new_sector_fault_raw_power_tibs,
+        daily_new_fault_qap / 1024 ^ 4 as daily_new_sector_fault_quality_adjusted_power_tibs,
+        active_fault_rbp / 1024 ^ 4 as active_sector_fault_raw_power_tibs,
+        active_fault_qap / 1024 ^ 4 as active_sector_fault_quality_adjusted_power_tibs,
     from {{ source("raw_assets", "raw_storage_providers_sector_faults") }}
     where date is not null and provider_id is not null
 ),
@@ -146,8 +146,8 @@ sector_recoveries as (
     select
         stat_date::date as date,
         trim(miner_id) as provider_id,
-        daily_new_recover_rbp / 1024 ^ 4 as daily_new_recover_raw_power_tibs,
-        daily_new_recover_qap / 1024 ^ 4 as daily_new_recover_quality_adjusted_power_tibs,
+        daily_new_recover_rbp / 1024 ^ 4 as daily_new_sector_recover_raw_power_tibs,
+        daily_new_recover_qap / 1024 ^ 4 as daily_new_sector_recover_quality_adjusted_power_tibs,
     from {{ source("raw_assets", "raw_storage_providers_sector_recoveries") }}
 ),
 
@@ -155,10 +155,10 @@ sector_expirations as (
     select
         stat_date::date as date,
         trim(miner_id) as provider_id,
-        daily_new_expire_rbp / 1024 ^ 4 as daily_new_expire_raw_power_tibs,
-        daily_new_expire_qap / 1024 ^ 4 as daily_new_expire_quality_adjusted_power_tibs,
-        total_expire_rbp / 1024 ^ 4 as total_expire_raw_power_tibs,
-        total_expire_qap / 1024 ^ 4 as total_expire_quality_adjusted_power_tibs
+        daily_new_expire_rbp / 1024 ^ 4 as daily_new_sector_expire_raw_power_tibs,
+        daily_new_expire_qap / 1024 ^ 4 as daily_new_sector_expire_quality_adjusted_power_tibs,
+        total_expire_rbp / 1024 ^ 4 as total_sector_expire_raw_power_tibs,
+        total_expire_qap / 1024 ^ 4 as total_sector_expire_quality_adjusted_power_tibs
     from {{ source("raw_assets", "raw_storage_providers_sector_expirations") }}
 ),
 
@@ -166,8 +166,8 @@ sector_extensions as (
     select
         stat_date::date as date,
         trim(miner_id) as provider_id,
-        daily_new_extend_rbp / 1024 ^ 4 as daily_new_extend_raw_power_tibs,
-        daily_new_extend_qap / 1024 ^ 4 as daily_new_extend_quality_adjusted_power_tibs
+        daily_new_extend_rbp / 1024 ^ 4 as daily_new_sector_extend_raw_power_tibs,
+        daily_new_extend_qap / 1024 ^ 4 as daily_new_sector_extend_quality_adjusted_power_tibs
     from {{ source("raw_assets", "raw_storage_providers_sector_extensions") }}
 ),
 
@@ -175,10 +175,10 @@ sector_snaps as (
     select
         stat_date::date as date,
         trim(miner_id) as provider_id,
-        daily_new_snap_rbp / 1024 ^ 4 as daily_new_snap_raw_power_tibs,
-        daily_new_snap_qap / 1024 ^ 4 as daily_new_snap_quality_adjusted_power_tibs,
-        total_snap_rbp / 1024 ^ 4 as total_snap_raw_power_tibs,
-        total_snap_qap / 1024 ^ 4 as total_snap_quality_adjusted_power_tibs
+        daily_new_snap_rbp / 1024 ^ 4 as daily_new_sector_snap_raw_power_tibs,
+        daily_new_snap_qap / 1024 ^ 4 as daily_new_sector_snap_quality_adjusted_power_tibs,
+        total_snap_rbp / 1024 ^ 4 as total_sector_snap_raw_power_tibs,
+        total_snap_qap / 1024 ^ 4 as total_sector_snap_quality_adjusted_power_tibs
     from {{ source("raw_assets", "raw_storage_providers_sector_snaps") }}
 ),
 
@@ -294,34 +294,34 @@ select
     scs.total_provecommit_sector_raw_power_tibs,
     scs.total_provecommit_sector_quality_adjusted_power_tibs,
     scs.total_provecommit_batch_sector_raw_power_tibs,
-    sterm.daily_new_terminated_raw_power_tibs,
-    sterm.daily_new_terminated_quality_adjusted_power_tibs,
-    sterm.total_terminated_raw_power_tibs,
-    sterm.total_terminated_quality_adjusted_power_tibs,
-    sterm.daily_new_active_terminated_raw_power_tibs,
-    sterm.daily_new_active_terminated_quality_adjusted_power_tibs,
-    sterm.total_active_terminated_raw_power_tibs,
-    sterm.total_active_terminated_quality_adjusted_power_tibs,
-    sterm.daily_new_passive_terminated_raw_power_tibs,
-    sterm.daily_new_passive_terminated_quality_adjusted_power_tibs,
-    sterm.total_passive_terminated_raw_power_tibs,
-    sterm.total_passive_terminated_quality_adjusted_power_tibs,
-    sf.daily_new_fault_raw_power_tibs,
-    sf.daily_new_fault_quality_adjusted_power_tibs,
-    sf.active_fault_raw_power_tibs,
-    sf.active_fault_quality_adjusted_power_tibs,
-    sr.daily_new_recover_raw_power_tibs,
-    sr.daily_new_recover_quality_adjusted_power_tibs,
-    sexp.daily_new_expire_raw_power_tibs,
-    sexp.daily_new_expire_quality_adjusted_power_tibs,
-    sexp.total_expire_raw_power_tibs,
-    sexp.total_expire_quality_adjusted_power_tibs,
-    sext.daily_new_extend_raw_power_tibs,
-    sext.daily_new_extend_quality_adjusted_power_tibs,
-    ss.daily_new_snap_raw_power_tibs,
-    ss.daily_new_snap_quality_adjusted_power_tibs,
-    ss.total_snap_raw_power_tibs,
-    ss.total_snap_quality_adjusted_power_tibs,
+    sterm.daily_new_sector_terminated_raw_power_tibs,
+    sterm.daily_new_sector_terminated_quality_adjusted_power_tibs,
+    sterm.total_sector_terminated_raw_power_tibs,
+    sterm.total_sector_terminated_quality_adjusted_power_tibs,
+    sterm.daily_new_sector_active_terminated_raw_power_tibs,
+    sterm.daily_new_sector_active_terminated_quality_adjusted_power_tibs,
+    sterm.total_sector_active_terminated_raw_power_tibs,
+    sterm.total_sector_active_terminated_quality_adjusted_power_tibs,
+    sterm.daily_new_sector_passive_terminated_raw_power_tibs,
+    sterm.daily_new_sector_passive_terminated_quality_adjusted_power_tibs,
+    sterm.total_sector_passive_terminated_raw_power_tibs,
+    sterm.total_sector_passive_terminated_quality_adjusted_power_tibs,
+    sf.daily_new_sector_fault_raw_power_tibs,
+    sf.daily_new_sector_fault_quality_adjusted_power_tibs,
+    sf.active_sector_fault_raw_power_tibs,
+    sf.active_sector_fault_quality_adjusted_power_tibs,
+    sr.daily_new_sector_recover_raw_power_tibs,
+    sr.daily_new_sector_recover_quality_adjusted_power_tibs,
+    sexp.daily_new_sector_expire_raw_power_tibs,
+    sexp.daily_new_sector_expire_quality_adjusted_power_tibs,
+    sexp.total_sector_expire_raw_power_tibs,
+    sexp.total_sector_expire_quality_adjusted_power_tibs,
+    sext.daily_new_sector_extend_raw_power_tibs,
+    sext.daily_new_sector_extend_quality_adjusted_power_tibs,
+    ss.daily_new_sector_snap_raw_power_tibs,
+    ss.daily_new_sector_snap_quality_adjusted_power_tibs,
+    ss.total_sector_snap_raw_power_tibs,
+    ss.total_sector_snap_quality_adjusted_power_tibs,
     rd.daily_blocks_mined,
     rd.daily_win_count,
     rd.daily_rewards,

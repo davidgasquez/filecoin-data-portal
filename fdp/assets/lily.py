@@ -1,7 +1,7 @@
 import pyarrow as pa
 from dagster import AssetExecutionContext, asset
-from dagster_gcp import BigQueryResource
 from dagster_duckdb import DuckDBResource
+from dagster_gcp import BigQueryResource
 
 
 @asset(compute_kind="python")
