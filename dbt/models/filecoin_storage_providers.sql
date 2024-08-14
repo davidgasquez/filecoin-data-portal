@@ -208,6 +208,9 @@ provider_metrics_aggregations as (
 
         -- When they started providing power
         min(date) filter (where raw_power_pibs > 0) as started_providing_power_at,
+
+        -- Average uploaded data per day
+        avg(onboarded_data_tibs) as avg_data_uploaded_tibs_per_day,
     from {{ ref("filecoin_daily_storage_providers_metrics") }}
     group by provider_id
 ),
@@ -396,7 +399,9 @@ select
     provider_metrics_aggregations.started_providing_power_at,
     addresses_mapping.address,
     basic_info.onboarding_at,
-    basic_info.sector_size
+    basic_info.sector_size,
+    avg_data_uploaded_tibs_per_day,
+    ((total_active_data_uploaded_tibs / 1024) / latest_sp_data.raw_power_pibs) as capacity_utilization_ratio
 from base_providers as base
 left join stats on base.provider_id = stats.provider_id
 left join storage_provider_location on base.provider_id = storage_provider_location.provider_id

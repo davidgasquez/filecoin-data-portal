@@ -78,8 +78,8 @@ provider_metrics as (
         sum(total_win_count) as total_storage_providers_win_count,
         sum(total_rewards) as total_storage_providers_rewards,
         sum(total_sector_onboarded_count) as total_storage_providers_sectors_onboarded,
-        sum(total_terminated_raw_power_tibs / 1024) as terminated_raw_power_pibs,
-        sum(total_terminated_quality_adjusted_power_tibs / 1024) as terminated_quality_adjusted_power_pibs,
+        sum(total_terminated_raw_power_tibs / 1024) as total_terminated_raw_power_pibs,
+        sum(total_terminated_quality_adjusted_power_tibs / 1024) as total_terminated_quality_adjusted_power_pibs,
         sum(daily_sector_onboarding_count) as sector_onboarding_count,
         sum(daily_sector_onboarding_raw_power_tibs) / 1024 as sector_onboarding_raw_power_pibs,
         sum(daily_sector_onboarding_quality_adjusted_power_tibs) / 1024 as sector_onboarding_quality_adjusted_power_pibs,
@@ -196,7 +196,7 @@ network_base_fee as (
 )
 
 select
-    date_calendar.date,
+    date_calendar.date as date,
     onboarded_data_pibs,
     unique_data_onboarded_data_pibs,
     unique_data_onboarded_ratio,
@@ -226,8 +226,8 @@ select
     total_storage_providers_win_count,
     total_storage_providers_rewards,
     total_storage_providers_sectors_onboarded,
-    terminated_raw_power_pibs,
-    terminated_quality_adjusted_power_pibs,
+    total_terminated_raw_power_pibs,
+    total_terminated_quality_adjusted_power_pibs,
     data_on_active_deals_pibs / raw_power_pibs as network_utilization_ratio,
     sector_onboarding_count,
     sector_onboarding_raw_power_pibs,
