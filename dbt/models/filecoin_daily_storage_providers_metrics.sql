@@ -252,10 +252,14 @@ deal_revenue as (
 select
     dc.date,
     coalesce(dm.provider_id, spp.provider_id, tbd.provider_id, rd.provider_id) as provider_id,
+
+    -- Deal Metrics
     coalesce(dm.onboarded_data_tibs, 0) as onboarded_data_tibs,
     coalesce(dm.deals, 0) as deals,
     coalesce(dm.unique_piece_cids, 0) as unique_piece_cids,
     coalesce(dm.unique_deal_making_clients, 0) as unique_deal_making_clients,
+
+    -- Power Metrics
     spp.raw_power_bytes,
     spp.raw_power_pibs,
     spp.lagging_30_days_avg_raw_power_pibs,
@@ -268,12 +272,16 @@ select
     spg.smoothed_raw_power_growth_pibs,
     spg.smoothed_quality_adjusted_power_growth_pibs,
     spg.smoothed_verified_data_power_growth_pibs,
+
+    -- Token Metrics
     tbd.balance,
     tbd.initial_pledge,
     tbd.locked_funds,
     tbd.pre_commit_deposits,
     tbd.provider_collateral,
     tbd.fee_debt,
+
+    -- Sector Metrics
     st.daily_sector_onboarding_count,
     st.daily_sector_onboarding_raw_power_tibs,
     st.daily_sector_onboarding_quality_adjusted_power_tibs,
@@ -322,15 +330,21 @@ select
     ss.daily_new_sector_snap_quality_adjusted_power_tibs,
     ss.total_sector_snap_raw_power_tibs,
     ss.total_sector_snap_quality_adjusted_power_tibs,
+    sd.avg_active_sector_duration_days,
+    sd.std_active_sector_duration_days,
+
+    -- Rewards Metrics
     rd.daily_blocks_mined,
     rd.daily_win_count,
     rd.daily_rewards,
     rd.total_blocks_mined,
     rd.total_win_count,
     rd.total_rewards,
-    sd.avg_active_sector_duration_days,
-    sd.std_active_sector_duration_days,
+
+    -- Retrieval Metrics
     spark.spark_retrieval_success_rate,
+
+    -- Deal Metrics
     dec.total_regular_deal_count,
     dec.total_verified_deal_count,
     dec.daily_new_regular_deal_count,

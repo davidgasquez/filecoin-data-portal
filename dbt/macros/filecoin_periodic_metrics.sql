@@ -86,7 +86,15 @@ provider_metrics as (
         sum(daily_new_sector_terminated_raw_power_tibs) / 1024 as sector_terminated_raw_power_pibs,
         sum(daily_new_sector_terminated_quality_adjusted_power_tibs) / 1024 as sector_terminated_quality_adjusted_power_pibs,
         sum(daily_new_sector_extend_raw_power_tibs) / 1024 as sector_extended_raw_power_pibs,
-        sum(daily_new_sector_extend_quality_adjusted_power_tibs) / 1024 as sector_extended_quality_adjusted_power_pibs
+        sum(daily_new_sector_extend_quality_adjusted_power_tibs) / 1024 as sector_extended_quality_adjusted_power_pibs,
+        sum(daily_new_sector_fault_raw_power_tibs) / 1024 as sector_fault_raw_power_pibs,
+        sum(daily_new_sector_fault_quality_adjusted_power_tibs) / 1024 as sector_fault_quality_adjusted_power_pibs,
+        sum(daily_new_sector_recover_raw_power_tibs) / 1024 as sector_recover_raw_power_pibs,
+        sum(daily_new_sector_recover_quality_adjusted_power_tibs) / 1024 as sector_recover_quality_adjusted_power_pibs,
+        sum(daily_new_sector_expire_raw_power_tibs) / 1024 as sector_expire_raw_power_pibs,
+        sum(daily_new_sector_expire_quality_adjusted_power_tibs) / 1024 as sector_expire_quality_adjusted_power_pibs,
+        sum(daily_new_sector_snap_raw_power_tibs) / 1024 as sector_snap_raw_power_pibs,
+        sum(daily_new_sector_snap_quality_adjusted_power_tibs) / 1024 as sector_snap_quality_adjusted_power_pibs,
     from {{ ref('filecoin_daily_storage_providers_metrics') }}
     where 1 = 1
     group by 1
@@ -267,6 +275,16 @@ select
     sector_terminated_quality_adjusted_power_pibs,
     sector_extended_raw_power_pibs,
     sector_extended_quality_adjusted_power_pibs,
+    sector_fault_raw_power_pibs,
+    sector_fault_quality_adjusted_power_pibs,
+    sector_recover_raw_power_pibs,
+    sector_recover_quality_adjusted_power_pibs,
+    sector_expire_raw_power_pibs,
+    sector_expire_quality_adjusted_power_pibs,
+    sector_snap_raw_power_pibs,
+    sector_snap_quality_adjusted_power_pibs,
+
+    -- Sector Totals
     total_sector_terminated_raw_power_pibs,
     total_sector_terminated_quality_adjusted_power_pibs,
 
