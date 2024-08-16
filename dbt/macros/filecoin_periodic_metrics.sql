@@ -136,6 +136,21 @@ network_user_address_count as (
     order by 1 desc
 ),
 
+gas_usage as (
+    select
+        time_bucket(interval '1 {{ period }}', cast(stat_date as date), date '2020-10-01') as date,
+        sum(total_gas_used) as total_gas_used,
+        sum(provecommit_sector_gas_used) as provecommit_sector_gas_used,
+        sum(precommit_sector_gas_used) as precommit_sector_gas_used,
+        sum(provecommit_aggregate_gas_used) as provecommit_aggregate_gas_used,
+        sum(precommit_sector_batch_gas_used) as precommit_sector_batch_gas_used,
+        sum(publish_storage_deals_gas_used) as publish_storage_deals_gas_used,
+        sum(submit_windowed_post_gas_used) as submit_windowed_post_gas_used
+    from {{ source("raw_assets", "raw_gas_daily_usage") }}
+    group by 1
+    order by 1 desc
+),
+
 new_pieces as (
     select
         time_bucket(interval '1 {{ period }}', piece_first_sector_start_at, date '2020-10-01') as date,
@@ -302,7 +317,17 @@ select
     locked_fil,
     burnt_fil,
     reward_per_wincount,
-    unit_base_fee
+    unit_base_fee,
+
+    -- Gas Usage
+    total_gas_used,
+    provecommit_sector_gas_used,
+    precommit_sector_gas_used,
+    provecommit_aggregate_gas_used,
+    precommit_sector_batch_gas_used,
+    publish_storage_deals_gas_used,
+    submit_windowed_post_gas_used
+
 from date_calendar
 left join deal_metrics on date_calendar.date = deal_metrics.date
 left join users_with_active_deals on date_calendar.date = users_with_active_deals.date
@@ -318,6 +343,7 @@ left join providers_adding_capacity on date_calendar.date = providers_adding_cap
 left join circulating_supply on date_calendar.date = circulating_supply.date
 left join block_rewards on date_calendar.date = block_rewards.date
 left join network_base_fee on date_calendar.date = network_base_fee.date
+left join gas_usage on date_calendar.date = gas_usage.date
 order by date_calendar.date desc
 
 {% endmacro %}

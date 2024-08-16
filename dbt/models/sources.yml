@@ -132,3 +132,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_storage_providers_deal_revenue"]
+      - name: raw_gas_daily_usage
+        meta:
+          dagster:
+            asset_key: ["raw_gas_daily_usage"]
