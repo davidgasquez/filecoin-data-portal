@@ -139,13 +139,13 @@ network_user_address_count as (
 gas_usage as (
     select
         time_bucket(interval '1 {{ period }}', cast(stat_date as date), date '2020-10-01') as date,
-        sum(total_gas_used) as total_gas_used,
-        sum(provecommit_sector_gas_used) as provecommit_sector_gas_used,
-        sum(precommit_sector_gas_used) as precommit_sector_gas_used,
-        sum(provecommit_aggregate_gas_used) as provecommit_aggregate_gas_used,
-        sum(precommit_sector_batch_gas_used) as precommit_sector_batch_gas_used,
-        sum(publish_storage_deals_gas_used) as publish_storage_deals_gas_used,
-        sum(submit_windowed_post_gas_used) as submit_windowed_post_gas_used
+        sum(total_gas_used) * pow(10, -9) as total_gas_used_fil,
+        sum(provecommit_sector_gas_used) * pow(10, -9) as provecommit_sector_gas_used_fil,
+        sum(precommit_sector_gas_used) * pow(10, -9) as precommit_sector_gas_used_fil,
+        sum(provecommit_aggregate_gas_used) * pow(10, -9) as provecommit_aggregate_gas_used_fil,
+        sum(precommit_sector_batch_gas_used) * pow(10, -9) as precommit_sector_batch_gas_used_fil,
+        sum(publish_storage_deals_gas_used) * pow(10, -9) as publish_storage_deals_gas_used_fil,
+        sum(submit_windowed_post_gas_used) * pow(10, -9) as submit_windowed_post_gas_used_fil
     from {{ source("raw_assets", "raw_gas_daily_usage") }}
     group by 1
     order by 1 desc
@@ -320,13 +320,13 @@ select
     unit_base_fee,
 
     -- Gas Usage
-    total_gas_used,
-    provecommit_sector_gas_used,
-    precommit_sector_gas_used,
-    provecommit_aggregate_gas_used,
-    precommit_sector_batch_gas_used,
-    publish_storage_deals_gas_used,
-    submit_windowed_post_gas_used
+    total_gas_used_fil,
+    provecommit_sector_gas_used_fil,
+    precommit_sector_gas_used_fil,
+    provecommit_aggregate_gas_used_fil,
+    precommit_sector_batch_gas_used_fil,
+    publish_storage_deals_gas_used_fil,
+    submit_windowed_post_gas_used_fil
 
 from date_calendar
 left join deal_metrics on date_calendar.date = deal_metrics.date
