@@ -30,7 +30,8 @@ users_with_active_deals as (
         sum(padded_piece_size_tibs / 1024) filter (piece_client_replication_order = 1 and piece_provider_replication_order = 1) as unique_data_on_active_deals_pibs,
         approx_count_distinct(deals.deal_id) as active_deals,
         approx_count_distinct(deals.client_id) as clients_with_active_deals,
-        approx_count_distinct(deals.provider_id) as providers_with_active_deals
+        approx_count_distinct(deals.provider_id) as providers_with_active_deals,
+        mean(end_epoch - sector_start_epoch) // 2880 as mean_deal_duration_days
     from date_calendar as dc
     left join {{ ref('filecoin_state_market_deals') }} as deals
         on (deals.sector_start_at <= dc.date + interval '1 {{ period }}')
@@ -247,6 +248,7 @@ select
     clients_with_active_deals - lag(clients_with_active_deals) over (order by date_calendar.date) as clients_with_active_deals_delta,
     providers_with_active_deals,
     providers_with_active_deals - lag(providers_with_active_deals) over (order by date_calendar.date) as providers_with_active_deals_delta,
+    mean_deal_duration_days,
     new_client_ids,
     new_provider_ids,
     active_address_count_daily,
