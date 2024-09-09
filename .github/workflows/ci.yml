@@ -81,18 +81,6 @@ jobs:
             gitHubToken: ${{ secrets.GITHUB_TOKEN }}
             branch: main
 
-        - name: Push to IPFS
-          uses: filebase/ipfs-action@master
-          id: ipfs
-          with:
-            path: portal/.quarto/_site
-            service: filebase
-            pinName: filecoin-data-portal-tables
-            filebaseBucket: filecoin-data-portal
-            filebaseKey: ${{ secrets.FILEBASE_KEY }}
-            filebaseSecret: ${{ secrets.FILEBASE_SECRET }}
-            key: filecoin-data-portal-db
-
         - name: Upload to R2
           uses: ryand56/r2-upload-action@latest
           with:
