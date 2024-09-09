@@ -4,9 +4,9 @@ version = "0.1.0"
 authors = [{ name = "David Gasquez" }]
 dependencies = [
     "altair",
-    "dagster-dbt==0.25.5",
-    "dagster-duckdb-pandas==0.25.5",
-    "dagster-gcp==0.25.5",
+    "dagster-dbt==0.24.5",
+    "dagster-duckdb-pandas==0.24.5",
+    "dagster-gcp==0.24.5",
     "dagster==1.8.5",
     "dbt-core",
     "dbt-duckdb",
