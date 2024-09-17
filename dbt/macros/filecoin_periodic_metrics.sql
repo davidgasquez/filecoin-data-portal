@@ -13,6 +13,8 @@ deal_metrics as (
         sum(padded_piece_size_tibs / 1024) filter (piece_client_replication_order = 1 and piece_provider_replication_order = 1) as unique_data_onboarded_data_pibs,
         unique_data_onboarded_data_pibs / onboarded_data_pibs as unique_data_onboarded_ratio,
         approx_count_distinct(deal_id) as deals,
+        approx_count_distinct(deal_id) filter (is_verified) as verified_deals,
+        approx_count_distinct(deal_id) filter (not is_verified) as regular_deals,
         approx_count_distinct(piece_cid) as unique_piece_cids,
         approx_count_distinct(client_id) as unique_deal_making_clients,
         approx_count_distinct(provider_id) as unique_deal_making_providers
@@ -31,7 +33,9 @@ users_with_active_deals as (
         approx_count_distinct(deals.deal_id) as active_deals,
         approx_count_distinct(deals.client_id) as clients_with_active_deals,
         approx_count_distinct(deals.provider_id) as providers_with_active_deals,
-        mean(end_epoch - sector_start_epoch) // 2880 as mean_deal_duration_days
+        mean(end_epoch - sector_start_epoch) // 2880 as mean_deal_duration_days,
+        mean(end_epoch - sector_start_epoch) filter (is_verified) // 2880 as mean_verified_deal_duration_days,
+        mean(end_epoch - sector_start_epoch) filter (not is_verified) // 2880 as mean_regular_deal_duration_days
     from date_calendar as dc
     left join {{ ref('filecoin_state_market_deals') }} as deals
         on (deals.sector_start_at <= dc.date + interval '1 {{ period }}')
@@ -227,6 +231,8 @@ select
     unique_data_onboarded_data_pibs,
     unique_data_onboarded_ratio,
     deals,
+    verified_deals,
+    regular_deals,
     unique_piece_cids,
     new_piece_cids,
     data_on_active_deals_pibs,
@@ -249,6 +255,8 @@ select
     providers_with_active_deals,
     providers_with_active_deals - lag(providers_with_active_deals) over (order by date_calendar.date) as providers_with_active_deals_delta,
     mean_deal_duration_days,
+    mean_verified_deal_duration_days,
+    mean_regular_deal_duration_days,
     new_client_ids,
     new_provider_ids,
     active_address_count_daily,
