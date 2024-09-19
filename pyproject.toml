@@ -4,13 +4,13 @@ version = "0.1.0"
 authors = [{ name = "David Gasquez" }]
 dependencies = [
     "altair",
-    "dagster-dbt==0.24.5",
-    "dagster-duckdb-pandas==0.24.5",
-    "dagster-gcp==0.24.5",
-    "dagster==1.8.5",
+    "dagster-dbt==0.24.7",
+    "dagster-duckdb-pandas==0.24.7",
+    "dagster-gcp==0.24.7",
+    "dagster==1.8.7",
     "dbt-core",
     "dbt-duckdb",
-    "duckdb==1.0.0",
+    "duckdb==1.1.0",
     "google-cloud-bigquery-storage",
     "ijson",
     "ipykernel",

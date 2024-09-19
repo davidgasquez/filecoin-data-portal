@@ -112,15 +112,15 @@ def raw_datacap_github_applications(
                         a["github_repository"] = n.split("/")[1]
                         applications.append(a)
                     else:
-                        context.log.error(
+                        context.log.warning(
                             f"Failed to fetch file: {file['download_url']}."
                         )
-                        context.log.error(f"Status code: {file_response.status_code}")
-                        context.log.error(f"Response: {file_response.json()}")
+                        context.log.warning(f"Status code: {file_response.status_code}")
+                        context.log.warning(f"Response: {file_response.json()}")
         else:
-            context.log.error(f"Failed to fetch applications from {n}.")
-            context.log.error(f"Status code: {response.status_code}")
-            context.log.error(f"Response: {response.json()}")
+            context.log.warning(f"Failed to fetch applications from {n}.")
+            context.log.warning(f"Status code: {response.status_code}")
+            context.log.warning(f"Response: {response.json()}")
 
     df = pd.DataFrame(applications)
     df = df.rename(columns=lambda x: x.lower().replace(" ", "_"))

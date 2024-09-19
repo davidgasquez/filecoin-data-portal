@@ -10,8 +10,10 @@ from fdp.resources import DuneResource
 def raw_storage_providers_location_provider_quest() -> Output[pd.DataFrame]:
     """
     Storage Providers location information from Provider Quest (https://provider.quest).
+
+    Synthetic locations documentation: https://observablehq.com/@jimpick/provider-quest-synthetic-locations
     """
-    url = "https://geoip.feeds.provider.quest/synthetic-locations-latest.json"
+    url = "https://provider-quest.s3.us-west-2.amazonaws.com/dist/geoip-lookups/synthetic-locations-latest.json"
     all_df = pd.read_json(url, typ="series")
     df = pd.json_normalize(all_df["providerLocations"])
     return Output(df, metadata={"Sample": MetadataValue.md(df.sample(5).to_markdown())})
