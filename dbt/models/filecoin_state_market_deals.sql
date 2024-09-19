@@ -70,6 +70,7 @@ select
     label,
     if(b.sector_start_epoch > 0 and (slash_epoch is null or slash_epoch = -1) and to_timestamp(end_epoch * 30 + 1598306400) > get_current_timestamp(), true, false) as is_active,
     b.sector_start_epoch - proposed_epoch as activation_epochs_delay,
+    date_part('day', end_at - sector_start_at) as deal_lenght_days,
     replication_factor.piece_provider_replication_order,
     replication_factor.piece_provider_replication_factor,
     replication_factor.piece_client_replication_order,
