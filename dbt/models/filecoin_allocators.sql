@@ -73,7 +73,7 @@ select
     dar.application->>'$.github_handles[0]' as github_handle,
     dar.application->>'$.allocation_bookkeeping' as allocation_bookkeeping,
     dar.poc->>'$.slack' as poc_slack,
-    dar.poc->>'$.slack' as poc_github_user,
+    dar.poc->>'$.github_user' as poc_github_user,
     dar.pathway_addresses->>'$.msig' as pathway_addresses_msig,
     dar.pathway_addresses->>'$.signer[0]' as pathway_addresses_signer,
 from datacapstats_allocators as da
