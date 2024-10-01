@@ -100,6 +100,7 @@ provider_metrics as (
         sum(daily_new_sector_expire_quality_adjusted_power_tibs) / 1024 as sector_expire_quality_adjusted_power_pibs,
         sum(daily_new_sector_snap_raw_power_tibs) / 1024 as sector_snap_raw_power_pibs,
         sum(daily_new_sector_snap_quality_adjusted_power_tibs) / 1024 as sector_snap_quality_adjusted_power_pibs,
+        count(distinct provider_id) filter (raw_power_pibs > 0) as providers_with_power,
     from {{ ref('filecoin_daily_storage_providers_metrics') }}
     where 1 = 1
     group by 1
@@ -254,6 +255,7 @@ select
     clients_with_active_deals - lag(clients_with_active_deals) over (order by date_calendar.date) as clients_with_active_deals_delta,
     providers_with_active_deals,
     providers_with_active_deals - lag(providers_with_active_deals) over (order by date_calendar.date) as providers_with_active_deals_delta,
+    providers_with_power,
     mean_deal_duration_days,
     mean_verified_deal_duration_days,
     mean_regular_deal_duration_days,
