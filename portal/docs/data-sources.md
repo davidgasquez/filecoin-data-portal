@@ -71,12 +71,13 @@ Besides the data sources mentioned above, there are a few data indexers that pro
 
 ### JSON-RPC Endpoints
 
-Nodes usually implement all the [JSON-RPC methods](https://github.com/filecoin-project/lotus/blob/master/documentation/en/api-v0-methods.md) needed to get the data.
+Nodes usually implement all the [JSON-RPC methods](https://docs.filecoin.io/reference/json-rpc) needed to get the data.
 
 - Glif - `https://api.node.glif.io`
 - Zondax - `https://api.zondax.ch/fil/node/mainnet/rpc/v1`
 - Laconic - `https://fil-mainnet-1.rpc.laconic.com/rpc/v1`
 - Provider Quest - `https://lotus.miner.report/mainnet_api/0/node/rpc/v0`
+- More at [filecoin.io docs](https://docs.filecoin.io/networks/mainnet/rpcs)!
 - More at [Chainlist](https://chainlist.org/chain/314)!
 
 ### Code
