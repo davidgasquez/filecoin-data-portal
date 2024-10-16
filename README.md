@@ -2,7 +2,7 @@
   <div align="center">
     <img width="80px" src="https://filecoindataportal.xyz/logo.svg">
   </div>
-  <h1 align="center">Filecoin Data Portal</h1> 
+  <h1 align="center">Filecoin Data Portal</h1>
   <p align="center">Open, serverless, and local friendly Data Platform for the Filecoin Ecosystem.</a> </p>
 </p>
 
