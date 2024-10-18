@@ -1,6 +1,7 @@
+from dagster_gcp import BigQueryResource
 import pandas as pd
 import requests
-from dagster import Output, MetadataValue, asset
+from dagster import AssetExecutionContext, Output, MetadataValue, asset
 from dagster_duckdb import DuckDBResource
 
 from fdp.resources import DuneResource
@@ -88,3 +89,37 @@ def dune_metrics(dune: DuneResource, duckdb: DuckDBResource) -> None:
         """).df()
 
     dune.upload_df(filecoin_daily_metrics, "filecoin_daily_metrics")
+
+
+@asset(compute_kind="python")
+def raw_oso_daily_filecoin_collection_events(
+    context: AssetExecutionContext,
+    fdp_bigquery: BigQueryResource,
+    duckdb: DuckDBResource,
+) -> None:
+    query = """
+    select
+        event_type,
+        bucket_day as date,
+        amount
+    from `protocol-labs-data-nexus.oso.events_daily_to_collection`
+    where 1=1
+        and collection_id = (select collection_id from `protocol-labs-data-nexus.oso.collections_v1` where collection_name = "filecoin-core")
+    """
+
+    with fdp_bigquery.get_client() as client:
+        job = client.query(query)
+        arrow_result = job.to_arrow(create_bqstorage_client=True)
+
+    context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
+
+    with duckdb.get_connection() as duckdb_con:
+        duckdb_con.execute(
+            """
+            create or replace table raw.raw_oso_daily_filecoin_collection_events as (
+                select * from arrow_result
+            )
+            """
+        )
+
+        context.log.info(f"Persisted {arrow_result.num_rows} rows")

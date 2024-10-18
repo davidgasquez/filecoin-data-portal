@@ -23,6 +23,11 @@ lily_bigquery = BigQueryResource(
     gcp_credentials=EnvVar("ENCODED_GOOGLE_APPLICATION_CREDENTIALS"),
 )
 
+fdp_bigquery = BigQueryResource(
+    project="protocol-labs-data-nexus",
+    gcp_credentials=EnvVar("ENCODED_GOOGLE_APPLICATION_CREDENTIALS"),
+)
+
 resources = {
     "dbt": resources.dbt_resource,
     "spacescope_api": resources.SpacescopeResource(
@@ -32,6 +37,7 @@ resources = {
     "io_manager": DuckDBPandasIOManager(database=DATABASE_PATH, schema="raw"),
     "dune": resources.DuneResource(DUNE_API_KEY=EnvVar("DUNE_API_KEY")),
     "lily_bigquery": lily_bigquery,
+    "fdp_bigquery": fdp_bigquery,
 }
 
 defs = Definitions(assets=[*all_assets], resources=resources)

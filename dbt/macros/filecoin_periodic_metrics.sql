@@ -224,6 +224,30 @@ network_base_fee as (
     from {{ source("raw_assets", "raw_network_base_fee") }}
     group by 1
     order by date desc
+),
+oso_filecoin_collection_events as (
+    /*
+    This pivot table should generate these columns:
+      - date
+      - github_commit_code_events
+      - github_forked_events
+      - github_issue_closed_events
+      - github_issue_comment_events
+      - github_issue_opened_events
+      - github_issue_reopened_events
+      - github_pull_request_closed_events
+      - github_pull_request_merged_events
+      - github_pull_request_opened_events
+      - github_pull_request_reopened_events
+      - github_pull_request_review_comment_events
+      - github_release_published_events
+      - github_starred_events
+    */
+    pivot raw.raw_oso_daily_filecoin_collection_events
+    on concat('github_', lower(event_type), '_events')
+    using sum(cast(amount as int))
+    group by date
+    order by date desc
 )
 
 select
@@ -344,6 +368,16 @@ select
     publish_storage_deals_gas_used_fil,
     submit_windowed_post_gas_used_fil
 
+    -- Oso Filecoin Collection Events
+    github_commit_code_events,
+    github_forked_events,
+    github_issue_closed_events,
+    github_issue_comment_events,
+    github_issue_opened_events,
+    github_issue_reopened_events,
+    github_pull_request_closed_events,
+    github_pull_request_merged_events,
+
 from date_calendar
 left join deal_metrics on date_calendar.date = deal_metrics.date
 left join users_with_active_deals on date_calendar.date = users_with_active_deals.date
@@ -360,6 +394,7 @@ left join circulating_supply on date_calendar.date = circulating_supply.date
 left join block_rewards on date_calendar.date = block_rewards.date
 left join network_base_fee on date_calendar.date = network_base_fee.date
 left join gas_usage on date_calendar.date = gas_usage.date
+left join oso_filecoin_collection_events on date_calendar.date = oso_filecoin_collection_events.date
 order by date_calendar.date desc
 
 {% endmacro %}

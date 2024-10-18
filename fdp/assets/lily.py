@@ -64,6 +64,52 @@ def raw_verified_registry_verifiers(
         context.log.info(f"Persisted {arrow_result.num_rows} rows")
 
 
+# @asset(compute_kind="python")
+# def raw_daily_provider_sector_events(
+#     context: AssetExecutionContext,
+#     lily_bigquery: BigQueryResource,
+#     duckdb: DuckDBResource,
+# ) -> None:
+#     query = """
+#         with base as (
+#             select
+#                 timestamp_seconds((height * 30) + 1598306400) AS timestamp,
+#                 height,
+#                 sector_id,
+#                 event,
+#                 miner_id as provider_id
+#             from
+#                 `lily-data.lily.miner_sector_events`
+#         )
+
+#         select
+#             date(timestamp) as date,
+#             event,
+#             provider_id,
+#             approx_count_distinct(concat(cast(sector_id as string), provider_id)) as count
+#         from base
+#         group by 1, 2, 3
+#         order by 1 desc, 2 desc
+#     """
+
+#     with lily_bigquery.get_client() as client:
+#         job = client.query(query)
+#         arrow_result = job.to_arrow(create_bqstorage_client=True)
+
+#     context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
+
+#     with duckdb.get_connection() as duckdb_con:
+#         duckdb_con.execute(
+#             """
+#             create or replace table raw.raw_daily_provider_sector_events as (
+#                 select * from arrow_result
+#             )
+#             """
+#         )
+
+#         context.log.info(f"Persisted {arrow_result.num_rows} rows")
+
+
 @asset(compute_kind="python")
 def raw_filecoin_state_market_deals(
     context: AssetExecutionContext,
