@@ -206,8 +206,9 @@ provider_metrics_aggregations as (
         avg(smoothed_quality_adjusted_power_growth_pibs) filter(where date > current_date() - interval '12 months' and date <= current_date() - interval '9 months') as avg_smoothed_quality_adjusted_power_growth_pibs_9m_12m,
         avg(smoothed_verified_data_power_growth_pibs) filter(where date > current_date() - interval '12 months' and date <= current_date() - interval '9 months') as avg_smoothed_verified_data_power_growth_pibs_9m_12m,
 
-        -- When they started providing power
+        -- When they started and stopped providing power
         min(date) filter (where raw_power_pibs > 0) as started_providing_power_at,
+        max(date) filter (where raw_power_pibs > 0) as stopped_providing_power_at,
 
         -- Average uploaded data per day
         avg(onboarded_data_tibs) as avg_data_uploaded_tibs_per_day,
@@ -397,6 +398,7 @@ select
     provider_metrics_aggregations.avg_smoothed_quality_adjusted_power_growth_pibs_9m_12m,
     provider_metrics_aggregations.avg_smoothed_verified_data_power_growth_pibs_9m_12m,
     provider_metrics_aggregations.started_providing_power_at,
+    provider_metrics_aggregations.stopped_providing_power_at,
     addresses_mapping.address,
     basic_info.onboarding_at,
     basic_info.sector_size,

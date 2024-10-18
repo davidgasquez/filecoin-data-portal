@@ -67,6 +67,7 @@ Besides the data sources mentioned above, there are a few data indexers that pro
 - [FilecoinGreen](https://filecoin.energy/)
 - [FilFox](https://filfox.info) and [API](https://filfox.info/api)
 - [FilScan](https://filscan.io) and [API](https://api-v2.filscan.io/api)
+- [Filutils](https://filutils.com/) decoding message params ([example](https://www.filutils.com/en/message/bafy2bzacec42jewhmgx73yxd7bndj6p7z5n3xibx47vex2woch66wbip434oa)).
 - [Blockscout](https://filecoin.blockscout.com/) and [API](https://filecoin.blockscout.com/api-docs) for FEVM.
 
 ### JSON-RPC Endpoints
