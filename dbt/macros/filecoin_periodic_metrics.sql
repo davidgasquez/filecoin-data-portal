@@ -366,7 +366,7 @@ select
     provecommit_aggregate_gas_used_fil,
     precommit_sector_batch_gas_used_fil,
     publish_storage_deals_gas_used_fil,
-    submit_windowed_post_gas_used_fil
+    submit_windowed_post_gas_used_fil,
 
     -- Oso Filecoin Collection Events
     github_commit_code_events,
