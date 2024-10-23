@@ -1,16 +1,15 @@
 .DEFAULT_GOAL := run
 
 run:
-	@dagster-dbt project prepare-and-package --file fdp/resources.py
-	@dagster asset materialize --select \* -m fdp
+	@uv run dagster-dbt project prepare-and-package --file fdp/resources.py
+	@uv run dagster asset materialize --select \* -m fdp.definitions
 
 dev:
-	@dagster dev
+	@uv run dagster dev
 
 setup:
-	@command -v uv >/dev/null 2>&1 || pip install -U uv
-	@uv venv
-	@uv pip install -U -e ".[dev]"
+	@uv sync
+	@echo "source .venv/bin/activate"
 
 tables:
 	@mkdir -p data/tables/

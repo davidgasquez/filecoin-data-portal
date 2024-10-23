@@ -1,7 +1,7 @@
-from dagster_gcp import BigQueryResource
 import pandas as pd
 import requests
-from dagster import AssetExecutionContext, Output, MetadataValue, asset
+from dagster import Output, MetadataValue, AssetExecutionContext, asset
+from dagster_gcp import BigQueryResource
 from dagster_duckdb import DuckDBResource
 
 from fdp.resources import DuneResource
@@ -25,7 +25,7 @@ def raw_storage_providers_evp_outputs() -> Output[pd.DataFrame]:
     """
     Storage Providers Retrieves all existing Energy Validation Process outputs.
     """
-    r = requests.get("https://sp-outputs-api.vercel.app/api/evp-outputs")
+    r = requests.get("https://sp-outputs-api.vercel.app/api/evp-outputs", verify=False)
     r.raise_for_status()
 
     df = pd.DataFrame(r.json()["data"])
@@ -97,6 +97,24 @@ def raw_oso_daily_filecoin_collection_events(
     fdp_bigquery: BigQueryResource,
     duckdb: DuckDBResource,
 ) -> None:
+    """
+    OSO Daily Filecoin Collection Events.
+
+    This table could be dropped at any time as it not versioned. In that case, we can swap to:
+
+    ```sql
+    select
+        e.*,
+        abp.artifact_source,
+        abp.artifact_name,
+    from `oso.timeseries_events_by_artifact_v0` e
+    join `oso.artifacts_by_collection_v1` abp
+    on e.to_artifact_id = abp.artifact_id
+    where abp.collection_name = "filecoin-core"
+    order by time desc
+    ```
+    """
+
     query = """
     select
         event_type,
