@@ -2,11 +2,15 @@ import io
 import os
 import json
 
+import httpx
 import pandas as pd
+import dagster as dg
 import requests
 from dagster import ConfigurableResource
+from pydantic import PrivateAttr
 from requests import Response
 from dagster_dbt import DbtProject, DbtCliResource
+from dagster_duckdb import DuckDBResource
 
 
 class SpacescopeResource(ConfigurableResource):
@@ -234,3 +238,39 @@ DATABASE_PATH = os.getenv(
 dbt_project = DbtProject(project_dir=DBT_PROJECT_DIR)
 dbt_project.prepare_if_dev()
 dbt_resource = DbtCliResource(project_dir=dbt_project, profiles_dir=DBT_PROJECT_DIR)
+
+
+# ----
+
+DATABASE_PATH = os.getenv("DATABASE_PATH", "./data/database.duckdb")
+
+duckdb_resource = DuckDBResource(database=DATABASE_PATH)
+
+
+class HttpClientResource(ConfigurableResource):
+    """
+    HTTP client resource.
+    """
+
+    retries: int = 3
+    verify: bool = False
+    timeout: int = 30
+    follow_redirects: bool = True
+    bearer_token: str = ""
+
+    _client: httpx.Client = PrivateAttr()
+
+    def setup_for_execution(self, context: dg.InitResourceContext) -> None:
+        transport = httpx.HTTPTransport(retries=self.retries, verify=self.verify)
+
+        self._client = httpx.Client(
+            transport=transport,
+            timeout=self.timeout,
+            follow_redirects=self.follow_redirects,
+            headers={"Authorization": f"Bearer {self.bearer_token}"}
+            if self.bearer_token
+            else {},
+        )
+
+    def get(self, url: str, **kwargs) -> httpx.Response:
+        return self._client.get(url, **kwargs)
