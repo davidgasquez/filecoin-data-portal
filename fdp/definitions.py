@@ -6,17 +6,18 @@ from dagster_gcp import BigQueryResource
 from dagster_duckdb import DuckDBResource
 from dagster_duckdb_pandas import DuckDBPandasIOManager
 
+import fdp.dbt.definitions as dbt_definitions
 import fdp.datacapstats.definitions as datacapstats_definitions
 
 from . import resources
-from .assets import dbt, lily, other, reputation, spacescope
+from .assets import lily, other, reputation, spacescope
 
 DATABASE_PATH = os.getenv(
     "DATABASE_PATH",
     os.path.dirname(os.path.abspath(__file__)) + "/../data/database.duckdb",
 )
 
-all_assets = load_assets_from_modules([other, lily, spacescope, reputation, dbt])
+all_assets = load_assets_from_modules([other, lily, spacescope, reputation])
 
 lily_bigquery = BigQueryResource(
     project="protocol-labs-data-nexus",
@@ -30,7 +31,6 @@ fdp_bigquery = BigQueryResource(
 )
 
 resources = {
-    "dbt": resources.dbt_resource,
     "spacescope_api": resources.SpacescopeResource(
         SPACESCOPE_TOKEN=EnvVar("SPACESCOPE_TOKEN")
     ),
@@ -44,4 +44,5 @@ resources = {
 definitions = dg.Definitions.merge(
     Definitions(assets=[*all_assets], resources=resources),
     datacapstats_definitions.definitions,
+    dbt_definitions.definitions,
 )
