@@ -1,28 +1,22 @@
 import datetime
 
 import pandas as pd
+import dagster as dg
 from duckdb import CatalogException
-from dagster import (
-    Backoff,
-    RetryPolicy,
-    MaterializeResult,
-    AssetExecutionContext,
-    asset,
-)
 from dagster_duckdb import DuckDBResource
 
-from ..resources import SpacescopeResource
+from fdp.spacescope.resources import SpacescopeResource
 
 FILECOIN_FIRST_DAY = datetime.date(2020, 10, 15)
 
 
 def fetch_and_persist_data(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     duckdb: DuckDBResource,
     table_name: str,
     api_call,
     create_table_query,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     Fetches data from Spacescope API and persists it in DuckDB.
     """
@@ -47,7 +41,7 @@ def fetch_and_persist_data(
 
         if from_day > to_day:
             context.log.info(f"Data is up to date. Last update was on {from_day}")
-            return MaterializeResult()
+            return dg.MaterializeResult()
 
         context.log.info(f"Fetching data from {from_day} to {to_day}")
 
@@ -63,7 +57,7 @@ def fetch_and_persist_data(
 
         if df.empty:
             context.log.info("No new data")
-            return MaterializeResult()
+            return dg.MaterializeResult()
 
         conn.execute(
             f"""
@@ -74,18 +68,20 @@ def fetch_and_persist_data(
 
         context.log.info(f"Persisted {df.shape[0]} rows")
 
-        return MaterializeResult()
+        return dg.MaterializeResult()
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_daily_power(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     Storage Providers daily power from Spacescope API.
     """
@@ -110,15 +106,17 @@ def raw_storage_providers_daily_power(
     )
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_token_balances(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     Storage Providers token balance from Spacescope API.
     """
@@ -161,7 +159,7 @@ def raw_storage_providers_token_balances(
             context.log.info(
                 f"Storage provider token balance data is up to date. Last update was on {from_day}"
             )
-            return MaterializeResult(
+            return dg.MaterializeResult(
                 metadata={
                     "Sample": "No new data",
                     "Rows": 0,
@@ -193,7 +191,7 @@ def raw_storage_providers_token_balances(
 
         if df_token_balance_data.empty:
             context.log.info("No new data")
-            return MaterializeResult()
+            return dg.MaterializeResult()
 
         conn.execute(
             """
@@ -206,7 +204,7 @@ def raw_storage_providers_token_balances(
             f"Persisted {df_token_balance_data.shape[0]} rows of storage provider token balance data"
         )
 
-        return MaterializeResult(
+        return dg.MaterializeResult(
             metadata={
                 "Sample": df_token_balance_data.sample(5).to_markdown(),
                 "Rows": df_token_balance_data.shape[0],
@@ -214,15 +212,17 @@ def raw_storage_providers_token_balances(
         )
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_rewards(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     Storage Providers rewards from Spacescope API.
     """
@@ -268,7 +268,7 @@ def raw_storage_providers_rewards(
             context.log.info(
                 f"Storage provider rewards data is up to date. Last update was on {from_day}"
             )
-            return MaterializeResult(
+            return dg.MaterializeResult(
                 metadata={
                     "Sample": "No new data",
                     "Rows": 0,
@@ -300,7 +300,7 @@ def raw_storage_providers_rewards(
 
         if df_rewards_data.empty:
             context.log.info("No new data")
-            return MaterializeResult()
+            return dg.MaterializeResult()
 
         conn.execute(
             """
@@ -313,7 +313,7 @@ def raw_storage_providers_rewards(
             f"Persisted {df_rewards_data.shape[0]} rows of storage provider rewards data"
         )
 
-        return MaterializeResult(
+        return dg.MaterializeResult(
             metadata={
                 "Sample": df_rewards_data.sample(5).to_markdown(),
                 "Rows": df_rewards_data.shape[0],
@@ -321,15 +321,17 @@ def raw_storage_providers_rewards(
         )
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_sector_totals(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The cumulative number of sectors and daily onboarded sectors of the storage providers.
     """
@@ -367,7 +369,7 @@ def raw_storage_providers_sector_totals(
 
         if from_day > to_day:
             context.log.info(f"Data is up to date. Last update was on {from_day}")
-            return MaterializeResult()
+            return dg.MaterializeResult()
 
         context.log.info(f"Fetching data from {from_day} to {to_day}")
 
@@ -387,7 +389,7 @@ def raw_storage_providers_sector_totals(
 
         if df.empty:
             context.log.info("No new data")
-            return MaterializeResult()
+            return dg.MaterializeResult()
 
         conn.execute(
             f"""
@@ -398,18 +400,20 @@ def raw_storage_providers_sector_totals(
 
         context.log.info(f"Persisted {df.shape[0]} rows")
 
-        return MaterializeResult()
+        return dg.MaterializeResult()
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_sector_terminations(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The statistics of sector termination of the storage providers.
     """
@@ -453,7 +457,7 @@ def raw_storage_providers_sector_terminations(
 
         if from_day > to_day:
             context.log.info(f"Data is up to date. Last update was on {from_day}")
-            return MaterializeResult()
+            return dg.MaterializeResult()
 
         context.log.info(f"Fetching data from {from_day} to {to_day}")
 
@@ -473,7 +477,7 @@ def raw_storage_providers_sector_terminations(
 
         if df.empty:
             context.log.info("No new data")
-            return MaterializeResult()
+            return dg.MaterializeResult()
 
         conn.execute(
             f"""
@@ -484,18 +488,20 @@ def raw_storage_providers_sector_terminations(
 
         context.log.info(f"Persisted {df.shape[0]} rows")
 
-        return MaterializeResult()
+        return dg.MaterializeResult()
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_sector_faults(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The statistics of sector faulted of the storage providers.
     """
@@ -522,15 +528,17 @@ def raw_storage_providers_sector_faults(
     )
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_sector_recoveries(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The statistics of sector recovered of the storage providers.
     """
@@ -555,15 +563,17 @@ def raw_storage_providers_sector_recoveries(
     )
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_sector_expirations(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The statistics of sector recovered of the storage providers.
     """
@@ -590,15 +600,17 @@ def raw_storage_providers_sector_expirations(
     )
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_sector_extensions(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The statistics of sector recovered of the storage providers.
     """
@@ -623,15 +635,17 @@ def raw_storage_providers_sector_extensions(
     )
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_sector_snaps(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The statistics of sector recovered of the storage providers.
     """
@@ -658,15 +672,17 @@ def raw_storage_providers_sector_snaps(
     )
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_sector_durations(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The statistics of sector recovered of the storage providers.
     """
@@ -691,15 +707,17 @@ def raw_storage_providers_sector_durations(
     )
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_sector_commits_count(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The cumulative number of sector onboarded on the Filecoin Network of the storage providers.
     """
@@ -729,15 +747,17 @@ def raw_storage_providers_sector_commits_count(
     )
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_sector_commits_size(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The cumulative size of sector onboarded on the Filecoin Network of the storage providers.
     """
@@ -767,15 +787,17 @@ def raw_storage_providers_sector_commits_size(
     )
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_circulating_supply(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The total amount and the change of FIL tokens in circulation according to the Protocol’s definition.
     """
@@ -817,18 +839,20 @@ def raw_circulating_supply(
 
     context.log.info(f"Persisted {df.shape[0]} rows")
 
-    return MaterializeResult()
+    return dg.MaterializeResult()
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_network_user_address_count(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The cumulative count of unique addresses interacting with the Filecoin Network.
     """
@@ -869,18 +893,20 @@ def raw_network_user_address_count(
 
     context.log.info(f"Persisted {df.shape[0]} rows")
 
-    return MaterializeResult()
+    return dg.MaterializeResult()
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_network_base_fee(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The base fee required to send a message to the Filecoin Network.
     """
@@ -921,18 +947,20 @@ def raw_network_base_fee(
 
     context.log.info(f"Persisted {df.shape[0]} rows")
 
-    return MaterializeResult()
+    return dg.MaterializeResult()
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_block_rewards(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The base fee required to send a message to the Filecoin Network.
     """
@@ -973,18 +1001,20 @@ def raw_block_rewards(
 
     context.log.info(f"Persisted {df.shape[0]} rows")
 
-    return MaterializeResult()
+    return dg.MaterializeResult()
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_basic_info(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     Basic information on the storage providers.
     """
@@ -1006,18 +1036,20 @@ def raw_storage_providers_basic_info(
 
     context.log.info(f"Persisted {df.shape[0]} rows")
 
-    return MaterializeResult()
+    return dg.MaterializeResult()
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_deal_count(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The number of storage deals of the storage providers.
     """
@@ -1058,18 +1090,20 @@ def raw_storage_providers_deal_count(
 
     context.log.info(f"Persisted {df.shape[0]} rows")
 
-    return MaterializeResult()
+    return dg.MaterializeResult()
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_deal_duration(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The number of storage deals of the storage providers.
     """
@@ -1110,18 +1144,20 @@ def raw_storage_providers_deal_duration(
 
     context.log.info(f"Persisted {df.shape[0]} rows")
 
-    return MaterializeResult()
+    return dg.MaterializeResult()
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_storage_providers_deal_revenue(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The number of storage deals of the storage providers.
     """
@@ -1162,18 +1198,20 @@ def raw_storage_providers_deal_revenue(
 
     context.log.info(f"Persisted {df.shape[0]} rows")
 
-    return MaterializeResult()
+    return dg.MaterializeResult()
 
 
-@asset(
+@dg.asset(
     compute_kind="API",
-    retry_policy=RetryPolicy(max_retries=3, delay=20, backoff=Backoff.EXPONENTIAL),
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
 )
 def raw_gas_daily_usage(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,
     duckdb: DuckDBResource,
-) -> MaterializeResult:
+) -> dg.MaterializeResult:
     """
     The gas usage of different types of messages on Filecoin Network.
     """
@@ -1215,4 +1253,4 @@ def raw_gas_daily_usage(
 
     context.log.info(f"Persisted {df.shape[0]} rows")
 
-    return MaterializeResult()
+    return dg.MaterializeResult()

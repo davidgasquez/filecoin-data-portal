@@ -1,48 +1,22 @@
-import os
-
 import dagster as dg
-from dagster import EnvVar, Definitions, load_assets_from_modules
-from dagster_gcp import BigQueryResource
-from dagster_duckdb import DuckDBResource
-from dagster_duckdb_pandas import DuckDBPandasIOManager
+from dagster import Definitions
 
 import fdp.dbt.definitions as dbt_definitions
+import fdp.apis.definitions as api_definitions
+import fdp.dune.definitions as dune_definitions
+import fdp.bigquery.definitions as bigquery_definitions
+import fdp.spacescope.definitions as spacescope_definitions
 import fdp.datacapstats.definitions as datacapstats_definitions
+from fdp.resources import duckdb_resource, duckdb_io_manager
 
-from . import resources
-from .assets import lily, other, reputation, spacescope
-
-DATABASE_PATH = os.getenv(
-    "DATABASE_PATH",
-    os.path.dirname(os.path.abspath(__file__)) + "/../data/database.duckdb",
-)
-
-all_assets = load_assets_from_modules([other, lily, spacescope, reputation])
-
-lily_bigquery = BigQueryResource(
-    project="protocol-labs-data-nexus",
-    location="us-east4",
-    gcp_credentials=EnvVar("ENCODED_GOOGLE_APPLICATION_CREDENTIALS"),
-)
-
-fdp_bigquery = BigQueryResource(
-    project="protocol-labs-data-nexus",
-    gcp_credentials=EnvVar("ENCODED_GOOGLE_APPLICATION_CREDENTIALS"),
-)
-
-resources = {
-    "spacescope_api": resources.SpacescopeResource(
-        SPACESCOPE_TOKEN=EnvVar("SPACESCOPE_TOKEN")
-    ),
-    "duckdb": DuckDBResource(database=DATABASE_PATH),
-    "io_manager": DuckDBPandasIOManager(database=DATABASE_PATH, schema="raw"),
-    "dune": resources.DuneResource(DUNE_API_KEY=EnvVar("DUNE_API_KEY")),
-    "lily_bigquery": lily_bigquery,
-    "fdp_bigquery": fdp_bigquery,
-}
+common_resources = {"duckdb": duckdb_resource, "io_manager": duckdb_io_manager}
 
 definitions = dg.Definitions.merge(
-    Definitions(assets=[*all_assets], resources=resources),
+    Definitions(resources=common_resources),
     datacapstats_definitions.definitions,
     dbt_definitions.definitions,
+    spacescope_definitions.definitions,
+    dune_definitions.definitions,
+    api_definitions.definitions,
+    bigquery_definitions.definitions,
 )

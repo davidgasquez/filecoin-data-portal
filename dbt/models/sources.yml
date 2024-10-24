@@ -136,3 +136,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_gas_daily_usage"]
+      - name: raw_oso_daily_filecoin_collection_events
+        meta:
+          dagster:
+            asset_key: ["raw_oso_daily_filecoin_collection_events"]

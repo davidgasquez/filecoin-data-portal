@@ -243,7 +243,7 @@ oso_filecoin_collection_events as (
       - github_release_published_events
       - github_starred_events
     */
-    pivot raw.raw_oso_daily_filecoin_collection_events
+    pivot {{ source("raw_assets", "raw_oso_daily_filecoin_collection_events") }}
     on concat('github_', lower(event_type), '_events')
     using sum(cast(amount as int))
     group by date
