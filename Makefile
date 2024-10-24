@@ -2,8 +2,7 @@
 
 run:
 	@uv run dagster-dbt project prepare-and-package --file fdp/dbt/resources.py
-	@ls -l dbt
-	# @uv run dagster asset materialize --select \* -m fdp.definitions
+	@uv run dagster asset materialize --select \* -m fdp.definitions
 
 dev:
 	@uv run dagster dev
