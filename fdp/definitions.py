@@ -1,5 +1,4 @@
 import dagster as dg
-from dagster import Definitions
 
 import fdp.dbt.definitions as dbt_definitions
 import fdp.apis.definitions as api_definitions
@@ -12,7 +11,7 @@ from fdp.resources import duckdb_resource, duckdb_io_manager
 common_resources = {"duckdb": duckdb_resource, "io_manager": duckdb_io_manager}
 
 definitions = dg.Definitions.merge(
-    Definitions(resources=common_resources),
+    dg.Definitions(resources=common_resources),
     datacapstats_definitions.definitions,
     dbt_definitions.definitions,
     spacescope_definitions.definitions,

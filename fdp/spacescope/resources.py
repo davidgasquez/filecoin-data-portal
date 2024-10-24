@@ -1,9 +1,9 @@
+import dagster as dg
 import requests
-from dagster import ConfigurableResource
 from requests import Response
 
 
-class SpacescopeResource(ConfigurableResource):
+class SpacescopeResource(dg.ConfigurableResource):
     """
     Spacescope API resource.
     """

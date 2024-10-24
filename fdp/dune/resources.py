@@ -2,11 +2,11 @@ import io
 import json
 
 import pandas as pd
+import dagster as dg
 import requests
-from dagster import ConfigurableResource
 
 
-class DuneResource(ConfigurableResource):
+class DuneResource(dg.ConfigurableResource):
     """
     Dune API resource.
     """

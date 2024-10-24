@@ -1,12 +1,12 @@
+import dagster as dg
 import pyarrow as pa
-from dagster import AssetExecutionContext, asset
-from dagster_duckdb import DuckDBResource
 from dagster_gcp import BigQueryResource
+from dagster_duckdb import DuckDBResource
 
 
-@asset(compute_kind="python")
+@dg.asset(compute_kind="python")
 def raw_id_addresses(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     lily_bigquery: BigQueryResource,
     duckdb: DuckDBResource,
 ) -> None:
@@ -34,9 +34,9 @@ def raw_id_addresses(
         context.log.info(f"Persisted {arrow_result.num_rows} rows")
 
 
-@asset(compute_kind="python")
+@dg.asset(compute_kind="python")
 def raw_verified_registry_verifiers(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     lily_bigquery: BigQueryResource,
     duckdb: DuckDBResource,
 ) -> None:
@@ -64,9 +64,9 @@ def raw_verified_registry_verifiers(
         context.log.info(f"Persisted {arrow_result.num_rows} rows")
 
 
-# @asset(compute_kind="python")
+# @dg.asset(compute_kind="python")
 # def raw_daily_provider_sector_events(
-#     context: AssetExecutionContext,
+#     context: dg.AssetExecutionContext,
 #     lily_bigquery: BigQueryResource,
 #     duckdb: DuckDBResource,
 # ) -> None:
@@ -110,9 +110,9 @@ def raw_verified_registry_verifiers(
 #         context.log.info(f"Persisted {arrow_result.num_rows} rows")
 
 
-@asset(compute_kind="python")
+@dg.asset(compute_kind="python")
 def raw_filecoin_state_market_deals(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     lily_bigquery: BigQueryResource,
     duckdb: DuckDBResource,
 ) -> None:
