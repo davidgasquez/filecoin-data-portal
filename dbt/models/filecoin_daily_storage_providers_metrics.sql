@@ -247,6 +247,12 @@ deal_revenue as (
         total_verified_deal_revenue
     from {{ source("raw_assets", "raw_storage_providers_deal_revenue") }}
     where date is not null and provider_id is not null
+),
+
+sector_events as (
+    pivot {{ source("raw_assets", "raw_daily_providers_sector_events") }}
+    on concat(lower(event), '_events_count')
+    using sum(count)
 )
 
 select
@@ -356,7 +362,18 @@ select
     ded.avg_regular_deal_duration_days,
     ded.avg_verified_deal_duration_days,
     der.total_regular_deal_revenue,
-    der.total_verified_deal_revenue
+    der.total_verified_deal_revenue,
+
+    -- Sector Events
+    se.commit_capacity_added_events_count,
+    se.precommit_added_events_count,
+    se.sector_added_events_count,
+    se.sector_extended_events_count,
+    se.sector_faulted_events_count,
+    se.sector_recovered_events_count,
+    se.sector_recovering_events_count,
+    se.sector_snapped_events_count,
+    se.sector_terminated_events_count
 from date_calendar dc
 full outer join storage_providers_power spp on dc.date = spp.date
 full outer join storage_providers_power_growth spg on dc.date = spg.date and spp.provider_id = spg.provider_id
@@ -377,6 +394,7 @@ full outer join spark_retrievals spark on dc.date = spark.date and spp.provider_
 full outer join deal_count dec on dc.date = dec.date and spp.provider_id = dec.provider_id
 full outer join deal_duration ded on dc.date = ded.date and spp.provider_id = ded.provider_id
 full outer join deal_revenue der on dc.date = der.date and spp.provider_id = der.provider_id
+full outer join sector_events se on dc.date = se.date and spp.provider_id = se.provider_id
 where 1=1
     and dc.date >= '2020-09-12'
     and (

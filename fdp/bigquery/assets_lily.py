@@ -1,13 +1,14 @@
 import dagster as dg
 import pyarrow as pa
-from dagster_gcp import BigQueryResource
 from dagster_duckdb import DuckDBResource
+
+from fdp.bigquery.resources import BigQueryArrowResource
 
 
 @dg.asset(compute_kind="python")
 def raw_id_addresses(
     context: dg.AssetExecutionContext,
-    lily_bigquery: BigQueryResource,
+    lily_bigquery: BigQueryArrowResource,
     duckdb: DuckDBResource,
 ) -> None:
     query = """
@@ -37,7 +38,7 @@ def raw_id_addresses(
 @dg.asset(compute_kind="python")
 def raw_verified_registry_verifiers(
     context: dg.AssetExecutionContext,
-    lily_bigquery: BigQueryResource,
+    lily_bigquery: BigQueryArrowResource,
     duckdb: DuckDBResource,
 ) -> None:
     query = """
@@ -64,56 +65,64 @@ def raw_verified_registry_verifiers(
         context.log.info(f"Persisted {arrow_result.num_rows} rows")
 
 
-# @dg.asset(compute_kind="python")
-# def raw_daily_provider_sector_events(
-#     context: dg.AssetExecutionContext,
-#     lily_bigquery: BigQueryResource,
-#     duckdb: DuckDBResource,
-# ) -> None:
-#     query = """
-#         with base as (
-#             select
-#                 timestamp_seconds((height * 30) + 1598306400) AS timestamp,
-#                 height,
-#                 sector_id,
-#                 event,
-#                 miner_id as provider_id
-#             from
-#                 `lily-data.lily.miner_sector_events`
-#         )
+@dg.asset(compute_kind="python")
+def raw_daily_providers_sector_events(
+    context: dg.AssetExecutionContext,
+    lily_bigquery: BigQueryArrowResource,
+    duckdb: DuckDBResource,
+) -> dg.MaterializeResult:
+    query = """
+        with base as (
+            select
+                timestamp_seconds((height * 30) + 1598306400) AS timestamp,
+                height,
+                sector_id,
+                event,
+                miner_id as provider_id
+            from
+                `lily-data.lily.miner_sector_events`
+        )
 
-#         select
-#             date(timestamp) as date,
-#             event,
-#             provider_id,
-#             approx_count_distinct(concat(cast(sector_id as string), provider_id)) as count
-#         from base
-#         group by 1, 2, 3
-#         order by 1 desc, 2 desc
-#     """
+        select
+            date(timestamp) as date,
+            event,
+            provider_id,
+            approx_count_distinct(concat(cast(sector_id as string), provider_id)) as count
+        from base
+        group by 1, 2, 3
+        order by 1 desc, 2 desc
+    """
 
-#     with lily_bigquery.get_client() as client:
-#         job = client.query(query)
-#         arrow_result = job.to_arrow(create_bqstorage_client=True)
+    schema = pa.schema(
+        [
+            pa.field("date", pa.date32()),
+            pa.field("event", pa.string()),
+            pa.field("provider_id", pa.string()),
+            pa.field("count", pa.int64()),
+        ]
+    )
 
-#     context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
+    scanner = lily_bigquery.query_to_scanner(query, schema)  # noqa: F841
+    table_name = context.asset_key.to_user_string()
 
-#     with duckdb.get_connection() as duckdb_con:
-#         duckdb_con.execute(
-#             """
-#             create or replace table raw.raw_daily_provider_sector_events as (
-#                 select * from arrow_result
-#             )
-#             """
-#         )
+    with duckdb.get_connection() as duckdb_con:
+        duckdb_con.execute(
+            f"""
+            create or replace table raw.{table_name} as (
+                select * from scanner
+            )
+            """
+        )
 
-#         context.log.info(f"Persisted {arrow_result.num_rows} rows")
+        context.log.info(f"Persisted raw.{table_name}")
+
+    return dg.MaterializeResult()
 
 
 @dg.asset(compute_kind="python")
 def raw_filecoin_state_market_deals(
     context: dg.AssetExecutionContext,
-    lily_bigquery: BigQueryResource,
+    lily_bigquery: BigQueryArrowResource,
     duckdb: DuckDBResource,
 ) -> None:
     query = """

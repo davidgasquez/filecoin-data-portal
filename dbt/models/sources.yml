@@ -140,3 +140,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_oso_daily_filecoin_collection_events"]
+      - name: raw_daily_providers_sector_events
+        meta:
+          dagster:
+            asset_key: ["raw_daily_providers_sector_events"]

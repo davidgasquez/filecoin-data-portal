@@ -1,12 +1,14 @@
 import dagster as dg
-from dagster_gcp import BigQueryResource
+import pyarrow as pa
 from dagster_duckdb import DuckDBResource
+
+from fdp.bigquery.resources import BigQueryArrowResource
 
 
 @dg.asset(compute_kind="python")
 def raw_oso_daily_filecoin_collection_events(
     context: dg.AssetExecutionContext,
-    fdp_bigquery: BigQueryResource,
+    fdp_bigquery: BigQueryArrowResource,
     duckdb: DuckDBResource,
 ) -> dg.MaterializeResult:
     """
@@ -37,21 +39,27 @@ def raw_oso_daily_filecoin_collection_events(
         and collection_id = (select collection_id from `protocol-labs-data-nexus.oso.collections_v1` where collection_name = "filecoin-core")
     """
 
-    with fdp_bigquery.get_client() as client:
-        job = client.query(query)
-        arrow_result = job.to_arrow(create_bqstorage_client=True)
+    schema = pa.schema(
+        [
+            pa.field("event_type", pa.string()),
+            pa.field("date", pa.date32()),
+            pa.field("amount", pa.int64()),
+        ]
+    )
 
-    context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
+    scanner = fdp_bigquery.query_to_scanner(query, schema)  # noqa: F841
+
+    table_name = context.asset_key.to_user_string()
 
     with duckdb.get_connection() as duckdb_con:
         duckdb_con.execute(
             """
-            create or replace table raw.raw_oso_daily_filecoin_collection_events as (
-                select * from arrow_result
+            create or replace table raw.{table_name} as (
+                select * from scanner
             )
             """
         )
 
-        context.log.info(f"Persisted {arrow_result.num_rows} rows")
+        context.log.info(f"Persisted raw.{table_name}")
 
-    return dg.MaterializeResult(metadata={"dagster/row_count": arrow_result.num_rows})
+    return dg.MaterializeResult()

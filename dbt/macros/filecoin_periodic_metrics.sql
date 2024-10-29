@@ -103,6 +103,15 @@ provider_metrics as (
         sum(daily_new_sector_snap_raw_power_tibs) / 1024 as sector_snap_raw_power_pibs,
         sum(daily_new_sector_snap_quality_adjusted_power_tibs) / 1024 as sector_snap_quality_adjusted_power_pibs,
         count(distinct provider_id) filter (raw_power_pibs > 0) as providers_with_power,
+        sum(commit_capacity_added_events_count) as commit_capacity_added_events_count,
+        sum(precommit_added_events_count) as precommit_added_events_count,
+        sum(sector_added_events_count) as sector_added_events_count,
+        sum(sector_extended_events_count) as sector_extended_events_count,
+        sum(sector_faulted_events_count) as sector_faulted_events_count,
+        sum(sector_recovered_events_count) as sector_recovered_events_count,
+        sum(sector_recovering_events_count) as sector_recovering_events_count,
+        sum(sector_snapped_events_count) as sector_snapped_events_count,
+        sum(sector_terminated_events_count) as sector_terminated_events_count
     from {{ ref('filecoin_daily_storage_providers_metrics') }}
     where 1 = 1
     group by 1
@@ -225,6 +234,7 @@ network_base_fee as (
     group by 1
     order by date desc
 ),
+
 oso_filecoin_collection_events as (
     /*
     This pivot table should generate these columns:
@@ -342,6 +352,17 @@ select
     -- Sector Totals
     total_sector_terminated_raw_power_pibs,
     total_sector_terminated_quality_adjusted_power_pibs,
+
+    -- Sector Events
+    commit_capacity_added_events_count,
+    precommit_added_events_count,
+    sector_added_events_count,
+    sector_extended_events_count,
+    sector_faulted_events_count,
+    sector_recovered_events_count,
+    sector_recovering_events_count,
+    sector_snapped_events_count,
+    sector_terminated_events_count,
 
     -- Retrieval Metrics
     mean_spark_retrieval_success_rate,

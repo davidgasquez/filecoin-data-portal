@@ -1,9 +1,9 @@
 import dagster as dg
 
-from fdp.apis import assets
+from fdp.apis import assets, spark_assets
 from fdp.resources import HttpClientResource
 
-api_assets = dg.load_assets_from_modules([assets])
+api_assets = dg.load_assets_from_modules([assets, spark_assets])
 
 definitions = dg.Definitions(
     assets=api_assets,
