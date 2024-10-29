@@ -53,7 +53,7 @@ def raw_oso_daily_filecoin_collection_events(
 
     with duckdb.get_connection() as duckdb_con:
         duckdb_con.execute(
-            """
+            f"""
             create or replace table raw.{table_name} as (
                 select * from scanner
             )
