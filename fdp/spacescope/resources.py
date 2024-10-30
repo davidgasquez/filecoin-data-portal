@@ -177,3 +177,9 @@ class SpacescopeResource(dg.ConfigurableResource):
         r = self.request(method="/gas/daily_gas_usage_in_units", params=params)
 
         return self._extract_data(r)
+
+    def get_direct_data_onboarding(self, start_date=None, end_date=None):
+        params = {"start_date": start_date, "end_date": end_date}
+        r = self.request(method="/deals/direct_data_onboarding", params=params)
+
+        return self._extract_data(r)

@@ -75,18 +75,15 @@ provider_metrics as (
         sum(raw_power_pibs) as raw_power_pibs,
         sum(quality_adjusted_power_pibs) as quality_adjusted_power_pibs,
         sum(verified_data_power_pibs) as verified_data_power_pibs,
-        sum(balance) as total_storage_providers_balance,
-        sum(initial_pledge) as total_storage_providers_initial_pledge,
-        sum(locked_funds) as total_storage_providers_locked_funds,
-        sum(pre_commit_deposits) as total_storage_providers_pre_commit_deposits,
-        sum(provider_collateral) as total_storage_providers_collateral,
-        sum(fee_debt) as total_storage_providers_fee_debt,
-        sum(total_blocks_mined) as total_storage_providers_blocks_mined,
-        sum(total_win_count) as total_storage_providers_win_count,
-        sum(total_rewards) as total_storage_providers_rewards,
-        sum(total_sector_onboarded_count) as total_storage_providers_sectors_onboarded,
-        sum(total_sector_terminated_raw_power_tibs / 1024) as total_sector_terminated_raw_power_pibs,
-        sum(total_sector_terminated_quality_adjusted_power_tibs / 1024) as total_sector_terminated_quality_adjusted_power_pibs,
+        sum(balance) as storage_providers_balance,
+        sum(initial_pledge) as storage_providers_initial_pledge,
+        sum(locked_funds) as storage_providers_locked_funds,
+        sum(pre_commit_deposits) as storage_providers_pre_commit_deposits,
+        sum(provider_collateral) as storage_providers_collateral,
+        sum(fee_debt) as storage_providers_fee_debt,
+        sum(daily_blocks_mined) as storage_providers_blocks_mined,
+        sum(daily_win_count) as storage_providers_win_count,
+        sum(daily_rewards) as storage_providers_rewards,
         sum(daily_sector_onboarding_count) as sector_onboarding_count,
         sum(daily_sector_onboarding_raw_power_tibs) / 1024 as sector_onboarding_raw_power_pibs,
         sum(daily_sector_onboarding_quality_adjusted_power_tibs) / 1024 as sector_onboarding_quality_adjusted_power_pibs,
@@ -164,6 +161,16 @@ gas_usage as (
         sum(publish_storage_deals_gas_used) * pow(10, -9) as publish_storage_deals_gas_used_fil,
         sum(submit_windowed_post_gas_used) * pow(10, -9) as submit_windowed_post_gas_used_fil
     from {{ source("raw_assets", "raw_gas_daily_usage") }}
+    group by 1
+    order by 1 desc
+),
+
+direct_data_onboarding as (
+    select
+        time_bucket(interval '1 {{ period }}', cast(stat_date as date), date '2020-10-01') as date,
+        sum(total_ddo_sector_count) as ddo_sector_onboarding_count,
+        sum(total_ddo_power_tib) as ddo_sector_onboarding_raw_power_pibs
+    from {{ source("raw_assets", "raw_daily_direct_data_onboarding") }}
     group by 1
     order by 1 desc
 ),
@@ -299,6 +306,7 @@ select
     mean_regular_deal_duration_days,
     new_client_ids,
     new_provider_ids,
+    new_providers_providing_capacity,
     active_address_count_daily,
     active_address_count_weekly,
     active_address_count_monthly,
@@ -317,24 +325,25 @@ select
     verified_data_power_pibs,
     verified_data_power_pibs - lag(verified_data_power_pibs) over (order by date_calendar.date) as verified_data_power_pibs_delta,
 
-    -- Storage Providers Totals
-    total_storage_providers_balance,
-    total_storage_providers_initial_pledge,
-    total_storage_providers_locked_funds,
-    total_storage_providers_pre_commit_deposits,
-    total_storage_providers_collateral,
-    total_storage_providers_fee_debt,
-    total_storage_providers_blocks_mined,
-    total_storage_providers_win_count,
-    total_storage_providers_rewards,
-    total_storage_providers_sectors_onboarded,
+    -- Storage Providers Economics
+    storage_providers_balance,
+    storage_providers_initial_pledge,
+    storage_providers_locked_funds,
+    storage_providers_pre_commit_deposits,
+    storage_providers_collateral,
+    storage_providers_fee_debt,
+    storage_providers_blocks_mined,
+    storage_providers_win_count,
+    storage_providers_rewards,
 
     -- Others
     data_on_active_deals_pibs / raw_power_pibs as network_utilization_ratio,
 
     -- Sector Metrics
     sector_onboarding_count,
+    ddo_sector_onboarding_count,
     sector_onboarding_raw_power_pibs,
+    ddo_sector_onboarding_raw_power_pibs,
     sector_onboarding_quality_adjusted_power_pibs,
     sector_terminated_raw_power_pibs,
     sector_terminated_quality_adjusted_power_pibs,
@@ -348,10 +357,6 @@ select
     sector_expire_quality_adjusted_power_pibs,
     sector_snap_raw_power_pibs,
     sector_snap_quality_adjusted_power_pibs,
-
-    -- Sector Totals
-    total_sector_terminated_raw_power_pibs,
-    total_sector_terminated_quality_adjusted_power_pibs,
 
     -- Sector Events
     commit_capacity_added_events_count,
@@ -370,7 +375,6 @@ select
     providers_with_retrieval_attempts,
 
     -- Economics
-    new_providers_providing_capacity,
     circulating_fil,
     mined_fil,
     vested_fil,
@@ -408,6 +412,7 @@ left join provider_metrics on date_calendar.date = provider_metrics.date
 left join new_clients on date_calendar.date = new_clients.date
 left join new_providers on date_calendar.date = new_providers.date
 left join network_user_address_count on date_calendar.date = network_user_address_count.date
+left join direct_data_onboarding on date_calendar.date = direct_data_onboarding.date
 left join new_pieces on date_calendar.date = new_pieces.date
 left join retrieval_metrics on date_calendar.date = retrieval_metrics.date
 left join providers_adding_capacity on date_calendar.date = providers_adding_capacity.date

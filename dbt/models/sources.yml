@@ -144,3 +144,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_daily_providers_sector_events"]
+      - name: raw_daily_direct_data_onboarding
+        meta:
+          dagster:
+            asset_key: ["raw_daily_direct_data_onboarding"]
