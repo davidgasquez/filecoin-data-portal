@@ -194,9 +194,14 @@ sector_durations as (
 spark_retrievals as (
     select
         date,
+        cid,
+        index,
         provider_id,
-        success_rate as spark_retrieval_success_rate
-    from {{ source("raw_assets", "raw_spark_retrieval_success_rate") }}
+        total as spark_retrieval_total,
+        successful as spark_retrieval_successful,
+        successful / total as spark_retrieval_success_rate
+    from {{ source("raw_assets", "raw_spark_retrievals_onchain_data") }}
+    qualify row_number() over (partition by date, provider_id order by index desc) = 1
 ),
 
 rewards_data as (
@@ -348,6 +353,8 @@ select
     rd.total_rewards,
 
     -- Retrieval Metrics
+    spark.spark_retrieval_total,
+    spark.spark_retrieval_successful,
     spark.spark_retrieval_success_rate,
 
     -- Deal Metrics

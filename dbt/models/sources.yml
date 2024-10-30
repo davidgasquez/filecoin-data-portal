@@ -144,3 +144,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_daily_providers_sector_events"]
+      - name: raw_spark_retrievals_onchain_data
+        meta:
+          dagster:
+            asset_key: ["raw_spark_retrievals_onchain_data"]
