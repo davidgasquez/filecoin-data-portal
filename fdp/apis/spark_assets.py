@@ -8,7 +8,12 @@ from dagster_duckdb import DuckDBResource
 from fdp.resources import HttpClientResource
 
 
-@dg.asset(compute_kind="python")
+@dg.asset(
+    compute_kind="python",
+    retry_policy=dg.RetryPolicy(
+        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
+    ),
+)
 def raw_spark_retrievals_onchain_data(
     context: dg.AssetExecutionContext,
     duckdb: DuckDBResource,
