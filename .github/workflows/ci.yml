@@ -1,4 +1,4 @@
-name: CI
+name: Data Portal
 
 on:
   schedule:
@@ -10,36 +10,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run:
-    name: Run
+  portal:
+    name: Portal
     runs-on: ubuntu-latest
     env:
       SPACESCOPE_TOKEN: ${{ secrets.SPACESCOPE_TOKEN }}
       DATABASE_PATH: ${{ secrets.DATABASE_PATH }}
       motherduck_token: ${{ secrets.motherduck_token }}
       DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
-      REPUTATION_MONGODB_URI: ${{ secrets.REPUTATION_MONGODB_URI }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ENCODED_GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.ENCODED_GOOGLE_APPLICATION_CREDENTIALS }}
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_BUCKET: ${{ secrets.R2_BUCKET }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      SPARK_API_BEARER_TOKEN: ${{ secrets.SPARK_API_BEARER_TOKEN }}
 
     steps:
-      - name: Free Disk Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -53,9 +36,6 @@ jobs:
 
       - name: Run
         run: make run
-
-      - name: Export Tables
-        run: make tables
 
       - name: Install Quarto
         uses: quarto-dev/quarto-actions/setup@v2
@@ -77,6 +57,37 @@ jobs:
           directory: portal/.quarto/_site
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: main
+
+  data:
+    name: Data
+    needs: portal
+    runs-on: ubuntu-latest
+    env:
+      SPACESCOPE_TOKEN: ${{ secrets.SPACESCOPE_TOKEN }}
+      DATABASE_PATH: ${{ secrets.DATABASE_PATH }}
+      motherduck_token: ${{ secrets.motherduck_token }}
+      DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ENCODED_GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.ENCODED_GOOGLE_APPLICATION_CREDENTIALS }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v2
+        with:
+          enable-cache: true
+
+      - name: Install Python 3.12
+        run: uv python install 3.12
+
+      - name: Export Tables
+        run: make tables
 
       - name: Upload to R2
         uses: ryand56/r2-upload-action@latest
