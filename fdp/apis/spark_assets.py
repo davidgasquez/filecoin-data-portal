@@ -8,12 +8,7 @@ from dagster_duckdb import DuckDBResource
 from fdp.resources import HttpClientResource
 
 
-@dg.asset(
-    compute_kind="python",
-    retry_policy=dg.RetryPolicy(
-        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
-    ),
-)
+@dg.asset(compute_kind="python")
 def raw_spark_retrievals_onchain_data(
     context: dg.AssetExecutionContext,
     duckdb: DuckDBResource,
@@ -60,10 +55,9 @@ def raw_spark_retrievals_onchain_data(
 
         context.log.info(f"Fetching CAR for CID {cid}, index {cid_info['index']}")
 
-        # url = f"https://{cid}.ipfs.flk-ipfs.xyz/?format=car"
         url = f"https://{cid}.ipfs.w3s.link/?format=car"
 
-        response = httpx_api.get(url)
+        response = httpx_api.get(url, timeout=90)
 
         context.log.info(f"CAR response: {response.status_code}")
 
