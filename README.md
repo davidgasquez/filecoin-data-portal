@@ -7,7 +7,8 @@
 </p>
 
 <div align="center">
-  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/davidgasquez/filecoin-data-portal/ci.yml?style=flat-square">
+  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/davidgasquez/filecoin-data-portal/pipeline.yml?style=flat-square">
+  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/davidgasquez/filecoin-data-portal/tables.yml?style=flat-square">
   <img alt="GitHub" src="https://img.shields.io/github/license/davidgasquez/filecoin-data-portal?style=flat-square">
   <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/davidgasquez/filecoin-data-portal?style=flat-square">
 </div>

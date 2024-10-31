@@ -1,0 +1,41 @@
+name: Website
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Run"]
+    types:
+      - completed
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  website:
+    name: Website
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: fbe814d4a37d3d3d7fcfeec0ab929ff6
+          projectName: filecoindataportal
+          directory: portal/.quarto/_site
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
