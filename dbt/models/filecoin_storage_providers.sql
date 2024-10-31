@@ -16,7 +16,7 @@ with base_providers as (
     union
     select distinct
         trim(provider_id) as provider_id
-    from {{ source("raw_assets", "raw_spark_retrieval_success_rate") }}
+    from {{ ref('filecoin_spark_retrievals') }}
     where provider_id is not null
 ),
 
@@ -219,9 +219,9 @@ provider_metrics_aggregations as (
 retrieval_data as (
     select
         trim(provider_id) as provider_id,
-        mean(success_rate) over (partition by provider_id order by date desc rows between 6 preceding and current row) as mean_spark_retrieval_success_rate_7d,
-        stddev(success_rate) over (partition by provider_id order by date desc rows between 6 preceding and current row) as stddev_spark_retrieval_success_rate_7d
-    from {{ source("raw_assets", "raw_spark_retrieval_success_rate") }}
+        mean(spark_retrieval_success_rate) over (partition by provider_id order by date desc rows between 6 preceding and current row) as mean_spark_retrieval_success_rate_7d,
+        stddev(spark_retrieval_success_rate) over (partition by provider_id order by date desc rows between 6 preceding and current row) as stddev_spark_retrieval_success_rate_7d
+    from {{ ref("filecoin_spark_retrievals") }}
     qualify row_number() over (partition by provider_id order by date desc) = 1
 ),
 

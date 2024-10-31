@@ -187,10 +187,9 @@ new_pieces as (
 retrieval_metrics as (
     select
         time_bucket(interval '1 {{ period }}', date, date '2020-10-01') as date,
-        mean(success_rate) as mean_spark_retrieval_success_rate,
-        approx_count_distinct(provider_id) filter (success_rate > 0) as providers_with_successful_retrieval,
-        approx_count_distinct(provider_id) as providers_with_retrieval_attempts
-    from {{ source("raw_assets", "raw_spark_retrieval_success_rate") }}
+        mean(spark_retrieval_success_rate) as mean_spark_retrieval_success_rate,
+        approx_count_distinct(provider_id) filter (spark_retrieval_success_rate > 0) as providers_with_successful_retrieval,
+    from {{ ref('filecoin_spark_retrievals') }}
     group by 1
 ),
 
@@ -372,7 +371,6 @@ select
     -- Retrieval Metrics
     mean_spark_retrieval_success_rate,
     providers_with_successful_retrieval,
-    providers_with_retrieval_attempts,
 
     -- Economics
     circulating_fil,

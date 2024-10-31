@@ -1,6 +1,3 @@
-import datetime
-
-import pandas as pd
 import polars as pl
 import dagster as dg
 from web3 import Web3
@@ -9,41 +6,6 @@ from carbox.car import read_car
 from dagster_duckdb import DuckDBResource
 
 from fdp.resources import HttpClientResource
-
-
-@dg.asset(compute_kind="python")
-def raw_spark_retrieval_success_rate(
-    context: dg.AssetExecutionContext,
-    duckdb: DuckDBResource,
-    httpx_filspark: HttpClientResource,
-) -> dg.MaterializeResult:
-    """
-    Spark retrieval success rate.
-    """
-
-    first_day = datetime.date(2024, 4, 1)
-    today = datetime.date.today()
-
-    df = pd.DataFrame()
-
-    for day in pd.date_range(first_day, today, freq="d"):
-        context.log.info(f"Fetching retrieval success rate data for {day}")
-        date = day.strftime("%Y-%m-%d")
-        url = "https://stats.filspark.com/miners/retrieval-success-rate/summary"
-        url = f"{url}?from={date}&to={date}"
-
-        date_df = pd.DataFrame(httpx_filspark.get(url).json())
-        date_df["date"] = day
-        df = pd.concat([df, date_df], ignore_index=True)
-
-    df.rename(columns={"miner_id": "provider_id"}, inplace=True)
-
-    asset_name = context.asset_key.to_user_string()
-
-    with duckdb.get_connection() as con:
-        con.sql(f"create or replace table raw.{asset_name} as select * from df")
-
-    return dg.MaterializeResult(metadata={"dagster/row_count": df.shape[0]})
 
 
 @dg.asset(compute_kind="python")
@@ -56,9 +18,9 @@ def raw_spark_retrievals_onchain_data(
     Spark retrievals onchain data.
     """
 
-    rpc_url = "https://filecoin-calibration.chainup.net/rpc/v1"
+    rpc_url = "https://filecoin.chainup.net/rpc/v1"
     abi_url = "https://raw.githubusercontent.com/filecoin-station/spark-rsr-contract/refs/heads/main/out/SparkRsr.sol/SparkRsr.json"
-    contract_address = "0x006fD9D10FCd2CFc830670e1c665ac23b478C252"
+    contract_address = "0x620bfc5AdE7eeEE90034B05DC9Bb5b540336ff90"
 
     response = httpx_api.get(abi_url)
     abi_json = response.json()

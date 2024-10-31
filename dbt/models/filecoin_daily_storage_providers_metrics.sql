@@ -195,8 +195,10 @@ spark_retrievals as (
     select
         date,
         provider_id,
-        success_rate as spark_retrieval_success_rate
-    from {{ source("raw_assets", "raw_spark_retrieval_success_rate") }}
+        total_retrieval_requests,
+        successful_retrieval_requests,
+        spark_retrieval_success_rate
+    from {{ ref('filecoin_spark_retrievals') }}
 ),
 
 rewards_data as (
@@ -349,6 +351,8 @@ select
 
     -- Retrieval Metrics
     spark.spark_retrieval_success_rate,
+    spark.total_retrieval_requests,
+    spark.successful_retrieval_requests,
 
     -- Deal Metrics
     dec.total_regular_deal_count,
