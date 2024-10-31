@@ -52,8 +52,15 @@ def raw_spark_retrievals_onchain_data(
 
     for cid_info in results_cids:
         cid = cid_info["cid"]
-        url = f"https://{cid}.ipfs.flk-ipfs.xyz/?format=car"
-        response = httpx_api.get(url, timeout=80)
+
+        context.log.info(f"Fetching CAR for CID {cid}, index {cid_info['index']}")
+
+        # url = f"https://{cid}.ipfs.flk-ipfs.xyz/?format=car"
+        url = f"https://{cid}.ipfs.w3s.link/?format=car"
+
+        response = httpx_api.get(url)
+
+        context.log.info(f"CAR response: {response.status_code}")
 
         if response.status_code != 200:
             print(
