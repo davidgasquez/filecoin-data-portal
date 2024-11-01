@@ -15,6 +15,7 @@ setup:
 tables:
 	@mkdir -p data/tables/
 	@uv run python -c 'from fdp.db import export; export("data/tables/")'
+	@ls -lh data/tables/
 	@rm data/tables/raw_*.parquet
 
 preview:
