@@ -169,7 +169,7 @@ direct_data_onboarding as (
     select
         time_bucket(interval '1 {{ period }}', cast(stat_date as date), date '2020-10-01') as date,
         sum(total_ddo_sector_count) as ddo_sector_onboarding_count,
-        sum(total_ddo_power_tib) as ddo_sector_onboarding_raw_power_pibs
+        sum(total_ddo_power_tib) as ddo_sector_onboarding_raw_power_tibs
     from {{ source("raw_assets", "raw_daily_direct_data_onboarding") }}
     group by 1
     order by 1 desc
@@ -342,7 +342,7 @@ select
     sector_onboarding_count,
     ddo_sector_onboarding_count,
     sector_onboarding_raw_power_pibs,
-    ddo_sector_onboarding_raw_power_pibs,
+    ddo_sector_onboarding_raw_power_tibs,
     sector_onboarding_quality_adjusted_power_pibs,
     sector_terminated_raw_power_pibs,
     sector_terminated_quality_adjusted_power_pibs,

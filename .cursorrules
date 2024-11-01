@@ -6,7 +6,11 @@ This project is an open source Data Portal for the Filecoin ecosystem.
 
 - Write concise, technical docs.
 - Prefer iteration and modularization over code duplication.
+- Favor simpler solutions that are efficient and maintainable.
+- Use built-in features and libraries over custom implementations when feasible.
+- Implement robust error handling across all scripts and pipelines.
 - Use descriptive variable names with auxiliary verbs (e.g., is_active, has_permission).
 - Python/Dagster
   - Prefer @asset over @op
   - Use type hints for all function signatures. Prefer Pydantic models over raw dictionaries for input validation.
+  - Use dagster context.log() for logging.
