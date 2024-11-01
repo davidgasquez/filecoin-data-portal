@@ -37,7 +37,6 @@ def dune_metrics(dune: DuneResource, duckdb: DuckDBResource) -> None:
                 new_piece_cids,
                 mean_spark_retrieval_success_rate,
                 providers_with_successful_retrieval,
-                providers_with_retrieval_attempts
             from filecoin_daily_metrics
             where date > '2021-01-01'
         """).df()
