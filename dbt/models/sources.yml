@@ -148,3 +148,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_daily_direct_data_onboarding"]
+      - name: raw_filecoin_transactions
+        meta:
+          dagster:
+            asset_key: ["raw_filecoin_transactions"]

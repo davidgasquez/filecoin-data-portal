@@ -264,6 +264,15 @@ oso_filecoin_collection_events as (
     using sum(cast(amount as int))
     group by date
     order by date desc
+),
+
+transactions as (
+    select
+        time_bucket(interval '1 {{ period }}', date, date '2020-10-01') as date,
+        sum(transactions) as transactions
+    from {{ source("raw_assets", "raw_filecoin_transactions") }}
+    group by 1
+    order by date desc
 )
 
 select
@@ -401,6 +410,9 @@ select
     github_pull_request_closed_events,
     github_pull_request_merged_events,
 
+    -- Transactions
+    transactions
+
 from date_calendar
 left join deal_metrics on date_calendar.date = deal_metrics.date
 left join users_with_active_deals on date_calendar.date = users_with_active_deals.date
@@ -419,6 +431,7 @@ left join block_rewards on date_calendar.date = block_rewards.date
 left join network_base_fee on date_calendar.date = network_base_fee.date
 left join gas_usage on date_calendar.date = gas_usage.date
 left join oso_filecoin_collection_events on date_calendar.date = oso_filecoin_collection_events.date
+left join transactions on date_calendar.date = transactions.date
 order by date_calendar.date desc
 
 {% endmacro %}

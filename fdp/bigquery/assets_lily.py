@@ -227,3 +227,38 @@ def raw_filecoin_state_market_deals(
         )
 
         context.log.info("Persisted raw filecoin state market deals")
+
+
+@dg.asset(compute_kind="python")
+def raw_filecoin_transactions(
+    context: dg.AssetExecutionContext,
+    lily_bigquery: BigQueryArrowResource,
+    duckdb: DuckDBResource,
+) -> None:
+    query = """
+        select
+            date(timestamp_seconds((height * 30) + 1598306400)) AS date,
+            method,
+            count(1) as transactions
+        from
+            `lily-data.lily.parsed_messages`
+        group by 1, 2
+        order by 1 desc
+    """
+
+    with lily_bigquery.get_client() as client:
+        job = client.query(query)
+        arrow_result = job.to_arrow(create_bqstorage_client=True)
+
+    context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
+
+    with duckdb.get_connection() as duckdb_con:
+        duckdb_con.execute(
+            """
+            create or replace table raw.raw_filecoin_transactions as (
+                select * from arrow_result
+            )
+            """
+        )
+
+        context.log.info(f"Persisted {arrow_result.num_rows} rows")
