@@ -18,6 +18,8 @@ website:
     left:
       - text: "Data"
         href: data.html
+      - text: "Dashboards"
+        href: dashboards.html
       - text: "Sources"
         href: docs/data-sources.html
       - text: "Quickstart"

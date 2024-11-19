@@ -31,9 +31,9 @@ Open source, serverless, and local-first Data Platform for the Filecoin ecosyste
 
 ::: {.g-col-lg-6 .g-col-sm-12}
 <div class="card card-body">
-<h5>Contribute</h5>
-<p> Help improve the platform by contributing code or metrics. </p>
-<a href="https://github.com/davidgasquez/filecoin-data-portal" class="btn btn-secondary">Contribute</a>
+<h5>Dashboards</h5>
+<p> Explore dashboards with key metrics from the Filecoin ecosystem. </p>
+<a href="/dashboards.html" class="btn btn-secondary">Explore</a>
 </div>
 :::
 
