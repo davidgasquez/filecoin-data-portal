@@ -244,11 +244,14 @@ addresses_mapping as (
 
 basic_info as (
     select
-        trim(miner_id) as provider_id,
-        onboarding_at,
-        sector_size
-    from {{ source("raw_assets", "raw_storage_providers_basic_info") }}
-    qualify row_number() over (partition by miner_id order by stat_date desc) = 1
+        trim(provider_id) as provider_id,
+        owner_id,
+        worker_id,
+        peer_id,
+        control_addresses,
+        multi_addresses,
+        sector_size_tibs
+    from {{ source("raw_assets", "raw_filecoin_storage_providers_information") }}
 )
 
 select
@@ -400,8 +403,12 @@ select
     provider_metrics_aggregations.started_providing_power_at,
     provider_metrics_aggregations.stopped_providing_power_at,
     addresses_mapping.address,
-    basic_info.onboarding_at,
-    basic_info.sector_size,
+    basic_info.owner_id,
+    basic_info.worker_id,
+    basic_info.peer_id,
+    basic_info.control_addresses,
+    basic_info.multi_addresses,
+    basic_info.sector_size_tibs,
     avg_data_uploaded_tibs_per_day,
     ((total_active_data_uploaded_tibs / 1024) / latest_sp_data.raw_power_pibs) as capacity_utilization_ratio
 from base_providers as base

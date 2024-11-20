@@ -116,10 +116,6 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_network_base_fee"]
-      - name: raw_storage_providers_basic_info
-        meta:
-          dagster:
-            asset_key: ["raw_storage_providers_basic_info"]
       - name: raw_storage_providers_deal_count
         meta:
           dagster:
@@ -152,3 +148,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_filecoin_transactions"]
+      - name: raw_filecoin_storage_providers_information
+        meta:
+          dagster:
+            asset_key: ["raw_filecoin_storage_providers_information"]

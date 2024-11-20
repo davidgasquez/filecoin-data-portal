@@ -1010,41 +1010,6 @@ def raw_block_rewards(
         max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
     ),
 )
-def raw_storage_providers_basic_info(
-    context: dg.AssetExecutionContext,
-    spacescope_api: SpacescopeResource,
-    duckdb: DuckDBResource,
-) -> dg.MaterializeResult:
-    """
-    Basic information on the storage providers.
-    """
-
-    table_name = context.asset_key.to_user_string()
-
-    context.log.info("Fetching data for all storage providers")
-
-    df = pd.DataFrame(spacescope_api.get_storage_provider_basic_info())
-
-    with duckdb.get_connection() as conn:
-        conn.execute(
-            f"""
-            create or replace table raw.{table_name} as (
-                select * from df
-            )
-            """
-        )
-
-    context.log.info(f"Persisted {df.shape[0]} rows")
-
-    return dg.MaterializeResult()
-
-
-@dg.asset(
-    compute_kind="API",
-    retry_policy=dg.RetryPolicy(
-        max_retries=3, delay=20, backoff=dg.Backoff.EXPONENTIAL
-    ),
-)
 def raw_storage_providers_deal_count(
     context: dg.AssetExecutionContext,
     spacescope_api: SpacescopeResource,

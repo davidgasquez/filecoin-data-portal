@@ -262,3 +262,40 @@ def raw_filecoin_transactions(
         )
 
         context.log.info(f"Persisted {arrow_result.num_rows} rows")
+
+
+@dg.asset(compute_kind="python")
+def raw_filecoin_storage_providers_information(
+    context: dg.AssetExecutionContext,
+    lily_bigquery: BigQueryArrowResource,
+    duckdb: DuckDBResource,
+) -> None:
+    query = """
+        select
+            miner_id as provider_id,
+            owner_id,
+            worker_id,
+            peer_id,
+            control_addresses,
+            multi_addresses,
+            cast(sector_size / pow(1024, 3) as int) as sector_size_tibs
+        from `lily-data.lily.miner_infos`
+        qualify row_number() over (partition by miner_id order by height desc) = 1
+    """
+
+    with lily_bigquery.get_client() as client:
+        job = client.query(query)
+        arrow_result = job.to_arrow(create_bqstorage_client=True)
+
+    context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
+
+    with duckdb.get_connection() as duckdb_con:
+        duckdb_con.execute(
+            """
+            create or replace table raw.raw_filecoin_storage_providers_information as (
+                select * from arrow_result
+            )
+            """
+        )
+
+        context.log.info(f"Persisted {arrow_result.num_rows} rows")
