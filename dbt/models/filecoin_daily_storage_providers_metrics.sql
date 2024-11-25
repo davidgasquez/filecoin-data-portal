@@ -32,7 +32,7 @@ storage_providers_power as (
         (quality_adjusted_power_bytes - raw_power_bytes) / 9 as verified_data_power_bytes,
         (quality_adjusted_power_pibs - raw_power_pibs) / 9 as verified_data_power_pibs,
         avg(verified_data_power_pibs) over provider_last_30 as lagging_30_days_avg_verified_data_power_pibs,
-        cast(round((raw_byte_power / 1024 ^ 4) / spi.sector_size_tibs, 0) as int) as active_sectors
+        cast(round((raw_byte_power / 1024 ^ 3) / spi.sector_size_gibs, 0) as int) as active_sectors
     from {{ source('raw_assets', 'raw_storage_providers_daily_power') }} as spdp
     left join {{ source("raw_assets", "raw_filecoin_storage_providers_information") }} as spi on spdp.miner_id = spi.provider_id
     where spdp.stat_date is not null and spdp.miner_id is not null

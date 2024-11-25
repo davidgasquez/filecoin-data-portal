@@ -278,7 +278,7 @@ def raw_filecoin_storage_providers_information(
             peer_id,
             control_addresses,
             multi_addresses,
-            cast(sector_size / pow(1024, 3) as int) as sector_size_tibs
+            sector_size / 1024 / 1024 / 1024 as sector_size_gibs
         from `lily-data.lily.miner_infos`
         qualify row_number() over (partition by miner_id order by height desc) = 1
     """

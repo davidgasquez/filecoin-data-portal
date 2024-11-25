@@ -250,7 +250,7 @@ basic_info as (
         peer_id,
         control_addresses,
         multi_addresses,
-        sector_size_tibs
+        sector_size_gibs
     from {{ source("raw_assets", "raw_filecoin_storage_providers_information") }}
 )
 
@@ -408,7 +408,7 @@ select
     basic_info.peer_id,
     basic_info.control_addresses,
     basic_info.multi_addresses,
-    basic_info.sector_size_tibs,
+    basic_info.sector_size_gibs,
     avg_data_uploaded_tibs_per_day,
     ((total_active_data_uploaded_tibs / 1024) / latest_sp_data.raw_power_pibs) as capacity_utilization_ratio
 from base_providers as base
