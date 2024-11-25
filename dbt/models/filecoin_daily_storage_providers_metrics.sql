@@ -283,9 +283,6 @@ select
     spg.smoothed_quality_adjusted_power_growth_pibs,
     spg.smoothed_verified_data_power_growth_pibs,
 
-    -- Active Sectors
-    spp.active_sectors,
-
     -- Token Metrics
     tbd.balance,
     tbd.initial_pledge,
@@ -345,6 +342,10 @@ select
     ss.total_sector_snap_quality_adjusted_power_tibs,
     sd.avg_active_sector_duration_days,
     sd.std_active_sector_duration_days,
+
+    -- Sector Health
+    spp.active_sectors,
+    coalesce(spp.active_sectors, 0) / (coalesce(spp.active_sectors, 0) + coalesce(se.sector_faulted_events_count, 0)) as sector_health_rate,
 
     -- Rewards Metrics
     rd.daily_blocks_mined,
