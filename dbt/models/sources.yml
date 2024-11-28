@@ -152,3 +152,11 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_filecoin_storage_providers_information"]
+      - name: raw_storage_providers_gas_network_fee
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_gas_network_fee"]
+      - name: raw_storage_providers_gas_commit_fee
+        meta:
+          dagster:
+            asset_key: ["raw_storage_providers_gas_commit_fee"]

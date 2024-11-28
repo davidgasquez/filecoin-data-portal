@@ -257,6 +257,32 @@ sector_events as (
     pivot {{ source("raw_assets", "raw_daily_providers_sector_events") }}
     on concat(lower(event), '_events_count')
     using sum(count)
+),
+
+gas_fee_data as (
+    select
+        stat_date::date as date,
+        miner_id as provider_id,
+        base_tx_fee / 1e18 as gas_base_transaction_fee_fil,
+        over_estimation_burn / 1e18 as gas_over_estimation_burn_fil,
+        batch_fee / 1e18 as gas_batch_fee_fil,
+        miner_tip / 1e18 as gas_miner_tip_fil,
+        windowpost_gas_fee / 1e18 as gas_windowpost_gas_fee_fil
+    from {{ source("raw_assets", "raw_storage_providers_gas_network_fee") }}
+),
+
+gas_commit_fee_data as (
+    select
+        stat_date::date as date,
+        miner_id as provider_id,
+        total_sealing_gas_fee / 1e18 as gas_total_sealing_gas_fee_fil,
+        precommit_gas_fee / 1e18 as gas_precommit_gas_fee_fil,
+        precommit_batch_gas_fee / 1e18 as gas_precommit_batch_gas_fee_fil,
+        precommit_batch_fee / 1e18 as gas_precommit_batch_fee_fil,
+        provecommit_gas_fee / 1e18 as gas_provecommit_gas_fee_fil,
+        provecommit_batch_gas_fee / 1e18 as gas_provecommit_batch_gas_fee_fil,
+        provecommit_batch_fee / 1e18 as gas_provecommit_batch_fee_fil
+    from {{ source("raw_assets", "raw_storage_providers_gas_commit_fee") }}
 )
 
 select
@@ -383,7 +409,21 @@ select
     se.sector_recovered_events_count,
     se.sector_recovering_events_count,
     se.sector_snapped_events_count,
-    se.sector_terminated_events_count
+    se.sector_terminated_events_count,
+
+    -- Gas Metrics
+    gf.gas_base_transaction_fee_fil,
+    gf.gas_over_estimation_burn_fil,
+    gf.gas_batch_fee_fil,
+    gf.gas_miner_tip_fil,
+    gf.gas_windowpost_gas_fee_fil,
+    gcf.gas_total_sealing_gas_fee_fil,
+    gcf.gas_precommit_gas_fee_fil,
+    gcf.gas_precommit_batch_gas_fee_fil,
+    gcf.gas_precommit_batch_fee_fil,
+    gcf.gas_provecommit_gas_fee_fil,
+    gcf.gas_provecommit_batch_gas_fee_fil,
+    gcf.gas_provecommit_batch_fee_fil
 from date_calendar dc
 full outer join storage_providers_power spp on dc.date = spp.date
 full outer join storage_providers_power_growth spg on dc.date = spg.date and spp.provider_id = spg.provider_id
@@ -405,6 +445,8 @@ full outer join deal_count dec on dc.date = dec.date and spp.provider_id = dec.p
 full outer join deal_duration ded on dc.date = ded.date and spp.provider_id = ded.provider_id
 full outer join deal_revenue der on dc.date = der.date and spp.provider_id = der.provider_id
 full outer join sector_events se on dc.date = se.date and spp.provider_id = se.provider_id
+full outer join gas_fee_data gf on dc.date = gf.date and spp.provider_id = gf.provider_id
+full outer join gas_commit_fee_data gcf on dc.date = gcf.date and spp.provider_id = gcf.provider_id
 where 1=1
     and dc.date >= '2020-09-12'
     and (
@@ -412,5 +454,7 @@ where 1=1
         or spp.provider_id is not null
         or tbd.provider_id is not null
         or rd.provider_id is not null
+        or gf.provider_id is not null
+        or gcf.provider_id is not null
     )
 order by dc.date desc

@@ -183,3 +183,13 @@ class SpacescopeResource(dg.ConfigurableResource):
         r = self.request(method="/deals/direct_data_onboarding", params=params)
 
         return self._extract_data(r)
+
+    def get_storage_provider_gas_network_fee(self, storage_provider=None, date=None):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(method="storage_provider/gas/network_fee", params=params)
+        return self._extract_data(r)
+
+    def get_storage_provider_gas_commit_fee(self, storage_provider=None, date=None):
+        params = {"state_date": date, "miner_id": storage_provider}
+        r = self.request(method="storage_provider/gas/commit_fee", params=params)
+        return self._extract_data(r)
