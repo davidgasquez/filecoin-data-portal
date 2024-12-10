@@ -389,10 +389,10 @@ select
     locked_fil,
     burnt_fil,
     reward_per_wincount,
-    unit_base_fee,
 
     -- Gas Usage
     total_gas_used_fil,
+    unit_base_fee,
     provecommit_sector_gas_used_fil,
     precommit_sector_gas_used_fil,
     provecommit_aggregate_gas_used_fil,
