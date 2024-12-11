@@ -237,13 +237,15 @@ def raw_filecoin_transactions(
 ) -> None:
     query = """
         select
-            date(timestamp_seconds((height * 30) + 1598306400)) AS date,
-            method,
+            date(timestamp_seconds((height * 30) + 1598306400)) as date,
+            concat(regexp_extract(actor_name, r'[^/]+$'), '/', g.method, '/', coalesce(m.method_name, 'unknown')) as method,
+            sum(gas_used * pow(10, -9)) as gas_used,
             count(1) as transactions
         from
-            `lily-data.lily.parsed_messages`
+            `lily-data.lily.derived_gas_outputs` as g
+        left join `lily-data.lily.actor_methods` as m on g.method = m.method and regexp_extract(g.actor_name, r'[^/]+$') = m.family
         group by 1, 2
-        order by 1 desc
+        order by 1 desc, 4 desc
     """
 
     with lily_bigquery.get_client() as client:
