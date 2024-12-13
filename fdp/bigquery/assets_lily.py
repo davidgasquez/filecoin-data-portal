@@ -239,7 +239,7 @@ def raw_filecoin_transactions(
         select
             date(timestamp_seconds((height * 30) + 1598306400)) as date,
             concat(regexp_extract(actor_name, r'[^/]+$'), '/', g.method, '/', coalesce(m.method_name, 'unknown')) as method,
-            sum(gas_used * pow(10, -9)) as gas_used,
+            sum(gas_used * pow(10, -6)) as gas_used_millions,
             count(1) as transactions
         from
             `lily-data.lily.derived_gas_outputs` as g
