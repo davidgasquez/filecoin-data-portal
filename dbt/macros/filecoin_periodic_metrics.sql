@@ -153,13 +153,13 @@ network_user_address_count as (
 gas_usage as (
     select
         time_bucket(interval '1 {{ period }}', cast(stat_date as date), date '2020-10-01') as date,
-        sum(total_gas_used) * pow(10, -9) as total_gas_used_fil,
-        sum(provecommit_sector_gas_used) * pow(10, -9) as provecommit_sector_gas_used_fil,
-        sum(precommit_sector_gas_used) * pow(10, -9) as precommit_sector_gas_used_fil,
-        sum(provecommit_aggregate_gas_used) * pow(10, -9) as provecommit_aggregate_gas_used_fil,
-        sum(precommit_sector_batch_gas_used) * pow(10, -9) as precommit_sector_batch_gas_used_fil,
-        sum(publish_storage_deals_gas_used) * pow(10, -9) as publish_storage_deals_gas_used_fil,
-        sum(submit_windowed_post_gas_used) * pow(10, -9) as submit_windowed_post_gas_used_fil
+        sum(total_gas_used) * pow(10, -9) as total_gas_used,
+        sum(provecommit_sector_gas_used) * pow(10, -9) as provecommit_sector_gas_used,
+        sum(precommit_sector_gas_used) * pow(10, -9) as precommit_sector_gas_used,
+        sum(provecommit_aggregate_gas_used) * pow(10, -9) as provecommit_aggregate_gas_used,
+        sum(precommit_sector_batch_gas_used) * pow(10, -9) as precommit_sector_batch_gas_used,
+        sum(publish_storage_deals_gas_used) * pow(10, -9) as publish_storage_deals_gas_used,
+        sum(submit_windowed_post_gas_used) * pow(10, -9) as submit_windowed_post_gas_used
     from {{ source("raw_assets", "raw_gas_daily_usage") }}
     group by 1
     order by 1 desc
@@ -391,14 +391,14 @@ select
     reward_per_wincount,
 
     -- Gas Usage
-    total_gas_used_fil,
+    total_gas_used,
     unit_base_fee,
-    provecommit_sector_gas_used_fil,
-    precommit_sector_gas_used_fil,
-    provecommit_aggregate_gas_used_fil,
-    precommit_sector_batch_gas_used_fil,
-    publish_storage_deals_gas_used_fil,
-    submit_windowed_post_gas_used_fil,
+    provecommit_sector_gas_used,
+    precommit_sector_gas_used,
+    provecommit_aggregate_gas_used,
+    precommit_sector_batch_gas_used,
+    publish_storage_deals_gas_used,
+    submit_windowed_post_gas_used,
 
     -- Oso Filecoin Collection Events
     github_commit_code_events,
