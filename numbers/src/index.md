@@ -4,9 +4,9 @@ toc: true
 
 <center>
 
-<h1 style="font-weight: 400; font-size: 4em; letter-spacing: 0.0em; align-items: center; justify-content: center; gap: 0.5em"><span style="color: var(--theme-blue)">Filecoin</span>  in Numbers</h1>
+<h1 style="font-weight: 400; font-size: 4em; letter-spacing: 0.0em; align-items: center; justify-content: center; gap: 0.5em"><span style="color: var(--theme-blue)">Filecoin</span> in Numbers</h1>
 
-The best **high level** view into the Filecoin ecosystem.
+The best **high level** view into the Filecoin ecosystem and its metrics.
 
 </center>
 
