@@ -1,9 +1,9 @@
 name: Pipeline
 
 on:
+  workflow_dispatch: {}
   schedule:
     - cron: "0 14 * * *"
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

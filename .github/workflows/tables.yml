@@ -1,7 +1,7 @@
 name: Generate Tables
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
   workflow_run:
     workflows: ["Pipeline"]
     types:

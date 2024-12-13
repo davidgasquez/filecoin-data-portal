@@ -1,0 +1,63 @@
+@import url("observablehq:default.css");
+@import url("observablehq:theme-wide.css");
+
+:root {
+    --theme-foreground: #222222;
+    --theme-background: #f2f2f2;
+    --theme-background-alt: #ffffff;
+    --theme-foreground-alt: #000000;
+    --theme-foreground-muted: #444444;
+    --theme-foreground-faint: #888888;
+    --theme-foreground-fainter: #cccccc;
+    --theme-foreground-faintest: #888888;
+    --theme-foreground-focus: #000000;
+    --theme-blue: #0e79fe;
+    --theme-green: #3ca951;
+    --theme-red: #ff725c;
+    --theme-yellow: #efb118;
+    --monospace: "Source Code Pro", monospace;
+    --serif: "Source Code Pro", monospace;
+    --sans-serif: "Source Code Pro", monospace;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid #b1b1b1;
+}
+
+a:hover,
+a[href]:hover,
+a[href]:focus {
+    border-bottom: 1px solid var(--theme-blue);
+    text-decoration: none;
+    color: var(--theme-blue);
+}
+
+a[href].observablehq-header-anchor {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: none;
+}
+
+a[href].observablehq-header-anchor:hover {
+    color: var(--theme-blue);
+}
+
+strong {
+    font-weight: bold;
+}
+
+p,
+table,
+figure,
+figcaption,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.katex-display {
+    max-width: 1280px;
+}

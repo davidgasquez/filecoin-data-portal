@@ -168,3 +168,12 @@ _freeze/
 data/*
 !data/.gitkeep
 !data/IPFS_CID
+
+# Node
+.DS_Store
+/dist/
+node_modules/
+yarn-error.log
+
+# Observable Framework files
+.observablehq

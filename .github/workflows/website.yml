@@ -1,9 +1,9 @@
 name: Website
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
   workflow_run:
-    workflows: ["Run"]
+    workflows: ["Pipeline"]
     types:
       - completed
 
