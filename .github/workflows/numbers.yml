@@ -26,6 +26,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: numbers/package-lock.json
 
       - name: Install DuckDB CLI
         run: |
@@ -35,11 +36,11 @@ jobs:
           mv duckdb /usr/local/bin
 
       - name: Install dependencies
-        working-directory: web
+        working-directory: numbers
         run: npm ci
 
       - name: Build
-        working-directory: web
+        working-directory: numbers
         run: npm run build
 
       # - name: Publish to Cloudflare Pages
@@ -48,6 +49,6 @@ jobs:
       #     apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       #     accountId: fbe814d4a37d3d3d7fcfeec0ab929ff6
       #     projectName: filecoin-in-numbers
-      #     directory: web/dist
+      #     directory: numbers/dist
       #     gitHubToken: ${{ secrets.GITHUB_TOKEN }}
       #     branch: main
