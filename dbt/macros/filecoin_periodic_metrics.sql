@@ -391,7 +391,7 @@ select
     reward_per_wincount,
 
     -- Fil Plus Shares
-    (quality_adjusted_power_pibs - raw_power_pibs) / (9 * raw_power_pibs) as fil_plus_capacity_share,
+    (quality_adjusted_power_pibs - raw_power_pibs) / (9 * raw_power_pibs) as fil_plus_bytes_share,
     10 * (quality_adjusted_power_pibs - raw_power_pibs)/ (9 * quality_adjusted_power_pibs) as fil_plus_rewards_share,
 
     -- Gas Usage
