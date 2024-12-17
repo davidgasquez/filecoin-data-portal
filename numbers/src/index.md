@@ -25,13 +25,12 @@ import { movingAverageLinePlot } from "./components/movingAverageLinePlot.js";
 <!--
 <div style="position: fixed; bottom: 14px; right: 30px; z-index: 1;">
 <h5>Timeframe</h5>
+</div>
 -->
 
 ```js
 const timeframe = view(Inputs.radio(["All", "Last Year"], {value: "All", label: "Timeframe"}));
 ```
-
-</div>
 
 ```js
 const metrics = timeframe === "All" ? am : am.slice(am.length - 365);
@@ -891,6 +890,7 @@ movingAverageLinePlot({
   subtitle: "Daily change in unit base fee over time.",
   caption: "Displaying 30-day moving average",
   yField: "unit_base_fee_delta",
+  yDomain: [-0.2, 0.2],
   yLabel: "nanoFIL"
 })
 ```
