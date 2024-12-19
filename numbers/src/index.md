@@ -829,6 +829,44 @@ movingAverageLinePlot({
 
 </div>
 
+<div class="card">
+
+```js
+const fil_plus_share = ["fil_plus_bytes_share", "fil_plus_rewards_share"].flatMap((metric) => metrics.map(({date, [metric]: value}) => ({date, metric, value})));
+```
+
+```js
+Plot.plot({
+  title: "Filecoin Plus Share",
+  subtitle: "How much share does Filecoin Plus get in the network.",
+  caption: "Metrics derived from the ratio of quality-adjusted power to raw power.",
+  x: {label: "Date"},
+  y: {grid: true, label: "Share (%)"},
+  width,
+  color: {
+    legend: true,
+    tickFormat: (d) => d === "fil_plus_bytes_share" ? "Bytes" : "Rewards"
+  },
+  marks: [
+    Plot.ruleY([0]),
+    Plot.lineY(fil_plus_share, {
+      x: "date",
+      y: "value",
+      stroke: "var(--theme-foreground-fainter)",
+    }),
+    Plot.lineY(fil_plus_share, Plot.windowY(30, {
+      x: "date",
+      y: "value",
+      stroke: "metric",
+      strokeWidth: 2,
+      tip: true
+    })),
+  ]
+})
+```
+
+</div>
+
 
 ## Transactions
 

@@ -45,6 +45,8 @@ COPY (
     reward_per_wincount - lag(reward_per_wincount) over (order by date) as reward_per_wincount_delta,
     unit_base_fee,
     unit_base_fee - lag(unit_base_fee) over (order by date) as unit_base_fee_delta,
+    fil_plus_bytes_share * 100 as fil_plus_bytes_share,
+    fil_plus_rewards_share * 100 as fil_plus_rewards_share,
 
     -- Sector Metrics
     sector_onboarding_count,
