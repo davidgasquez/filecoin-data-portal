@@ -1,13 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-<svg width="800px" height="800px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-  <title>activity-solid</title>
-  <g id="Layer_2" data-name="Layer 2">
-    <g id="invisible_box" data-name="invisible box">
-      <rect width="48" height="48" fill="none"/>
-    </g>
-    <g id="Q3_icons" data-name="Q3 icons">
-      <path d="M29,42a1.9,1.9,0,0,1-1.9-1.4L20.9,21.9l-5,12.8A1.9,1.9,0,0,1,14.1,36a2.1,2.1,0,0,1-1.9-1.1L8.6,27.6,5.5,31.3a2,2,0,0,1-2.8.2,2,2,0,0,1-.2-2.8l5-6A1.9,1.9,0,0,1,9.2,22a2.1,2.1,0,0,1,1.6,1.1l3,6,5.3-13.8a2,2,0,0,1,3.8.1L28.8,33,36.1,5.5A1.9,1.9,0,0,1,37.9,4a2,2,0,0,1,2,1.4l6,18a2,2,0,0,1-3.8,1.2L38.2,13,30.9,40.5A1.9,1.9,0,0,1,29.1,42Z"/>
-    </g>
-  </g>
+<svg viewBox="-2.4 -2.4 28.8 28.8" xmlns="http://www.w3.org/2000/svg" fill="#f2f2f2" stroke="#f2f2f2" stroke-width="1.104">
+  <rect x="-2.4" y="-2.4" width="28.8" height="28.8" rx="0" fill="#0e79fe" stroke="none" stroke-width="0"/>
+  <path fill="none" d="M0 0h24v24H0z"/>
+  <path d="M8.143 15.857H5.57V9.43h2.573v6.427zm5.143 0h-2.572V3h2.572v12.857zm5.142 0h-2.57v-9h2.57v9z"/>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M21 20.714H3v-2h18v2z"/>
 </svg>
