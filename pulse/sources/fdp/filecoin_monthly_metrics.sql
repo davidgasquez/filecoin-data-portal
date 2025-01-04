@@ -1,0 +1,18 @@
+select
+    date,
+    data_on_active_deals_pibs,
+    active_deals,
+    clients_with_active_deals,
+    providers_with_active_deals,
+    active_address_count_daily,
+    raw_power_pibs,
+    quality_adjusted_power_pibs,
+    verified_data_power_pibs,
+    network_utilization_ratio,
+    onboarded_data_pibs,
+    unique_deal_making_clients,
+    unique_deal_making_providers,
+    active_address_count_monthly,
+    new_provider_ids,
+    new_client_ids,
+from 'https://data.filecoindataportal.xyz/filecoin_monthly_metrics.parquet'
