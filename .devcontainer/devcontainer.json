@@ -1,42 +1,9 @@
 {
 	"name": "Filecoin Data Portal",
-	"build": {
-		"dockerfile": "../Dockerfile",
-		"context": ".."
-	},
-	"customizations": {
-		"vscode": {
-			"settings": {
-				"quarto.render.previewType": "external",
-				"files.associations": {
-					"*.sql": "jinja-sql"
-				},
-				"[jinja-sql]": {
-					"editor.formatOnSave": false
-				},
-				"[python]": {
-					"editor.formatOnSave": true,
-					"editor.defaultFormatter": "charliermarsh.ruff",
-					"editor.codeActionsOnSave": {
-						"source.fixAll": "explicit",
-						"source.organizeImports": "explicit"
-					}
-				},
-				"notebook.formatOnSave.enabled": true,
-				"python.analysis.typeCheckingMode": "basic",
-				"python.analysis.autoImportCompletions": true
-			},
-			"extensions": [
-				"charliermarsh.ruff",
-				"innoverio.vscode-dbt-power-user",
-				"ms-python.python",
-				"ms-python.vscode-pylance",
-				"ms-toolsai.jupyter",
-				"quarto.quarto",
-				"redhat.vscode-yaml",
-				"tamasfe.even-better-toml"
-			]
-		}
-	},
-	"postCreateCommand": "make setup"
+	"image": "mcr.microsoft.com/devcontainers/python:1-3.12-bullseye",
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/va-h/devcontainers-features/uv:1": {},
+		"ghcr.io/rocker-org/devcontainer-features/quarto-cli:1": {}
+	}
 }

@@ -34,6 +34,11 @@ render:
 numbers:
 	@npm run dev --prefix numbers
 
+.PHONY: pulse
+pulse:
+	@npm run sources --prefix pulse
+	@npm run dev --prefix pulse
+
 .PHONY: clean
 clean:
 	@rm -rf portal/.quarto data/*.parquet data/*.duckdb
