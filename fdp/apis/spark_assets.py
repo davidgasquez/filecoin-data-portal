@@ -1,9 +1,9 @@
-import polars as pl
 import dagster as dg
-from web3 import Web3
-from dag_json import decode
+import polars as pl
 from carbox.car import read_car
+from dag_json import decode
 from dagster_duckdb import DuckDBResource
+from web3 import Web3
 
 from fdp.resources import HttpClientResource
 
@@ -67,7 +67,11 @@ def raw_spark_retrievals_onchain_data(
             )
             continue
 
-        _, blocks = read_car(response.content, validate=True)
+        try:
+            _, blocks = read_car(response.content, validate=True)
+        except Exception as e:
+            context.log.error(f"Error reading CAR for CID {cid}. {e}")
+
         main_block = blocks[0]
 
         json_data = decode(main_block.data)
