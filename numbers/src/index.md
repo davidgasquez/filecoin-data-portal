@@ -16,6 +16,11 @@ The best **high level** view into the Filecoin ecosystem and its metrics.
 const am = await FileAttachment("./data/daily_metrics.csv").csv({typed: true});
 const drm = await FileAttachment("./data/daily_region_metrics.csv").csv({typed: true});
 const dim = await FileAttachment("./data/daily_industry_metrics.csv").csv({typed: true});
+const dt = await FileAttachment("./data/daily_transactions.csv").csv({typed: true});
+```
+
+```js
+const fdt = dt.filter(d => new Date(d.date) > new Date('2021-12-31')).map(d => ({...d, transactions: d.transactions ?? 0}));
 ```
 
 ```js
@@ -886,6 +891,43 @@ movingAverageLinePlot({
 
 </div>
 
+<div class="card">
+
+```js
+const tx_method = view(Inputs.select([...new Set(fdt.map(d => d.method))], {value: "storagemarket/4/PublishStorageDeals", label: "Method"}));
+```
+
+```js
+Plot.plot({
+  title: `Transactions by ${tx_method}`,
+  subtitle: "Total transactions for this method over time",
+  caption: "Displaying 30-day moving average since 2022",
+  x: {label: "Date"},
+  y: {grid: true, label: "Transactions"},
+  width,
+  marks: [
+    Plot.ruleY([0]),
+    Plot.lineY(fdt.filter(d => d.method === tx_method), {
+      x: "date",
+      y: "transactions",
+      stroke: "var(--theme-foreground-fainter)",
+    }),
+    Plot.lineY(
+      fdt.filter(d => d.method === tx_method),
+      Plot.windowY(30, {
+        x: "date",
+        y: "transactions",
+        stroke: "var(--theme-foreground-focus)",
+        strokeWidth: 2,
+        tip: true
+      })
+    )
+  ]
+})
+```
+
+</div>
+
 ## Gas
 
 <div class="card">
@@ -901,6 +943,40 @@ yTransform: (d) => d / 1e6,
 yLabel: "Gas Units (10^12)",
 })
 ```
+</div>
+
+
+<div class="card">
+
+```js
+const method = view(Inputs.select([...new Set(fdt.map(d => d.method))], {value: "storagemarket/4/PublishStorageDeals", label: "Method"}));
+```
+
+```js
+Plot.plot({
+  title: `Gas Used by ${method}`,
+  subtitle: "Total gas used for this method over time",
+  caption: "Displaying 30-day moving average since 2022",
+  x: {label: "Date"},
+  y: {grid: true, label: "Gas Units (Millions)", transform: (d) => d / 1e6},
+  width,
+  marks: [
+    Plot.ruleY([0]),
+    Plot.lineY(fdt.filter(d => d.method === method), {
+      x: "date",
+      y: "gas_used_millions",
+      stroke: "var(--theme-foreground-fainter)",
+    }),
+    Plot.lineY(fdt.filter(d => d.method === method), Plot.windowY(30, {
+      x: "date",
+      y: "gas_used_millions",
+      stroke: "var(--theme-foreground-focus)",
+      tip: true
+    }))
+  ]
+})
+```
+
 </div>
 
 <div class="grid grid-cols-2">
