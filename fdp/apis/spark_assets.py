@@ -55,14 +55,15 @@ def raw_spark_retrievals_onchain_data(
 
         context.log.info(f"Fetching CAR for CID {cid}, index {cid_info['index']}")
 
-        url = f"https://{cid}.ipfs.w3s.link/?format=car"
+        # url = f"https://{cid}.ipfs.w3s.link/?format=car"
+        url = f"https://trustless-gateway.link/ipfs/{cid}/?format=car"
 
         response = httpx_api.get(url, timeout=300)
 
         context.log.info(f"CAR response: {response.status_code}")
 
         if response.status_code != 200:
-            print(
+            context.log.error(
                 f"Error fetching retrieval result stats for CID {cid}. Status code: {response.status_code}. Response: {response.text}"
             )
             continue
@@ -71,6 +72,7 @@ def raw_spark_retrievals_onchain_data(
             _, blocks = read_car(response.content, validate=True)
         except Exception as e:
             context.log.error(f"Error reading CAR for CID {cid}. {e}")
+            continue
 
         main_block = blocks[0]
 
