@@ -4,13 +4,11 @@ toc: true
 
 <center>
 
-<h1 style="font-weight: 400; font-size: 4em; letter-spacing: 0.0em; align-items: center; justify-content: center; gap: 0.5em"><span style="color: var(--theme-blue)">Filecoin</span> in Numbers</h1>
+<h1 style="font-weight: 500; font-size: 3em; letter-spacing: 0.0em; align-items: center; justify-content: center; gap: 0.5em"><span style="color: var(--theme-blue)">Filecoin</span> in Numbers</h1>
 
-The best **high level** view into the Filecoin ecosystem and its metrics.
+Your **high level** view into the Filecoin Ecosystem!
 
 </center>
-
----
 
 ```js
 const am = await FileAttachment("./data/daily_metrics.csv").csv({typed: true});
@@ -27,15 +25,16 @@ const fdt = dt.filter(d => new Date(d.date) > new Date('2021-12-31')).map(d => (
 import { movingAverageLinePlot } from "./components/movingAverageLinePlot.js";
 ```
 
-<!--
-<div style="position: fixed; bottom: 14px; right: 30px; z-index: 1;">
-<h5>Timeframe</h5>
-</div>
--->
+
+<div class="card">
+<h2>TIMEFRAME</h2>
 
 ```js
-const timeframe = view(Inputs.radio(["All", "Last Year"], {value: "All", label: "Timeframe"}));
+const timeframe = view(Inputs.radio(["All", "Last Year"], {value: "All"}));
 ```
+
+</div>
+
 
 ```js
 const metrics = timeframe === "All" ? am : am.slice(am.length - 365);

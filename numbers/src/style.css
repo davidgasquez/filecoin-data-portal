@@ -61,3 +61,23 @@ h6,
 .katex-display {
     max-width: 1280px;
 }
+
+h1,
+h2 {
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+.card {
+    border: solid 2px var(--theme-foreground-faintest);
+    border-radius: 0rem;
+}
+
+#observablehq-toc nav {
+    text-transform: uppercase;
+    width: 192px;
+    margin: 2rem 0;
+    padding: 0 1rem;
+    box-sizing: border-box;
+    border-left: solid 0px var(--theme-foreground-faintest);
+}
