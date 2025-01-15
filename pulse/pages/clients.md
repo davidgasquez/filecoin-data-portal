@@ -4,6 +4,10 @@ title: Clients
 
 _A detailed view into Filecoin Clients._
 
+<BigLink href='https://docs.google.com/spreadsheets/d/15xi39OheVJ-_WyI7sxwmvgMIVFkZN07NOYWLe5iKXnI'>
+  Explore Clients on Google Sheets
+</BigLink>
+
 ```sql client_stats
 select
   count(distinct client_id) as total_clients,
@@ -58,10 +62,6 @@ order by data_uploaded_tibs_30d desc
 ```
 
 ## Explorer
-
-<BigLink href='https://docs.google.com/spreadsheets/d/15xi39OheVJ-_WyI7sxwmvgMIVFkZN07NOYWLe5iKXnI'>
-  Explore Clients on Google Sheets
-</BigLink>
 
 <DataTable
   data={clients_table}

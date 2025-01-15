@@ -113,18 +113,6 @@ order by date desc
 
 </Grid>
 
-<Grid cols=2>
-
-<LinkButton url='https://numbers.filecoindataportal.xyz/'>
-  Filecoin In Numbers
-</LinkButton>
-
-<LinkButton url='https://numbers.filecoindataportal.xyz/'>
-  Filecoin Data Portal
-</LinkButton>
-
-</Grid>
-
 ---
 
 <BarChart
@@ -222,5 +210,22 @@ order by date desc
 
 </Grid>
 
-
 <LastRefreshed/>
+
+---
+
+<Grid cols=2>
+
+<LinkButton url='https://numbers.filecoindataportal.xyz/'>
+  <p style="font-size: 1.3rem; text-align: center; margin: 0.5rem 0;">
+    Filecoin In Numbers
+  </p>
+</LinkButton>
+
+<LinkButton url='https://filecoindataportal.xyz/'>
+  <p style="font-size: 1.3rem; text-align: center; margin: 0.5rem 0;">
+    Filecoin Data Portal
+  </p>
+</LinkButton>
+
+</Grid>
