@@ -22,15 +22,12 @@ dependencies = [
     "pyarrow>=18.1.0",
     "web3>=7.6.1",
 ]
-requires-python = ">=3.10, <3.13"
+requires-python = ">=3.10, <3.14"
 readme = "README.md"
 license = { text = "MIT" }
 
 [dependency-groups]
-dev = [
-    "dagster-webserver>=1.9.6",
-    "ipykernel>=6.29.5",
-]
+dev = ["dagster-webserver>=1.9.6", "ipykernel>=6.29.5"]
 
 [project.urls]
 Homepage = "https://filecoindataportal.xyz/"

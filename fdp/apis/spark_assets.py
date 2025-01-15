@@ -115,12 +115,14 @@ def raw_spark_retrievals_onchain_data(
 
     df = pl.DataFrame(flattened_data).rename({"providerId": "provider_id"})
 
-    with duckdb.get_connection() as con:
-        con.sql(f"""
-            insert into raw.{asset_name}
-            select * from df
-        """)
+    # with duckdb.get_connection() as duckdb_con:
+    #     duckdb_con.execute(
+    #         """
+    #         insert into raw.{asset_name}
+    #         select * from df
+    #         """
+    #     )
 
-    context.log.info(f"Persisted {df.height} rows to raw.{asset_name}")
+    #     context.log.info(f"Persisted {df.height} rows to raw.{asset_name}")
 
     return dg.MaterializeResult(metadata={"dagster/row_count": df.height})
