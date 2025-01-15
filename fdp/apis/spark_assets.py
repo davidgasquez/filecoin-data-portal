@@ -18,6 +18,16 @@ def raw_spark_retrievals_onchain_data(
     Spark retrievals onchain data.
     """
 
+    asset_name = context.asset_key.to_user_string()
+    with duckdb.get_connection() as con:
+        try:
+            r = con.sql(f"select max(index) from raw.{asset_name}")
+            max_index = r.fetchone()[0] + 1  # type: ignore
+            context.log.info(f"Max index: {max_index}")
+        except Exception as e:
+            context.log.error(f"Error fetching max index from duckdb. {e}")
+            max_index = 0
+
     rpc_url = "https://filecoin.chainup.net/rpc/v1"
     abi_url = "https://raw.githubusercontent.com/filecoin-station/spark-rsr-contract/refs/heads/main/out/SparkRsr.sol/SparkRsr.json"
     contract_address = "0x620bfc5AdE7eeEE90034B05DC9Bb5b540336ff90"
@@ -32,7 +42,7 @@ def raw_spark_retrievals_onchain_data(
     contract = provider.eth.contract(address=contract_address, abi=abi)
 
     results_cids = []
-    i = 0
+    i = max_index
 
     while True:
         try:
@@ -56,7 +66,6 @@ def raw_spark_retrievals_onchain_data(
         context.log.info(f"Fetching CAR for CID {cid}, index {cid_info['index']}")
 
         url = f"https://{cid}.ipfs.w3s.link/?format=car"
-        # url = f"https://trustless-gateway.link/ipfs/{cid}/?format=car"
 
         try:
             response = httpx_api.get(url, timeout=300)
@@ -106,9 +115,11 @@ def raw_spark_retrievals_onchain_data(
 
     df = pl.DataFrame(flattened_data).rename({"providerId": "provider_id"})
 
-    asset_name = context.asset_key.to_user_string()
     with duckdb.get_connection() as con:
-        con.sql(f"create or replace table raw.{asset_name} as select * from df")
+        con.sql(f"""
+            insert into raw.{asset_name}
+            select * from df
+        """)
 
     context.log.info(f"Persisted {df.height} rows to raw.{asset_name}")
 
