@@ -55,10 +55,16 @@ def raw_spark_retrievals_onchain_data(
 
         context.log.info(f"Fetching CAR for CID {cid}, index {cid_info['index']}")
 
-        # url = f"https://{cid}.ipfs.w3s.link/?format=car"
-        url = f"https://trustless-gateway.link/ipfs/{cid}/?format=car"
+        url = f"https://{cid}.ipfs.w3s.link/?format=car"
+        # url = f"https://trustless-gateway.link/ipfs/{cid}/?format=car"
 
-        response = httpx_api.get(url, timeout=300)
+        try:
+            response = httpx_api.get(url, timeout=300)
+        except Exception as e:
+            context.log.error(
+                f"Error fetching retrieval result stats for CID {cid}. {e}"
+            )
+            continue
 
         context.log.info(f"CAR response: {response.status_code}")
 
