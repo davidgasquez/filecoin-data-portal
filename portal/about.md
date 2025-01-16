@@ -5,7 +5,7 @@ format:
     toc: false
 ---
 
-The Filecoin Data Portal is a fully open and local friendly data platform that unifies Filecoin data from diverse sources (on-chain and off-chain). It is an instance of Datadex.
+The Filecoin Data Portal is a fully open and local friendly data platform that unifies Filecoin data from diverse sources (on-chain and off-chain). It is an instance of [Datadex](https://github.com/datonic/datadex).
 
 ### How much do these datasets cost?
 
@@ -19,12 +19,11 @@ All of these datasets can be used without restriction. They are released under a
 
 Datasets produced by the Filecoin Data Portal are used by a wide range of organizations and individuals. Some of the use cases include:
 
-- [Reppo is creating Storage Provider's Reputation models](https://www.reppo.ai/models)
-- [FIDL](https://fidl.tech) is embedding some of the data in [Allocators Compilance reports](https://compliance.allocator.tech/report/f03014641/1723421684/report.md).
-- I created two data applications to surface core datasets by creating charts and showcasing what is possible with the data.
-  - [Filecoin Pulse](https://pulse.filecoindataportal.xyz/)
-  - [Filecoin In Numbers](https://numbers.filecoindataportal.xyz/)
-  - [Dune Dashboard](https://dune.com/kalen/filecoin-daily-metrics)
+- [Filecoin Pulse](https://pulse.filecoindataportal.xyz/).
+- [Filecoin In Numbers](https://numbers.filecoindataportal.xyz/).
+- [Dune Dashboard](https://dune.com/kalen/filecoin-daily-metrics).
+- [Reppo Storage Provider's Reputation models](https://www.reppo.ai/models).
+- [FIDL](https://fidl.tech)'s [Allocators Compilance reports](https://compliance.allocator.tech/report/f03014641/1723421684/report.md).
 
 ### How does the data get updated?
 

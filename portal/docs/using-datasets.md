@@ -68,11 +68,11 @@ Depending on the BI tool you are using, you can connect to the Parquet files dir
 
 ### Evidence
 
-[Filecoin Pulse](https://filecoinpulse.pages.dev/) is a website build with Evidence using the Filecoin Data Portal datasets. You can [check the source code on GitHub](https://github.com/davidgasquez/filecoin-pulse) to see how to use the datasets in Evidence.
+[Filecoin Pulse](https://pulse.filecoindataportal.xyz/) is a website build with Evidence using the Filecoin Data Portal datasets. You can [check the source code on GitHub](https://github.com/davidgasquez/filecoin-data-portal) to see how to use the datasets in Evidence.
 
 ### Observable Framework
 
-Another alternative is to use the Observable framework to create dashboards and visualizations. You can use parquet files as data sources and generate beautiful static websites providing dashboards and reports like [Filecoin Metrics](https://davidgasquez.github.io/filecoin-metrics/), a proof of concept dashboard built with Observable Framework. You can check the [source code on GitHub](https://github.com/davidgasquez/filecoin-metrics) too.
+Another alternative is to use the Observable framework to create dashboards and visualizations. You can use parquet files as data sources and generate beautiful static websites providing dashboards and reports like [Filecoin in Numbers](https://numbers.filecoindataportal.xyz/), a dashboard built with Observable Framework on top of the Portal open datasets. You can check the [source code on GitHub](https://github.com/davidgasquez/filecoin-data-portal) too.
 
 ## Others
 

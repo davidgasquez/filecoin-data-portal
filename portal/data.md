@@ -32,7 +32,8 @@ These datasets offer a wide range of metrics that can be used to analyze the Fil
 <h3 class="card-title mt-2">Weekly</h3>
 <p class="card-text"> Collection of Filecoin related metrics at the weekly level. </p>
 <a href="https://data.filecoindataportal.xyz/filecoin_weekly_metrics.parquet" target="_blank" class="btn btn-secondary">Download</a>
-<a href="#" class="btn btn-secondary disabled">Sheet</a>
+<a href="https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_weekly_metrics.parquet" target="_blank" class="btn btn-secondary">Preview</a>
+
 </div>
 :::
 
@@ -41,15 +42,34 @@ These datasets offer a wide range of metrics that can be used to analyze the Fil
 <h3 class="card-title mt-2">Monthly</h3>
 <p class="card-text"> Collection of Filecoin related metrics at the monthly level. </p>
 <a href="https://data.filecoindataportal.xyz/filecoin_monthly_metrics.parquet" target="_blank" class="btn btn-secondary">Download</a>
-<a href="#" class="btn btn-secondary disabled">Sheet</a>
+<a href="https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_monthly_metrics.parquet" target="_blank" class="btn btn-secondary">Preview</a>
+</div>
+:::
+
+::: {.g-col-lg-6 .g-col-sm-12}
+<div class="card card-body">
+<h3 class="card-title mt-2">Storage Providers Daily</h3>
+<p class="card-text"> Storage Providers specific metrics, at the daily level. </p>
+<a href="https://data.filecoindataportal.xyz/filecoin_daily_storage_providers_metrics.parquet" target="_blank" class="btn btn-secondary">Download</a>
+<a href="https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_daily_storage_providers_metrics.parquet" target="_blank" class="btn btn-secondary">Preview</a>
+</div>
+:::
+
+::: {.g-col-lg-6 .g-col-sm-12}
+<div class="card card-body">
+<h3 class="card-title mt-2">Clients Daily</h3>
+<p class="card-text"> Clients specific metrics, at the daily level. </p>
+<a href="https://data.filecoindataportal.xyz/filecoin_daily_clients_metrics.parquet" target="_blank" class="btn btn-secondary">Download</a>
+<a href="https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_daily_clients_metrics.parquet" target="_blank" class="btn btn-secondary">Preview</a>
 </div>
 :::
 
 ::: {.g-col-lg-12 .g-col-sm-12}
 <div class="card card-body">
-<h3 class="card-title mt-2">Storage Providers Daily</h3>
-<p class="card-text"> Storage Providers specific metrics, at the daily level. </p>
-<a href="https://data.filecoindataportal.xyz/filecoin_daily_storage_providers_metrics.parquet" target="_blank" class="btn btn-secondary">Download</a>
+<h3 class="card-title mt-2">Transactions Daily</h3>
+<p class="card-text"> Transactions specific metrics, at the daily level. </p>
+<a href="https://data.filecoindataportal.xyz/filecoin_daily_transactions.parquet" target="_blank" class="btn btn-secondary">Download</a>
+<a href="https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_daily_transactions.parquet" target="_blank" class="btn btn-secondary">Preview</a>
 </div>
 :::
 
@@ -99,12 +119,19 @@ These datasets provide information and up to date metrics about the different en
 <h3 class="card-title mt-2">Deals</h3>
 <p class="card-text"> Information and metrics about all the Deals.</p>
 <a href="https://data.filecoindataportal.xyz/filecoin_state_market_deals.parquet" target="_blank" class="btn btn-secondary">Download</a>
+<a href="https://sql-workbench.com/#queries=v0,select-*-from-'https%3A%2F%2Fdata.filecoindataportal.xyz%2Ffilecoin_state_market_deals.parquet'-limit-1000~" target="_blank" class="btn btn-secondary">Preview</a>
 </div>
 </div>
 
 :::
 
-::: {.g-col-lg-6 .g-col-sm-12}
+:::
+
+### Datacap
+
+::: {.grid}
+
+::: {.g-col-sm-12}
 
 <div class="card">
 <div class="card-body">
@@ -125,6 +152,19 @@ These datasets provide information and up to date metrics about the different en
 <p class="card-text"> Details about all the Datacap Allowances for Allocators.</p>
 <a href="https://data.filecoindataportal.xyz/filecoin_allocators_datacap_allowances.parquet" target="_blank" class="btn btn-secondary">Download</a>
 <a href="https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_allocators_datacap_allowances.parquet" target="_blank" class="btn btn-secondary">Preview</a>
+</div>
+</div>
+
+:::
+
+::: {.g-col-lg-6 .g-col-sm-12}
+
+<div class="card">
+<div class="card-body">
+<h3 class="card-title mt-2">Clients Datacap Allowances</h3>
+<p class="card-text"> Details about all the Datacap Allowances for Clients.</p>
+<a href="https://data.filecoindataportal.xyz/filecoin_clients_datacap_allowances.parquet" target="_blank" class="btn btn-secondary">Download</a>
+<a href="https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_clients_datacap_allowances.parquet" target="_blank" class="btn btn-secondary">Preview</a>
 </div>
 </div>
 
