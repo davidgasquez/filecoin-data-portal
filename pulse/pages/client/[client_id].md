@@ -102,7 +102,7 @@ order by date desc, provider_id asc
 /> -->
 
 
-<!-- ## Client Interactions with Storage Providers
+## Client Interactions with Storage Providers
 
 ```sql filtered_client_providers
 with client_provider_metrics as (
@@ -113,7 +113,7 @@ select
   count(distinct date) as days_with_deals,
   max(date) as last_deal_at,
   min(date) as first_deal_at
-from filecoin_deal_metrics
+from filecoin_deals_metrics
 where 1=1
   and client_id = '${params.client_id}'
   and date between '${inputs.range.start}' and '${inputs.range.end}'
@@ -137,7 +137,7 @@ select
   sp.balance,
   sp.locked_funds,
   sp.provider_collateral,
-  -- '/provider/' || p.provider_id as link,
+  '/provider/' || p.provider_id as link,
 from client_provider_metrics p
 left join filecoin_storage_providers sp on p.provider_id = sp.provider_id
 order by onboarded_data_tibs desc
@@ -150,4 +150,5 @@ order by onboarded_data_tibs desc
   rowShading=true
   rowLines=false
   downloadable=true
-/> -->
+  link=link
+/>

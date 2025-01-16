@@ -8,7 +8,7 @@
 <EvidenceDefaultLayout
     {data}
     logo="/icon.svg"
-    homePageName="Overview"
+    homePageName="Pulse"
     builtWithEvidence={false}
     fullWidth={true}
     hideBreadcrumbs={true}
