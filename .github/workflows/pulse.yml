@@ -10,9 +10,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  numbers:
+  pulse:
     name: Filecoin Pulse
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: "--max-old-space-size=8192"
     permissions:
       contents: read
       deployments: write
