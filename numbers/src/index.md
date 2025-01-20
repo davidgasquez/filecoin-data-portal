@@ -107,7 +107,33 @@ movingAverageLinePlot({
   title: "Data Delta",
   subtitle: "Daily change in data on State Market Deals over time.",
   yField: "data_delta_pibs",
-  yLabel: "PiBs / day",
+  yLabel: "PiBs",
+})
+```
+</div>
+
+<div class="card">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: "Data Onboarding with Payments",
+  subtitle: "Daily data onboarded with payments via State Market Deals.",
+  yField: "onboarded_data_tibs_with_payments",
+  yLabel: "TiBs",
+})
+```
+</div>
+
+<div class="card">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: "Deal Storage Cost",
+  subtitle: "Total daily spent FIL on paid deals.",
+  yField: "deal_storage_cost_fil",
+  yLabel: "FIL",
 })
 ```
 </div>

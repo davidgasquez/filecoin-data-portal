@@ -13,6 +13,8 @@ COPY (
     deals,
     data_on_active_deals_pibs,
     active_deals,
+    coalesce(onboarded_data_pibs_with_payments, 0) * 1024 as onboarded_data_tibs_with_payments,
+    deal_storage_cost_fil,
     unique_deal_making_clients,
     unique_deal_making_providers,
     clients_with_active_deals,
