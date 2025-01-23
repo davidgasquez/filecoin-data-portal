@@ -919,7 +919,7 @@ movingAverageLinePlot({
 <div class="card">
 
 ```js
-const tx_method = view(Inputs.select([...new Set(fdt.map(d => d.method))], {value: "storagemarket/4/PublishStorageDeals", label: "Method"}));
+const tx_method = view(Inputs.select([...new Set(fdt.map(d => d.method).sort())], {value: "storagemarket/4/PublishStorageDeals", label: "Method"}));
 ```
 
 ```js
@@ -932,13 +932,13 @@ Plot.plot({
   width,
   marks: [
     Plot.ruleY([0]),
-    Plot.lineY(fdt.filter(d => d.method === tx_method), {
+    Plot.lineY(fdt.filter(d => d.method === tx_method && (timeframe === "All" || new Date(d.date) > new Date(Date.now() - 365 * 24 * 60 * 60 * 1000))), {
       x: "date",
       y: "transactions",
       stroke: "var(--theme-foreground-fainter)",
     }),
     Plot.lineY(
-      fdt.filter(d => d.method === tx_method),
+      fdt.filter(d => d.method === tx_method && (timeframe === "All" || new Date(d.date) > new Date(Date.now() - 365 * 24 * 60 * 60 * 1000))),
       Plot.windowY(30, {
         x: "date",
         y: "transactions",
@@ -974,7 +974,7 @@ yLabel: "Gas Units (10^12)",
 <div class="card">
 
 ```js
-const method = view(Inputs.select([...new Set(fdt.map(d => d.method))], {value: "storagemarket/4/PublishStorageDeals", label: "Method"}));
+const method = view(Inputs.select([...new Set(fdt.map(d => d.method).sort())], {value: "storagemarket/4/PublishStorageDeals", label: "Method"}));
 ```
 
 ```js
@@ -987,12 +987,12 @@ Plot.plot({
   width,
   marks: [
     Plot.ruleY([0]),
-    Plot.lineY(fdt.filter(d => d.method === method), {
+    Plot.lineY(fdt.filter(d => d.method === method && (timeframe === "All" || new Date(d.date) > new Date(Date.now() - 365 * 24 * 60 * 60 * 1000))), {
       x: "date",
       y: "gas_used_millions",
       stroke: "var(--theme-foreground-fainter)",
     }),
-    Plot.lineY(fdt.filter(d => d.method === method), Plot.windowY(30, {
+    Plot.lineY(fdt.filter(d => d.method === method && (timeframe === "All" || new Date(d.date) > new Date(Date.now() - 365 * 24 * 60 * 60 * 1000))), Plot.windowY(30, {
       x: "date",
       y: "gas_used_millions",
       stroke: "var(--theme-foreground-focus)",
