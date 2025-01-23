@@ -294,7 +294,8 @@ movingAverageLinePlot({
   caption: "Displaying 30-day moving average on a log scale",
   yField: "active_address_count_daily",
   yLabel: "Active Addresses",
-  yType: "log",
+  yDomain: timeframe === "All" ? [0, 30000] : [0, 10000],
+  // yType: "log",
 })
 ```
 </div>
