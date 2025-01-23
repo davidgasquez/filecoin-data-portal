@@ -291,7 +291,7 @@ movingAverageLinePlot({
   metrics,
   title: "Active Addresses",
   subtitle: "Addresses that appeared on chain at a given time.",
-  caption: "Displaying 30-day moving average on a log scale",
+  caption: "Displaying 30-day moving average",
   yField: "active_address_count_daily",
   yLabel: "Active Addresses",
   yDomain: timeframe === "All" ? [0, 30000] : [0, 10000],
