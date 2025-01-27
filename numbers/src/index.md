@@ -11,6 +11,12 @@ Your **high level** view into the Filecoin Ecosystem!
 </center>
 
 ```js
+const params = new URLSearchParams(window.location.search);
+const from_date = params.get('from_date') ?? '2020-10-01';
+const to_date = params.get('to_date') ?? new Date().toISOString().split('T')[0];
+```
+
+```js
 const am = await FileAttachment("./data/daily_metrics.csv").csv({typed: true});
 const drm = await FileAttachment("./data/daily_region_metrics.csv").csv({typed: true});
 const dim = await FileAttachment("./data/daily_industry_metrics.csv").csv({typed: true});
