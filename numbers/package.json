@@ -9,7 +9,7 @@
     "observable": "observable"
   },
   "dependencies": {
-    "@observablehq/framework": "^1.13.0",
+    "@observablehq/framework": "^1.13.2",
     "d3-dsv": "^3.0.1",
     "d3-time-format": "^4.1.0"
   },

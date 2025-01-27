@@ -6,11 +6,11 @@ dependencies = [
     "altair>=5.5.0",
     "carbox>=0.3",
     "dag-json>=0.3",
-    "dagster>=1.9.6",
-    "dagster-dbt>=0.25.6",
-    "dagster-duckdb-pandas>=0.25.6",
-    "dagster-gcp>=0.25.6",
-    "dbt-core>=1.8.9",
+    "dagster>=1.9.10",
+    "dagster-dbt>=0.25.10",
+    "dagster-duckdb-pandas>=0.25.10",
+    "dagster-gcp>=0.25.10",
+    "dbt-core>=1.9.1",
     "dbt-duckdb>=1.9.1",
     "duckdb>=1.1.3",
     "google-cloud-bigquery-storage>=2.27.0",
@@ -18,16 +18,16 @@ dependencies = [
     "ipykernel>=6.29.5",
     "ipywidgets>=8.1.5",
     "pandas>=2.2.3",
-    "polars>=1.19.0",
-    "pyarrow>=18.1.0",
-    "web3>=7.6.1",
+    "polars>=1.21.0",
+    "pyarrow>=19.0.0",
+    "web3>=7.7.0",
 ]
 requires-python = ">=3.10, <3.14"
 readme = "README.md"
 license = { text = "MIT" }
 
 [dependency-groups]
-dev = ["dagster-webserver>=1.9.6", "ipykernel>=6.29.5"]
+dev = ["dagster-webserver>=1.9.10", "ipykernel>=6.29.5"]
 
 [project.urls]
 Homepage = "https://filecoindataportal.xyz/"
