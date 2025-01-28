@@ -81,3 +81,7 @@ h2 {
     box-sizing: border-box;
     border-left: solid 0px var(--theme-foreground-faintest);
 }
+
+.card:target {
+    border: 4px solid var(--theme-blue);
+}

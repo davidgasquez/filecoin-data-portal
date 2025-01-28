@@ -14,6 +14,15 @@ Your **high level** view into the Filecoin Ecosystem!
 const params = new URLSearchParams(window.location.search);
 const from_date = params.get('from_date') ?? '2020-10-01';
 const to_date = params.get('to_date') ?? new Date().toISOString().split('T')[0];
+
+// Add scroll correction for anchor links
+const hash = window.location.hash;
+if (hash) {
+  const element = document.querySelector(hash);
+  if (element) {
+    setTimeout(() => element.scrollIntoView({ behavior: 'auto', block: 'start' }), 100);
+  }
+}
 ```
 
 ```js
@@ -52,11 +61,21 @@ const data_flow = ["onboarded_data_pibs", "ended_data_pibs"].flatMap((metric) =>
 
 ## Data Onboarding
 
-<div class="card">
+```js
+function link(title, anchor) {
+  return htl.html`<a href="#${anchor}">${title}</a>`
+}
+
+function title_anchor(title, anchor) {
+  return htl.html`<h2>${link(title, anchor)}</h2>`
+}
+```
+
+<div class="card" id="data-flow">
 
 ```js
 Plot.plot({
-  title: "Data Flow",
+  title: title_anchor("Data Flow", "data-flow"),
   subtitle: "How much data (PiBs) is being onboarded and offboarded on State Market Deals.",
   caption: "Displaying 30-day moving average for State Market Deals data.",
   x: {label: "Date"},
@@ -89,12 +108,12 @@ Plot.plot({
 
 <div class="grid grid-cols-2">
 
-<div class="card">
+<div class="card" id="data-on-active-deals">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Data On Active Deals",
+  title: title_anchor("Data On Active Deals", "data-on-active-deals"),
   subtitle: "How much data was active on State Market Deals on the network at a given time.",
   caption: "Only displaying data from State Market Deals.",
   yField: "data_on_active_deals_pibs",
@@ -105,12 +124,12 @@ movingAverageLinePlot({
 
 </div>
 
-<div class="card">
+<div class="card" id="data-delta">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Data Delta",
+  title: title_anchor("Data Delta", "data-delta"),
   subtitle: "Daily change in data on State Market Deals over time.",
   yField: "data_delta_pibs",
   yLabel: "PiBs",
@@ -118,12 +137,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="data-onboarding-with-payments">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Data Onboarding with Payments",
+  title: title_anchor("Data Onboarding with Payments", "data-onboarding-with-payments"),
   subtitle: "Daily data onboarded with payments via State Market Deals.",
   yField: "onboarded_data_tibs_with_payments",
   yLabel: "TiBs",
@@ -131,12 +150,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="deal-storage-cost">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Deal Storage Cost",
+  title: title_anchor("Deal Storage Cost", "deal-storage-cost"),
   subtitle: "Total daily spent FIL on paid deals.",
   yField: "deal_storage_cost_fil",
   yLabel: "FIL",
@@ -144,11 +163,11 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="data-onboarding-by-region">
 
 ```js
 resize((width) => Plot.plot({
-  title: "Data Onboarding by Region",
+  title: title_anchor("Data Onboarding by Region", "data-onboarding-by-region"),
   subtitle: "Daily data (TiBs) onboarded by region (from Client's Datacap application).",
   caption: "Only displaying onboarded data from known regions.",
   x: {label: "Date"},
@@ -173,11 +192,11 @@ resize((width) => Plot.plot({
 
 </div>
 
-<div class="card">
+<div class="card" id="data-onboarding-by-industry">
 
 ```js
 resize((width) => Plot.plot({
-  title: "Data Onboarding by Industry",
+  title: title_anchor("Data Onboarding by Industry", "data-onboarding-by-industry"),
   subtitle: "Daily data (TiBs) onboarded by industry (from Client's Datacap application).",
   caption: "Only displaying onboarded data from known industries.",
   x: {label: "Date"},
@@ -204,12 +223,12 @@ resize((width) => Plot.plot({
 
 </div>
 
-<div class="card">
+<div class="card" id="direct-data-onboarding">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Direct Data Onboarding",
+  title: title_anchor("Direct Data Onboarding", "direct-data-onboarding"),
   subtitle: "Onboarded data to the network via Direct Data Onboarding.",
   caption: "Displaying 30-day moving average.",
   yField: "ddo_sector_onboarding_raw_power_tibs",
@@ -222,12 +241,12 @@ movingAverageLinePlot({
 
 <div class="grid grid-cols-2">
 
-<div class="card">
+<div class="card" id="dealmaking-clients">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Dealmaking Clients",
+  title: title_anchor("Dealmaking Clients", "dealmaking-clients"),
   subtitle: "Clients making State Market Deals on the network.",
   yField: "unique_deal_making_clients",
   yLabel: "Clients",
@@ -235,12 +254,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="dealmaking-providers">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Dealmaking Providers",
+  title: title_anchor("Dealmaking Providers", "dealmaking-providers"),
   subtitle: "Providers making State Market Deals on the network.",
   yField: "unique_deal_making_providers",
   yLabel: "Providers",
@@ -248,12 +267,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="clients-with-active-deals">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Clients With Active Deals",
+  title: title_anchor("Clients With Active Deals", "clients-with-active-deals"),
   subtitle: "How many clients have active (State Market) deals on the network at a given time.",
   yField: "clients_with_active_deals",
   yLabel: "Clients",
@@ -262,12 +281,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="providers-with-active-deals">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Providers With Active Deals",
+  title: title_anchor("Providers With Active Deals", "providers-with-active-deals"),
   subtitle: "How many providers have active (State Market) deals on the network at a given time.",
   yField: "providers_with_active_deals",
   yLabel: "Providers",
@@ -276,12 +295,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="providers-with-power">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Providers With Power",
+  title: title_anchor("Providers With Power", "providers-with-power"),
   subtitle: "How many providers had power on the network at a given time.",
   yField: "providers_with_power",
   yLabel: "Providers",
@@ -290,12 +309,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="active-addresses">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Active Addresses",
+  title: title_anchor("Active Addresses", "active-addresses"),
   subtitle: "Addresses that appeared on chain at a given time.",
   caption: "Displaying 30-day moving average",
   yField: "active_address_count_daily",
@@ -306,12 +325,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="total-addresses">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Total Addresses",
+  title: title_anchor("Total Addresses", "total-addresses"),
   subtitle: "How many addresses have interacted with the network.",
   yField: "total_address_count",
   yLabel: "Addresses (Millions)",
@@ -321,12 +340,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="mean-active-deal-duration">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Mean Active Deal Duration",
+  title: title_anchor("Mean Active Deal Duration", "mean-active-deal-duration"),
   subtitle: "How many days deals active on a date are expected to last.",
   caption: "Displaying 30-day moving average",
   yField: "mean_deal_duration_days",
@@ -342,12 +361,12 @@ movingAverageLinePlot({
 
 <div class="grid grid-cols-2">
 
-<div class="card">
+<div class="card" id="raw-power">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Raw Power",
+  title: title_anchor("Raw Power", "raw-power"),
   subtitle: "Total raw power (PiBs) capacity on the network over time.",
   yField: "raw_power_pibs",
   yLabel: "PiBs",
@@ -357,12 +376,12 @@ movingAverageLinePlot({
 
 </div>
 
-<div class="card">
+<div class="card" id="raw-power-delta">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Raw Power Delta",
+  title: title_anchor("Raw Power Delta", "raw-power-delta"),
   subtitle: "Daily change in raw power on the network over time.",
   caption: "Displaying 30-day moving average",
   yField: "raw_power_delta_pibs",
@@ -372,12 +391,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="quality-adjusted-power">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Quality Adjusted Power",
+  title: title_anchor("Quality Adjusted Power", "quality-adjusted-power"),
   subtitle: "Total quality adjusted power (PiBs) capacity on the network over time.",
   yField: "quality_adjusted_power_pibs",
   yLabel: "PiBs",
@@ -387,12 +406,12 @@ movingAverageLinePlot({
 
 </div>
 
-<div class="card">
+<div class="card" id="quality-adjusted-power-delta">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Quality Adjusted Power Delta",
+  title: title_anchor("Quality Adjusted Power Delta", "quality-adjusted-power-delta"),
   subtitle: "Daily change in quality adjusted power on the network over time.",
   caption: "Displaying 30-day moving average",
   yField: "quality_adjusted_power_delta_pibs",
@@ -402,12 +421,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="verified-data-power">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Verified Data Power",
+  title: title_anchor("Verified Data Power", "verified-data-power"),
   subtitle: "Total verified data power (PiBs) capacity on the network over time.",
   yField: "verified_data_power_pibs",
   yLabel: "PiBs",
@@ -416,12 +435,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="network-utilization-ratio">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Network Utilization Ratio",
+  title: title_anchor("Network Utilization Ratio", "network-utilization-ratio"),
   subtitle: "How much of the network's power is being used.",
   yField: "network_utilization_ratio",
   yLabel: "Percentage (%)",
@@ -434,12 +453,12 @@ movingAverageLinePlot({
 ## Retrievals
 
 <div class="grid grid-cols-2">
-<div class="card">
+<div class="card" id="spark-retrieval-success-rate">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Spark Retrieval Success Rate",
+  title: title_anchor("Spark Retrieval Success Rate", "spark-retrieval-success-rate"),
   subtitle: "Average success rate of retrievals via Spark over time.",
   yField: "mean_spark_retrieval_success_rate",
   yLabel: "Percentage (%)",
@@ -448,12 +467,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="providers-with-successful-retrieval">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Providers With Successful Retrievals",
+  title: title_anchor("Providers With Successful Retrievals", "providers-with-successful-retrieval"),
   subtitle: "How many providers have successfully retrieved data via Spark over time.",
   yField: "providers_with_successful_retrieval",
   yLabel: "Providers",
@@ -465,7 +484,7 @@ movingAverageLinePlot({
 
 ## Sectors
 
-<div class="card">
+<div class="card" id="sector-metrics">
 
 ```js
 const sectorMetricType = view(Inputs.radio(["Raw Power", "Quality-Adjusted Power"], {label: "Power Type", value: "Raw Power"}));
@@ -473,7 +492,7 @@ const sectorMetricType = view(Inputs.radio(["Raw Power", "Quality-Adjusted Power
 
 </div>
 
-<div class="card">
+<div class="card" id="sector-data-by-event">
 
 ```js
 const sector_metrics = sectorMetricType === "Raw Power"
@@ -501,7 +520,7 @@ const sector_metrics_data = sector_metrics.flatMap(({metric, values}) => values.
 
 ```js
 resize((width) => Plot.plot({
-  title: `Sector Data by Event (${sectorMetricType})`,
+  title: title_anchor(`Sector Data by Event (${sectorMetricType})`, "sector-data-by-event"),
   subtitle: "How much data each event type has on the network on a given date.",
   caption: "Displaying 30-day moving average",
   x: {label: "Date"},
@@ -526,12 +545,12 @@ resize((width) => Plot.plot({
 
 <div class="grid grid-cols-2">
 
-<div class="card">
+<div class="card" id="sector-onboarding">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Sector Onboarding",
+  title: title_anchor("Sector Onboarding", "sector-onboarding"),
   subtitle: `Daily ${sectorMetricType} PiBs onboarded into sector.`,
   yField: sectorMetricType === "Raw Power" ? "sector_onboarding_raw_power_pibs" : "sector_onboarding_quality_adjusted_power_pibs",
   yLabel: "PiBs",
@@ -539,12 +558,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="sector-termination">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Sector Termination",
+  title: title_anchor("Sector Termination", "sector-termination"),
   subtitle: `Daily ${sectorMetricType} PiBs terminated from sector.`,
   yField: sectorMetricType === "Raw Power" ? "sector_terminated_raw_power_pibs" : "sector_terminated_quality_adjusted_power_pibs",
   yLabel: "PiBs",
@@ -559,12 +578,12 @@ movingAverageLinePlot({
 
 <div class="grid grid-cols-2">
 
-<div class="card">
+<div class="card" id="commit-capacity-events">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Commit Capacity Events",
+  title: title_anchor("Commit Capacity Events", "commit-capacity-events"),
   subtitle: "Number of commit capacity events per day",
   caption: "Displaying 30-day moving average",
   yField: "commit_capacity_added_events_count",
@@ -574,12 +593,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="precommit-events">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Precommit Events",
+  title: title_anchor("Precommit Events", "precommit-events"),
   subtitle: "Number of precommit events per day",
   caption: "Displaying 30-day moving average",
   yField: "precommit_added_events_count",
@@ -589,12 +608,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="sector-added-events">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Sector Added Events",
+  title: title_anchor("Sector Added Events", "sector-added-events"),
   subtitle: "Number of sector added events per day",
   caption: "Displaying 30-day moving average",
   yField: "sector_added_events_count",
@@ -603,12 +622,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="sector-extended-events">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Sector Extended Events",
+  title: title_anchor("Sector Extended Events", "sector-extended-events"),
   subtitle: "Number of sector extended events per day",
   caption: "Displaying 30-day moving average",
   yField: "sector_extended_events_count",
@@ -619,12 +638,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="sector-fault-events">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Sector Fault Events",
+  title: title_anchor("Sector Fault Events", "sector-fault-events"),
   subtitle: "Number of sector fault events per day",
   caption: "Displaying 30-day moving average",
   yField: "sector_faulted_events_count",
@@ -635,12 +654,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="sector-recovery-events">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Sector Recovery Events",
+  title: title_anchor("Sector Recovery Events", "sector-recovery-events"),
   subtitle: "Number of sector recovery events per day",
   caption: "Displaying 30-day moving average",
   yField: "sector_recovered_events_count",
@@ -651,12 +670,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="sector-snap-events">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Sector Snap Events",
+  title: title_anchor("Sector Snap Events", "sector-snap-events"),
   subtitle: "Number of sector snap events per day",
   caption: "Displaying 30-day moving average",
   yField: "sector_snapped_events_count",
@@ -665,12 +684,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="sector-terminated-events">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Sector Terminated Events",
+  title: title_anchor("Sector Terminated Events", "sector-terminated-events"),
   subtitle: "Number of sector terminated events per day",
   caption: "Displaying 30-day moving average",
   yField: "sector_terminated_events_count",
@@ -686,12 +705,12 @@ movingAverageLinePlot({
 
 <div class="grid grid-cols-2">
 
-<div class="card">
+<div class="card" id="circulating-fil">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Circulating FIL",
+  title: title_anchor("Circulating FIL", "circulating-fil"),
   subtitle: "Amount of FIL circulating and tradeable in the economy.",
   yField: "circulating_fil",
   yLabel: "FIL (Millions)",
@@ -701,12 +720,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="circulating-fil-delta">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Circulating FIL Delta",
+  title: title_anchor("Circulating FIL Delta", "circulating-fil-delta"),
   subtitle: "Daily change in circulating FIL over time.",
   caption: "Displaying 30-day moving average",
   yField: "circulating_fil_delta",
@@ -717,12 +736,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="mined-fil">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Mined FIL",
+  title: title_anchor("Mined FIL", "mined-fil"),
   subtitle: "Amount of FIL that has been mined by storage miners.",
   yField: "mined_fil",
   yLabel: "FIL (Millions)",
@@ -732,12 +751,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="mined-fil-delta">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Mined FIL Delta",
+  title: title_anchor("Mined FIL Delta", "mined-fil-delta"),
   subtitle: "Daily change in mined FIL over time.",
   caption: "Displaying 30-day moving average",
   yField: "mined_fil_delta",
@@ -746,12 +765,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="vested-fil">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Vested FIL",
+  title: title_anchor("Vested FIL", "vested-fil"),
   subtitle: "Amount of FIL that is vested from genesis allocation.",
   yField: "vested_fil",
   yLabel: "FIL (Millions)",
@@ -761,12 +780,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="vested-fil-delta">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Vested FIL Delta",
+  title: title_anchor("Vested FIL Delta", "vested-fil-delta"),
   subtitle: "Daily change in vested FIL over time.",
   caption: "Displaying 30-day moving average",
   yField: "vested_fil_delta",
@@ -776,12 +795,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="locked-fil">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Locked FIL",
+  title: title_anchor("Locked FIL", "locked-fil"),
   subtitle: "Amount of FIL locked as part of initial pledge, deal pledge, locked rewards, and other locking mechanisms.",
   yField: "locked_fil",
   yLabel: "FIL (Millions)",
@@ -791,12 +810,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="locked-fil-delta">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Locked FIL Delta",
+  title: title_anchor("Locked FIL Delta", "locked-fil-delta"),
   subtitle: "Daily change in locked FIL over time.",
   caption: "Displaying 30-day moving average",
   yField: "locked_fil_delta",
@@ -806,12 +825,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="burnt-fil">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Burnt FIL",
+  title: title_anchor("Burnt FIL", "burnt-fil"),
   subtitle: "Amount of FIL burned as part of on-chain computations and penalties",
   yField: "burnt_fil",
   yLabel: "FIL (Millions)",
@@ -821,12 +840,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="burnt-fil-delta">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Burnt FIL Delta",
+  title: title_anchor("Burnt FIL Delta", "burnt-fil-delta"),
   subtitle: "Daily change in burnt FIL over time.",
   caption: "Displaying 30-day moving average",
   yField: "burnt_fil_delta",
@@ -836,12 +855,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="reward-per-wincount">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Reward Per Wincount",
+  title: title_anchor("Reward Per Wincount", "reward-per-wincount"),
   subtitle: "Weighted average block rewards awarded by the Filecoin Network per WinCount over time.",
   yField: "reward_per_wincount",
   yLabel: "FIL",
@@ -850,12 +869,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="reward-per-wincount-delta">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Reward per Wincount FIL Delta",
+  title: title_anchor("Reward per Wincount FIL Delta", "reward-per-wincount-delta"),
   subtitle: "Daily change in reward per Wincount over time.",
   caption: "Displaying 30-day moving average",
   yField: "reward_per_wincount_delta",
@@ -866,7 +885,7 @@ movingAverageLinePlot({
 
 </div>
 
-<div class="card">
+<div class="card" id="fil-plus-share">
 
 ```js
 const fil_plus_share = ["fil_plus_bytes_share", "fil_plus_rewards_share"].flatMap((metric) => metrics.map(({date, [metric]: value}) => ({date, metric, value})));
@@ -874,7 +893,7 @@ const fil_plus_share = ["fil_plus_bytes_share", "fil_plus_rewards_share"].flatMa
 
 ```js
 Plot.plot({
-  title: "Filecoin Plus Share",
+  title: title_anchor("Filecoin Plus Share", "fil-plus-share"),
   subtitle: "How much share does Filecoin Plus get in the network.",
   caption: "Metrics derived from the ratio of quality-adjusted power to raw power.",
   x: {label: "Date"},
@@ -907,12 +926,12 @@ Plot.plot({
 
 ## Transactions
 
-<div class="card">
+<div class="card" id="all-transactions">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Transactions",
+  title: title_anchor("All Transactions", "all-transactions"),
   subtitle: "Number of transactions per day on the network.",
   yField: "transactions",
   yLabel: "Transactions (Millions)",
@@ -923,7 +942,7 @@ movingAverageLinePlot({
 
 </div>
 
-<div class="card">
+<div class="card" id="transactions-by-method">
 
 ```js
 const tx_method = view(Inputs.select([...new Set(fdt.map(d => d.method).sort())], {value: "storagemarket/4/PublishStorageDeals", label: "Method"}));
@@ -931,7 +950,7 @@ const tx_method = view(Inputs.select([...new Set(fdt.map(d => d.method).sort())]
 
 ```js
 Plot.plot({
-  title: `Transactions by ${tx_method}`,
+  title: title_anchor(`Transactions by ${tx_method}`, "transactions-by-method"),
   subtitle: "Total transactions for this method over time",
   caption: "Displaying 30-day moving average since 2022",
   x: {label: "Date"},
@@ -962,12 +981,12 @@ Plot.plot({
 
 ## Gas
 
-<div class="card">
+<div class="card" id="total-gas-used">
 
 ```js
 movingAverageLinePlot({
 metrics,
-title: "Total Gas Used",
+title: title_anchor("Total Gas Used", "total-gas-used"),
 subtitle: "Total gas used per day on the network.",
 caption: "Displaying 30-day moving average",
 yField: "total_gas_used_millions",
@@ -978,7 +997,7 @@ yLabel: "Gas Units (10^12)",
 </div>
 
 
-<div class="card">
+<div class="card" id="gas-used-by-method">
 
 ```js
 const method = view(Inputs.select([...new Set(fdt.map(d => d.method).sort())], {value: "storagemarket/4/PublishStorageDeals", label: "Method"}));
@@ -986,7 +1005,7 @@ const method = view(Inputs.select([...new Set(fdt.map(d => d.method).sort())], {
 
 ```js
 Plot.plot({
-  title: `Gas Used by ${method}`,
+  title: title_anchor(`Gas Used by ${method}`, "gas-used-by-method"),
   subtitle: "Total gas used for this method over time",
   caption: "Displaying 30-day moving average since 2022",
   x: {label: "Date"},
@@ -1013,12 +1032,12 @@ Plot.plot({
 
 <div class="grid grid-cols-2">
 
-<div class="card">
+<div class="card" id="unit-base-fee">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Unit Base Fee",
+  title: title_anchor("Unit Base Fee", "unit-base-fee"),
   subtitle: "The average set price per unit of gas to be burned.",
   yField: "unit_base_fee",
   yLabel: "nanoFIL",
@@ -1027,12 +1046,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="unit-base-fee-delta">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Unit Base Fee Delta",
+  title: title_anchor("Unit Base Fee Delta", "unit-base-fee-delta"),
   subtitle: "Daily change in unit base fee over time.",
   caption: "Displaying 30-day moving average",
   yField: "unit_base_fee_delta",
@@ -1042,12 +1061,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="provecommit-sector-gas-used">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Provecommit Sector Gas Used",
+  title: title_anchor("Provecommit Sector Gas Used", "provecommit-sector-gas-used"),
   subtitle: "Total gas used for provecommit sector operations per day on the network.",
   caption: "Displaying 30-day moving average",
   yField: "provecommit_sector_gas_used_millions",
@@ -1057,12 +1076,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="precommit-sector-gas-used">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Precommit Sector Gas Used",
+  title: title_anchor("Precommit Sector Gas Used", "precommit-sector-gas-used"),
   subtitle: "Total gas used for precommit sector operations per day on the network.",
   caption: "Displaying 30-day moving average",
   yField: "precommit_sector_gas_used_millions",
@@ -1072,12 +1091,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="provecommit-aggregate-gas-used">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Provecommit Aggregate Gas Used",
+  title: title_anchor("Provecommit Aggregate Gas Used", "provecommit-aggregate-gas-used"),
   subtitle: "Total gas used for provecommit aggregate operations per day on the network.",
   caption: "Displaying 30-day moving average",
   yField: "provecommit_aggregate_gas_used_millions",
@@ -1087,12 +1106,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="precommit-sector-batch-gas-used">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Precommit Sector Batch Gas Used",
+  title: title_anchor("Precommit Sector Batch Gas Used", "precommit-sector-batch-gas-used"),
   subtitle: "Total gas used for precommit sector batch operations per day on the network.",
   caption: "Displaying 30-day moving average",
   yField: "precommit_sector_batch_gas_used_millions",
@@ -1102,12 +1121,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="publish-storage-deals-gas-used">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Publish Storage Deals Gas Used",
+  title: title_anchor("Publish Storage Deals Gas Used", "publish-storage-deals-gas-used"),
   subtitle: "Total gas used for publish storage deals operations per day on the network.",
   caption: "Displaying 30-day moving average",
   yField: "publish_storage_deals_gas_used_millions",
@@ -1117,12 +1136,12 @@ movingAverageLinePlot({
 ```
 </div>
 
-<div class="card">
+<div class="card" id="submit-windowed-post-gas-used">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Submit Windowed PoSt Gas Used",
+  title: title_anchor("Submit Windowed PoSt Gas Used", "submit-windowed-post-gas-used"),
   subtitle: "Total gas used for submit windowed PoSt operations per day on the network.",
   caption: "Displaying 30-day moving average",
   yField: "submit_windowed_post_gas_used_millions",
