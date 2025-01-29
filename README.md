@@ -41,6 +41,7 @@ This repository contains all the code and related artifacts to process Filecoin 
 - [Filecoin In Numbers](https://numbers.filecoindataportal.xyz/)
 - [Filecoin Pulse Website](https://pulse.filecoindataportal.xyz/)
 - [Filecoin Metrics Dune Dashboard](https://dune.com/kalen/filecoin-daily-metrics)
+- [Filecoin Storage Providers Market Dashboard](https://filecoin-project.github.io/filecoin-storage-providers-market/)
 
 ## 🛠️ Contributing
 
