@@ -65,7 +65,7 @@ def raw_spark_retrievals_onchain_data(
 
             context.log.info(f"Fetching CAR for CID {cid}, index {cid_info['index']}")
 
-            url = f"https://{cid}.ipfs.w3s.link/?format=car"
+            url = f"https://{cid}.ipfs.w3s.link/?format=car&dag-scope=block"
 
             try:
                 response = httpx_api.get(url, timeout=300)
