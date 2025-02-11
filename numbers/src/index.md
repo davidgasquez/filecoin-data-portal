@@ -26,6 +26,16 @@ if (hash) {
 ```
 
 ```js
+// Update URL params when dates change
+function updateURLParams(fromDate, toDate) {
+  const params = new URLSearchParams(window.location.search);
+  params.set('from_date', fromDate);
+  params.set('to_date', toDate);
+  window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+}
+```
+
+```js
 const am = await FileAttachment("./data/daily_metrics.csv").csv({typed: true});
 const drm = await FileAttachment("./data/daily_region_metrics.csv").csv({typed: true});
 const dim = await FileAttachment("./data/daily_industry_metrics.csv").csv({typed: true});
@@ -45,14 +55,34 @@ import { movingAverageLinePlot } from "./components/movingAverageLinePlot.js";
 <h2>TIMEFRAME</h2>
 
 ```js
-const timeframe = view(Inputs.radio(["All", "Last Year"], {value: "All"}));
+const timeframe = view(Inputs.radio(["All", "Last Year", "Custom"], {value: params.has('from_date') || params.has('to_date') ? "Custom" : "All"}));
+```
+
+```js
+const startDate = timeframe === "Custom" ? view(Inputs.date({
+  label: "Start",
+  value: from_date,
+})) : from_date;
+
+const endDate = timeframe === "Custom" ? view(Inputs.date({
+  label: "End",
+  value: to_date,
+})) : to_date;
+```
+
+```js
+if (timeframe === "Custom") {
+  updateURLParams(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]);
+}
 ```
 
 </div>
 
 
 ```js
-const metrics = timeframe === "All" ? am : am.slice(am.length - 365);
+const metrics = timeframe === "All" ? am :
+                timeframe === "Last Year" ? am.slice(am.length - 365) :
+                am.filter(d => d.date >= startDate && d.date <= endDate);
 ```
 
 ```js

@@ -10,17 +10,17 @@ dependencies = [
     "dagster-dbt>=0.25.10",
     "dagster-duckdb-pandas>=0.25.10",
     "dagster-gcp>=0.25.10",
-    "dbt-core>=1.9.1",
+    "dbt-core>=1.9.2",
     "dbt-duckdb>=1.9.1",
-    "duckdb>=1.1.3",
-    "google-cloud-bigquery-storage>=2.27.0",
+    "duckdb>=1.2.0",
+    "google-cloud-bigquery-storage>=2.28.0",
     "httpx>=0.28.1",
     "ipykernel>=6.29.5",
     "ipywidgets>=8.1.5",
     "pandas>=2.2.3",
     "polars>=1.21.0",
     "pyarrow>=19.0.0",
-    "web3>=7.7.0",
+    "web3>=7.8.0",
 ]
 requires-python = ">=3.10, <3.14"
 readme = "README.md"

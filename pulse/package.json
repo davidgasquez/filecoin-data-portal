@@ -15,9 +15,9 @@
   },
   "type": "module",
   "dependencies": {
-    "@evidence-dev/core-components": "^5.1.0",
+    "@evidence-dev/core-components": "^5.1.1",
     "@evidence-dev/csv": "^1.0.14",
-    "@evidence-dev/evidence": "^40.0.6"
+    "@evidence-dev/evidence": "^40.0.7"
   },
   "overrides": {
     "jsonwebtoken": "9.0.0",
