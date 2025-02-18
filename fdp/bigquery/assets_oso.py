@@ -13,30 +13,24 @@ def raw_oso_daily_filecoin_collection_events(
 ) -> dg.MaterializeResult:
     """
     OSO Daily Filecoin Collection Events.
-
-    This table could be dropped at any time as it not versioned. In that case, we can swap to:
-
-    ```sql
-    select
-        e.*,
-        abp.artifact_source,
-        abp.artifact_name,
-    from `oso.timeseries_events_by_artifact_v0` e
-    join `oso.artifacts_by_collection_v1` abp
-    on e.to_artifact_id = abp.artifact_id
-    where abp.collection_name = "filecoin-core"
-    order by time desc
-    ```
     """
 
     query = """
-    select
-        event_type,
-        bucket_day as date,
-        amount
-    from `protocol-labs-data-nexus.oso.events_daily_to_collection`
-    where 1=1
-        and collection_id = (select collection_id from `protocol-labs-data-nexus.oso.collections_v1` where collection_name = "filecoin-core")
+        with m as (
+            select
+                metric_id,
+                display_name
+            from `opensource-observer.metrics.metrics_v0`
+        )
+
+        select
+            m.display_name as event_type,
+            sample_date as date,
+            amount
+        from `opensource-observer.metrics.timeseries_metrics_by_collection_v0` as ts
+        left join m on m.metric_id = ts.metric_id
+        where collection_id = 'Mo2593d20mndk7svIHlbHxKUlJZdRrKTvR0aCCVPd58='
+        order by date desc, display_name desc
     """
 
     schema = pa.schema(
