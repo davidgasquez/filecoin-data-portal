@@ -94,13 +94,21 @@ COPY (
     submit_windowed_post_gas_used_millions,
 
     -- Developer Activity
-    github_commit_code_events,
-    github_forked_events,
-    github_issue_closed_events,
-    github_issue_comment_events,
-    github_issue_opened_events,
-    github_pull_request_closed_events,
-    github_pull_request_merged_events,
+    github_opened_prs_180d,
+    github_avg_first_response_180d,
+    github_avg_time_to_merge_180d,
+    github_merged_prs_180d,
+    github_stars_180d,
+    github_opened_issues_180d,
+    github_closed_issues_180d,
+    github_repositories,
+    github_contributors,
+    github_comments,
+    github_stars,
+    github_forks,
+    github_releases,
+    github_commits,
+    github_active_developers,
 
     -- Transactions
     transactions

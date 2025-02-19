@@ -1190,11 +1190,11 @@ movingAverageLinePlot({
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Commits",
-  subtitle: "Number of commits per day on the core Filecoin repositories.",
+  title: "Code Commits",
+  subtitle: "Number of code commits per day on the core Filecoin repositories.",
   caption: "Displaying 30-day moving average",
-  yField: "github_commit_code_events",
-  yLabel: "Events"
+  yField: "github_commits",
+  yLabel: "Commits"
 })
 ```
 
@@ -1204,11 +1204,11 @@ movingAverageLinePlot({
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Issues Closed",
-  subtitle: "Number of issues closed per day on the core Filecoin repositories.",
+  title: "Active Developers",
+  subtitle: "Number of active developers per day on the core Filecoin repositories.",
   caption: "Displaying 30-day moving average",
-  yField: "github_issue_closed_events",
-  yLabel: "Events"
+  yField: "github_active_developers",
+  yLabel: "Developers"
 })
 ```
 
@@ -1218,11 +1218,11 @@ movingAverageLinePlot({
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Issue Comments",
-  subtitle: "Number of issue comments per day on the core Filecoin repositories.",
-  caption: "Displaying 30-day moving average",
-  yField: "github_issue_comment_events",
-  yLabel: "Events"
+  title: "Pull Request Time to Merge",
+  subtitle: "Average time to merge for PRs in last 180 days.",
+  yField: "github_avg_time_to_merge_180d",
+  yLabel: "Hours",
+  showArea: true
 })
 ```
 
@@ -1232,11 +1232,11 @@ movingAverageLinePlot({
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Issues Opened",
-  subtitle: "Number of issues opened per day on the core Filecoin repositories.",
-  caption: "Displaying 30-day moving average",
-  yField: "github_issue_opened_events",
-  yLabel: "Events"
+  title: "Pull Request Throughput",
+  subtitle: "Number of merged PRs in last 180 days.",
+  yField: "github_merged_prs_180d",
+  yLabel: "Pull Requests",
+  showArea: true
 })
 ```
 
@@ -1246,11 +1246,11 @@ movingAverageLinePlot({
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Pull Requests Closed",
-  subtitle: "Number of pull requests closed per day on the core Filecoin repositories.",
-  caption: "Displaying 30-day moving average",
-  yField: "github_pull_request_closed_events",
-  yLabel: "Events"
+  title: "Issue Activity",
+  subtitle: "Number of closed issues in last 180 days.",
+  yField: "github_closed_issues_180d",
+  yLabel: "Issues",
+  showArea: true
 })
 ```
 
@@ -1260,11 +1260,11 @@ movingAverageLinePlot({
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Pull Requests Merged",
-  subtitle: "Number of pull requests merged per day on the core Filecoin repositories.",
-  caption: "Displaying 30-day moving average",
-  yField: "github_pull_request_merged_events",
-  yLabel: "Events"
+  title: "Repository Growth",
+  subtitle: "Total number of repositories, stars and forks.",
+  yField: "github_repositories",
+  yLabel: "Count",
+  showArea: true
 })
 ```
 
