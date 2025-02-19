@@ -242,26 +242,28 @@ network_base_fee as (
 ),
 
 oso_filecoin_collection_events as (
-    /*
-    This pivot table should generate these columns:
-      - date
-      - github_commit_code_events
-      - github_forked_events
-      - github_issue_closed_events
-      - github_issue_comment_events
-      - github_issue_opened_events
-      - github_issue_reopened_events
-      - github_pull_request_closed_events
-      - github_pull_request_merged_events
-      - github_pull_request_opened_events
-      - github_pull_request_reopened_events
-      - github_pull_request_review_comment_events
-      - github_release_published_events
-      - github_starred_events
-    */
-    pivot {{ source("raw_assets", "raw_oso_daily_filecoin_collection_events") }}
-    on concat('github_', lower(event_type), '_events')
-    using sum(cast(amount as int))
+    select
+        date,
+        sum(amount) filter (where event_type = 'GITHUB_opened_pull_requests_over_180_day_window') as github_opened_prs_180d,
+        sum(amount) filter (where event_type = 'GITHUB_avg_time_to_first_response_over_90_day_window') as github_avg_first_response_90d,
+        sum(amount) filter (where event_type = 'GITHUB_avg_prs_time_to_merge_over_90_day_window') as github_avg_time_to_merge_90d,
+        sum(amount) filter (where event_type = 'GITHUB_avg_time_to_first_response_over_180_day_window') as github_avg_first_response_180d,
+        sum(amount) filter (where event_type = 'GITHUB_avg_prs_time_to_merge_over_180_day_window') as github_avg_time_to_merge_180d,
+        sum(amount) filter (where event_type = 'GITHUB_merged_pull_requests_over_180_day_window') as github_merged_prs_180d,
+        sum(amount) filter (where event_type = 'GITHUB_stars_over_180_day_window') as github_stars_180d,
+        sum(amount) filter (where event_type = 'GITHUB_opened_issues_over_180_day_window') as github_opened_issues_180d,
+        sum(amount) filter (where event_type = 'GITHUB_stars_over_90_day_window') as github_stars_90d,
+        sum(amount) filter (where event_type = 'GITHUB_stars_over_30_day_window') as github_stars_30d,
+        sum(amount) filter (where event_type = 'GITHUB_closed_issues_over_180_day_window') as github_closed_issues_180d,
+        sum(amount) filter (where event_type = 'GITHUB_repositories_daily') as github_repositories,
+        sum(amount) filter (where event_type = 'GITHUB_contributors_daily') as github_contributors,
+        sum(amount) filter (where event_type = 'GITHUB_comments_daily') as github_comments,
+        sum(amount) filter (where event_type = 'GITHUB_stars_daily') as github_stars,
+        sum(amount) filter (where event_type = 'GITHUB_forks_daily') as github_forks,
+        sum(amount) filter (where event_type = 'GITHUB_releases_daily') as github_releases,
+        sum(amount) filter (where event_type = 'GITHUB_commits_daily') as github_commits,
+        sum(amount) filter (where event_type = 'GITHUB_active_developers_daily') as github_active_developers
+    from {{ source("raw_assets", "raw_oso_daily_filecoin_collection_events") }}
     group by date
     order by date desc
 ),
@@ -405,14 +407,25 @@ select
     submit_windowed_post_gas_used_millions,
 
     -- Oso Filecoin Collection Events
-    github_commit_code_events,
-    github_forked_events,
-    github_issue_closed_events,
-    github_issue_comment_events,
-    github_issue_opened_events,
-    github_issue_reopened_events,
-    github_pull_request_closed_events,
-    github_pull_request_merged_events,
+    github_opened_prs_180d,
+    github_avg_first_response_90d,
+    github_avg_time_to_merge_90d,
+    github_avg_first_response_180d,
+    github_avg_time_to_merge_180d,
+    github_merged_prs_180d,
+    github_stars_180d,
+    github_opened_issues_180d,
+    github_stars_90d,
+    github_stars_30d,
+    github_closed_issues_180d,
+    github_repositories,
+    github_contributors,
+    github_comments,
+    github_stars,
+    github_forks,
+    github_releases,
+    github_commits,
+    github_active_developers,
 
     -- Transactions
     transactions
