@@ -24,7 +24,8 @@ with datacapstats_allocators as (
 datacap_allocators_registry as (
     select
         application_number,
-        address as allocator_address,
+        pathway_addresses->>'msig' as allocator_address,
+        address as entrypoint_address,
         name as allocator_name,
         organization as allocator_organization_name,
         location,
@@ -40,6 +41,7 @@ datacap_allocators_registry as (
 select
     da.allocator_id,
     da.allocator_address,
+    dar.entrypoint_address,
     da.audit_trail_url,
     coalesce(da.allocator_name, dar.allocator_name) as allocator_name,
     coalesce(da.allocator_organization_name, dar.allocator_organization_name) as allocator_organization_name,

@@ -1,6 +1,6 @@
+import dagster as dg
 import httpx
 import polars as pl
-import dagster as dg
 from dagster_duckdb import DuckDBResource
 
 from fdp.resources import HttpClientResource
