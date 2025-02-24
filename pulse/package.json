@@ -2,12 +2,13 @@
   "name": "filecoin-pulse",
   "version": "0.0.1",
   "scripts": {
-    "build": "VITE_EVIDENCE_SPA=true evidence build",
-    "build:strict": "evidence build:strict",
+    "build": "VITE_EVIDENCE_SPA=true evidence build && npm run fix-wasm",
+    "build:strict": "VITE_EVIDENCE_SPA=true evidence build:strict && npm run fix-wasm",
     "dev": "evidence dev --open / --host",
     "test": "evidence build",
     "sources": "evidence sources",
-    "preview": "VITE_EVIDENCE_SPA=true evidence preview"
+    "preview": "VITE_EVIDENCE_SPA=true evidence preview",
+    "fix-wasm": "sed -i 's|/_app/immutable/assets/|https://pub-12bff8ef1025441c9966d61535c26cf4.r2.dev/|g' build/_app/immutable/chunks/*.js && rm build/_app/immutable/assets/duckdb-*.wasm"
   },
   "engines": {
     "npm": ">=7.0.0",
