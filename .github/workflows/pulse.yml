@@ -51,3 +51,11 @@ jobs:
       #     directory: pulse/build
       #     gitHubToken: ${{ secrets.GITHUB_TOKEN }}
       #     branch: main
+
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: fbe814d4a37d3d3d7fcfeec0ab929ff6
+          command: pages deploy pulse/build --project-name=filecoinpulse --branch=dev
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

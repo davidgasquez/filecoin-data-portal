@@ -242,7 +242,6 @@ order by 1 desc
   y=onboarded_data_tibs
   series=client_id
   emptySet=pass
-  yAxisTitle="Onboarded Data (TiBs)"
-  yFmt="#,##0 \Ti\B\s"
+  yFmt="pibs"
   title="Data Onboarding by Allocator's Client"
 />

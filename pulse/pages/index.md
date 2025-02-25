@@ -119,11 +119,9 @@ order by date desc
   data={metrics}
   x=date
   y=onboarded_data_pibs
-  yAxisTitle="PiBs"
   title="Data Onboarding"
   xFmt='MMM YYYY'
-  yFmt='#,##'
-  seriesLabelFmt=pibs
+  yFmt="pibs"
 />
 
 <Grid cols=2>

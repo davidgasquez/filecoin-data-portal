@@ -3,7 +3,7 @@
   "customFormats": [
     {
       "formatTag": "pibs",
-      "formatCode": "#,##0 Pi\\B\\s",
+      "formatCode": "#,##0 \"PiBs\"",
       "valueType": "number"
     }
   ]

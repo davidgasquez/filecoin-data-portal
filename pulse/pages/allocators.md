@@ -33,19 +33,19 @@ where 1=1
 <BigValue
   data={allocators_stats}
   value=total_allocators_datacap
-  fmt='#,##0 Pi\B\s'
+  fmt="pibs"
 />
 
 <BigValue
   data={allocators_stats}
   value=remaining_datacap_allowance
-  fmt='#,##0 Pi\B\s'
+  fmt="pibs"
 />
 
 <BigValue
   data={allocators_stats}
   value=used_datacap_allowance
-  fmt='#,##0 Pi\B\s'
+  fmt="pibs"
 />
 
 <BigValue
