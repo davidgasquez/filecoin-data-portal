@@ -42,16 +42,6 @@ jobs:
         working-directory: pulse
         run: npm run build
 
-      # - name: Publish to Cloudflare Pages
-      #   uses: cloudflare/pages-action@v1
-      #   with:
-      #     apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      #     accountId: fbe814d4a37d3d3d7fcfeec0ab929ff6
-      #     projectName: filecoinpulse
-      #     directory: pulse/build
-      #     gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-      #     branch: main
-
       - name: Deploy
         uses: cloudflare/wrangler-action@v3
         with:
