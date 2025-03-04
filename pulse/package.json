@@ -8,7 +8,7 @@
     "test": "evidence build",
     "sources": "evidence sources",
     "preview": "VITE_EVIDENCE_SPA=true evidence preview",
-    "fix-wasm": "sed -i 's|/_app/immutable/assets/|https://pub-12bff8ef1025441c9966d61535c26cf4.r2.dev/|g' build/_app/immutable/chunks/*.js && rm build/_app/immutable/assets/duckdb-*.wasm"
+    "fix-wasm": "sed -i 's|/_app/immutable/assets/|https://fdpdeps.filecoindataportal.xyz/|g' build/_app/immutable/chunks/*.js && rm build/_app/immutable/assets/duckdb-*.wasm"
   },
   "engines": {
     "npm": ">=7.0.0",
@@ -16,9 +16,9 @@
   },
   "type": "module",
   "dependencies": {
-    "@evidence-dev/core-components": "^5.1.1",
+    "@evidence-dev/core-components": "^5.2.0",
     "@evidence-dev/csv": "^1.0.14",
-    "@evidence-dev/evidence": "^40.0.7"
+    "@evidence-dev/evidence": "^40.1.1"
   },
   "overrides": {
     "jsonwebtoken": "9.0.0",
