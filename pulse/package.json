@@ -1,6 +1,6 @@
 {
   "name": "filecoin-pulse",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "scripts": {
     "build": "VITE_EVIDENCE_SPA=true evidence build && npm run fix-wasm",
     "build:strict": "VITE_EVIDENCE_SPA=true evidence build:strict && npm run fix-wasm",
@@ -16,9 +16,9 @@
   },
   "type": "module",
   "dependencies": {
-    "@evidence-dev/core-components": "^5.2.0",
+    "@evidence-dev/core-components": "^5.1.1",
     "@evidence-dev/csv": "^1.0.14",
-    "@evidence-dev/evidence": "40.0.9"
+    "@evidence-dev/evidence": "^40.0.7"
   },
   "overrides": {
     "jsonwebtoken": "9.0.0",
