@@ -2,13 +2,14 @@
   "name": "filecoin-pulse",
   "version": "0.0.0",
   "scripts": {
-    "build": "VITE_EVIDENCE_SPA=true evidence build && npm run fix-wasm",
-    "build:strict": "VITE_EVIDENCE_SPA=true evidence build:strict && npm run fix-wasm",
+    "build": "VITE_EVIDENCE_SPA=true evidence build && npm run fix-wasm && npm run add-canonical",
+    "build:strict": "VITE_EVIDENCE_SPA=true evidence build:strict && npm run fix-wasm && npm run add-canonical",
     "dev": "evidence dev --open / --host",
     "test": "evidence build",
     "sources": "evidence sources",
     "preview": "VITE_EVIDENCE_SPA=true evidence preview",
-    "fix-wasm": "sed -i 's|/_app/immutable/assets/|https://fdpdeps.filecoindataportal.xyz/|g' build/_app/immutable/chunks/*.js && rm build/_app/immutable/assets/duckdb-*.wasm"
+    "fix-wasm": "sed -i 's|/_app/immutable/assets/|https://fdpdeps.filecoindataportal.xyz/|g' build/_app/immutable/chunks/*.js && rm build/_app/immutable/assets/duckdb-*.wasm",
+    "add-canonical": "sed -i '/<meta charset=\"utf-8\" \\/>/a\\        <link rel=\"canonical\" href=\"https://pulse.filecoindataportal.xyz\" \\/>' build/index.html"
   },
   "engines": {
     "npm": ">=7.0.0",

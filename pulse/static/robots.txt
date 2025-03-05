@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /
+
+# This is a development/staging site
+# Please visit the production site at:
+# https://pulse.filecoindataportal.xyz

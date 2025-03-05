@@ -5,6 +5,10 @@
     export let data;
 </script>
 
+<svelte:head>
+  <link rel="canonical" href="https://pulse.filecoindataportal.xyz" />
+</svelte:head>
+
 <EvidenceDefaultLayout
     {data}
     logo="/icon.svg"
