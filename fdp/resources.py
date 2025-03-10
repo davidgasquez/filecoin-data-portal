@@ -1,10 +1,10 @@
 import os
 
-import httpx
 import dagster as dg
-from pydantic import PrivateAttr
+import httpx
 from dagster_duckdb import DuckDBResource
 from dagster_duckdb_pandas import DuckDBPandasIOManager
+from pydantic import PrivateAttr
 
 DATABASE_PATH = os.getenv("DATABASE_PATH", "./data/database.duckdb")
 

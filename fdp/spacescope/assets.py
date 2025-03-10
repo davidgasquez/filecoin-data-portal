@@ -1,9 +1,9 @@
 import datetime
 
-import pandas as pd
 import dagster as dg
-from duckdb import CatalogException
+import pandas as pd
 from dagster_duckdb import DuckDBResource
+from duckdb import CatalogException
 
 from fdp.spacescope.resources import SpacescopeResource
 

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from dagster_dbt import DbtProject, DbtCliResource
+from dagster_dbt import DbtCliResource, DbtProject
 
 RELATIVE_PATH_TO_MY_DBT_PROJECT = "../../dbt"
 

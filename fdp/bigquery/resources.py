@@ -2,8 +2,8 @@ import dagster as dg
 import pyarrow as pa
 import pyarrow.dataset as ds
 from dagster_gcp import BigQueryResource
-from google.cloud import bigquery, bigquery_storage
 from dagster_gcp.bigquery.utils import setup_gcp_creds
+from google.cloud import bigquery, bigquery_storage
 
 
 class BigQueryArrowResource(BigQueryResource):
