@@ -19,23 +19,26 @@ def raw_oso_daily_filecoin_collection_events(
         with m as (
             select
                 metric_id,
+                metric_name,
                 display_name
             from `opensource-observer.metrics.metrics_v0`
         )
 
         select
-            m.display_name as event_type,
+            m.metric_name as event_type,
+            m.display_name as event_display_name,
             cast(sample_date as date) as date,
             cast(amount as int64) as amount
         from `opensource-observer.metrics.timeseries_metrics_by_collection_v0` as ts
         left join m on m.metric_id = ts.metric_id
         where collection_id = 'Mo2593d20mndk7svIHlbHxKUlJZdRrKTvR0aCCVPd58='
-        order by date desc, display_name desc
+        order by date desc, metric_name desc
     """
 
     schema = pa.schema(
         [
             pa.field("event_type", pa.string()),
+            pa.field("event_display_name", pa.string()),
             pa.field("date", pa.date32()),
             pa.field("amount", pa.int64()),
         ]
