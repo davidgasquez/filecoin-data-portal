@@ -201,7 +201,7 @@ resize((width) => Plot.plot({
   subtitle: "Daily data (TiBs) onboarded by region (from Client's Datacap application).",
   caption: "Only displaying onboarded data from known regions.",
   x: {label: "Date"},
-  y: {grid: true, label: "PiBs"},
+  y: {grid: true, label: "TiBs"},
   color: {
     legend: true
   },
@@ -230,7 +230,7 @@ resize((width) => Plot.plot({
   subtitle: "Daily data (TiBs) onboarded by industry (from Client's Datacap application).",
   caption: "Only displaying onboarded data from known industries.",
   x: {label: "Date"},
-  y: {grid: true, label: "PiBs"},
+  y: {grid: true, label: "TiBs"},
   width,
   height: 350,
   color: {
