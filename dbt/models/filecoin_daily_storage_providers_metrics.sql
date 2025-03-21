@@ -19,6 +19,20 @@ deal_metrics as (
     group by 1, 2
 ),
 
+deal_ends as (
+    select
+        cast(sector_start_at as date) as date,
+        provider_id,
+        approx_count_distinct(deal_id) as deal_ends,
+        coalesce(sum(padded_piece_size_tibs), 0) as ended_data_tibs
+    from {{ ref('filecoin_state_market_deals') }}
+    where 1 = 1
+        and sector_start_at is not null
+        and provider_id is not null
+    group by 1, 2
+    order by 1
+),
+
 storage_providers_power as (
     select
         stat_date::date as date,
@@ -294,6 +308,8 @@ select
     coalesce(dm.deals, 0) as deals,
     coalesce(dm.unique_piece_cids, 0) as unique_piece_cids,
     coalesce(dm.unique_deal_making_clients, 0) as unique_deal_making_clients,
+    coalesce(de.deal_ends, 0) as deal_ends,
+    coalesce(de.ended_data_tibs, 0) as ended_data_tibs,
 
     -- Power Metrics
     spp.raw_power_bytes,
@@ -428,6 +444,7 @@ from date_calendar dc
 full outer join storage_providers_power spp on dc.date = spp.date
 full outer join storage_providers_power_growth spg on dc.date = spg.date and spp.provider_id = spg.provider_id
 full outer join deal_metrics dm on dc.date = dm.date and spp.provider_id = dm.provider_id
+full outer join deal_ends de on dc.date = de.date and spp.provider_id = de.provider_id
 full outer join token_balance_data tbd on dc.date = tbd.date and spp.provider_id = tbd.provider_id
 full outer join sector_totals st on dc.date = st.date and spp.provider_id = st.provider_id
 full outer join sector_commits_count scc on dc.date = scc.date and spp.provider_id = scc.provider_id
