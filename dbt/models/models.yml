@@ -41,3 +41,9 @@ models:
         data_tests:
           - unique
           - not_null
+
+  - name: filecoin_onramps
+    columns:
+      - name: onramp_name
+        data_tests:
+          - not_null
