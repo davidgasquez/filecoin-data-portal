@@ -244,13 +244,6 @@ network_base_fee as (
 oso_filecoin_collection_events as (
     select
         date,
-        sum(amount) filter (where event_type = 'GITHUB_opened_pull_requests_over_180_day_window') as github_opened_prs_180d,
-        sum(amount) filter (where event_type = 'GITHUB_avg_time_to_first_response_over_180_day_window') as github_avg_first_response_180d,
-        sum(amount) filter (where event_type = 'GITHUB_avg_prs_time_to_merge_over_180_day_window') as github_avg_time_to_merge_180d,
-        sum(amount) filter (where event_type = 'GITHUB_merged_pull_requests_over_180_day_window') as github_merged_prs_180d,
-        sum(amount) filter (where event_type = 'GITHUB_stars_over_180_day_window') as github_stars_180d,
-        sum(amount) filter (where event_type = 'GITHUB_opened_issues_over_180_day_window') as github_opened_issues_180d,
-        sum(amount) filter (where event_type = 'GITHUB_closed_issues_over_180_day_window') as github_closed_issues_180d,
         sum(amount) filter (where event_type = 'GITHUB_repositories_daily') as github_repositories,
         sum(amount) filter (where event_type = 'GITHUB_contributors_daily') as github_contributors,
         sum(amount) filter (where event_type = 'GITHUB_comments_daily') as github_comments,
@@ -258,7 +251,6 @@ oso_filecoin_collection_events as (
         sum(amount) filter (where event_type = 'GITHUB_forks_daily') as github_forks,
         sum(amount) filter (where event_type = 'GITHUB_releases_daily') as github_releases,
         sum(amount) filter (where event_type = 'GITHUB_commits_daily') as github_commits,
-        sum(amount) filter (where event_type = 'GITHUB_active_developers_daily') as github_active_developers
     from {{ source("raw_assets", "raw_oso_daily_filecoin_collection_events") }}
     group by date
     order by date desc
@@ -403,13 +395,6 @@ select
     submit_windowed_post_gas_used_millions,
 
     -- Oso Filecoin Collection Events
-    github_opened_prs_180d,
-    github_avg_first_response_180d,
-    github_avg_time_to_merge_180d,
-    github_merged_prs_180d,
-    github_stars_180d,
-    github_opened_issues_180d,
-    github_closed_issues_180d,
     github_repositories,
     github_contributors,
     github_comments,
@@ -417,7 +402,6 @@ select
     github_forks,
     github_releases,
     github_commits,
-    github_active_developers,
 
     -- Transactions
     transactions

@@ -1184,91 +1184,88 @@ movingAverageLinePlot({
 
 ## Developer Activity
 
+<details>
+<summary>About</summary>
+<p>
+These metrics track developer activity related to the Filecoin project on GitHub, sourced via <a href="https://opensource.observer/">Open Source Observer (OSO)</a>. The data includes contributions, comments, stars, forks, releases, and commits across several Filecoin ecosystems repositories. Check them out under the <a href="https://github.com/opensource-observer/oss-directory/blob/main/data/collections/filecoin-crypto-ecosystems.yaml">'filecoin-crypto-ecosystems'</a>, <a href="https://github.com/opensource-observer/oss-directory/blob/main/data/collections/filecoin-foundation.yaml">'filecoin-foundation'</a>, and <a href="https://github.com/opensource-observer/oss-directory/blob/main/data/collections/filecoin-core.yaml">'filecoin-core'</a> collections.
+</p>
+</details>
+
+
 <div class="grid grid-cols-2">
+
 <div class="card">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Code Commits",
-  subtitle: "Number of code commits per day on the core Filecoin repositories.",
+  title: "Contributors",
+  subtitle: "Number of contributors per day on the core Filecoin repositories.",
   caption: "Displaying 30-day moving average",
-  yField: "github_commits",
-  yLabel: "Commits"
+  yField: "github_contributors",
+  yLabel: "Contributors"
 })
 ```
 
 </div>
+
 <div class="card">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Active Developers",
-  subtitle: "Number of active developers per day on the core Filecoin repositories.",
+  title: "Comments",
+  subtitle: "Number of comments per day on the core Filecoin repositories.",
   caption: "Displaying 30-day moving average",
-  yField: "github_active_developers",
-  yLabel: "Developers"
+  yField: "github_comments",
+  yLabel: "Comments"
 })
 ```
 
 </div>
+
 <div class="card">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Pull Request Time to Merge",
-  subtitle: "Average time to merge for PRs in last 180 days.",
-  yField: "github_avg_time_to_merge_180d",
-  yLabel: "Hours",
-  showArea: true
+  title: "Stars",
+  subtitle: "Number of stars per day on the core Filecoin repositories.",
+  caption: "Displaying 30-day moving average",
+  yField: "github_stars",
+  yLabel: "Stars"
 })
 ```
-
 </div>
+
 <div class="card">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Pull Request Throughput",
-  subtitle: "Number of merged PRs in last 180 days.",
-  yField: "github_merged_prs_180d",
-  yLabel: "Pull Requests",
-  showArea: true
+  title: "Forks",
+  subtitle: "Number of forks per day on the core Filecoin repositories.",
+  caption: "Displaying 30-day moving average",
+  yField: "github_forks",
+  yLabel: "Forks"
 })
 ```
-
 </div>
+
 <div class="card">
 
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Issue Activity",
-  subtitle: "Number of closed issues in last 180 days.",
-  yField: "github_closed_issues_180d",
-  yLabel: "Issues",
-  showArea: true
+  title: "Releases",
+  subtitle: "Number of releases per day on the core Filecoin repositories.",
+  caption: "Displaying 30-day moving average",
+  yField: "github_releases",
+  yLabel: "Releases"
 })
 ```
-
 </div>
-<div class="card">
 
-```js
-movingAverageLinePlot({
-  metrics,
-  title: "Repository Growth",
-  subtitle: "Total number of repositories, stars and forks.",
-  yField: "github_repositories",
-  yLabel: "Count",
-  showArea: true
-})
-```
-
-</div>
 </div>
 
 ---
