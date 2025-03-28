@@ -482,6 +482,15 @@ movingAverageLinePlot({
 
 ## Retrievals
 
+<details>
+
+<summary>About</summary>
+
+These metrics track the success rate of retrievals via Spark over time.
+You can see more fine grained charts on the [Official Spark Dashboards](https://dashboard.filspark.com/).
+
+</details>
+
 <div class="grid grid-cols-2">
 <div class="card" id="spark-retrieval-success-rate">
 
