@@ -30,7 +30,9 @@ state_market_deals_metrics as (
         unique_data_uploaded_tibs / sum(unpadded_piece_size_tibs) as unique_data_uploaded_percentage,
 
         count(distinct provider_id) as total_unique_providers,
+        array_agg(distinct provider_id) as provider_ids,
         count(distinct provider_id) filter (where is_active) as total_active_unique_providers,
+        array_agg(distinct provider_id) filter (where is_active) as active_provider_ids,
         count(distinct provider_id) filter (where is_active and is_verified) as total_active_verified_unique_providers,
 
         min(sector_start_at) as first_deal_at,
@@ -96,7 +98,9 @@ select
     m.unique_active_data_uploaded_tibs,
     m.unique_data_uploaded_percentage,
     m.total_unique_providers,
+    m.provider_ids,
     m.total_active_unique_providers,
+    m.active_provider_ids,
     m.total_active_verified_unique_providers,
     m.first_deal_at,
     m.first_active_deal_at,
