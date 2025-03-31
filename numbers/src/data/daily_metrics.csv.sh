@@ -94,13 +94,6 @@ COPY (
     submit_windowed_post_gas_used_millions,
 
     -- Developer Activity
-    github_opened_prs_180d,
-    github_avg_first_response_180d,
-    github_avg_time_to_merge_180d,
-    github_merged_prs_180d,
-    github_stars_180d,
-    github_opened_issues_180d,
-    github_closed_issues_180d,
     github_repositories,
     github_contributors,
     github_comments,
@@ -108,7 +101,6 @@ COPY (
     github_forks,
     github_releases,
     github_commits,
-    github_active_developers,
 
     -- Transactions
     transactions
