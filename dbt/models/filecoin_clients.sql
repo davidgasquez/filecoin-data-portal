@@ -80,6 +80,7 @@ datacap_github_applications as (
         client->>'$.Social Media Type' as client_social_media_type,
         client->>'$.Role' as client_role,
     from {{ source("raw_assets", "raw_datacap_github_applications") }}
+    qualify row_number() over (partition by id order by version desc) = 1
 )
 
 select
