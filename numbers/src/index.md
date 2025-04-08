@@ -12,7 +12,7 @@ Your **high level** view into the Filecoin Ecosystem!
 
 ```js
 const params = new URLSearchParams(window.location.search);
-const from_date = params.get('from_date') ?? '2020-10-01';
+const from_date = params.get('from_date') ?? '2024-01-01';
 const to_date = params.get('to_date') ?? new Date().toISOString().split('T')[0];
 
 // Add scroll correction for anchor links
@@ -37,13 +37,13 @@ function updateURLParams(fromDate, toDate) {
 
 ```js
 const am = await FileAttachment("./data/daily_metrics.csv").csv({typed: true});
-const drm = await FileAttachment("./data/daily_region_metrics.csv").csv({typed: true});
-const dim = await FileAttachment("./data/daily_industry_metrics.csv").csv({typed: true});
+const drm_all = await FileAttachment("./data/daily_region_metrics.csv").csv({typed: true});
+const dim_all = await FileAttachment("./data/daily_industry_metrics.csv").csv({typed: true});
 const dt = await FileAttachment("./data/daily_transactions.csv").csv({typed: true});
 ```
 
 ```js
-const fdt = dt.filter(d => new Date(d.date) > new Date('2021-12-31')).map(d => ({...d, transactions: d.transactions ?? 0}));
+const fdt_all = dt.filter(d => new Date(d.date) > new Date('2021-12-31')).map(d => ({...d, transactions: d.transactions ?? 0}));
 ```
 
 ```js
@@ -73,6 +73,13 @@ const endDate = timeframe === "Custom" ? view(Inputs.date({
 ```js
 if (timeframe === "Custom") {
   updateURLParams(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]);
+} else if (timeframe === "Last Year") {
+  const oneYearAgo = new Date();
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  updateURLParams(oneYearAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
+} else if (timeframe === "All") {
+  // Clear URL params
+  window.history.replaceState({}, '', window.location.pathname);
 }
 ```
 
@@ -81,8 +88,37 @@ if (timeframe === "Custom") {
 
 ```js
 const metrics = timeframe === "All" ? am :
-                timeframe === "Last Year" ? am.slice(am.length - 365) :
+                timeframe === "Last Year" ? am.filter(d => {
+                  const oneYearAgo = new Date();
+                  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+                  return d.date >= oneYearAgo;
+                }) :
                 am.filter(d => d.date >= startDate && d.date <= endDate);
+
+const drm = timeframe === "All" ? drm_all :
+            timeframe === "Last Year" ? drm_all.filter(d => {
+              const oneYearAgo = new Date();
+              oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+              return d.date >= oneYearAgo;
+            }) :
+            drm_all.filter(d => d.date >= startDate && d.date <= endDate);
+
+const dim = timeframe === "All" ? dim_all :
+            timeframe === "Last Year" ? dim_all.filter(d => {
+              const oneYearAgo = new Date();
+              oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+              return d.date >= oneYearAgo;
+            }) :
+            dim_all.filter(d => d.date >= startDate && d.date <= endDate);
+
+const fdt = timeframe === "All" ? fdt_all :
+            timeframe === "Last Year" ? fdt_all.filter(d => {
+              const oneYearAgo = new Date();
+              oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+              return d.date >= oneYearAgo;
+            }) :
+            fdt_all.filter(d => d.date >= startDate && d.date <= endDate);
+
 ```
 
 ```js
