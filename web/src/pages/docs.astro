@@ -1,0 +1,64 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+    <h1>Documentation</h1>
+
+    <h2>Data Sources</h2>
+
+    <p>
+        Most of the data used through the portal comes from the Filecoin chain.
+        There is also some off-chain data like <a
+            href="https://docs.filecoin.io/basics/how-storage-works/filecoin-plus"
+        >
+            Datacap Applications
+        </a> or <a
+            href="https://filecoin.io/blog/posts/reputation-systems-in-filecoin/"
+        >
+            Storage Provider’s Reputation scores
+        </a> that are collected from other places.
+    </p>
+
+    <h3>Deals</h3>
+    <p>
+        Deals data is available on chain and can be obtained in different ways:
+    </p>
+    <ul>
+        <li>
+            Doing a <code>StateMarketDeals</code> JSON-RPC call and parsing the returned
+            JSON. If you don’t have a node running, you can use <a
+                href="https://lotus.filecoin.io/lotus/developers/glif-nodes/"
+            >
+                Glif nodes
+            </a>
+            <em>StateMarketDeals</em> periodic dump on S3 (<a
+                href="https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst"
+                >direct link</a
+            >).
+        </li>
+        <li>
+            Reconstructing the deals state <a href="https://lilium.sh/"
+                >from Lily</a
+            > tables.
+        </li>
+    </ul>
+
+    <h3>Clients</h3>
+    <p>
+        Clients can be derived from the deals dataset and expanded with the
+        following sources:
+    </p>
+    <ul>
+        <li>
+            Datacap. From <a href="https://datacapstats.io/"
+                >Datacap Stats API</a
+            > calling <code
+                >https://api.datacapstats.io/api/getVerifiedClients</code
+            >. You get a JSON of verified clients in the FIL+ program that
+            contains client names, Datacap application data and other
+            self-reported data. Alternatively, this data can be obtained by
+            parsing the relevant GitHub repositories issues and comments.
+        </li>
+    </ul>
+</Layout>

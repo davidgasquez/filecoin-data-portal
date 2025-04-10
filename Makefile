@@ -22,13 +22,9 @@ tables:
 	@ls -lh data/tables/
 	@rm data/tables/raw_*.parquet
 
-.PHONY: preview
-preview:
-	@quarto preview portal
-
-.PHONY: render
-render:
-	@quarto render portal
+.PHONY: web
+web:
+	@npm run dev --prefix web
 
 .PHONY: numbers
 numbers:

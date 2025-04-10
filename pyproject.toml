@@ -27,7 +27,12 @@ readme = "README.md"
 license = { text = "MIT" }
 
 [dependency-groups]
-dev = ["dagster-webserver>=1.10.7", "ipykernel>=6.29.5", "ruff>=0.11.4"]
+dev = [
+    "dagster-webserver>=1.10.7",
+    "ipykernel>=6.29.5",
+    "pyarrow-stubs>=19.1",
+    "ruff>=0.11.4",
+]
 
 [project.urls]
 Homepage = "https://filecoindataportal.xyz/"
@@ -41,3 +46,6 @@ packages = ["fdp"]
 [tool.dagster]
 module_name = "fdp.definitions"
 code_location_name = "fdp"
+
+[tool.pyright]
+reportUnknownMemberType = false

@@ -24,7 +24,7 @@ def raw_id_addresses(
     context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
 
     with duckdb.get_connection() as duckdb_con:
-        duckdb_con.execute(
+        _ = duckdb_con.execute(
             """
             create or replace table raw.raw_id_addresses as (
                 select * from arrow_result
@@ -54,7 +54,7 @@ def raw_verified_registry_verifiers(
     context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
 
     with duckdb.get_connection() as duckdb_con:
-        duckdb_con.execute(
+        _ = duckdb_con.execute(
             """
             create or replace table raw.raw_verified_registry_verifiers as (
                 select * from arrow_result
@@ -93,7 +93,7 @@ def raw_daily_providers_sector_events(
         order by 1 desc, 2 desc
     """
 
-    schema = pa.schema(
+    schema: pa.Schema = pa.schema(
         [
             pa.field("date", pa.date32()),
             pa.field("event", pa.string()),
@@ -102,11 +102,11 @@ def raw_daily_providers_sector_events(
         ]
     )
 
-    scanner = lily_bigquery.query_to_scanner(query, schema)  # noqa: F841
+    scanner = lily_bigquery.query_to_scanner(query, schema)
     table_name = context.asset_key.to_user_string()
 
     with duckdb.get_connection() as duckdb_con:
-        duckdb_con.execute(
+        _ = duckdb_con.execute(
             f"""
             create or replace table raw.{table_name} as (
                 select * from scanner
@@ -215,10 +215,10 @@ def raw_filecoin_state_market_deals(
         ]
     )
 
-    reader = pa.RecordBatchReader.from_batches(schema, i)  # noqa: F841
+    reader = pa.RecordBatchReader.from_batches(schema, i)
 
     with duckdb.get_connection() as duckdb_con:
-        duckdb_con.execute(
+        _ = duckdb_con.execute(
             """
             create or replace table raw.raw_filecoin_state_market_deals as (
                 select * from reader
@@ -255,7 +255,7 @@ def raw_filecoin_transactions(
     context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
 
     with duckdb.get_connection() as duckdb_con:
-        duckdb_con.execute(
+        _ = duckdb_con.execute(
             """
             create or replace table raw.raw_filecoin_transactions as (
                 select * from arrow_result
@@ -292,7 +292,7 @@ def raw_filecoin_storage_providers_information(
     context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
 
     with duckdb.get_connection() as duckdb_con:
-        duckdb_con.execute(
+        _ = duckdb_con.execute(
             """
             create or replace table raw.raw_filecoin_storage_providers_information as (
                 select * from arrow_result
@@ -301,3 +301,65 @@ def raw_filecoin_storage_providers_information(
         )
 
         context.log.info(f"Persisted {arrow_result.num_rows} rows")
+
+
+# @dg.asset
+# def raw_filecoin_sectors(
+#     context: dg.AssetExecutionContext,
+#     lily_bigquery: BigQueryArrowResource,
+#     duckdb: DuckDBResource,
+# ) -> None:
+#     query = """
+#         with msi as (
+#             select
+#                 miner_id as provider_id,
+#                 sector_id,
+#                 sealed_cid,
+#                 height as updated_at_height,
+#                 activation_epoch,
+#                 expiration_epoch,
+#                 deal_weight,
+#                 verified_deal_weight,
+#                 initial_pledge,
+#                 expected_day_reward,
+#                 expected_storage_pledge
+#             from `lily-data.lily.miner_sector_infos_v7`
+
+#             union all
+
+#             select
+#                 miner_id as provider_id,
+#                 sector_id,
+#                 sealed_cid,
+#                 height as updated_at_height,
+#                 activation_epoch,
+#                 expiration_epoch,
+#                 deal_weight,
+#                 verified_deal_weight,
+#                 initial_pledge,
+#                 expected_day_reward,
+#                 expected_storage_pledge
+#             from `lily-data.lily.miner_sector_infos`
+#         )
+#         select
+#             *
+#         from msi
+#         qualify row_number() over (partition by provider_id, sector_id order by updated_at_height desc) = 1
+#     """
+
+#     with lily_bigquery.get_client() as client:
+#         job = client.query(query)
+#         arrow_result = job.to_arrow(create_bqstorage_client=True)
+
+#     context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
+
+#     with duckdb.get_connection() as duckdb_con:
+#         _ = duckdb_con.execute(
+#             """
+#             create or replace table raw.raw_filecoin_sectors as (
+#                 select * from arrow_result
+#             )
+#             """
+#         )
+
+#         context.log.info(f"Persisted {arrow_result.num_rows} rows")
