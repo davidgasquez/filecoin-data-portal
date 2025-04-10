@@ -1299,6 +1299,7 @@ dependencies = [
 dev = [
     { name = "dagster-webserver" },
     { name = "ipykernel" },
+    { name = "pyarrow-stubs" },
     { name = "ruff" },
 ]
 
@@ -1328,6 +1329,7 @@ requires-dist = [
 dev = [
     { name = "dagster-webserver", specifier = ">=1.10.7" },
     { name = "ipykernel", specifier = ">=6.29.5" },
+    { name = "pyarrow-stubs", specifier = ">=19.1" },
     { name = "ruff", specifier = ">=0.11.4" },
 ]
 
@@ -2934,6 +2936,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/3a/d4/b4a3aa781a2c715520aa8ab4fe2e7fa49d33a1d4e71c8fc6ab7b5de7a3f8/pyarrow-19.0.1-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5a9137cf7e1640dce4c190551ee69d478f7121b5c6f323553b319cac936395f6", size = 42171896 },
     { url = "https://files.pythonhosted.org/packages/23/1b/716d4cd5a3cbc387c6e6745d2704c4b46654ba2668260d25c402626c5ddb/pyarrow-19.0.1-cp313-cp313t-manylinux_2_28_aarch64.whl", hash = "sha256:7c1bca1897c28013db5e4c83944a2ab53231f541b9e0c3f4791206d0c0de389a", size = 40464851 },
     { url = "https://files.pythonhosted.org/packages/ed/bd/54907846383dcc7ee28772d7e646f6c34276a17da740002a5cefe90f04f7/pyarrow-19.0.1-cp313-cp313t-manylinux_2_28_x86_64.whl", hash = "sha256:58d9397b2e273ef76264b45531e9d552d8ec8a6688b7390b5be44c02a37aade8", size = 42085744 },
+]
+
+[[package]]
+name = "pyarrow-stubs"
+version = "19.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyarrow" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9e/c7/a0bef88fb548e5acca08c6597e94144284848c98b2c27b9cb120be808a3a/pyarrow_stubs-19.1.tar.gz", hash = "sha256:e91c9b8b3bc551d53716bb466b02967d93b9827b1adc3d36bb4bba8662a81ccd", size = 84807 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d0/75/d5bf435fdb33e9f0e9048e5bf7e153a1e13cc8b90bdc76232a2be253e963/pyarrow_stubs-19.1-py3-none-any.whl", hash = "sha256:a94206b1a646f61e92da291362a337f5e77db7c18e5c56c8445f516ec919375b", size = 81286 },
 ]
 
 [[package]]

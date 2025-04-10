@@ -1,0 +1,96 @@
+---
+import "../styles.css";
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const banner = new URL(Astro.props.image || "/banner.png", Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+        <title>Filecoin Data Portal</title>
+        <meta name="author" content="Nexus Data Labs" />
+        <meta
+            name="description"
+            content="Open Data Platform for the Filecoin Ecosystem."
+        />
+
+        <!-- Canonical URL -->
+        <link rel="canonical" href={canonicalURL} />
+
+        <!-- Open Graph / Social Media -->
+        <meta property="og:title" content="Filecoin Data Portal" />
+        <meta
+            property="og:description"
+            content="Open Data Platform for the Filecoin Ecosystem."
+        />
+        <meta property="og:url" content="https://filecoindataportal.xyz/" />
+        <meta property="og:image" content={banner} />
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Filecoin Data Portal" />
+        <meta
+            name="twitter:description"
+            content="Open Data Platform for the Filecoin Ecosystem."
+        />
+        <meta name="twitter:image" content={banner} />
+
+        <!-- JSON-LD structured data -->
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "name": "Filecoin Data Portal",
+                "url": "https://filecoindataportal.xyz/",
+                "description": "Open Data Platform for the Filecoin Ecosystem."
+            }
+        </script>
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+
+    <body>
+        <nav class="navbar">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/data">Data</a></li>
+                <li><a href="/dashboards">Dashboards</a></li>
+                <li><a href="/docs">Documentation</a></li>
+            </ul>
+        </nav>
+
+        <div class="logo">
+            <a href="/">
+                <img
+                    src="/favicon.svg"
+                    alt="Filecoin Data Portal Logo"
+                    width="120"
+                    height="120"
+                />
+            </a>
+        </div>
+
+        <slot />
+
+        <footer>
+            <p>
+                <a href="mailto:davidgasquez@gmail.com">Reach Out</a> or explore
+                our projects <a href="https://github.com/nexusdatalabs"
+                    >on GitHub</a
+                >.
+            </p>
+        </footer>
+    </body>
+</html>
