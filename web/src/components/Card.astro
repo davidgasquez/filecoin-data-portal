@@ -1,0 +1,82 @@
+---
+interface Button {
+    text: string;
+    link: string;
+    target?: string;
+}
+
+interface Props {
+    title: string;
+    description: string;
+    buttons?: Button[];
+}
+
+const { title, description, buttons = [] } = Astro.props;
+---
+
+<div class="card">
+    <div>
+        <h2>{title}</h2>
+        <p>{description}</p>
+    </div>
+    {
+        buttons.length > 0 && (
+            <div class="button-group">
+                {buttons.map((button) => (
+                    <a href={button.link} class="button" target={button.target}>
+                        {button.text}
+                    </a>
+                ))}
+            </div>
+        )
+    }
+</div>
+
+<style>
+    .card {
+        border: 1px solid #eaeaea;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+    }
+
+    .card h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 1.2em;
+        color: #333333;
+    }
+
+    .card p {
+        margin-bottom: 20px;
+        flex-grow: 1;
+        color: #444;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+
+    .button {
+        background-color: #333;
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        align-self: flex-start;
+        border-bottom: none;
+        font-size: 0.9em;
+        cursor: pointer;
+    }
+
+    .button:hover {
+        background-color: #555;
+    }
+</style>
