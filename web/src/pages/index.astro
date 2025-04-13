@@ -1,61 +1,51 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Card from "../components/Card.astro";
 ---
 
 <Layout>
     <h1>Filecoin Data Portal</h1>
 
-    <p>
+    <p style="text-align: center;">
         Open source, serverless, and local-first Data Platform for the Filecoin
-        ecosystem. Seamlessy access the data you need to conduct research and
-        drive the community forward!
+        ecosystem.
     </p>
 
     <div class="grid-container">
-        <div class="card">
-            <div>
-                <h2>Datasets</h2>
-                <p>
-                    Explore public datasets with key metrics from the Filecoin
-                    ecosystem.
-                </p>
-            </div>
-            <a href="#" class="button">Get Datasets</a>
-        </div>
-        <div class="card">
-            <div>
-                <h2>Dashboards</h2>
-                <p>
-                    Explore dashboards with key metrics from the Filecoin
-                    ecosystem.
-                </p>
-            </div>
-            <a href="#" class="button">Explore</a>
-        </div>
-        <div class="card">
-            <div>
-                <h2>Data Requests</h2>
-                <p>
-                    Need specific data? Want some metric reflected? Let's chat!
-                </p>
-            </div>
-            <a href="#" class="button">Request Dataset</a>
-        </div>
-        <div class="card">
-            <div>
-                <h2>Support on Drips</h2>
-                <p>Support the data platform development via Drips.</p>
-            </div>
-            <a href="#" class="button">Support</a>
-        </div>
+        <Card
+            title="Open Data"
+            description="Download Filecoin datasets with key metrics and entities."
+            buttons={[{ text: "Get Datasets", link: "/data" }]}
+        />
+        <Card
+            title="Dashboards"
+            description="Explore dashboards with key metrics from the Filecoin ecosystem."
+            buttons={[{ text: "Explore", link: "/dashboards" }]}
+        />
+        <Card
+            title="Data Requests"
+            description="Need specific data? Want some metric reflected? Let's chat!"
+            buttons={[
+                {
+                    text: "Request Dataset",
+                    link: "https://github.com/davidgasquez/filecoin-data-portal/issues/new",
+                },
+            ]}
+        />
+        <Card
+            title="Support on Drips"
+            description="Support the data platform development via Drips."
+            buttons={[
+                {
+                    text: "Support",
+                    link: "https://www.drips.network/app/projects/github/davidgasquez/filecoin-data-portal",
+                },
+            ]}
+        />
     </div>
 </Layout>
 
 <style>
-    h1 {
-        text-align: center;
-    }
-
     .grid-container {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -64,43 +54,9 @@ import Layout from "../layouts/Layout.astro";
         margin-bottom: 40px;
     }
 
-    .card {
-        border: 1px solid #eaeaea;
-        padding: 20px;
-        text-align: left;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .card h2 {
-        margin-top: 0;
-        margin-bottom: 10px;
-        font-size: 1.2em;
-        color: #333333;
-    }
-
-    .card p {
-        margin-bottom: 20px;
-        flex-grow: 1;
-        color: #444;
-    }
-
-    .button {
-        background-color: #333;
-        color: white;
-        padding: 8px 15px;
-        border: none;
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-        align-self: flex-start;
-        border-bottom: none;
-        font-size: 0.9em;
-        cursor: pointer;
-    }
-
-    .button:hover {
-        background-color: #555;
+    @media (max-width: 768px) {
+        .grid-container {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
