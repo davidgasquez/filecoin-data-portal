@@ -71,7 +71,7 @@ select
     try_cast(trim('+' from dar.application->>'$.required_replicas') as int) as minimum_required_replicas,
     dar.application->>'$.tooling[0]' as tooling,
     dar.application->>'$.data_types' as data_types,
-    dar.application->>'$.12m_requested' as '12m_requested',
+    try_cast(dar.application->>'$.12m_requested' as int) as '12m_requested',
     dar.application->>'$.github_handles[0]' as github_handle,
     dar.application->>'$.allocation_bookkeeping' as allocation_bookkeeping,
     dar.poc->>'$.slack' as poc_slack,
