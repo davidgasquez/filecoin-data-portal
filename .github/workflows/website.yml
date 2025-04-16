@@ -2,10 +2,11 @@ name: Website
 
 on:
   workflow_dispatch: {}
-  workflow_run:
-    workflows: ["Pipeline"]
-    types:
-      - completed
+  push:
+    branches:
+      - main
+    paths:
+      - 'web/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,23 +23,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
-
-      - name: Render
-        run: make render
-
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
 
-      - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+      - name: Install Dependencies
+        run: npm ci --prefix web
+
+      - name: Build
+        run: npm run build --prefix web
+
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: fbe814d4a37d3d3d7fcfeec0ab929ff6
-          projectName: filecoindataportal
-          directory: portal/.quarto/_site
+          command: pages deploy web/dist --project-name=filecoindataportal --branch=main
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
