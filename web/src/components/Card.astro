@@ -34,7 +34,7 @@ const { title, description, buttons = [] } = Astro.props;
 
 <style>
     .card {
-        border: 1px solid #eaeaea;
+        border: 1px solid var(--link-underline-color);
         padding: 20px;
         display: flex;
         flex-direction: column;
@@ -46,13 +46,13 @@ const { title, description, buttons = [] } = Astro.props;
         margin-top: 0;
         margin-bottom: 10px;
         font-size: 1.2em;
-        color: #333333;
+        color: var(--text-color);
     }
 
     .card p {
         margin-bottom: 20px;
         flex-grow: 1;
-        color: #444;
+        color: var(--text-color);
     }
 
     .button-group {
@@ -63,8 +63,8 @@ const { title, description, buttons = [] } = Astro.props;
     }
 
     .button {
-        background-color: #333;
-        color: white;
+        background-color: var(--text-color);
+        color: var(--background-color);
         padding: 8px 15px;
         border: none;
         text-decoration: none;
@@ -77,6 +77,6 @@ const { title, description, buttons = [] } = Astro.props;
     }
 
     .button:hover {
-        background-color: #555;
+        background-color: var(--link-underline-color);
     }
 </style>

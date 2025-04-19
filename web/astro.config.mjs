@@ -1,7 +1,6 @@
 // @ts-check
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 
-// https://astro.build/config
 export default defineConfig({
   site: "https://filecoindataportal.xyz",
   prefetch: {
@@ -10,5 +9,19 @@ export default defineConfig({
   trailingSlash: "never",
   build: {
     format: "file",
+  },
+  experimental: {
+    fonts: [
+      {
+        provider: fontProviders.bunny(),
+        name: "Inter",
+        cssVariable: "--font-sans",
+      },
+      {
+        provider: fontProviders.bunny(),
+        name: "JetBrains Mono",
+        cssVariable: "--font-monospace",
+      },
+    ],
   },
 });

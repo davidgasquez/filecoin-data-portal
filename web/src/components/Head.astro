@@ -1,0 +1,145 @@
+---
+import { Font } from 'astro:assets';
+
+interface Props {
+	title: string;
+	author: string;
+	description: string;
+	image?: string;
+	canonicalUrl?: string;
+}
+
+const {
+	title,
+	author,
+	description,
+	image = "/banner.png",
+	canonicalUrl = Astro.url.pathname,
+} = Astro.props;
+
+const siteUrl = import.meta.env.SITE || Astro.site;
+const fullUrl = new URL(canonicalUrl, siteUrl).toString();
+const imageUrl = new URL(image, siteUrl).toString();
+---
+
+<!-- Immediately set theme on page load before any rendering -->
+<script is:inline>
+  const savedTheme = localStorage.getItem("theme") || "light";
+  if (savedTheme === "dark") document.documentElement.classList.add("dark");
+</script>
+
+<!-- Meta Tags -->
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>{title}</title>
+<meta name="author" content={author} />
+<meta name="description" content={description} />
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+<!-- Sitemap -->
+<link rel="sitemap" href="/sitemap-index.xml" />
+
+<!-- Canonical URL -->
+<link rel="canonical" href={fullUrl} />
+
+<!-- Open Graph / Social Media -->
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={fullUrl} />
+<meta property="og:image" content={imageUrl} />
+<meta property="og:type" content="website" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageUrl} />
+
+<!-- JSON-LD structured data -->
+<script is:inline type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": {title},
+    "description": {description},
+    "url": {fullUrl}
+  }
+</script>
+
+<script>
+    const toggle = document.getElementById("theme-toggle");
+    const html = document.documentElement;
+
+    // Set initial theme based on localStorage or default to light
+    const savedTheme = localStorage.getItem("theme") || "light";
+    if (savedTheme === "dark") html.classList.add("dark");
+
+    // Toggle theme on click
+    toggle?.addEventListener("click", () => {
+        const isDark = html.classList.toggle("dark");
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+    });
+</script>
+
+<!-- Fonts -->
+<Font cssVariable="--font-sans" preload />
+<Font cssVariable="--font-monospace" preload />
+
+<style is:global>
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    :root {
+        --background-color: var(--background-color-light);
+        --text-color: var(--text-color-light);
+        --link-underline-color: var(--link-underline-color-light);
+
+        --background-color-light: #ffffff;
+        --text-color-light: #000000;
+        --link-underline-color-light: #b1b1b1;
+        --background-color-dark: #000000;
+        --text-color-dark: #ffffff;
+        --link-underline-color-dark: #4a4a4a;
+
+        font-family: var(--font-monospace);
+        background-color: var(--background-color);
+        color: var(--text-color);
+        margin: 0 auto;
+        max-width: 90%;
+    }
+
+    /* :root.dark {
+        --background-color: var(--background-color-dark);
+        --text-color: var(--text-color-dark);
+        --link-underline-color: var(--link-underline-color-dark);
+    } */
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        line-height: 1.4;
+        padding: 0 1rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    a {
+        color: var(--text-color);
+        text-decoration: none;
+    }
+
+    a:hover {
+        border-bottom: 1px solid var(--link-underline-color);
+    }
+
+</style>

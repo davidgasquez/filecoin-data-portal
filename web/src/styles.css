@@ -26,8 +26,7 @@ html {
 }
 
 body {
-    font-family: "Source Sans Pro", sans;
-    font-size: 1.1rem;
+    font-family: var(--font-sans);
     font-optical-sizing: auto;
     line-height: 1.4;
 
@@ -56,7 +55,7 @@ a {
 
 footer {
     margin-top: 40px;
-    font-family: "Source Code Pro", monospace;
+    font-family: var(--font-monospace);
     font-size: 14px;
     text-align: center;
     padding: 20px 0;
@@ -65,7 +64,7 @@ footer {
 
 .navbar {
     margin-bottom: 2em;
-    font-family: "Source Code Pro", monospace;
+    font-family: var(--font-monospace);
 }
 
 .navbar ul {
@@ -85,12 +84,14 @@ footer {
 }
 
 h1 {
+    font-weight: 500;
     text-align: center;
-    font-family: "Source Code Pro", monospace;
+    font-family: var(--font-monospace);
 }
 
 h2,
 h3 {
-    font-family: "Source Code Pro", monospace;
+    font-weight: 600;
+    font-family: var(--font-monospace);
     margin-top: 1.5em;
 }

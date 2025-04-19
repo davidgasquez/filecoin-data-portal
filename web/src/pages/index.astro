@@ -4,12 +4,14 @@ import Card from "../components/Card.astro";
 ---
 
 <Layout>
-    <h1>Filecoin Data Portal</h1>
+    <div class="hero">
+        <h1>Filecoin Data Portal</h1>
 
-    <p style="text-align: center;">
-        Open source, serverless, and local-first Data Platform for the Filecoin
-        ecosystem.
-    </p>
+        <p>
+            Open source, serverless, and local-first Data Platform for the
+            Filecoin ecosystem.
+        </p>
+    </div>
 
     <div class="grid-container">
         <Card
@@ -58,5 +60,9 @@ import Card from "../components/Card.astro";
         .grid-container {
             grid-template-columns: 1fr;
         }
+    }
+
+    .hero {
+        text-align: center;
     }
 </style>
