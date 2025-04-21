@@ -15,9 +15,9 @@
     --theme-green: #3ca951;
     --theme-red: #ff725c;
     --theme-yellow: #efb118;
-    --monospace: "Source Code Pro", monospace;
-    --serif: "Source Code Pro", monospace;
-    --sans-serif: "Source Code Pro", monospace;
+    --monospace: "JetBrains Mono", monospace;
+    --serif: "JetBrains Mono", monospace;
+    --sans-serif: "JetBrains Mono", monospace;
 }
 
 a {
