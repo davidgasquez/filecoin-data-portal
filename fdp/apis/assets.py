@@ -124,3 +124,34 @@ def raw_storage_providers_filrep_reputation(
     return dg.MaterializeResult(
         metadata={"dagster/row_count": storage_providers.shape[0]}
     )
+
+
+@dg.asset(compute_kind="python")
+def raw_onramp_mappings(
+    context: dg.AssetExecutionContext,
+    duckdb: DuckDBResource,
+) -> dg.MaterializeResult:
+    """
+    Onramp mappings. Manually curated mappings of onramp names to client ids.
+    """
+
+    mappings = [
+        ("Storacha", "f02759235"),
+        ("Storacha", "f03123037"),
+        ("Lighthouse", "f01945035"),
+        ("Lighthouse", "f03200311"),
+        ("CID Gravity", "f02824311"),
+        ("Haluo", "f03143604"),
+        ("Triton One", "f02144497"),
+        ("Triton One", "f03087718"),
+        ("Ghostdrive", "f02844684"),
+    ]
+
+    df = pd.DataFrame(mappings, columns=["onramp_name", "client_id"])
+
+    asset_name = context.asset_key.to_user_string()
+
+    with duckdb.get_connection() as con:
+        con.sql(f"create or replace table raw.{asset_name} as select * from df")
+
+    return dg.MaterializeResult(metadata={"dagster/row_count": df.shape[0]})

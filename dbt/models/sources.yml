@@ -160,3 +160,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_storage_providers_gas_commit_fee"]
+      - name: raw_onramp_mappings
+        meta:
+          dagster:
+            asset_key: ["raw_onramp_mappings"]
