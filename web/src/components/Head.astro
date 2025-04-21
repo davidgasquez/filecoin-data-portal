@@ -1,31 +1,39 @@
 ---
-import { Font } from 'astro:assets';
+import { Font } from "astro:assets";
 
 interface Props {
-	title: string;
-	author: string;
-	description: string;
-	image?: string;
-	canonicalUrl?: string;
+    title: string;
+    author: string;
+    description: string;
+    image?: string;
+    canonicalUrl?: string;
 }
 
 const {
-	title,
-	author,
-	description,
-	image = "/banner.png",
-	canonicalUrl = Astro.url.pathname,
+    title,
+    author,
+    description,
+    image = "/banner.png",
+    canonicalUrl = Astro.url.pathname,
 } = Astro.props;
 
 const siteUrl = import.meta.env.SITE || Astro.site;
 const fullUrl = new URL(canonicalUrl, siteUrl).toString();
 const imageUrl = new URL(image, siteUrl).toString();
+
+const jsonData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: title,
+    description: description,
+    url: fullUrl,
+};
 ---
 
 <!-- Immediately set theme on page load before any rendering -->
 <script is:inline>
-  const savedTheme = localStorage.getItem("theme") || "light";
-  if (savedTheme === "dark") document.documentElement.classList.add("dark");
+    const savedTheme = localStorage.getItem("theme") || "light";
+    if (savedTheme === "dark") document.documentElement.classList.add("dark");
 </script>
 
 <!-- Meta Tags -->
@@ -58,15 +66,7 @@ const imageUrl = new URL(image, siteUrl).toString();
 <meta name="twitter:image" content={imageUrl} />
 
 <!-- JSON-LD structured data -->
-<script is:inline type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": {title},
-    "description": {description},
-    "url": {fullUrl}
-  }
-</script>
+<script type="application/ld+json" set:html={JSON.stringify(jsonData)} />
 
 <script>
     const toggle = document.getElementById("theme-toggle");
@@ -141,5 +141,4 @@ const imageUrl = new URL(image, siteUrl).toString();
     a:hover {
         border-bottom: 1px solid var(--link-underline-color);
     }
-
 </style>
