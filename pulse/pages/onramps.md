@@ -4,7 +4,6 @@ title: Onramps
 
 _A detailed view into Filecoin Onramps._
 
-
 ```sql onramps_stats
 select
   count(distinct onramp_name) as total_onramps,
@@ -45,6 +44,7 @@ from filecoin_onramps
 ```sql onramps_table
 select
   onramp_name as name,
+  '/onramp/' || onramp_name as link,
   total_deals as deals,
   total_data_uploaded_tibs as data_uploaded_tibs,
   data_uploaded_tibs_6m as data_uploaded_tibs_6m,
@@ -63,4 +63,42 @@ order by data_uploaded_tibs_6m desc
   rowLines=false
   rows=30
   downloadable=true
+  link=link
+/>
+
+## Daily Metrics
+
+<DateRange
+  name=date_filter
+  start=2023-01-01
+  defaultValue={'Last 365 Days'}
+/>
+
+
+```sql onramps_daily_metrics
+select
+  date,
+  onramp_name,
+  onboarded_data_tibs,
+  deals
+from filecoin_onramps_daily_metrics
+where date between '${inputs.date_filter.start}' and '${inputs.date_filter.end}'
+```
+
+<BarChart
+  data={onramps_daily_metrics}
+  x=date
+  y=onboarded_data_tibs
+  yAxisTitle="Data Uploaded (TiBs)"
+  title="Daily Data Uploaded"
+  series=onramp_name
+/>
+
+<BarChart
+  data={onramps_daily_metrics}
+  x=date
+  y=deals
+  yAxisTitle="Deals"
+  title="Daily Deals"
+  series=onramp_name
 />
