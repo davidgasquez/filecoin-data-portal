@@ -1,5 +1,7 @@
 {% macro filecoin_periodic_metrics(period) %}
 
+{% set period_lookback = 365 if period == 'day' else 52 if period == 'week' else 12 if period == 'month' else 4 if period == 'quarter' else 1 %}
+
 with date_calendar as (
     select
         cast(range as date) as date
@@ -373,6 +375,8 @@ select
 
     -- Economics
     circulating_fil,
+    (circulating_fil - lag(circulating_fil, {{ period_lookback }}) over (order by date_calendar.date)) as circulating_fil_delta,
+    (circulating_fil_delta / lag(circulating_fil, {{ period_lookback }}) over (order by date_calendar.date) * 100) as yearly_inflation_rate,
     mined_fil,
     vested_fil,
     reserve_disbursed_fil,
@@ -404,7 +408,8 @@ select
     github_commits,
 
     -- Transactions
-    transactions
+    transactions as total_transactions,
+    transactions - lag(transactions) over (order by date_calendar.date) as transactions,
 
 from date_calendar
 left join deal_metrics on date_calendar.date = deal_metrics.date
