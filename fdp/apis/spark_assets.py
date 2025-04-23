@@ -115,6 +115,10 @@ def raw_spark_retrievals_onchain_data(
             for stats in record["providerRetrievalResultStats"]
         ]
 
+        if len(flattened_data) == 0:
+            context.log.error("No data found")
+            return dg.MaterializeResult(metadata={"dagster/row_count": 0})
+
         try:
             df = pl.DataFrame(flattened_data).rename({"providerId": "provider_id"})
         except Exception as e:
