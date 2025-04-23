@@ -408,8 +408,7 @@ select
     github_commits,
 
     -- Transactions
-    transactions as total_transactions,
-    transactions - lag(transactions) over (order by date_calendar.date) as transactions,
+    transactions
 
 from date_calendar
 left join deal_metrics on date_calendar.date = deal_metrics.date
