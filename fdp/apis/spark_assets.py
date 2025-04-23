@@ -115,7 +115,12 @@ def raw_spark_retrievals_onchain_data(
             for stats in record["providerRetrievalResultStats"]
         ]
 
-        df = pl.DataFrame(flattened_data).rename({"providerId": "provider_id"})
+        try:
+            df = pl.DataFrame(flattened_data).rename({"providerId": "provider_id"})
+        except Exception as e:
+            context.log.error(f"Error creating DataFrame. {e}")
+            context.log.error(f"Flattened data sample: {flattened_data[:10]}")
+            raise e
 
         context.log.info(f"Persisting {df.height} rows to raw.{asset_name}")
 
