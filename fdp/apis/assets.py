@@ -145,6 +145,9 @@ def raw_onramp_mappings(
         ("Triton One", "f02144497"),
         ("Triton One", "f03087718"),
         ("Ghostdrive", "f02844684"),
+        ("Ramo", "f03500411"),
+        ("Ramo", "f03362267"),
+        ("Ramo", "f03294918"),
     ]
 
     df = pd.DataFrame(mappings, columns=["onramp_name", "client_id"])
