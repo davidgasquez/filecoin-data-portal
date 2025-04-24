@@ -40,7 +40,7 @@ def raw_oso_daily_filecoin_collection_events(
             m.metric_name as event_type,
             m.display_name as event_display_name,
             cast(sample_date as date) as date,
-            sum(cast(amount as int64)) as amount
+            sum(safe_cast(amount as int64)) as amount
         from `opensource-observer.oso.timeseries_metrics_by_collection_v0` as ts
         left join m on m.metric_id = ts.metric_id
         left join c on c.collection_id = ts.collection_id
