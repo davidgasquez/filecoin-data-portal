@@ -956,8 +956,22 @@ movingAverageLinePlot({
   yLabel: "FIL"
 })
 ```
+
+</div>
 </div>
 
+<div class="card" id="yearly-inflation-rate">
+
+```js
+movingAverageLinePlot({
+  metrics: metrics.filter(d => new Date(d.date) >= new Date('2021-10-01')),
+  title: title_anchor("Yearly Inflation Rate", "yearly-inflation-rate"),
+  subtitle: "Yearly change in circulating FIL over time.",
+  caption: "Displaying 30-day moving average. The first year does not have any values as there is no data for the previous year.",
+  yField: "yearly_inflation_rate",
+  yLabel: "%"
+})
+```
 </div>
 
 <div class="card" id="fil-plus-share">
@@ -1145,36 +1159,6 @@ movingAverageLinePlot({
   subtitle: "Total gas used for provecommit sector operations per day on the network.",
   caption: "Displaying 30-day moving average",
   yField: "provecommit_sector_gas_used_millions",
-  yTransform: (d) => d / 1e6,
-  yLabel: "Gas Units (10^12)",
-})
-```
-</div>
-
-<div class="card" id="precommit-sector-gas-used">
-
-```js
-movingAverageLinePlot({
-  metrics,
-  title: title_anchor("Precommit Sector Gas Used", "precommit-sector-gas-used"),
-  subtitle: "Total gas used for precommit sector operations per day on the network.",
-  caption: "Displaying 30-day moving average",
-  yField: "precommit_sector_gas_used_millions",
-  yTransform: (d) => d / 1e6,
-  yLabel: "Gas Units (10^12)",
-})
-```
-</div>
-
-<div class="card" id="provecommit-aggregate-gas-used">
-
-```js
-movingAverageLinePlot({
-  metrics,
-  title: title_anchor("Provecommit Aggregate Gas Used", "provecommit-aggregate-gas-used"),
-  subtitle: "Total gas used for provecommit aggregate operations per day on the network.",
-  caption: "Displaying 30-day moving average",
-  yField: "provecommit_aggregate_gas_used_millions",
   yTransform: (d) => d / 1e6,
   yLabel: "Gas Units (10^12)",
 })

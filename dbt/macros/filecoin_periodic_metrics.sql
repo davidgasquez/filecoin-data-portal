@@ -101,6 +101,7 @@ provider_metrics as (
         sum(daily_new_sector_expire_quality_adjusted_power_tibs) / 1024 as sector_expire_quality_adjusted_power_pibs,
         sum(daily_new_sector_snap_raw_power_tibs) / 1024 as sector_snap_raw_power_pibs,
         sum(daily_new_sector_snap_quality_adjusted_power_tibs) / 1024 as sector_snap_quality_adjusted_power_pibs,
+        sum(active_sectors) as active_sector_count,
         count(distinct provider_id) filter (raw_power_pibs > 0) as providers_with_power,
         sum(commit_capacity_added_events_count) as commit_capacity_added_events_count,
         sum(precommit_added_events_count) as precommit_added_events_count,
@@ -357,6 +358,7 @@ select
     sector_expire_quality_adjusted_power_pibs,
     sector_snap_raw_power_pibs,
     sector_snap_quality_adjusted_power_pibs,
+    active_sector_count,
 
     -- Sector Events
     commit_capacity_added_events_count,
@@ -375,8 +377,8 @@ select
 
     -- Economics
     circulating_fil,
-    (circulating_fil - lag(circulating_fil, {{ period_lookback }}) over (order by date_calendar.date)) as circulating_fil_delta,
-    (circulating_fil_delta / lag(circulating_fil, {{ period_lookback }}) over (order by date_calendar.date) * 100) as yearly_inflation_rate,
+    (circulating_fil - lag(circulating_fil, {{ period_lookback }}) over (order by date_calendar.date)) as yearly_circulating_fil_delta,
+    (yearly_circulating_fil_delta / lag(circulating_fil, {{ period_lookback }}) over (order by date_calendar.date) * 100) as yearly_inflation_rate,
     mined_fil,
     vested_fil,
     reserve_disbursed_fil,

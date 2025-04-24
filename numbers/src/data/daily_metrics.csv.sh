@@ -49,6 +49,7 @@ COPY (
     unit_base_fee - lag(unit_base_fee) over (order by date) as unit_base_fee_delta,
     fil_plus_bytes_share * 100 as fil_plus_bytes_share,
     fil_plus_rewards_share * 100 as fil_plus_rewards_share,
+    yearly_inflation_rate,
 
     -- Sector Metrics
     sector_onboarding_count,
@@ -87,8 +88,6 @@ COPY (
     -- Gas
     total_gas_used_millions,
     provecommit_sector_gas_used_millions,
-    precommit_sector_gas_used_millions,
-    provecommit_aggregate_gas_used_millions,
     precommit_sector_batch_gas_used_millions,
     publish_storage_deals_gas_used_millions,
     submit_windowed_post_gas_used_millions,
