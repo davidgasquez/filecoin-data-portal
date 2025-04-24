@@ -21,14 +21,14 @@ def raw_oso_daily_filecoin_collection_events(
                 metric_id,
                 metric_name,
                 display_name
-            from `opensource-observer.metrics.metrics_v0`
+            from `opensource-observer.oso.metrics_v0`
         ),
 
         c as (
             select
                 collection_id,
                 collection_name
-            from `opensource-observer.metrics.collections_v1`
+            from `opensource-observer.oso.collections_v1`
             where collection_name in (
                 'filecoin-crypto-ecosystems',
                 'filecoin-foundation',
@@ -41,21 +41,19 @@ def raw_oso_daily_filecoin_collection_events(
             m.display_name as event_display_name,
             cast(sample_date as date) as date,
             sum(cast(amount as int64)) as amount
-        from `opensource-observer.metrics.timeseries_metrics_by_collection_v0` as ts
+        from `opensource-observer.oso.timeseries_metrics_by_collection_v0` as ts
         left join m on m.metric_id = ts.metric_id
         left join c on c.collection_id = ts.collection_id
         group by 1, 2, 3
         order by date desc, metric_name desc
     """
 
-    schema = pa.schema(
-        [
-            pa.field("event_type", pa.string()),
-            pa.field("event_display_name", pa.string()),
-            pa.field("date", pa.date32()),
-            pa.field("amount", pa.int64()),
-        ]
-    )
+    schema = pa.schema([
+        pa.field("event_type", pa.string()),
+        pa.field("event_display_name", pa.string()),
+        pa.field("date", pa.date32()),
+        pa.field("amount", pa.int64()),
+    ])
 
     scanner = fdp_bigquery.query_to_scanner(query, schema)  # noqa: F841
 
