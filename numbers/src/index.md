@@ -1216,7 +1216,7 @@ movingAverageLinePlot({
 <details>
 <summary>About</summary>
 <p>
-These metrics track developer activity related to the Filecoin project on GitHub, sourced via <a href="https://opensource.observer/">Open Source Observer (OSO)</a>. The data includes contributions, comments, stars, forks, releases, and commits across several Filecoin ecosystems repositories. Check them out under the <a href="https://github.com/opensource-observer/oss-directory/blob/main/data/collections/filecoin-crypto-ecosystems.yaml">'filecoin-crypto-ecosystems'</a>, <a href="https://github.com/opensource-observer/oss-directory/blob/main/data/collections/filecoin-foundation.yaml">'filecoin-foundation'</a>, and <a href="https://github.com/opensource-observer/oss-directory/blob/main/data/collections/filecoin-core.yaml">'filecoin-core'</a> collections.
+These metrics track developer activity related to the Filecoin project on GitHub, sourced via <a href="https://opensource.observer/">Open Source Observer (OSO)</a>. The data includes contributions, comments, stars, forks, releases, and commits across several Filecoin ecosystems repositories. Check them out under the <a href="https://github.com/opensource-observer/oss-directory/blob/main/data/collections/filecoin-foundation.yaml">'filecoin-foundation'</a> and <a href="https://github.com/opensource-observer/oss-directory/blob/main/data/collections/filecoin-core.yaml">'filecoin-core'</a> collections.
 </p>
 </details>
 

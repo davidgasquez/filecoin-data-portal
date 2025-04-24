@@ -30,7 +30,6 @@ def raw_oso_daily_filecoin_collection_events(
                 collection_name
             from `opensource-observer.oso.collections_v1`
             where collection_name in (
-                'filecoin-crypto-ecosystems',
                 'filecoin-foundation',
                 'filecoin-core'
             )
@@ -43,7 +42,8 @@ def raw_oso_daily_filecoin_collection_events(
             sum(safe_cast(amount as int64)) as amount
         from `opensource-observer.oso.timeseries_metrics_by_collection_v0` as ts
         left join m on m.metric_id = ts.metric_id
-        left join c on c.collection_id = ts.collection_id
+        right join c on cast(c.collection_id as string) = cast(ts.collection_id as string)
+        where m.metric_name like 'GITHUB_%'
         group by 1, 2, 3
         order by date desc, metric_name desc
     """
