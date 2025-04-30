@@ -93,16 +93,14 @@ def raw_daily_providers_sector_events(
         order by 1 desc, 2 desc
     """
 
-    schema: pa.Schema = pa.schema(
-        [
-            pa.field("date", pa.date32()),
-            pa.field("event", pa.string()),
-            pa.field("provider_id", pa.string()),
-            pa.field("count", pa.int64()),
-        ]
-    )
+    schema: pa.Schema = pa.schema([
+        pa.field("date", pa.date32()),
+        pa.field("event", pa.string()),
+        pa.field("provider_id", pa.string()),
+        pa.field("count", pa.int64()),
+    ])
 
-    scanner = lily_bigquery.query_to_scanner(query, schema)
+    scanner = lily_bigquery.query_to_scanner(query, schema)  # noqa: F841
     table_name = context.asset_key.to_user_string()
 
     with duckdb.get_connection() as duckdb_con:
@@ -192,30 +190,28 @@ def raw_filecoin_state_market_deals(
     sc = job_result.client._ensure_bqstorage_client()
     i = job_result.to_arrow_iterable(sc, max_queue_size=1000000)
 
-    schema = pa.schema(
-        [
-            pa.field("height", pa.int64()),
-            pa.field("deal_id", pa.string()),
-            pa.field("state_root", pa.string()),
-            pa.field("piece_cid", pa.string()),
-            pa.field("padded_piece_size", pa.int64()),
-            pa.field("unpadded_piece_size", pa.int64()),
-            pa.field("is_verified", pa.bool_()),
-            pa.field("client_id", pa.string()),
-            pa.field("provider_id", pa.string()),
-            pa.field("start_epoch", pa.int64()),
-            pa.field("end_epoch", pa.int64()),
-            pa.field("slashed_epoch", pa.int64()),
-            pa.field("storage_price_per_epoch", pa.int64()),
-            pa.field("provider_collateral", pa.int64()),
-            pa.field("client_collateral", pa.int64()),
-            pa.field("label", pa.string()),
-            pa.field("sector_start_epoch", pa.int64()),
-            pa.field("slash_epoch", pa.int64()),
-        ]
-    )
+    schema = pa.schema([
+        pa.field("height", pa.int64()),
+        pa.field("deal_id", pa.string()),
+        pa.field("state_root", pa.string()),
+        pa.field("piece_cid", pa.string()),
+        pa.field("padded_piece_size", pa.int64()),
+        pa.field("unpadded_piece_size", pa.int64()),
+        pa.field("is_verified", pa.bool_()),
+        pa.field("client_id", pa.string()),
+        pa.field("provider_id", pa.string()),
+        pa.field("start_epoch", pa.int64()),
+        pa.field("end_epoch", pa.int64()),
+        pa.field("slashed_epoch", pa.int64()),
+        pa.field("storage_price_per_epoch", pa.int64()),
+        pa.field("provider_collateral", pa.int64()),
+        pa.field("client_collateral", pa.int64()),
+        pa.field("label", pa.string()),
+        pa.field("sector_start_epoch", pa.int64()),
+        pa.field("slash_epoch", pa.int64()),
+    ])
 
-    reader = pa.RecordBatchReader.from_batches(schema, i)
+    reader = pa.RecordBatchReader.from_batches(schema, i)  # noqa: F841
 
     with duckdb.get_connection() as duckdb_con:
         _ = duckdb_con.execute(
@@ -240,7 +236,8 @@ def raw_filecoin_transactions(
             date(timestamp_seconds((height * 30) + 1598306400)) as date,
             concat(regexp_extract(actor_name, r'[^/]+$'), '/', g.method, '/', coalesce(m.method_name, 'unknown')) as method,
             sum(gas_used * pow(10, -6)) as gas_used_millions,
-            count(1) as transactions
+            count(1) as transactions,
+            sum(cast(value as numeric) / 1e18) as total_value_fil
         from
             `lily-data.lily.derived_gas_outputs` as g
         left join `lily-data.lily.actor_methods` as m on g.method = m.method and regexp_extract(g.actor_name, r'[^/]+$') = m.family
