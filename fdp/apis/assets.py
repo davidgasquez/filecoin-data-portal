@@ -150,7 +150,7 @@ def raw_onramp_mappings(
         ("Ramo", "f03294918"),
         ("dStor", "f01857338"),
         ("dStor", "f03081055"),
-        ("dStor", "f02930255"),
+        ("Akave", "f02930255"),
     ]
 
     df = pd.DataFrame(mappings, columns=["onramp_name", "client_id"])
