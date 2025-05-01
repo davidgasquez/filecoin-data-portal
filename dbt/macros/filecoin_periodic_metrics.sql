@@ -262,7 +262,8 @@ oso_filecoin_collection_events as (
 transactions as (
     select
         time_bucket(interval '1 {{ period }}', date, date '2020-10-01') as date,
-        sum(transactions) as transactions
+        sum(transactions) as transactions,
+        sum(total_value_fil) as total_value_fil
     from {{ source("raw_assets", "raw_filecoin_transactions") }}
     group by 1
     order by date desc
@@ -410,7 +411,8 @@ select
     github_commits,
 
     -- Transactions
-    transactions
+    transactions,
+    total_value_fil
 
 from date_calendar
 left join deal_metrics on date_calendar.date = deal_metrics.date
