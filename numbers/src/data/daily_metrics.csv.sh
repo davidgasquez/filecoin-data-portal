@@ -102,7 +102,8 @@ COPY (
     github_commits,
 
     -- Transactions
-    transactions
+    transactions,
+    total_value_fil
   FROM read_parquet('https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet')
 ) TO STDOUT (FORMAT 'CSV');
 EOF

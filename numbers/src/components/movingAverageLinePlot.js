@@ -13,8 +13,36 @@ export function movingAverageLinePlot({
     yType,            // Optional y-axis type
     yTransform,       // Optional y-axis transform function
     showArea = false, // Optional boolean to show area instead of line
-    caption = "Displaying 30-day moving average" // Optional caption
+    caption = "Displaying 30-day moving average", // Optional caption
+    marks: customMarks, // Explicitly capture custom marks if provided
+    ...otherPlotOptions // Capture the rest of the plot options
 }) {
+
+    // Default marks
+    const defaultMarks = [
+        Plot.lineY(metrics, {
+            x: xField,
+            y: yField,
+            tip: false,
+            stroke: "var(--theme-foreground-fainter)",
+            ...(yDomain && { clip: true })
+        }),
+        Plot.ruleY([0]),
+        showArea && Plot.areaY(metrics, Plot.windowY(30, {
+            x: xField,
+            y: yField,
+            tip: false,
+            fill: "var(--theme-foreground-fainter)",
+            ...(yDomain && { clip: true })
+        })),
+        Plot.lineY(metrics, Plot.windowY(30, {
+            x: xField,
+            y: yField,
+            stroke: "var(--theme-foreground-focus)",
+            tip: true,
+            ...(yDomain && { clip: true })
+        })),
+    ].filter(Boolean);
 
     return resize((width) => Plot.plot({
         title,
@@ -29,35 +57,9 @@ export function movingAverageLinePlot({
             ...(yType && { type: yType }),
             ...(yTransform && { transform: yTransform })
         },
-        marks: [
-            // Plot.text(["⬣ Nexus Data Labs"], {
-            //     fontSize: 14,
-            //     frameAnchor: "top-right",
-            //     dy: -14,
-            //     opacity: 0.2
-            // }),
-            Plot.lineY(metrics, {
-                x: xField,
-                y: yField,
-                tip: false,
-                stroke: "var(--theme-foreground-fainter)",
-                ...(yDomain && { clip: true })
-            }),
-            Plot.ruleY([0]),
-            showArea && Plot.areaY(metrics, Plot.windowY(30, {
-                x: xField,
-                y: yField,
-                tip: false,
-                fill: "var(--theme-foreground-fainter)",
-                ...(yDomain && { clip: true })
-            })),
-            Plot.lineY(metrics, Plot.windowY(30, {
-                x: xField,
-                y: yField,
-                stroke: "var(--theme-foreground-focus)",
-                tip: true,
-                ...(yDomain && { clip: true })
-            })),
-        ].filter(Boolean)
+        // Merge default marks with any provided marks
+        marks: customMarks ? [...defaultMarks, ...customMarks] : defaultMarks,
+        // Spread the rest of the plot options
+        ...otherPlotOptions,
     }));
 }

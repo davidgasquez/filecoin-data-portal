@@ -958,7 +958,6 @@ movingAverageLinePlot({
 ```
 
 </div>
-</div>
 
 <div class="card" id="yearly-inflation-rate">
 
@@ -972,6 +971,24 @@ movingAverageLinePlot({
   yLabel: "%"
 })
 ```
+</div>
+
+
+<div class="card" id="total-value-fil">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("Total Value FIL", "total-value-fil"),
+  subtitle: "Total value of FIL in transactions per day on the network.",
+  yField: "total_value_fil",
+  yLabel: "FIL (Millions)",
+  yTransform: (d) => d / 1e6,
+  yDomain: [0, 150]
+})
+```
+
+</div>
 </div>
 
 <div class="card" id="fil-plus-share">
@@ -1011,7 +1028,6 @@ Plot.plot({
 ```
 
 </div>
-
 
 ## Transactions
 
