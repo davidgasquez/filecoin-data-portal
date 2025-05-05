@@ -7,10 +7,11 @@ _A detailed view into Filecoin Onramps._
 ```sql onramps_stats
 select
   count(distinct onramp_name) as total_onramps,
-  sum(cast(total_deals as numeric)) as total_onramps_clients,
+  sum(cast(total_known_clients as numeric)) as total_onramps_clients,
   sum(total_data_uploaded_tibs) as total_data_uploaded_tibs,
   sum(cast(total_deals as numeric)) as total_deals,
 from filecoin_onramps
+where onramp_name != 'No Onramp'
 ```
 
 <Grid cols=2>
@@ -46,6 +47,7 @@ select
   onramp_name as name,
   '/onramp/' || onramp_name as link,
   total_deals as deals,
+  total_known_clients as known_clients,
   total_data_uploaded_tibs as data_uploaded_tibs,
   data_uploaded_tibs_6m as data_uploaded_tibs_6m,
   data_expired_tibs_6m as data_expired_tibs_6m,
