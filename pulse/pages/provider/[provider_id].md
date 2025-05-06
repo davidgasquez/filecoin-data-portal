@@ -348,6 +348,7 @@ group by client_id
 
 select
   p.client_id,
+  c.client_name,
   p.deals,
   p.onboarded_data_tibs,
   p.days_with_deals,
@@ -355,6 +356,7 @@ select
   p.last_deal_at,
   '/client/' || p.client_id as link,
 from provider_clients p
+left join filecoin_clients c on p.client_id = c.client_id
 order by onboarded_data_tibs desc
 ```
 
