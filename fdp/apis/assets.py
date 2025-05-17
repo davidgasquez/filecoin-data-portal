@@ -148,8 +148,8 @@ def raw_onramp_mappings(
         ("Ramo", "f03500411"),
         ("Ramo", "f03362267"),
         ("Ramo", "f03294918"),
-        ("dStor", "f01857338"),
-        ("dStor", "f03081055"),
+        # ("DeStor", "f01857338"),
+        # ("DeStor", "f03081055"),
         ("Akave", "f02930255"),
     ]
 
