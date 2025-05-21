@@ -132,28 +132,18 @@ def raw_onramp_mappings(
     duckdb: DuckDBResource,
 ) -> dg.MaterializeResult:
     """
-    Onramp mappings. Manually curated mappings of onramp names to client ids.
+    Onramp mappings. Mappings of onramp names to client ids from Google Sheets.
+
+    The Google Sheet is manually curated and can be found here:
+
+    https://docs.google.com/spreadsheets/d/1HSimhURXMpWypbtXOiRd6MoWaHiLVOkjbQqGB3YQN50
     """
 
-    mappings = [
-        ("Storacha", "f02759235"),
-        ("Storacha", "f03123037"),
-        ("Lighthouse", "f01945035"),
-        ("Lighthouse", "f03200311"),
-        ("CID Gravity", "f02824311"),
-        ("Haluo", "f03143604"),
-        ("Triton One", "f02144497"),
-        ("Triton One", "f03087718"),
-        ("Ghostdrive", "f02844684"),
-        ("Ramo", "f03500411"),
-        ("Ramo", "f03362267"),
-        ("Ramo", "f03294918"),
-        ("dStor", "f01857338"),
-        ("dStor", "f03081055"),
-        ("Akave", "f02930255"),
-    ]
+    url = "https://docs.google.com/spreadsheets/d/1HSimhURXMpWypbtXOiRd6MoWaHiLVOkjbQqGB3YQN50/export?format=csv"
+    df = pd.read_csv(url)
 
-    df = pd.DataFrame(mappings, columns=["onramp_name", "client_id"])
+    df = df.rename(columns={"Onramp Name": "onramp_name", "Client ID": "client_id"})
+    df = df[["onramp_name", "client_id"]]
 
     asset_name = context.asset_key.to_user_string()
 
