@@ -127,6 +127,15 @@ new_clients as (
     order by 1 desc
 ),
 
+client_metrics as (
+    select
+        time_bucket(interval '1 {{ period }}', date, date '2020-10-01') as date,
+        count(distinct client_id) filter (where active_data_tibs > 1) as clients_with_active_data_gt_1_tibs,
+    from {{ ref('filecoin_daily_clients_metrics') }}
+    group by 1
+    order by 1 desc
+),
+
 new_providers as (
     select
         time_bucket(interval '1 {{ period }}', first_deal_at, date '2020-10-01') as date,
@@ -318,6 +327,7 @@ select
     total_address_count_10000,
     total_address_count_100000,
     total_address_count_1000000,
+    clients_with_active_data_gt_1_tibs,
 
     -- Power
     raw_power_pibs,
@@ -421,6 +431,7 @@ left join deal_ends on date_calendar.date = deal_ends.date
 left join deal_slashes on date_calendar.date = deal_slashes.date
 left join provider_metrics on date_calendar.date = provider_metrics.date
 left join new_clients on date_calendar.date = new_clients.date
+left join client_metrics on date_calendar.date = client_metrics.date
 left join new_providers on date_calendar.date = new_providers.date
 left join network_user_address_count on date_calendar.date = network_user_address_count.date
 left join direct_data_onboarding on date_calendar.date = direct_data_onboarding.date
