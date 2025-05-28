@@ -66,3 +66,25 @@ movingAverageLinePlot({
 ```
 
 </div>
+
+<div class="card">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: "Clients with 1 TiB or more active data",
+  subtitle: "Number of clients with 1 TiB or more active data on State Market Deals.",
+  yField: "clients_with_active_data_gt_1_tibs",
+  yLabel: "Number of Clients",
+  showArea: true,
+  marks: [
+    Plot.ruleY([1000], {
+      stroke: "var(--theme-blue)",
+      strokeWidth: 2,
+      strokeDasharray: "4 4"
+    })
+  ]
+})
+```
+
+</div>

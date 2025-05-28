@@ -23,6 +23,7 @@ COPY (
     mean_deal_duration_days,
     active_address_count_daily,
     total_address_count,
+    clients_with_active_data_gt_1_tibs,
 
     -- Power
     raw_power_pibs,
