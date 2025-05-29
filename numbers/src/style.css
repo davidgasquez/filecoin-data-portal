@@ -73,6 +73,11 @@ h2 {
     border-radius: 0rem;
 }
 
+#observablehq-toc {
+    z-index: 1 !important;
+    pointer-events: none !important;
+}
+
 #observablehq-toc nav {
     text-transform: uppercase;
     width: 192px;
@@ -80,6 +85,72 @@ h2 {
     padding: 0 1rem;
     box-sizing: border-box;
     border-left: solid 0px var(--theme-foreground-faintest);
+    z-index: 1 !important;
+    pointer-events: auto !important;
+}
+
+#observablehq-toc nav a {
+    pointer-events: auto !important;
+}
+
+aside#observablehq-toc {
+    z-index: 1 !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
+}
+
+#timeframe-selector {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    background: var(--theme-background-alt);
+    border: 2px solid var(--theme-foreground-faintest);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 999999 !important;
+    max-width: 280px;
+    text-transform: uppercase;
+    font-family: var(--sans-serif);
+    pointer-events: auto !important;
+}
+
+#timeframe-selector h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+#timeframe-selector input[type="radio"] {
+    margin-right: 0.5rem;
+    pointer-events: auto !important;
+    z-index: 999999 !important;
+    position: relative;
+}
+
+#timeframe-selector label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    pointer-events: auto !important;
+    z-index: 999999 !important;
+    position: relative;
+}
+
+#timeframe-selector input[type="date"] {
+    width: 100%;
+    padding: 0.25rem;
+    margin-top: 0.25rem;
+    border: 1px solid var(--theme-foreground-faintest);
+    border-radius: 4px;
+    background: var(--theme-background);
+    color: var(--theme-foreground);
+    font-family: var(--sans-serif);
+    pointer-events: auto !important;
+    z-index: 999999 !important;
+    position: relative;
 }
 
 .card:target {

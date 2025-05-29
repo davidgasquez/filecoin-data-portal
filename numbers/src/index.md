@@ -51,58 +51,13 @@ import { movingAverageLinePlot } from "./components/movingAverageLinePlot.js";
 ```
 
 
-<div class="card">
-<h2>TIMEFRAME</h2>
-
-```js
-const timeframe = view(Inputs.radio(["All", "365d", "180d", "90d", "30d", "Custom"], {value: params.has('from_date') || params.has('to_date') ? "Custom" : "All"}));
-```
-
-```js
-const startDate = timeframe === "Custom" ? view(Inputs.date({
-  label: "Start",
-  value: from_date,
-})) : from_date;
-
-const endDate = timeframe === "Custom" ? view(Inputs.date({
-  label: "End",
-  value: to_date,
-})) : to_date;
-```
-
-```js
-if (timeframe === "Custom") {
-  updateURLParams(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]);
-} else if (timeframe === "365d") {
-  const daysAgo = new Date();
-  daysAgo.setDate(daysAgo.getDate() - 365);
-  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
-} else if (timeframe === "180d") {
-  const daysAgo = new Date();
-  daysAgo.setDate(daysAgo.getDate() - 180);
-  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
-} else if (timeframe === "90d") {
-  const daysAgo = new Date();
-  daysAgo.setDate(daysAgo.getDate() - 90);
-  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
-} else if (timeframe === "30d") {
-  const daysAgo = new Date();
-  daysAgo.setDate(daysAgo.getDate() - 30);
-  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
-} else if (timeframe === "All") {
-  // Clear URL params
-  window.history.replaceState({}, '', window.location.pathname);
-}
-```
-
-</div>
 
 
 ```js
 function getFilteredData(data, timeframe, startDate, endDate) {
   if (timeframe === "All") return data;
   if (timeframe === "Custom") return data.filter(d => d.date >= startDate && d.date <= endDate);
-  
+
   const days = parseInt(timeframe.replace('d', ''));
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - days);
@@ -1333,3 +1288,49 @@ Here are some resources for you to explore and learn more about Filecoin data.
 
 
 _Charts shown here are for informational purposes only. The data pipelines powering this are optimized for analytical purposes and might not be 100% accurate._
+
+<div id="timeframe-selector">
+<h3>Timeframe</h3>
+
+```js
+const timeframe = view(Inputs.radio(["All", "365d", "180d", "90d", "30d", "Custom"], {value: params.has('from_date') || params.has('to_date') ? "Custom" : "All"}));
+```
+
+```js
+const startDate = timeframe === "Custom" ? view(Inputs.date({
+  label: "Start",
+  value: from_date,
+})) : from_date;
+
+const endDate = timeframe === "Custom" ? view(Inputs.date({
+  label: "End",
+  value: to_date,
+})) : to_date;
+```
+
+```js
+if (timeframe === "Custom") {
+  updateURLParams(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]);
+} else if (timeframe === "365d") {
+  const daysAgo = new Date();
+  daysAgo.setDate(daysAgo.getDate() - 365);
+  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
+} else if (timeframe === "180d") {
+  const daysAgo = new Date();
+  daysAgo.setDate(daysAgo.getDate() - 180);
+  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
+} else if (timeframe === "90d") {
+  const daysAgo = new Date();
+  daysAgo.setDate(daysAgo.getDate() - 90);
+  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
+} else if (timeframe === "30d") {
+  const daysAgo = new Date();
+  daysAgo.setDate(daysAgo.getDate() - 30);
+  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
+} else if (timeframe === "All") {
+  // Clear URL params
+  window.history.replaceState({}, '', window.location.pathname);
+}
+```
+
+</div>
