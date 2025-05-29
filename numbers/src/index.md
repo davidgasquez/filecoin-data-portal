@@ -55,7 +55,7 @@ import { movingAverageLinePlot } from "./components/movingAverageLinePlot.js";
 <h2>TIMEFRAME</h2>
 
 ```js
-const timeframe = view(Inputs.radio(["All", "Last Year", "Custom"], {value: params.has('from_date') || params.has('to_date') ? "Custom" : "All"}));
+const timeframe = view(Inputs.radio(["All", "365d", "180d", "90d", "30d", "Custom"], {value: params.has('from_date') || params.has('to_date') ? "Custom" : "All"}));
 ```
 
 ```js
@@ -73,10 +73,22 @@ const endDate = timeframe === "Custom" ? view(Inputs.date({
 ```js
 if (timeframe === "Custom") {
   updateURLParams(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]);
-} else if (timeframe === "Last Year") {
-  const oneYearAgo = new Date();
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-  updateURLParams(oneYearAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
+} else if (timeframe === "365d") {
+  const daysAgo = new Date();
+  daysAgo.setDate(daysAgo.getDate() - 365);
+  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
+} else if (timeframe === "180d") {
+  const daysAgo = new Date();
+  daysAgo.setDate(daysAgo.getDate() - 180);
+  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
+} else if (timeframe === "90d") {
+  const daysAgo = new Date();
+  daysAgo.setDate(daysAgo.getDate() - 90);
+  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
+} else if (timeframe === "30d") {
+  const daysAgo = new Date();
+  daysAgo.setDate(daysAgo.getDate() - 30);
+  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
 } else if (timeframe === "All") {
   // Clear URL params
   window.history.replaceState({}, '', window.location.pathname);
@@ -87,37 +99,20 @@ if (timeframe === "Custom") {
 
 
 ```js
-const metrics = timeframe === "All" ? am :
-                timeframe === "Last Year" ? am.filter(d => {
-                  const oneYearAgo = new Date();
-                  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-                  return d.date >= oneYearAgo;
-                }) :
-                am.filter(d => d.date >= startDate && d.date <= endDate);
+function getFilteredData(data, timeframe, startDate, endDate) {
+  if (timeframe === "All") return data;
+  if (timeframe === "Custom") return data.filter(d => d.date >= startDate && d.date <= endDate);
+  
+  const days = parseInt(timeframe.replace('d', ''));
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - days);
+  return data.filter(d => d.date >= cutoffDate);
+}
 
-const drm = timeframe === "All" ? drm_all :
-            timeframe === "Last Year" ? drm_all.filter(d => {
-              const oneYearAgo = new Date();
-              oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-              return d.date >= oneYearAgo;
-            }) :
-            drm_all.filter(d => d.date >= startDate && d.date <= endDate);
-
-const dim = timeframe === "All" ? dim_all :
-            timeframe === "Last Year" ? dim_all.filter(d => {
-              const oneYearAgo = new Date();
-              oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-              return d.date >= oneYearAgo;
-            }) :
-            dim_all.filter(d => d.date >= startDate && d.date <= endDate);
-
-const fdt = timeframe === "All" ? fdt_all :
-            timeframe === "Last Year" ? fdt_all.filter(d => {
-              const oneYearAgo = new Date();
-              oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-              return d.date >= oneYearAgo;
-            }) :
-            fdt_all.filter(d => d.date >= startDate && d.date <= endDate);
+const metrics = getFilteredData(am, timeframe, startDate, endDate);
+const drm = getFilteredData(drm_all, timeframe, startDate, endDate);
+const dim = getFilteredData(dim_all, timeframe, startDate, endDate);
+const fdt = getFilteredData(fdt_all, timeframe, startDate, endDate);
 
 ```
 
@@ -1063,13 +1058,13 @@ Plot.plot({
   width,
   marks: [
     Plot.ruleY([0]),
-    Plot.lineY(fdt.filter(d => d.method === tx_method && (timeframe === "All" || new Date(d.date) > new Date(Date.now() - 365 * 24 * 60 * 60 * 1000))), {
+    Plot.lineY(getFilteredData(fdt, timeframe, startDate, endDate).filter(d => d.method === tx_method), {
       x: "date",
       y: "transactions",
       stroke: "var(--theme-foreground-fainter)",
     }),
     Plot.lineY(
-      fdt.filter(d => d.method === tx_method && (timeframe === "All" || new Date(d.date) > new Date(Date.now() - 365 * 24 * 60 * 60 * 1000))),
+      getFilteredData(fdt, timeframe, startDate, endDate).filter(d => d.method === tx_method),
       Plot.windowY(30, {
         x: "date",
         y: "transactions",
@@ -1118,12 +1113,12 @@ Plot.plot({
   width,
   marks: [
     Plot.ruleY([0]),
-    Plot.lineY(fdt.filter(d => d.method === method && (timeframe === "All" || new Date(d.date) > new Date(Date.now() - 365 * 24 * 60 * 60 * 1000))), {
+    Plot.lineY(getFilteredData(fdt, timeframe, startDate, endDate).filter(d => d.method === method), {
       x: "date",
       y: "gas_used_millions",
       stroke: "var(--theme-foreground-fainter)",
     }),
-    Plot.lineY(fdt.filter(d => d.method === method && (timeframe === "All" || new Date(d.date) > new Date(Date.now() - 365 * 24 * 60 * 60 * 1000))), Plot.windowY(30, {
+    Plot.lineY(getFilteredData(fdt, timeframe, startDate, endDate).filter(d => d.method === method), Plot.windowY(30, {
       x: "date",
       y: "gas_used_millions",
       stroke: "var(--theme-foreground-focus)",
