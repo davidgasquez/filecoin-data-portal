@@ -26,7 +26,7 @@ const metrics = am.filter(d => {
 ```js
 movingAverageLinePlot({
   metrics,
-  title: "Sector Onboarding",
+  title: "Daily Data Onboarding",
   subtitle: "How much raw power was onboarded to the network at a given time.",
   yField: "sector_onboarding_raw_power_pibs",
   yLabel: "PiBs",
@@ -79,6 +79,51 @@ movingAverageLinePlot({
   showArea: true,
   marks: [
     Plot.ruleY([1000], {
+      stroke: "var(--theme-blue)",
+      strokeWidth: 2,
+      strokeDasharray: "4 4"
+    })
+  ]
+})
+```
+
+</div>
+
+<div class="card">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: "Total FIL in Paid Deals",
+  subtitle: "Total FIL in paid deals on the network.",
+  yField: "deal_storage_cost_fil",
+  yLabel: "FIL",
+  showArea: true,
+  marks: [
+    Plot.ruleY([100], {
+      stroke: "var(--theme-blue)",
+      strokeWidth: 2,
+      strokeDasharray: "4 4"
+    })
+  ]
+})
+```
+
+</div>
+
+<div class="card">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: "Total Value Flow",
+  subtitle: "Total value flow on the network.",
+  yField: (d) => d.total_value_fil + d.total_gas_used_millions,
+  yLabel: "FIL (Millions)",
+  yTransform: (d) => d / 1e6,
+  showArea: true,
+  marks: [
+    Plot.ruleY([100000000], {
       stroke: "var(--theme-blue)",
       strokeWidth: 2,
       strokeDasharray: "4 4"
