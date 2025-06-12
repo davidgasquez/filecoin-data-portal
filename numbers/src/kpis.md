@@ -43,30 +43,6 @@ movingAverageLinePlot({
 
 </div>
 
-<div class="card" id="total-value-fil">
-
-```js
-movingAverageLinePlot({
-  metrics,
-  title: "Total Value FIL",
-  subtitle: "Total value of FIL in transactions per day on the network.",
-  yField: "total_value_fil",
-  yLabel: "FIL (Millions)",
-  yTransform: (d) => d / 1e6,
-  showArea: true,
-  yDomain: [0, 18],
-  marks: [
-    Plot.ruleY([16000000], {
-      stroke: "var(--theme-blue)",
-      strokeWidth: 2,
-      strokeDasharray: "4 4"
-    })
-  ]
-})
-```
-
-</div>
-
 <div class="card">
 
 ```js
