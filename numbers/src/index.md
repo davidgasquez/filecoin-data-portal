@@ -850,6 +850,21 @@ movingAverageLinePlot({
 ```
 </div>
 
+<div class="card" id="locked-to-circulating-ratio">
+
+```js
+movingAverageLinePlot({
+  metrics: metrics.map(d => ({...d, locked_to_circulating_ratio: (d.locked_fil / d.circulating_fil) * 100})),
+  title: title_anchor("Locked to Circulating Ratio", "locked-to-circulating-ratio"),
+  subtitle: "Percentage of circulating FIL that is locked.",
+  caption: "Ratio of locked FIL to circulating supply",
+  yField: "locked_to_circulating_ratio",
+  yLabel: "Percentage (%)",
+  showArea: true
+})
+```
+</div>
+
 <div class="card" id="burnt-fil">
 
 ```js
@@ -937,8 +952,6 @@ movingAverageLinePlot({
   yDomain: [0, 150]
 })
 ```
-
-</div>
 </div>
 
 <div class="card" id="fil-plus-share">
@@ -948,7 +961,7 @@ const fil_plus_share = ["fil_plus_bytes_share", "fil_plus_rewards_share"].flatMa
 ```
 
 ```js
-Plot.plot({
+resize((width) => Plot.plot({
   title: title_anchor("Filecoin Plus Share", "fil-plus-share"),
   subtitle: "How much share does Filecoin Plus get in the network.",
   caption: "Metrics derived from the ratio of quality-adjusted power to raw power.",
@@ -974,8 +987,10 @@ Plot.plot({
       tip: true
     })),
   ]
-})
+}))
 ```
+
+</div>
 
 </div>
 
