@@ -21,7 +21,8 @@ deal_metrics as (
         approx_count_distinct(deal_id) filter (not is_verified) as regular_deals,
         approx_count_distinct(piece_cid) as unique_piece_cids,
         approx_count_distinct(client_id) as unique_deal_making_clients,
-        approx_count_distinct(provider_id) as unique_deal_making_providers
+        approx_count_distinct(provider_id) as unique_deal_making_providers,
+        avg(piece_replication_factor) as average_piece_replication_factor
     from {{ ref('filecoin_state_market_deals') }}
     where 1 = 1
         and sector_start_at is not null
@@ -292,6 +293,7 @@ select
     regular_deals,
     unique_piece_cids,
     new_piece_cids,
+    average_piece_replication_factor,
     data_on_active_deals_pibs,
     data_on_active_deals_pibs - lag(data_on_active_deals_pibs) over (order by date_calendar.date) as data_on_active_deals_pibs_delta,
     unique_data_on_active_deals_pibs,
