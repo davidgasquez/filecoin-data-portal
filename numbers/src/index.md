@@ -857,10 +857,11 @@ movingAverageLinePlot({
   metrics: metrics.map(d => ({...d, locked_to_circulating_ratio: (d.locked_fil / d.circulating_fil) * 100})),
   title: title_anchor("Locked to Circulating Ratio", "locked-to-circulating-ratio"),
   subtitle: "Percentage of circulating FIL that is locked.",
-  caption: "Ratio of locked FIL to circulating supply",
+  caption: "The network targets approximately 30% of the network’s circulating supply locked up in initial consensus pledge when it is at or above the baseline.",
   yField: "locked_to_circulating_ratio",
   yLabel: "Percentage (%)",
-  showArea: true
+  showArea: true,
+  horizontalRule: 30
 })
 ```
 </div>

@@ -14,6 +14,7 @@ export function movingAverageLinePlot({
     yTransform,       // Optional y-axis transform function
     showArea = false, // Optional boolean to show area instead of line
     caption = "Displaying 30-day moving average", // Optional caption
+    horizontalRule = null, // Optional horizontal rule value (e.g., 0.3 for 30%)
     marks: customMarks, // Explicitly capture custom marks if provided
     ...otherPlotOptions // Capture the rest of the plot options
 }) {
@@ -42,6 +43,11 @@ export function movingAverageLinePlot({
             tip: true,
             ...(yDomain && { clip: true })
         })),
+        horizontalRule !== null && Plot.ruleY([horizontalRule], {
+            stroke: "var(--theme-red)",
+            strokeDasharray: "4 4",
+            strokeWidth: 1.5
+        }),
     ].filter(Boolean);
 
     return resize((width) => Plot.plot({
