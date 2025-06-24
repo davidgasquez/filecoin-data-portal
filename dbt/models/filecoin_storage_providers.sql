@@ -41,6 +41,7 @@ stats as (
 
         sum(unpadded_piece_size_tibs) as total_data_uploaded_tibs,
         sum(unpadded_piece_size_tibs) filter (where is_active) as total_active_data_uploaded_tibs,
+        avg(piece_replication_factor) as avg_piece_replication_factor,
         sum(unpadded_piece_size_tibs) filter (piece_provider_replication_order = 1) as unique_data_uploaded_tibs,
         sum(unpadded_piece_size_tibs) filter (where is_active and piece_provider_replication_order = 1) as unique_active_data_uploaded_tibs,
         unique_data_uploaded_tibs / sum(unpadded_piece_size_tibs) as unique_data_uploaded_ratio,
@@ -268,6 +269,7 @@ select
     coalesce(stats.total_active_verified_unique_piece_cids, 0) as total_active_verified_unique_piece_cids,
     coalesce(stats.total_data_uploaded_tibs, 0) as total_data_uploaded_tibs,
     coalesce(stats.total_active_data_uploaded_tibs, 0) as total_active_data_uploaded_tibs,
+    coalesce(stats.avg_piece_replication_factor, 0) as avg_piece_replication_factor,
     coalesce(stats.unique_data_uploaded_tibs, 0) as unique_data_uploaded_tibs,
     coalesce(stats.unique_active_data_uploaded_tibs, 0) as unique_active_data_uploaded_tibs,
     coalesce(stats.unique_data_uploaded_ratio, 0) as unique_data_uploaded_ratio,
