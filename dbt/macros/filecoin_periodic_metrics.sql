@@ -40,7 +40,8 @@ users_with_active_deals as (
         approx_count_distinct(deals.provider_id) as providers_with_active_deals,
         mean(end_epoch - sector_start_epoch) // 2880 as mean_deal_duration_days,
         mean(end_epoch - sector_start_epoch) filter (is_verified) // 2880 as mean_verified_deal_duration_days,
-        mean(end_epoch - sector_start_epoch) filter (not is_verified) // 2880 as mean_regular_deal_duration_days
+        mean(end_epoch - sector_start_epoch) filter (not is_verified) // 2880 as mean_regular_deal_duration_days,
+        avg(piece_replication_factor) as average_piece_replication_factor_active_deals
     from date_calendar as dc
     left join {{ ref('filecoin_state_market_deals') }} as deals
         on (deals.sector_start_at <= dc.date + interval '1 {{ period }}')
@@ -317,6 +318,7 @@ select
     mean_deal_duration_days,
     mean_verified_deal_duration_days,
     mean_regular_deal_duration_days,
+    average_piece_replication_factor_active_deals,
     new_client_ids,
     new_provider_ids,
     new_providers_providing_capacity,

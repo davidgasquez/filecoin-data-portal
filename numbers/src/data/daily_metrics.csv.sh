@@ -24,6 +24,7 @@ COPY (
     active_address_count_daily,
     total_address_count,
     clients_with_active_data_gt_1_tibs,
+    average_piece_replication_factor,
 
     -- Power
     raw_power_pibs,

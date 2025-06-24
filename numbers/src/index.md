@@ -371,6 +371,22 @@ movingAverageLinePlot({
 ```
 </div>
 
+<div class="card" id="average-piece-replication-factor">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("Average Piece Replication Factor", "average-piece-replication-factor"),
+  subtitle: "Average piece replication of pieces onboarded on a date.",
+  caption: "Displaying 30-day moving average",
+  yField: "average_piece_replication_factor",
+  yLabel: "Piece Replication Factor",
+  yDomain: [0, 40],
+  showArea: true,
+})
+```
+</div>
+
 </div>
 
 ## Power
