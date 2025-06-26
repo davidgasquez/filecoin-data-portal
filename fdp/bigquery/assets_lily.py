@@ -141,10 +141,9 @@ def raw_filecoin_state_market_deals(
             storage_price_per_epoch,
             provider_collateral,
             client_collateral,
-            label,
             row_number() over (
-            partition by deal_id
-            order by height desc, height desc
+                partition by deal_id
+                order by height desc, height desc
             ) as row_num
         from `lily-data.lily.market_deal_proposals`
     ),
@@ -174,12 +173,13 @@ def raw_filecoin_state_market_deals(
         d.storage_price_per_epoch,
         d.provider_collateral,
         d.client_collateral,
-        d.label,
         a.sector_start_epoch,
         a.slash_epoch
     from market_deals as d
     left join market_chain_activity as a on d.deal_id = a.deal_id
-    where d.row_num = 1
+    where 1=1
+        and d.row_num = 1
+        and a.sector_start_epoch is not null
     order by d.height desc
     """
 
@@ -188,7 +188,7 @@ def raw_filecoin_state_market_deals(
         job_result = job.result()
 
     sc = job_result.client._ensure_bqstorage_client()
-    i = job_result.to_arrow_iterable(sc, max_queue_size=1000000)
+    i = job_result.to_arrow_iterable(sc, max_queue_size=500000)
 
     schema = pa.schema([
         pa.field("height", pa.int64()),
@@ -206,7 +206,6 @@ def raw_filecoin_state_market_deals(
         pa.field("storage_price_per_epoch", pa.int64()),
         pa.field("provider_collateral", pa.int64()),
         pa.field("client_collateral", pa.int64()),
-        pa.field("label", pa.string()),
         pa.field("sector_start_epoch", pa.int64()),
         pa.field("slash_epoch", pa.int64()),
     ])

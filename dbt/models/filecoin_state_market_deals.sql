@@ -14,7 +14,6 @@ with base as (
         storage_price_per_epoch,
         provider_collateral,
         client_collateral,
-        label,
         sector_start_epoch,
         slash_epoch
     from {{ source('raw_assets', 'raw_filecoin_state_market_deals') }}
@@ -34,8 +33,8 @@ replication_factor as (
         count(1) over client_pieces as piece_client_replication_factor,
         min(sector_start_epoch) over (partition by piece_cid) as piece_first_sector_start_epoch,
         max(sector_start_epoch) over (partition by piece_cid) as piece_last_sector_start_epoch,
-        approx_count_distinct(provider_id) over (partition by piece_cid) as piece_distinct_provider_count,
-        approx_count_distinct(client_id) over (partition by piece_cid) as piece_distinct_client_count
+        -- approx_count_distinct(provider_id) over (partition by piece_cid) as piece_distinct_provider_count,
+        -- approx_count_distinct(client_id) over (partition by piece_cid) as piece_distinct_client_count
     from base
     where sector_start_epoch > 0
     window
@@ -68,7 +67,6 @@ select
     storage_price_per_epoch::bigint / pow(10, 18) as storage_price_per_epoch_fil,
     provider_collateral::bigint as provider_collateral,
     client_collateral::bigint as client_collateral,
-    label,
     if(b.sector_start_epoch > 0 and (slash_epoch is null or slash_epoch = -1) and to_timestamp(end_epoch * 30 + 1598306400) > get_current_timestamp(), true, false) as is_active,
     b.sector_start_epoch - proposed_epoch as activation_epochs_delay,
     b.end_epoch - b.sector_start_epoch as deal_lenght_epochs,
@@ -81,8 +79,8 @@ select
     replication_factor.piece_replication_factor,
     replication_factor.piece_first_sector_start_epoch,
     replication_factor.piece_last_sector_start_epoch,
-    replication_factor.piece_distinct_provider_count,
-    replication_factor.piece_distinct_client_count,
+    -- replication_factor.piece_distinct_provider_count,
+    -- replication_factor.piece_distinct_client_count,
     to_timestamp(replication_factor.piece_first_sector_start_epoch * 30 + 1598306400)::timestamp as piece_first_sector_start_at,
     to_timestamp(replication_factor.piece_last_sector_start_epoch * 30 + 1598306400)::timestamp as piece_last_sector_start_at
 from base as b
