@@ -77,7 +77,7 @@ def raw_datacap_allocators_registry(
                 except Exception as e:
                     print(f"Failed to parse JSON for {file['name']}: {e}")
 
-    df = pl.DataFrame(files_data[:-1])
+    df = pl.DataFrame(files_data[:-1], strict=False)
 
     asset_name = context.asset_key.to_user_string()
 
