@@ -806,6 +806,21 @@ movingAverageLinePlot({
 ```
 </div>
 
+<div class="card" id="mining-yield">
+
+```js
+movingAverageLinePlot({
+  metrics: metrics.map(d => ({...d, mining_yield: d.locked_fil > 0 ? (d.mined_fil_delta / d.locked_fil) * 100 * 365 : 0})),
+  title: title_anchor("Mining Yield", "mining-yield"),
+  subtitle: "Pure yield through time. Daily mined FIL relative to locked FIL, annualized.",
+  caption: "Shows the annualized percentage return on locked tokens. Displaying 30-day moving average.",
+  yField: "mining_yield",
+  yLabel: "Annual Yield (%)",
+  showArea: true
+})
+```
+</div>
+
 <div class="card" id="vested-fil">
 
 ```js
