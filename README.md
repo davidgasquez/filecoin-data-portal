@@ -62,23 +62,13 @@ You can run the Filecoin Data Portal locally using Python Virtual Environment or
 - A `SPARK_API_BEARER_TOKEN` for accessing Spark retrievals API.
 - A `DUNE_API_KEY` for accessing Dune Analytics.
 
-### 🐍 Python Virtual Environment
+### 🐍 Python Setup
 
-Clone the repository and run the following commands (or `make setup`) from the root folder:
-
-```bash
-# Create a virtual environment
-pip install uv && uv venv
-
-# Install the package and dependencies
-uv pip install -U -e .[dev]
-```
-
-Now, you should be able to spin up Dagster UI (`make dev`) and [access it locally](http://127.0.0.1:3000).
+Clone the repository and run `make setup`. That will install all the required packages to run the project. Now, you should be able to spin up Dagster UI (`make dev`) and [access it locally](http://127.0.0.1:3000) or run everything with `make run`.
 
 ### 🐳 Dev Container
 
-You can jump into the repository [Development Container](https://code.visualstudio.com/docs/remote/containers). Once inside the develpment environment, you'll only need to run `make dev` to spin up the [Dagster UI locally](http://127.0.0.1:3000). The development environment can also run in your browser thanks to GitHub Codespaces!
+You can also jump into the repository [Development Container](https://code.visualstudio.com/docs/remote/containers). Once inside the develpment environment, you'll only need to run `make dev` to spin up the [Dagster UI locally](http://127.0.0.1:3000). The development environment can also run in your browser thanks to GitHub Codespaces!
 
 [![Development Container Badge](https://github.com/codespaces/badge.svg)](https://codespaces.new/davidgasquez/filecoin-data-portal)
 

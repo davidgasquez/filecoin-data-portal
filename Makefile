@@ -9,6 +9,10 @@ run:
 dev:
 	@uv run dagster dev
 
+lint:
+	@uvx ruff check
+	@uvx ty check
+
 .PHONY: setup
 setup:
 	@command -v uv >/dev/null 2>&1 || pip install -U uv
