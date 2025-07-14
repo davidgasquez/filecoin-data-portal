@@ -1024,6 +1024,51 @@ resize((width) => Plot.plot({
 
 </div>
 
+<div class="card" id="fil-supply-dynamics">
+
+```js
+const fil_supply_dynamics = ["burned_locked_fil", "released_fil"].flatMap((metric) => 
+  metrics.map(({date, burnt_fil, locked_fil, mined_fil, vested_fil}) => ({
+    date, 
+    metric, 
+    value: metric === "burned_locked_fil" ? (burnt_fil + locked_fil) : (mined_fil + vested_fil)
+  }))
+);
+```
+
+```js
+resize((width) => Plot.plot({
+  title: title_anchor("FIL Supply Dynamics", "fil-supply-dynamics"),
+  subtitle: "FIL burned and locked vs released to the economy over time.",
+  caption: "Burned + Locked represents FIL removed from or temporarily unavailable for circulation. Released represents mined + vested FIL made available to the economy. Displaying 30-day moving average.",
+  x: {label: "Date"},
+  y: {grid: true, label: "FIL (Millions)"},
+  width,
+  color: {
+    range: ["var(--theme-red)", "var(--theme-green)"],
+    legend: true,
+    tickFormat: (d) => d === "burned_locked_fil" ? "Burned + Locked" : "Released"
+  },
+  marks: [
+    Plot.ruleY([0]),
+    Plot.lineY(fil_supply_dynamics, {
+      x: "date",
+      y: (d) => d.value / 1e6,
+      stroke: "var(--theme-foreground-fainter)",
+    }),
+    Plot.lineY(fil_supply_dynamics, Plot.windowY(30, {
+      x: "date",
+      y: (d) => d.value / 1e6,
+      stroke: "metric",
+      strokeWidth: 2,
+      tip: true
+    })),
+  ]
+}))
+```
+
+</div>
+
 </div>
 
 ## Transactions
