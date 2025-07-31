@@ -114,6 +114,7 @@ def raw_datacap_github_applications(
     applications = []
 
     for repository in allocator_repositories:
+        context.log.info(f"Fetching applications from {repository}.")
         n = repository.split(".com/")[1]
 
         context.log.info(f"Fetching applications from {n}.")
