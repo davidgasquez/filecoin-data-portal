@@ -115,7 +115,12 @@ def raw_datacap_github_applications(
 
     for repository in allocator_repositories:
         context.log.info(f"Fetching applications from {repository}.")
-        n = repository.split(".com/")[1]
+
+        try:
+            n = repository.split(".com/")[1]
+        except IndexError:
+            context.log.warning(f"Failed to parse repository name from {repository}.")
+            continue
 
         context.log.info(f"Fetching applications from {n}.")
         response = httpx_datacapstats.get(
