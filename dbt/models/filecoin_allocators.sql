@@ -67,7 +67,7 @@ select
     dar.application->>'$.allocations.standardized' as is_standardized,
     dar.application->>'$.target_clients[0]' as target_clients,
     json_array_length(dar.application->>'$.target_clients') as number_of_target_clients,
-    try_cast(trim('+' from dar.application->>'$.required_sps') as int) as minimum_required_storage_povider_replication,
+    try_cast(trim('+' from dar.application->>'$.required_sps') as int) as minimum_required_storage_provider_replication,
     try_cast(trim('+' from dar.application->>'$.required_replicas') as int) as minimum_required_replicas,
     dar.application->>'$.tooling[0]' as tooling,
     dar.application->>'$.data_types' as data_types,
@@ -80,7 +80,7 @@ select
     dar.allocator_id as registry_allocator_id,
     dar.ma_address,
     dar.pathway_addresses->>'$.msig' as pathway_addresses_msig,
-    dar.pathway_addresses->>'$.signer[0]' as pathway_addresses_signer,
+    dar.pathway_addresses->>'$.signer[0]' as pathway_addresses_signer
 from datacapstats_allocators as da
 left join datacap_allocators_registry as dar
     on da.allocator_address = dar.allocator_address
