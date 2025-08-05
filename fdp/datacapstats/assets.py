@@ -68,14 +68,23 @@ def raw_datacap_allocators_registry(
 
     files_data = []
 
-    for file in response.json():
-        if file["name"].endswith(".json"):
-            file_response = client.get(file["download_url"])
-            if file_response.status_code == 200:
-                try:
-                    files_data.append(file_response.json())
-                except Exception as e:
-                    print(f"Failed to parse JSON for {file['name']}: {e}")
+    if response.status_code == 200:
+        for file in response.json():
+            if file["name"].endswith(".json"):
+                file_response = client.get(file["download_url"])
+                if file_response.status_code == 200:
+                    try:
+                        files_data.append(file_response.json())
+                    except Exception as e:
+                        context.log.warning(f"Failed to parse JSON for {file['name']}: {e}")
+                else:
+                    context.log.warning(f"Failed to fetch file: {file['download_url']}")
+                    context.log.warning(f"Status code: {file_response.status_code}")
+    else:
+        context.log.error("Failed to fetch allocator registry from GitHub")
+        context.log.error(f"Status code: {response.status_code}")
+        context.log.error(f"Response: {response.text}")
+        raise Exception(f"GitHub API request failed with status {response.status_code}")
 
     df = pl.DataFrame(files_data[:-1], strict=False)
 
