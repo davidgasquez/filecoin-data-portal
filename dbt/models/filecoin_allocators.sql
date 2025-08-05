@@ -28,13 +28,15 @@ datacap_allocators_registry as (
         address as entrypoint_address,
         name as allocator_name,
         organization as allocator_organization_name,
-        location,
-        status,
         metapathway_type,
+        ma_address,
+        pathway_addresses,
         associated_org_addresses,
         application,
-        poc,
-        pathway_addresses
+        history,
+        audits,
+        old_allocator_id,
+        allocator_id
     from  {{ source('raw_assets', 'raw_datacap_allocators_registry') }}
 )
 
@@ -60,8 +62,6 @@ select
     da.is_active,
     dar.application_number,
     concat('https://github.com/filecoin-project/Allocator-Registry/blob/main/Allocators/', dar.application_number, '.json') as application_url,
-    dar.location,
-    dar.status,
     dar.metapathway_type,
     dar.associated_org_addresses,
     dar.application->>'$.allocations.standardized' as is_standardized,
@@ -74,8 +74,11 @@ select
     try_cast(dar.application->>'$.12m_requested' as int) as '12m_requested',
     dar.application->>'$.github_handles[0]' as github_handle,
     dar.application->>'$.allocation_bookkeeping' as allocation_bookkeeping,
-    dar.poc->>'$.slack' as poc_slack,
-    dar.poc->>'$.github_user' as poc_github_user,
+    dar.history,
+    dar.audits,
+    dar.old_allocator_id,
+    dar.allocator_id as registry_allocator_id,
+    dar.ma_address,
     dar.pathway_addresses->>'$.msig' as pathway_addresses_msig,
     dar.pathway_addresses->>'$.signer[0]' as pathway_addresses_signer,
 from datacapstats_allocators as da

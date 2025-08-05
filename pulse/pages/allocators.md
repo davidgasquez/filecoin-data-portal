@@ -201,61 +201,6 @@ order by verified_clients_count desc
   downloadable=true
 />
 
-### Country Distribution
-
-```sql country_distribution
-select
-  location,
-  count(distinct allocator_id) as allocators,
-  sum(initial_allowance_tibs) as initial_allowance_tibs,
-  sum(current_allowance_tibs) as current_allowance_tibs,
-  sum(initial_allowance_tibs) - sum(current_allowance_tibs) as used_allowance_tibs,
-  sum("12m_requested"::numeric) as requested_tibs,
-from filecoin_allocators
-where 1 = 1
-  and is_active
-group by 1
-```
-
-<Grid cols=2>
-
-<BarChart
-  data={country_distribution}
-  x=location
-  y=allocators
-  connectGroup=country
-  labels=true
-  title="Allocators by Country"
-/>
-
-<BarChart
-  data={country_distribution}
-  x=location
-  y=current_allowance_tibs
-  connectGroup=country
-  labels=true
-  title="Current Allowance by Country"
-/>
-
-<BarChart
-  data={country_distribution}
-  x=location
-  y=requested_tibs
-  connectGroup=country
-  labels=true
-  title="Requested Data by Country"
-/>
-
-<BarChart
-  data={country_distribution}
-  x=location
-  y=used_allowance_tibs
-  connectGroup=country
-  labels=true
-  title="Used Allowance by Country"
-/>
-
-</Grid>
 
 ### Pathway Distribution
 
