@@ -123,7 +123,32 @@ def raw_filecoin_state_market_deals(
     lily_bigquery: BigQueryArrowResource,
     duckdb: DuckDBResource,
 ) -> None:
-    query = """
+    # Get the max height from existing data
+    with duckdb.get_connection() as duckdb_con:
+        # Check if table exists and get max height
+        table_exists = (
+            duckdb_con.execute("""
+            SELECT COUNT(*)
+            FROM information_schema.tables
+            WHERE table_schema = 'raw'
+            AND table_name = 'raw_filecoin_state_market_deals'
+        """).fetchone()[0]
+            > 0
+        )
+
+        if table_exists:
+            max_height_result = duckdb_con.execute("""
+                SELECT COALESCE(MAX(height), 0) as max_height
+                FROM raw.raw_filecoin_state_market_deals
+            """).fetchone()
+            max_height = max_height_result[0] if max_height_result else 0
+            context.log.info(f"Found existing data with max height: {max_height}")
+        else:
+            max_height = 0
+            context.log.info("Table does not exist, loading all data")
+
+    # Query for new/updated deals from market_deal_proposals
+    proposals_query = f"""
     with market_deals as (
         select
             height,
@@ -143,54 +168,48 @@ def raw_filecoin_state_market_deals(
             client_collateral,
             row_number() over (
                 partition by deal_id
-                order by height desc, height desc
+                order by height desc
             ) as row_num
         from `lily-data.lily.market_deal_proposals`
-    ),
-
-    market_chain_activity as (
-        select
-            deal_id,
-            max(sector_start_epoch) as sector_start_epoch,
-            max(slash_epoch) as slash_epoch
-        from `lily-data.lily.market_deal_states`
-        group by 1
+        where height > {max_height}
     )
-
-    select
-        d.height,
-        d.deal_id,
-        d.state_root,
-        d.piece_cid,
-        d.padded_piece_size,
-        d.unpadded_piece_size,
-        d.is_verified,
-        d.client_id,
-        d.provider_id,
-        d.start_epoch,
-        d.end_epoch,
-        d.slashed_epoch,
-        d.storage_price_per_epoch,
-        d.provider_collateral,
-        d.client_collateral,
-        a.sector_start_epoch,
-        a.slash_epoch
-    from market_deals as d
-    left join market_chain_activity as a on d.deal_id = a.deal_id
-    where 1=1
-        and d.row_num = 1
-        and a.sector_start_epoch is not null
-    order by d.height desc
+    select * from market_deals where row_num = 1
     """
 
+    # Query for all deal states (we need all to capture updates)
+    states_query = """
+    select
+        deal_id,
+        max(sector_start_epoch) as sector_start_epoch,
+        max(slash_epoch) as slash_epoch
+    from `lily-data.lily.market_deal_states`
+    group by 1
+    having max(sector_start_epoch) is not null
+    """
+
+    # Execute queries
     with lily_bigquery.get_client() as client:
-        job = client.query(query)
-        job_result = job.result()
+        # Get new proposals
+        context.log.info("Fetching new deal proposals...")
+        proposals_job = client.query(proposals_query)
+        proposals_result = proposals_job.result()
 
-    sc = job_result.client._ensure_bqstorage_client()
-    i = job_result.to_arrow_iterable(sc, max_queue_size=500000)
+        # Get all deal states
+        context.log.info("Fetching deal states...")
+        states_job = client.query(states_query)
+        states_result = states_job.result()
 
-    schema = pa.schema([
+    # Convert to Arrow tables
+    proposals_sc = proposals_result.client._ensure_bqstorage_client()
+    proposals_iter = proposals_result.to_arrow_iterable(
+        proposals_sc, max_queue_size=500000
+    )
+
+    states_sc = states_result.client._ensure_bqstorage_client()
+    states_iter = states_result.to_arrow_iterable(states_sc, max_queue_size=500000)
+
+    # Define schemas
+    proposals_schema = pa.schema([
         pa.field("height", pa.int64()),
         pa.field("deal_id", pa.string()),
         pa.field("state_root", pa.string()),
@@ -206,20 +225,105 @@ def raw_filecoin_state_market_deals(
         pa.field("storage_price_per_epoch", pa.int64()),
         pa.field("provider_collateral", pa.int64()),
         pa.field("client_collateral", pa.int64()),
+        pa.field("row_num", pa.int64()),
+    ])
+
+    states_schema = pa.schema([
+        pa.field("deal_id", pa.string()),
         pa.field("sector_start_epoch", pa.int64()),
         pa.field("slash_epoch", pa.int64()),
     ])
 
-    reader = pa.RecordBatchReader.from_batches(schema, i)  # noqa: F841
+    proposals_reader = pa.RecordBatchReader.from_batches(  # noqa: F841
+        proposals_schema, proposals_iter
+    )
+    states_reader = pa.RecordBatchReader.from_batches(states_schema, states_iter)  # noqa: F841
 
     with duckdb.get_connection() as duckdb_con:
-        _ = duckdb_con.execute(
-            """
-            create or replace table raw.raw_filecoin_state_market_deals as (
-                select * from reader
-            )
-            """
-        )
+        # Create temporary tables for the new data
+        duckdb_con.execute("""
+            CREATE OR REPLACE TEMPORARY TABLE temp_proposals AS
+            SELECT * EXCLUDE (row_num) FROM proposals_reader
+        """)
+
+        duckdb_con.execute("""
+            CREATE OR REPLACE TEMPORARY TABLE temp_states AS
+            SELECT * FROM states_reader
+        """)
+
+        # Join the data
+        duckdb_con.execute("""
+            CREATE OR REPLACE TEMPORARY TABLE temp_joined AS
+            SELECT
+                p.height,
+                p.deal_id,
+                p.state_root,
+                p.piece_cid,
+                p.padded_piece_size,
+                p.unpadded_piece_size,
+                p.is_verified,
+                p.client_id,
+                p.provider_id,
+                p.start_epoch,
+                p.end_epoch,
+                p.slashed_epoch,
+                p.storage_price_per_epoch,
+                p.provider_collateral,
+                p.client_collateral,
+                s.sector_start_epoch,
+                s.slash_epoch
+            FROM temp_proposals p
+            INNER JOIN temp_states s ON p.deal_id = s.deal_id
+        """)
+
+        # Handle incremental load
+        if table_exists and max_height > 0:
+            # Update existing records and insert new ones
+            context.log.info("Performing incremental update...")
+
+            # First, update existing records that might have changed states
+            duckdb_con.execute("""
+                UPDATE raw.raw_filecoin_state_market_deals AS target
+                SET
+                    sector_start_epoch = source.sector_start_epoch,
+                    slash_epoch = source.slash_epoch
+                FROM (
+                    SELECT DISTINCT
+                        existing.deal_id,
+                        states.sector_start_epoch,
+                        states.slash_epoch
+                    FROM raw.raw_filecoin_state_market_deals AS existing
+                    INNER JOIN temp_states AS states ON existing.deal_id = states.deal_id
+                    WHERE existing.sector_start_epoch != states.sector_start_epoch
+                       OR existing.slash_epoch != states.slash_epoch
+                ) AS source
+                WHERE target.deal_id = source.deal_id
+            """)
+
+            updated_count = duckdb_con.execute(
+                "SELECT COUNT(*) FROM temp_joined"
+            ).fetchone()[0]
+
+            # Insert new records
+            duckdb_con.execute("""
+                INSERT INTO raw.raw_filecoin_state_market_deals
+                SELECT * FROM temp_joined
+            """)
+
+            context.log.info(f"Inserted {updated_count} new records")
+        else:
+            # Create table with all data
+            context.log.info("Creating table with initial data...")
+            duckdb_con.execute("""
+                CREATE OR REPLACE TABLE raw.raw_filecoin_state_market_deals AS
+                SELECT * FROM temp_joined
+                ORDER BY height DESC
+            """)
+
+            total_count = duckdb_con.execute(
+                "SELECT COUNT(*) FROM raw.raw_filecoin_state_market_deals"
+            ).fetchone()[0]
+            context.log.info(f"Created table with {total_count} records")
 
         context.log.info("Persisted raw filecoin state market deals")
 
