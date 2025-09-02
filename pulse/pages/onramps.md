@@ -4,6 +4,10 @@ title: Onramps
 
 _A detailed view into Filecoin Onramps._
 
+<Alert status="info">
+  These comparisons rely solely on on-chain sector data. Some onramps may self-deal, pad sectors, or perform other pre/post activities that are not captured here. Deals data comes from State Market Deals and excludes DDO deals.
+</Alert>
+
 ```sql onramps_stats
 select
   count(distinct onramp_name) as total_onramps,

@@ -1,5 +1,9 @@
 # {$page.params.onramp_name}
 
+<Alert status="info">
+  Metrics shown here are derived solely from on-chain sector data. Some onramps may self-deal, pad sectors, or perform pre/post activities that are not visible in this dataset. Deals data comes from State Market Deals and excludes DDO deals.
+</Alert>
+
 <DateRange
   name=range
   start=2023-01-01
