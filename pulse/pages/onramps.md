@@ -4,6 +4,10 @@ title: Onramps
 
 _A detailed view into Filecoin Onramps._
 
+<Alert status="info">
+  Deals data comes from State Market Deals. DDO deals are not incorporated.
+</Alert>
+
 ```sql onramps_stats
 select
   count(distinct onramp_name) as total_onramps,
