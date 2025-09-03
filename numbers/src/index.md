@@ -1027,10 +1027,10 @@ resize((width) => Plot.plot({
 <div class="card" id="fil-supply-dynamics">
 
 ```js
-const fil_supply_dynamics = ["burned_locked_fil", "released_fil"].flatMap((metric) => 
+const fil_supply_dynamics = ["burned_locked_fil", "released_fil"].flatMap((metric) =>
   metrics.map(({date, burnt_fil, locked_fil, mined_fil, vested_fil}) => ({
-    date, 
-    metric, 
+    date,
+    metric,
     value: metric === "burned_locked_fil" ? (burnt_fil + locked_fil) : (mined_fil + vested_fil)
   }))
 );

@@ -6,22 +6,22 @@ dependencies = [
     "altair>=5.5.0",
     "carbox>=0.3",
     "dag-json>=0.3",
-    "dagster>=1.10.21",
-    "dagster-dbt>=0.26.21",
-    "dagster-duckdb-pandas>=0.26.21",
-    "dagster-gcp>=0.26.21",
-    "dbt-core>=1.9.8",
+    "dagster>=1.11.8",
+    "dagster-dbt>=0.27.8",
+    "dagster-duckdb-pandas>=0.27.8",
+    "dagster-gcp>=0.27.8",
+    "dbt-core>=1.10.8",
     "dbt-duckdb>=1.9.4",
-    "duckdb>=1.3.1",
+    "duckdb>=1.3.2",
     "google-cloud-bigquery-storage>=2.32.0",
     "httpx>=0.28.1",
     "ipykernel>=6.29.5",
     "ipywidgets>=8.1.7",
-    "marimo[lsp,recommended,sql]>=0.14.7",
-    "pandas>=2.3.0",
-    "polars>=1.31.0",
+    "marimo[lsp,recommended,sql]>=0.15.2",
+    "pandas>=2.3.2",
+    "polars>=1.33.0",
     "pyarrow>=19.0.1",
-    "web3>=7.12.0",
+    "web3>=7.13.0",
 ]
 requires-python = ">=3.10, <3.14"
 readme = "README.md"
@@ -29,9 +29,9 @@ license = { text = "MIT" }
 
 [dependency-groups]
 dev = [
-    "dagster-webserver>=1.10.21",
+    "dagster-webserver>=1.11.8",
     "ipykernel>=6.29.5",
-    "pyarrow-stubs>=19.4",
+    "pyarrow-stubs>=20.0.0.20250825",
     "ruff>=0.11.4",
 ]
 
