@@ -81,13 +81,11 @@ function kpiSnippet({
   showMillions = false,  // if true, display values and goal in millions
   decimals = 1,          // decimals for non-integer formatting
   integer = false        // integer formatting (e.g., clients)
-}) {
-  const { thisWeek, lastWeek, avg13w, thisWeekStart } = weeklyAverages(metrics, accessor);
+}, metrics) {
+  const { thisWeek, lastWeek, avg13w } = weeklyAverages(metrics, accessor);
   const wow = thisWeek - lastWeek;
   const gapThis = thisWeek - goal;
   const gap13 = avg13w - goal;
-
-  const weekStr = thisWeekStart.toISOString().slice(0,10); // anchor for debugging/context if needed
 
   const v = (n) => integer ? fmtInt(n) : (showMillions ? fmtMillions(n, decimals) : fmt(n, decimals));
   const g = showMillions ? fmtMillions(goal, decimals) : (integer ? fmtInt(goal) : fmt(goal, decimals));
@@ -140,7 +138,7 @@ kpiSnippet({
   goal: KPI_GOALS.dataOnboardingPiBPerDay,
   unit: "PiB",
   decimals: 1
-})
+}, metrics)
 ```
 </div>
 
@@ -171,7 +169,7 @@ kpiSnippet({
   accessor: (d) => d.clients_with_active_data_gt_1_tibs,
   goal: KPI_GOALS.clientsGt1TiB,
   integer: true
-})
+}, metrics)
 ```
 
 </div>
@@ -204,7 +202,7 @@ kpiSnippet({
   goal: KPI_GOALS.paidDealsFilPerDay,
   unit: "FIL",
   decimals: 1
-})
+}, metrics)
 ```
 
 </div>
@@ -239,7 +237,7 @@ kpiSnippet({
   unit: "M FIL",
   showMillions: true,
   decimals: 1
-})
+}, metrics)
 ```
 
 </div>
