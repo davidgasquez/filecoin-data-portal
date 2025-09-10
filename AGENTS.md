@@ -44,4 +44,4 @@ All web applications use the published public Parquet files on `https://data.fil
 ## Commit & Pull Request Guidelines
 
 - Commits: concise, imperative, often emoji-prefixed (e.g., `🐛 Fix …`, `📈 Add …`); reference issues/PRs when applicable.
-- PRs: include purpose, scope, and impact; link issues; add before/after screenshots for UI; note data changes (model names); ensure `make lint` and `make run` pass.
+- PRs: include purpose, scope, and impact; link issues; add before/after screenshots for UI; note data changes (model names); ensure `make lint` and `make run` pass. Keep simple branch names (`add-new-kpi`, `fix-daily-average-metric`).
