@@ -278,6 +278,17 @@ transactions as (
     from {{ source("raw_assets", "raw_filecoin_transactions") }}
     group by 1
     order by date desc
+),
+
+fil_price as (
+    select
+        time_bucket(interval '1 {{ period }}', cast(time_start as timestamp), date '2020-10-01') as date,
+        avg(price_avg_usd) as fil_token_price_avg_usd,
+        sum(volume_usd) as fil_token_volume_usd,
+        avg(market_cap_usd) as fil_token_market_cap_usd
+    from {{ source("raw_assets", "raw_fil_price") }}
+    group by 1
+    order by 1 desc
 )
 
 select
@@ -426,7 +437,12 @@ select
 
     -- Transactions
     transactions,
-    total_value_fil
+    total_value_fil,
+
+    -- FIL Price (USD)
+    fil_token_price_avg_usd,
+    fil_token_volume_usd,
+    fil_token_market_cap_usd
 
 from date_calendar
 left join deal_metrics on date_calendar.date = deal_metrics.date
@@ -448,6 +464,7 @@ left join network_base_fee on date_calendar.date = network_base_fee.date
 left join gas_usage on date_calendar.date = gas_usage.date
 left join oso_filecoin_collection_events on date_calendar.date = oso_filecoin_collection_events.date
 left join transactions on date_calendar.date = transactions.date
+left join fil_price on date_calendar.date = fil_price.date
 order by date_calendar.date desc
 
 {% endmacro %}

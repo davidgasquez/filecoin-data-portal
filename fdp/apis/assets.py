@@ -151,3 +151,34 @@ def raw_onramp_mappings(
         con.sql(f"create or replace table raw.{asset_name} as select * from df")
 
     return dg.MaterializeResult(metadata={"dagster/row_count": df.shape[0]})
+
+
+@dg.asset(compute_kind="python")
+def raw_fil_price(
+    context: dg.AssetExecutionContext,
+    duckdb: DuckDBResource,
+) -> dg.MaterializeResult:
+    base_url = (
+        "https://coincodex.com/api/coincodexcoins/get_historical_data_by_slug/filecoin/"
+    )
+
+    start_date = "2020-01-01"
+    end_date = pd.Timestamp.utcnow().strftime("%Y-%m-%d")
+
+    url = f"{base_url}/{start_date}/{end_date}"
+
+    r = requests.get(url)
+    r.raise_for_status()
+    data = r.json()
+
+    df = pd.DataFrame(data["data"])
+    df["time_start"] = pd.to_datetime(df["time_start"])
+    df["time_end"] = pd.to_datetime(df["time_end"])
+    df = df.sort_values("time_start").reset_index(drop=True)
+
+    asset_name = context.asset_key.to_user_string()
+
+    with duckdb.get_connection() as con:
+        con.sql(f"create or replace table raw.{asset_name} as select * from df")
+
+    return dg.MaterializeResult(metadata={"dagster/row_count": df.shape[0]})
