@@ -164,3 +164,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_onramp_mappings"]
+      - name: raw_fil_price
+        meta:
+          dagster:
+            asset_key: ["raw_fil_price"]

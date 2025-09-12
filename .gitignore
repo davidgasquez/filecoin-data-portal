@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Local SSH keys for external DB access
+.ssh/
+
 # C extensions
 *.so
 
