@@ -105,7 +105,12 @@ COPY (
 
     -- Transactions
     transactions,
-    total_value_fil
+    total_value_fil,
+
+    -- FIL Price (USD)
+    fil_token_price_avg_usd,
+    fil_token_volume_usd,
+    fil_token_market_cap_usd
   FROM read_parquet('https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet')
 ) TO STDOUT (FORMAT 'CSV');
 EOF
