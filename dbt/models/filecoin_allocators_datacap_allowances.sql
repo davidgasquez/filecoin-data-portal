@@ -8,7 +8,11 @@ with source as (
         aa ->> '$.unnest.retries' as retries,
         aa ->> '$.unnest.allowance' as allowance,
         aa ->> '$.unnest.auditTrail' as audit_trail,
-        aa ->> '$.unnest.verifierId' as verifier_address_id,
+        aa ->> '$.unnest.verifierId' as verifier_id,
+        aa ->> '$.unnest.dcSource' as dc_source,
+        aa ->> '$.unnest.addressId' as allowance_address_id,
+        aa ->> '$.unnest.auditStatus' as audit_status,
+        aa ->> '$.unnest.isVirtual' as is_virtual,
         aa ->> '$.unnest.issueCreateTimestamp' as issue_created_at,
         aa ->> '$.unnest.createMessageTimestamp' as messaged_created_at
     from {{ source("raw_assets", "raw_datacapstats_verifiers") }}, unnest(allowanceArray) as aa
@@ -25,7 +29,11 @@ select
     allowance::bigint as allowance_bytes,
     allowance::bigint / power(1024, 4) as allowance_tibs,
     audit_trail,
-    verifier_address_id,
+    allowance_address_id,
+    dc_source,
+    audit_status,
+    is_virtual,
+    try_cast(verifier_id as numeric) as verifier_id,
     to_timestamp(try_cast(issue_created_at as numeric)) as issue_created_at,
     to_timestamp(messaged_created_at::numeric) as messaged_created_at
 from source

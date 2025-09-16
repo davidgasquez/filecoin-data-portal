@@ -72,6 +72,90 @@ where client_id = '${params.client_id}'
 
 </Grid>
 
+### Datacap Stats
+
+<Grid cols=3>
+
+<BigValue
+  data={filtered_client}
+  value=verifier_name
+  title="Verifier"
+/>
+
+<BigValue
+  data={filtered_client}
+  value=datacap_deal_count
+  title="Datacap Deals"
+/>
+
+<BigValue
+  data={filtered_client}
+  value=datacap_provider_count
+  title="Datacap Providers"
+/>
+
+<BigValue
+  data={filtered_client}
+  value=top_provider
+  title="Top Provider"
+/>
+
+<BigValue
+  data={filtered_client}
+  value=used_datacap_tibs
+  title="Used Datacap (TiBs)"
+/>
+
+<BigValue
+  data={filtered_client}
+  value=reported_remaining_datacap_tibs
+  title="Reported Remaining (TiBs)"
+/>
+
+<BigValue
+  data={filtered_client}
+  value=received_datacap_change_tibs
+  title="Received Change (TiBs)"
+/>
+
+<BigValue
+  data={filtered_client}
+  value=received_datacap_change_90d_tibs
+  title="Received Change 90d (TiBs)"
+/>
+
+<BigValue
+  data={filtered_client}
+  value=used_datacap_change_tibs
+  title="Used Change (TiBs)"
+/>
+
+<BigValue
+  data={filtered_client}
+  value=used_datacap_change_90d_tibs
+  title="Used Change 90d (TiBs)"
+/>
+
+<BigValue
+  data={filtered_client}
+  value=datacap_issue_created_at
+  title="Issue Created At"
+/>
+
+<BigValue
+  data={filtered_client}
+  value=datacap_message_created_at
+  title="Message Created At"
+/>
+
+<BigValue
+  data={filtered_client}
+  value=datacap_retries
+  title="Retries"
+/>
+
+</Grid>
+
 ```sql filtered_client_metrics
 select
   date,

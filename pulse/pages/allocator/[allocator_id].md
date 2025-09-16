@@ -48,6 +48,12 @@ where allocator_id = '${params.allocator_id}'
 
 <BigValue
   data={filtered_allocator_info}
+  value=allocator_eth_address
+  title="ETH Address"
+/>
+
+<BigValue
+  data={filtered_allocator_info}
   value=initial_allowance_tibs
   title="Initial Allowance (TiBs)"
 />
@@ -56,6 +62,12 @@ where allocator_id = '${params.allocator_id}'
   data={filtered_allocator_info}
   value=current_allowance_tibs
   title="Current Allowance (TiBs)"
+/>
+
+<BigValue
+  data={filtered_allocator_info}
+  value=remaining_datacap_tibs
+  title="Reported Remaining (TiBs)"
 />
 
 <BigValue
@@ -72,8 +84,44 @@ where allocator_id = '${params.allocator_id}'
 
 <BigValue
   data={filtered_allocator_info}
-  value=received_datacap_change
-  title="Received Datacap Change"
+  value=received_datacap_change_tibs
+  title="Received Datacap Change (TiBs)"
+/>
+
+<BigValue
+  data={filtered_allocator_info}
+  value=received_datacap_change_90d_tibs
+  title="Received Change 90d (TiBs)"
+/>
+
+<BigValue
+  data={filtered_allocator_info}
+  value=datacap_source
+  title="Datacap Source"
+/>
+
+<BigValue
+  data={filtered_allocator_info}
+  value=audit_status
+  title="Audit Status"
+/>
+
+<BigValue
+  data={filtered_allocator_info}
+  value=is_virtual
+  title="Virtual?"
+/>
+
+<BigValue
+  data={filtered_allocator_info}
+  value=is_meta_allocator
+  title="Meta Allocator?"
+/>
+
+<BigValue
+  data={filtered_allocator_info}
+  value=message_created_at
+  title="Message Created At"
 />
 
 <BigValue
@@ -158,6 +206,10 @@ select
   clients.client_name,
   cda.allowance_tibs,
   cda.height_at,
+  cda.dc_source,
+  cda.issue_created_at,
+  cda.messaged_created_at,
+  cda.has_remaining_allowance,
   cda.allocation_request_type,
   cda.message_cid,
   split_part(split_part(audit_trail, '/', -1), '/', 1) as allowance_number,
@@ -181,6 +233,10 @@ order by height_at desc
   <Column id=client_name/>
   <Column id=allowance_tibs/>
   <Column id=height_at title="Timestamp"/>
+  <Column id=dc_source title="Source"/>
+  <Column id=issue_created_at title="Issue Created"/>
+  <Column id=messaged_created_at title="Message Created"/>
+  <Column id=has_remaining_allowance title="Remaining?"/>
   <Column id=allocation_request_type/>
   <Column id=message_cid_link contentType=link linkLabel=message_cid title="Message"/>
 </DataTable>

@@ -184,7 +184,17 @@ select
   used_allowance_pibs / initial_allowance_pibs * 100 as used_allowance_percent,
   verified_clients_count,
   created_at,
-  allocator_address
+  allocator_address,
+  allocator_eth_address,
+  datacap_source,
+  audit_status,
+  is_meta_allocator,
+  is_virtual,
+  message_created_at,
+  received_datacap_change_tibs / 1024 as received_change_pibs,
+  received_datacap_change_90d_tibs / 1024 as received_change_90d_pibs,
+  remaining_datacap_tibs / 1024 as reported_remaining_pibs,
+  retries as allocation_retries
 from filecoin_allocators
 where 1 = 1
   and is_active
