@@ -986,6 +986,55 @@ movingAverageLinePlot({
 ```
 </div>
 
+<div class="card" id="fil-token-price">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("FIL Token Price", "fil-token-price"),
+  subtitle: "Average daily FIL token price in USD.",
+  yField: "fil_token_price_avg_usd",
+  yLabel: "USD",
+  showArea: true,
+})
+```
+
+</div>
+
+<div class="card" id="fil-token-volume">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("FIL Token Volume", "fil-token-volume"),
+  subtitle: "Reported daily FIL token trading volume in USD.",
+  caption: "Displaying 30-day moving average. Values shown in millions of USD.",
+  yField: "fil_token_volume_usd",
+  yLabel: "USD (Millions)",
+  yTransform: (d) => d / 1e6,
+  showArea: true,
+})
+```
+
+</div>
+
+<div class="card" id="fil-token-market-cap">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("FIL Token Market Cap", "fil-token-market-cap"),
+  subtitle: "Average daily market capitalization for FIL in USD.",
+  caption: "Displaying 30-day moving average. Values shown in billions of USD.",
+  yField: "fil_token_market_cap_usd",
+  yLabel: "USD (Billions)",
+  yTransform: (d) => d / 1e9,
+  showArea: true,
+})
+```
+
+</div>
+
 <div class="card" id="fil-plus-share">
 
 ```js
