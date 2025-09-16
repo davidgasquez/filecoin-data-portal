@@ -12,6 +12,6 @@ select
     audit_status,
     is_virtual,
     issue_created_at,
-    messaged_created_at,
+    message_created_at,
     message_cid
 from 'https://data.filecoindataportal.xyz/filecoin_allocators_datacap_allowances.parquet'
