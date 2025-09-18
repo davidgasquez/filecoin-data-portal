@@ -16,7 +16,7 @@ with datacapstats_allocators as (
         isMultisig as is_multisig,
         isVirtual as is_virtual,
         isMetaAllocator as is_meta_allocator,
-        isInferred as is_inferred,
+        inffered as is_inferred,
         createdAtHeight::int as created_at_height,
         to_timestamp(created_at_height * 30 + 1598306400)::timestamp as created_at,
         to_timestamp(try_cast(issueCreateTimestamp as numeric)) as issue_created_at,
