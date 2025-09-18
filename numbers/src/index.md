@@ -75,6 +75,13 @@ const fdt = getFilteredData(fdt_all, timeframe, startDate, endDate);
 const data_flow = ["onboarded_data_pibs", "ended_data_pibs"].flatMap((metric) => metrics.map(({date, [metric]: value}) => ({date, metric, value})));
 ```
 
+<div class="card" id="beta-notice">
+    <strong>🧙 Heads up!</strong>
+    This page's layout will be updated soon. Preview the upcoming changes in the
+  <a href="/beta" style="display:block; text-align: center; text-decoration: none; color: var(--theme-foreground);">beta</a>
+  dashboard and share your <a href="https://github.com/davidgasquez/filecoin-data-portal/issues" target="_blank" rel="noopener">feedback</a>!
+</div>
+
 ## Data Onboarding
 
 ```js

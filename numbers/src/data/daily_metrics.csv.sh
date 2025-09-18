@@ -32,6 +32,7 @@ COPY (
     quality_adjusted_power_pibs,
     quality_adjusted_power_pibs - lag(quality_adjusted_power_pibs) over (order by date) as quality_adjusted_power_delta_pibs,
     verified_data_power_pibs,
+    verified_data_power_pibs - lag(verified_data_power_pibs) over (order by date) as verified_data_power_delta_pibs,
     network_utilization_ratio * 100 as network_utilization_ratio,
 
     -- Economics
