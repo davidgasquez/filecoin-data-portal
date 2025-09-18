@@ -22,6 +22,8 @@ with source as (
         aa ->> '$.unnest.issueCreateTimestamp' as issue_create_timestamp,
         aa ->> '$.unnest.hasRemainingAllowance' as has_remaining_allowance,
         aa ->> '$.unnest.createMessageTimestamp' as create_message_timestamp,
+        aa ->> '$.unnest.addressId' as allowance_address_id,
+        aa ->> '$.unnest.dcSource' as dc_source,
     from {{ source("raw_assets", "raw_datacapstats_verified_clients") }}, unnest(allowanceArray) as aa
 ),
 
@@ -61,6 +63,8 @@ select
     is_ldn_allowance,
     is_efil_allowance,
     allocator_id,
+    allowance_address_id,
+    dc_source,
     is_from_autoverifier,
     retrieval_frequency,
     searched_by_proposal,
