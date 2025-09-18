@@ -78,7 +78,7 @@ const data_flow = ["onboarded_data_pibs", "ended_data_pibs"].flatMap((metric) =>
 <div class="card" id="beta-notice">
     <strong>🧙 Heads up!</strong>
     This page's layout will be updated soon. Preview the upcoming changes in the
-  <a href="/beta" style="display:block text-align: center; text-decoration: none; color: var(--theme-foreground);">beta</a>
+  <a href="/beta" style="display:block; text-align: center; text-decoration: none; color: var(--theme-foreground);">beta</a>
   dashboard and share your <a href="https://github.com/davidgasquez/filecoin-data-portal/issues" target="_blank" rel="noopener">feedback</a>!
 </div>
 
