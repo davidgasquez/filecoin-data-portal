@@ -364,7 +364,8 @@ select
     storage_providers_rewards,
 
     -- Others
-    data_on_active_deals_pibs / raw_power_pibs as network_utilization_ratio,
+    data_on_active_deals_pibs / raw_power_pibs as network_utilization_ratio_state_market_deals,
+    verified_data_power_pibs / raw_power_pibs as network_utilization_ratio,
 
     -- Sector Metrics
     sector_onboarding_count,
