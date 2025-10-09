@@ -10,9 +10,9 @@ Your **high level** view into the Filecoin Ecosystem!
 
 </center>
 
-<p style="text-align: center; margin: 1rem 0; color: var(--theme-foreground-fainter); font-size: 0.95em;">
+<div class="legacy-banner">
   Looking for the previous layout? Visit the <a href="/legacy">legacy dashboard</a>.
-</p>
+</div>
 
 ```js
 const params = new URLSearchParams(window.location.search);
