@@ -44,6 +44,31 @@ a[href].observablehq-header-anchor:hover {
     color: var(--theme-blue);
 }
 
+.legacy-banner {
+    margin: 1rem auto 2rem;
+    padding: 0.75rem 1.25rem;
+    max-width: 560px;
+    text-align: center;
+    background: var(--theme-background-alt);
+    border: 1px solid var(--theme-foreground-fainter);
+    border-radius: 6px;
+    color: var(--theme-foreground-muted);
+    font-size: 0.95rem;
+    line-height: 1.45;
+    letter-spacing: 0.005em;
+}
+
+.legacy-banner a {
+    color: inherit;
+    border-bottom: 1px solid var(--theme-foreground-faint);
+    font-weight: 500;
+}
+
+.legacy-banner a:hover {
+    color: var(--theme-blue);
+    border-bottom-color: var(--theme-blue);
+}
+
 strong {
     font-weight: bold;
 }
