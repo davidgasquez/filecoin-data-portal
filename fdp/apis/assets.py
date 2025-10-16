@@ -34,8 +34,17 @@ def raw_storage_providers_evp_outputs(
     """
     Storage Providers Retrieves all existing Energy Validation Process outputs.
     """
-    r = requests.get("https://sp-outputs-api.vercel.app/api/evp-outputs", verify=False)
-    r.raise_for_status()
+    try:
+        r = requests.get(
+            "https://sp-outputs-api.vercel.app/api/evp-outputs", verify=False
+        )
+        r.raise_for_status()
+    except requests.RequestException as exc:
+        context.log.error(
+            "Failed to refresh Energy Validation Process outputs. "
+            f"Continuing with previous table contents. Reason: {exc}"
+        )
+        return dg.MaterializeResult(metadata={"dagster/row_count": 0})
 
     df = pd.DataFrame(r.json()["data"])
 
