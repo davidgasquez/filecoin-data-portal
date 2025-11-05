@@ -892,7 +892,7 @@ movingAverageLinePlot({
   caption: "Displays the day-over-day change in annualized mining yield. 30-day moving average.",
   yField: "mining_yield_delta",
   yLabel: "Percentage Points",
-  yDomain: [-2, 2]
+  yDomain: [-0.5, 0.5]
 })
 ```
 
