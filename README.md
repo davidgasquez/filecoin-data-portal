@@ -22,14 +22,14 @@ This repository contains all the code and related artifacts to process Filecoin 
 
 <div align="center">
   <a href="https://filecoindataportal.xyz/data" target="_blank">
-      <img src="https://img.shields.io/badge/GET_THE_DATA-0090ff?style=for-the-badge" alt="GET THE DATA">
+    <img src="https://img.shields.io/badge/GET_THE_DATA-0090ff?style=for-the-badge" alt="GET THE DATA">
   </a>
 </div>
 
 ### 📦 Key Features
 
 - **Open**: Code and data are open source and relies on open standards and formats.
-- **Permissionless Collaboration**: Collaborate on data, models, and pipelines. Fork the repo and run the platform locally in mintures. No constraints or platform lock-ins.
+- **Permissionless Collaboration**: Collaborate on data, models, and pipelines. Fork the repo and run the platform locally in minutes. No constraints or platform lock-ins.
 - **Decentralization Options**: Runs on a laptop, server, CI runner, or even on decentralized compute networks like Bacalhau. No local setup required; it even works seamlessly in GitHub Codespaces.
 - **Data as Code**: Each commit generates and pushes all table files to R2.
 - **Modular Flexibility**: Replace, extend, or remove individual components. Compatible with tons of tools. At the end of the day, tables are Parquet files.
@@ -68,7 +68,7 @@ Clone the repository and run `make setup`. That will install all the required pa
 
 ### 🐳 Dev Container
 
-You can also jump into the repository [Development Container](https://code.visualstudio.com/docs/remote/containers). Once inside the develpment environment, you'll only need to run `make dev` to spin up the [Dagster UI locally](http://127.0.0.1:3000). The development environment can also run in your browser thanks to GitHub Codespaces!
+You can also jump into the repository [Development Container](https://code.visualstudio.com/docs/remote/containers). Once inside the development environment, you'll only need to run `make dev` to spin up the [Dagster UI locally](http://127.0.0.1:3000). The development environment can also run in your browser thanks to GitHub Codespaces!
 
 [![Development Container Badge](https://github.com/codespaces/badge.svg)](https://codespaces.new/davidgasquez/filecoin-data-portal)
 
