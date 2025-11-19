@@ -41,5 +41,5 @@ pulse:
 
 .PHONY: clean
 clean:
-	@rm -rf portal/.quarto data/*.parquet data/*.duckdb
+	@rm -rf data/*.parquet data/*.duckdb
 	@rm -rf dbt/target dbt/logs dbt/dbt_packages
