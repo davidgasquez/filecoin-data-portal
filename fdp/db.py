@@ -16,6 +16,7 @@ def export(export_path):
         export_query = f"""
         set preserve_insertion_order = false;
         set memory_limit = '12GB';
+        set max_temp_directory_size = '200GB';
         set temp_directory = '/tmp/temp.tmp';
         export database '{export_path}' (format 'parquet', compression 'zstd', row_group_size 1000000);
         """
