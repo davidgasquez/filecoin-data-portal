@@ -3,25 +3,25 @@ name = "fdp"
 version = "1.0.0"
 authors = [{ name = "David Gasquez" }]
 dependencies = [
-    "altair>=5.5.0",
+    "altair>=6.0.0",
     "carbox>=0.3",
     "dag-json>=0.3",
-    "dagster>=1.11.8",
-    "dagster-dbt>=0.27.8",
-    "dagster-duckdb-pandas>=0.27.8",
-    "dagster-gcp>=0.27.8",
+    "dagster>=1.12.2",
+    "dagster-dbt>=0.28.2",
+    "dagster-duckdb-pandas>=0.28.2",
+    "dagster-gcp>=0.28.2",
     "dbt-core>=1.10.8",
-    "dbt-duckdb>=1.9.6",
-    "duckdb==1.3.2",
-    "google-cloud-bigquery-storage>=2.33.1",
+    "dbt-duckdb>=1.10.0",
+    "duckdb>=1.4.2",
+    "google-cloud-bigquery-storage>=2.34.0",
     "httpx>=0.28.1",
     "ipykernel>=6.29.5",
-    "ipywidgets>=8.1.7",
-    "marimo[lsp,recommended,sql]>=0.15.5",
-    "pandas>=2.3.2",
-    "polars>=1.33.1",
+    "ipywidgets>=8.1.8",
+    "marimo[lsp,recommended,sql]>=0.17.8",
+    "pandas>=2.3.3",
+    "polars>=1.35.2",
     "pyarrow>=21.0.0",
-    "web3>=7.13.0",
+    "web3>=7.14.0",
 ]
 requires-python = ">=3.10, <3.14"
 readme = "README.md"
@@ -29,9 +29,9 @@ license = { text = "MIT" }
 
 [dependency-groups]
 dev = [
-    "dagster-webserver>=1.11.8",
+    "dagster-webserver>=1.12.2",
     "ipykernel>=6.29.5",
-    "pyarrow-stubs>=20.0.0.20250825",
+    "pyarrow-stubs>=20.0.0.20251107",
     "ruff>=0.11.4",
 ]
 
