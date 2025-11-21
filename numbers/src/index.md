@@ -6,7 +6,7 @@ toc: true
 
 <h1 style="font-weight: 500; font-size: 3em; letter-spacing: 0.0em; align-items: center; justify-content: center; gap: 0.5em"><span style="color: var(--theme-blue)">Filecoin</span> in Numbers</h1>
 
-Your **high level** view into the Filecoin Ecosystem!
+Your **high-level** view into the Filecoin Ecosystem!
 
 </center>
 
@@ -16,8 +16,6 @@ Your **high level** view into the Filecoin Ecosystem!
 
 ```js
 const params = new URLSearchParams(window.location.search);
-const from_date = params.get('from_date') ?? '2024-01-01';
-const to_date = params.get('to_date') ?? new Date().toISOString().split('T')[0];
 
 // Add scroll correction for anchor links
 const hash = window.location.hash;
@@ -26,16 +24,6 @@ if (hash) {
   if (element) {
     setTimeout(() => element.scrollIntoView({ behavior: 'auto', block: 'start' }), 100);
   }
-}
-```
-
-```js
-// Update URL params when dates change
-function updateURLParams(fromDate, toDate) {
-  const params = new URLSearchParams(window.location.search);
-  params.set('from_date', fromDate);
-  params.set('to_date', toDate);
-  window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
 }
 ```
 
@@ -55,12 +43,75 @@ import { movingAverageLinePlot } from "./components/movingAverageLinePlot.js";
 ```
 
 ```js
+const metricsStartDate = am.length ? am.reduce((min, d) => d.date < min ? d.date : min, am[0].date) : new Date();
+const metricsEndDate = am.length ? am.reduce((max, d) => d.date > max ? d.date : max, am[0].date) : new Date();
+const from_date = params.get('from_date') ?? metricsStartDate.toISOString().split('T')[0];
+const to_date = params.get('to_date') ?? metricsEndDate.toISOString().split('T')[0];
+```
+
+```js
+// Update URL params when dates change
+function updateURLParams(fromDate, toDate) {
+  const nextParams = new URLSearchParams(window.location.search);
+  nextParams.set('from_date', fromDate);
+  nextParams.set('to_date', toDate);
+  window.history.replaceState({}, '', `${window.location.pathname}?${nextParams}`);
+}
+```
+
+<div id="timeframe-selector">
+<h3>Timeframe</h3>
+
+```js
+const timeframe = view(Inputs.radio(["All", "365d", "180d", "90d", "30d", "Custom"], {value: params.has('from_date') || params.has('to_date') ? "Custom" : "All"}));
+```
+
+```js
+const startDate = timeframe === "Custom" ? view(Inputs.date({
+  label: "Start",
+  value: new Date(from_date),
+})) : new Date(from_date);
+
+const endDate = timeframe === "Custom" ? view(Inputs.date({
+  label: "End",
+  value: new Date(to_date),
+})) : new Date(to_date);
+```
+
+```js
+if (timeframe === "Custom") {
+  updateURLParams(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]);
+} else if (timeframe === "365d") {
+  const daysAgo = new Date(metricsEndDate);
+  daysAgo.setDate(daysAgo.getDate() - 365);
+  updateURLParams(daysAgo.toISOString().split('T')[0], metricsEndDate.toISOString().split('T')[0]);
+} else if (timeframe === "180d") {
+  const daysAgo = new Date(metricsEndDate);
+  daysAgo.setDate(daysAgo.getDate() - 180);
+  updateURLParams(daysAgo.toISOString().split('T')[0], metricsEndDate.toISOString().split('T')[0]);
+} else if (timeframe === "90d") {
+  const daysAgo = new Date(metricsEndDate);
+  daysAgo.setDate(daysAgo.getDate() - 90);
+  updateURLParams(daysAgo.toISOString().split('T')[0], metricsEndDate.toISOString().split('T')[0]);
+} else if (timeframe === "30d") {
+  const daysAgo = new Date(metricsEndDate);
+  daysAgo.setDate(daysAgo.getDate() - 30);
+  updateURLParams(daysAgo.toISOString().split('T')[0], metricsEndDate.toISOString().split('T')[0]);
+} else if (timeframe === "All") {
+  // Clear URL params
+  window.history.replaceState({}, '', window.location.pathname);
+}
+```
+
+</div>
+
+```js
 function getFilteredData(data, timeframe, startDate, endDate) {
   if (timeframe === "All") return data;
   if (timeframe === "Custom") return data.filter(d => d.date >= startDate && d.date <= endDate);
 
-  const days = parseInt(timeframe.replace('d', ''));
-  const cutoffDate = new Date();
+  const days = parseInt(timeframe.replace('d', ''), 10);
+  const cutoffDate = new Date(metricsEndDate);
   cutoffDate.setDate(cutoffDate.getDate() - days);
   return data.filter(d => d.date >= cutoffDate);
 }
@@ -85,6 +136,111 @@ function title_anchor(title, anchor) {
 }
 ```
 
+```js
+const KPI_GOALS = {
+  dataOnboardingPiBPerDay: 5,
+  clientsGt1TiB: 1000,
+  paidDealsFilPerDay: 100,
+  valueFlowFilPerDay: 100_000_000
+};
+```
+
+## KPIs
+
+<div class="grid grid-cols-2">
+
+<div class="card" id="daily-data-onboarding">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("Daily Data Onboarding", "daily-data-onboarding"),
+  subtitle: "How much raw power was onboarded to the network at a given time.",
+  yField: "sector_onboarding_raw_power_pibs",
+  yLabel: "PiBs",
+  showArea: true,
+  marks: [
+    Plot.ruleY([KPI_GOALS.dataOnboardingPiBPerDay], {
+      stroke: "var(--theme-blue)",
+      strokeWidth: 2,
+      strokeDasharray: "4 4"
+    })
+  ]
+})
+```
+
+</div>
+
+<div class="card" id="clients-with-1tib">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("Clients with 1 TiB or more active data", "clients-with-1tib"),
+  subtitle: "Number of clients with 1 TiB or more active data on State Market Deals.",
+  yField: "clients_with_active_data_gt_1_tibs",
+  yLabel: "Number of Clients",
+  showArea: true,
+  marks: [
+    Plot.ruleY([KPI_GOALS.clientsGt1TiB], {
+      stroke: "var(--theme-blue)",
+      strokeWidth: 2,
+      strokeDasharray: "4 4"
+    })
+  ]
+})
+```
+
+</div>
+
+<div class="card" id="paid-deals-fil">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("Total FIL in Paid Deals", "paid-deals-fil"),
+  subtitle: "Total FIL in paid deals on the network.",
+  yField: "deal_storage_cost_fil",
+  yLabel: "FIL",
+  showArea: true,
+  yDomain: [0, 100],
+  marks: [
+    Plot.ruleY([KPI_GOALS.paidDealsFilPerDay], {
+      stroke: "var(--theme-blue)",
+      strokeWidth: 2,
+      strokeDasharray: "4 4"
+    })
+  ]
+})
+```
+
+</div>
+
+<div class="card" id="total-value-flow">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("Total Value Flow", "total-value-flow"),
+  subtitle: "Total value flow on the network.",
+  yField: (d) => d.total_value_fil + d.total_gas_used_millions,
+  yLabel: "FIL (Millions)",
+  yTransform: (d) => d / 1e6,
+  showArea: true,
+  yDomain: [0, 200],
+  marks: [
+    Plot.ruleY([KPI_GOALS.valueFlowFilPerDay], {
+      stroke: "var(--theme-blue)",
+      strokeWidth: 2,
+      strokeDasharray: "4 4"
+    })
+  ]
+})
+```
+
+</div>
+</div>
+
 ## Sectors
 
 <div class="card" id="sector-metrics">
@@ -103,7 +259,7 @@ const sectorMetricType = view(Inputs.radio(["Raw Power", "Quality-Adjusted Power
 movingAverageLinePlot({
   metrics,
   title: title_anchor("Sector Onboarding", "sector-onboarding"),
-  subtitle: `Daily ${sectorMetricType} PiBs onboarded into sector.`,
+  subtitle: `Daily ${sectorMetricType} PiBs onboarded into sectors.`,
   yField: sectorMetricType === "Raw Power" ? "sector_onboarding_raw_power_pibs" : "sector_onboarding_quality_adjusted_power_pibs",
   yLabel: "PiBs",
 })
@@ -116,7 +272,7 @@ movingAverageLinePlot({
 movingAverageLinePlot({
   metrics,
   title: title_anchor("Sector Termination", "sector-termination"),
-  subtitle: `Daily ${sectorMetricType} PiBs terminated from sector.`,
+  subtitle: `Daily ${sectorMetricType} PiBs terminated from sectors.`,
   yField: sectorMetricType === "Raw Power" ? "sector_terminated_raw_power_pibs" : "sector_terminated_quality_adjusted_power_pibs",
   yLabel: "PiBs",
   yDomain: [0, 70]
@@ -1274,49 +1430,3 @@ Here are some resources for you to explore and learn more about Filecoin data.
 
 
 _Charts shown here are for informational purposes only. The data pipelines powering this are optimized for analytical purposes and might not be 100% accurate._
-
-<div id="timeframe-selector">
-<h3>Timeframe</h3>
-
-```js
-const timeframe = view(Inputs.radio(["All", "365d", "180d", "90d", "30d", "Custom"], {value: params.has('from_date') || params.has('to_date') ? "Custom" : "All"}));
-```
-
-```js
-const startDate = timeframe === "Custom" ? view(Inputs.date({
-  label: "Start",
-  value: from_date,
-})) : from_date;
-
-const endDate = timeframe === "Custom" ? view(Inputs.date({
-  label: "End",
-  value: to_date,
-})) : to_date;
-```
-
-```js
-if (timeframe === "Custom") {
-  updateURLParams(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]);
-} else if (timeframe === "365d") {
-  const daysAgo = new Date();
-  daysAgo.setDate(daysAgo.getDate() - 365);
-  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
-} else if (timeframe === "180d") {
-  const daysAgo = new Date();
-  daysAgo.setDate(daysAgo.getDate() - 180);
-  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
-} else if (timeframe === "90d") {
-  const daysAgo = new Date();
-  daysAgo.setDate(daysAgo.getDate() - 90);
-  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
-} else if (timeframe === "30d") {
-  const daysAgo = new Date();
-  daysAgo.setDate(daysAgo.getDate() - 30);
-  updateURLParams(daysAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
-} else if (timeframe === "All") {
-  // Clear URL params
-  window.history.replaceState({}, '', window.location.pathname);
-}
-```
-
-</div>
