@@ -44,6 +44,8 @@ COPY (
     vested_fil - lag(vested_fil) over (order by date) as vested_fil_delta,
     locked_fil,
     locked_fil - lag(locked_fil) over (order by date) as locked_fil_delta,
+    storage_providers_collateral,
+    storage_providers_collateral - lag(storage_providers_collateral) over (order by date) as storage_providers_collateral_delta,
     burnt_fil,
     burnt_fil - lag(burnt_fil) over (order by date) as burnt_fil_delta,
     reward_per_wincount,

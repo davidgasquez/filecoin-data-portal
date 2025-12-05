@@ -1114,6 +1114,34 @@ movingAverageLinePlot({
 ```
 </div>
 
+<div class="card" id="storage-providers-collateral">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("Storage Providers Collateral", "storage-providers-collateral"),
+  subtitle: "Amount of FIL pledged as collateral by storage providers.",
+  yField: "storage_providers_collateral",
+  yLabel: "FIL",
+  showArea: true
+})
+```
+</div>
+
+<div class="card" id="storage-providers-collateral-delta">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("Storage Providers Collateral Delta", "storage-providers-collateral-delta"),
+  subtitle: "Daily change in pledged collateral over time.",
+  caption: "Displaying 30-day moving average",
+  yField: "storage_providers_collateral_delta",
+  yLabel: "FIL"
+})
+```
+</div>
+
 <div class="card" id="burnt-fil">
 
 ```js
