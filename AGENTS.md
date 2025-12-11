@@ -1,47 +1,29 @@
 # Repository Guidelines
 
-The repository containes the code for the core of the data platform (`fdp` and `dbt` transformations) alongside other derived subprojects.
+The repository contains the code for an open source data platform for Filecoin alongside other derived subprojects like dashboards.
 
-## Project Structure & Module Organization
+## Project Structure
 
-- `fdp/`: Python package with Dagster assets and resources (`dbt/`, `dune/`, `spacescope/`, `bigquery/`, `apis/`). Entrypoint: `fdp/definitions.py`.
-- `dbt/`: dbt project (`dbt_project.yml`, `models/`, `macros/`, `profiles.yml`).
-- `data/`: local artifacts and exported tables (`make tables`).
-- Tooling: `Makefile`, `pyproject.toml`, `uv`.
+- `fdp`: Python package with Dagster assets and resources. One folder per category/type
+- `dbt`: dbt project. Linked to Dagster assets
+- `data`: local artifacts and exported tables (`make tables`)
+- `Makefile` as the entrypoint to the core tasks
 
 ### Applications
 
-All web applications use the published public Parquet files on `https://data.filecoindataportal.xyz/`.
+All web applications use the published public Parquet files on `https://data.filecoindataportal.xyz/$DBT_MODEL_FILE_NAME.parquet`.
 
-- **Web** (`web/`): Main website, Astro-based static site.
-- **Numbers** (`numbers/`): Observable Framework dashboard for visualizing the core ecosystem metrics.
-- **Pulse** (`pulse/`): Evidence BI framework for mode operational dashboards.
+- **Web** (`web/`): Astro-based static site. Contains docs, showcases the datasets, and links to the other applications
+- **Numbers** (`numbers/`): Observable Framework dashboard for visualizing the core ecosystem metrics
+- **Pulse** (`pulse/`): Evidence BI framework for more operational dashboards (e.g: metrics per Client, Storage Provider, Allocator, ...)
 
-## Build, Test, and Development Commands
+## Development
 
-- `make setup`: Install Python deps with `uv` and create `.venv`.
-- `make dev`: Launch Dagster UI locally at http://127.0.0.1:3000.
-- `make run`: Package dbt and materialize all Dagster assets.
-- `make tables`: Export Parquet tables into `data/tables/` and clean raw dumps.
-- `make lint`: Lint with Ruff and type-check (Pyright via `ty`).
-- Frontends: `make web` (Astro dev), `make numbers` (Observable preview), `make pulse` (Evidence dev).
-- Clean: `make clean` to remove local build artifacts.
+- The `Makefile` contains useful tasks' commands
+- Run `make lint` after changes
 
-### Workflow
+### Asset Workflow
 
-1. Add/modify assets in appropriate module under `fdp/`.
-2. Create or update the relevant `dbt` models in `dbt/models/`.
-3. Test locally with `make dev` and Dagster UI or with `uv run dagster asset materialize --select ...` CLI.
-4. Verify the data in the DuckDB table.
-5. Update or add new charts on Pulse or Numbers.
-
-## Coding Style & Naming Conventions
-
-- Python: Standard checks and lints with `make lint`.
-- Modules/files/functions: `snake_case`; classes: `PascalCase`. Keep assets small and composable.
-- dbt: model names `filecoin_*`; prefer `table` materialization; colocate tests in `dbt/models/models.yml`.
-
-## Commit & Pull Request Guidelines
-
-- Commits: concise, imperative, often emoji-prefixed (e.g., `🐛 Fix …`, `📈 Add …`); reference issues/PRs when applicable.
-- PRs: include purpose, scope, and impact; link issues; add before/after screenshots for UI; note data changes (model names); ensure `make lint` and `make run` pass. Keep simple branch names (`add-new-kpi`, `fix-daily-average-metric`).
+1. Add/modify assets within the appropriate module under `fdp/`
+2. Create or update the relevant `dbt` models in `dbt/models/`
+3. Run the asset with `uv run dagster asset materialize --select $ASSET_NAME -m fdp.definitions` CLI
