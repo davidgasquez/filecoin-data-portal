@@ -1,52 +1,11 @@
 [project]
 name = "fdp"
-version = "1.0.0"
-authors = [{ name = "David Gasquez" }]
-dependencies = [
-    "altair>=6.0.0",
-    "carbox>=0.3",
-    "dag-json>=0.3",
-    "dagster>=1.12.4",
-    "dagster-dbt>=0.28.4",
-    "dagster-duckdb-pandas>=0.28.4",
-    "dagster-gcp>=0.28.4",
-    "dbt-core>=1.10.15",
-    "dbt-duckdb>=1.10.0",
-    "duckdb>=1.4.2",
-    "google-cloud-bigquery-storage>=2.35.0",
-    "httpx>=0.28.1",
-    "ipykernel>=7.1.0",
-    "ipywidgets>=8.1.8",
-    "marimo[lsp,recommended,sql]>=0.18.3",
-    "pandas>=2.3.3",
-    "polars>=1.36.0",
-    "pyarrow>=22.0.0",
-    "web3>=7.14.0",
-]
-requires-python = ">=3.10, <3.14"
+version = "2.0.0"
 readme = "README.md"
-license = { text = "MIT" }
-
-[dependency-groups]
-dev = [
-    "dagster-webserver>=1.12.4",
-    "ipykernel>=7.1.0",
-    "pyarrow-stubs>=20.0.0.20251209",
-    "ruff>=0.14.8",
+authors = [{ name = "David Gasquez", email = "davidgasquez@gmail.com" }]
+requires-python = ">=3.14"
+dependencies = [
+    "duckdb>=1.4.3",
+    "httpx>=0.28.1",
+    "polars>=1.36.1",
 ]
-
-[project.urls]
-Homepage = "https://filecoindataportal.xyz/"
-Changelog = "https://github.com/davidgasquez/filecoin-data-portal/commits/main/"
-Issues = "https://github.com/davidgasquez/filecoin-data-portal/issues"
-CI = "https://github.com/davidgasquez/filecoin-data-portal/actions"
-
-[tool.setuptools]
-packages = ["fdp"]
-
-[tool.dagster]
-module_name = "fdp.definitions"
-code_location_name = "fdp"
-
-[tool.pyright]
-reportUnknownMemberType = false

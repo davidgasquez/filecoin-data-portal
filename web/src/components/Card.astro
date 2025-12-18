@@ -14,69 +14,60 @@ interface Props {
 const { title, description, buttons = [] } = Astro.props;
 ---
 
-<div class="card">
-    <div>
-        <h2>{title}</h2>
-        <p>{description}</p>
+<article class="card">
+    <div class="card-body">
+        <h3 class="card-title">{title}</h3>
+        <p class="card-description">{description}</p>
     </div>
     {
         buttons.length > 0 && (
             <div class="button-group">
                 {buttons.map((button) => (
-                    <a href={button.link} class="button" target={button.target}>
+                    <a
+                        href={button.link}
+                        class="button"
+                        target={button.target}
+                        rel={button.target === "_blank" ? "noreferrer" : undefined}
+                    >
                         {button.text}
                     </a>
                 ))}
             </div>
         )
     }
-</div>
+</article>
 
 <style>
     .card {
         border: 1px solid var(--link-underline-color);
-        padding: 20px;
+        border-radius: var(--radius);
+        padding: var(--space-2);
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        gap: var(--space-2);
         height: 100%;
     }
 
-    .card h2 {
-        margin-top: 0;
-        margin-bottom: 10px;
-        font-size: 1.2em;
-        color: var(--text-color);
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
     }
 
-    .card p {
-        margin-bottom: 20px;
+    .card-title {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .card-description {
+        margin: 0;
         flex-grow: 1;
-        color: var(--text-color);
+        color: var(--muted-color);
     }
 
     .button-group {
         display: flex;
-        gap: 5px;
+        gap: var(--space-1);
         flex-wrap: wrap;
-        align-items: flex-start;
-    }
-
-    .button {
-        background-color: var(--text-color);
-        color: var(--background-color);
-        padding: 8px 15px;
-        border: none;
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-        align-self: flex-start;
-        border-bottom: none;
-        font-size: 0.9em;
-        cursor: pointer;
-    }
-
-    .button:hover {
-        background-color: var(--link-underline-color);
     }
 </style>

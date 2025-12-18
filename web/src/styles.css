@@ -5,14 +5,20 @@
 }
 
 :root {
-    --background-color: var(--background-color-light);
-    --text-color: var(--text-color-light);
+    --background-color: #ffffff;
+    --text-color: #111111;
+    --muted-color: #444444;
     --link-underline-color: #b1b1b1;
 
-    --background-color-light: #fff;
-    --background-color-dark: #000;
-    --text-color-light: #000;
-    --text-color-dark: #fff;
+    --content-max: 60rem;
+    --space-1: 0.5rem;
+    --space-2: 1rem;
+    --space-3: 1.5rem;
+    --space-4: 2.5rem;
+
+    --radius: 12px;
+
+    color-scheme: light;
 }
 
 html,
@@ -21,77 +27,186 @@ body {
     padding: 0;
 }
 
-html {
-    scrollbar-gutter: stable;
-}
-
 body {
-    font-family: var(--font-sans);
-    font-optical-sizing: auto;
-    line-height: 1.4;
-
-    background-color: var(--background-color);
+    font-family: var(--font-sans), system-ui, -apple-system, Segoe UI, Roboto,
+        Arial, sans-serif;
+    line-height: 1.5;
+    background: var(--background-color);
     color: var(--text-color);
-
-    margin: 0 auto;
-    padding: 1rem;
-    max-width: min(90%, 800px);
-}
-
-.logo {
-    text-align: center;
-    margin: 3em auto 1em;
-}
-
-.logo a {
-    border-bottom: none;
 }
 
 a {
     color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--link-underline-color);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+}
+
+a:hover {
+    text-decoration-color: currentColor;
+}
+
+:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.skip-link {
+    position: absolute;
+    inset: 0 auto auto 0;
+    transform: translateY(-200%);
+    padding: 0.5rem 0.75rem;
+    background: var(--text-color);
+    color: var(--background-color);
+    border-radius: 0 0 var(--radius) 0;
     text-decoration: none;
+    z-index: 1000;
+}
+
+.skip-link:focus {
+    transform: translateY(0);
+}
+
+.site-header {
     border-bottom: 1px solid var(--link-underline-color);
 }
 
-footer {
-    margin-top: 40px;
-    font-family: var(--font-monospace);
-    font-size: 14px;
-    text-align: center;
-    padding: 20px 0;
-    border-top: 1px solid #eaeaea;
-}
-
-.navbar {
-    margin-bottom: 2em;
-    font-family: var(--font-monospace);
-}
-
-.navbar ul {
+.site-header-inner {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: var(--space-2);
     display: flex;
-    list-style: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-monospace), ui-monospace, SFMono-Regular, Menlo,
+        Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    text-decoration: none;
+}
+
+.brand:hover {
+    text-decoration: none;
+}
+
+.brand img {
+    display: block;
+}
+
+.nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 0;
     padding: 0;
-    justify-content: center;
-    gap: 2em;
+    list-style: none;
+    font-family: var(--font-monospace), ui-monospace, SFMono-Regular, Menlo,
+        Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.9rem;
 }
 
-.navbar a {
-    border-bottom: none;
+.nav-list a {
+    text-decoration: none;
+    padding: 0.25rem 0;
 }
 
-.navbar a:hover {
-    border-bottom: 1px solid #b1b1b1;
+.nav-list a:hover {
+    text-decoration: underline;
+    text-decoration-color: currentColor;
+}
+
+.site-main {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: var(--space-3) var(--space-2) var(--space-4);
+}
+
+.site-footer {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: var(--space-3) var(--space-2);
+    border-top: 1px solid var(--link-underline-color);
+    font-family: var(--font-monospace), ui-monospace, SFMono-Regular, Menlo,
+        Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.9rem;
+    color: var(--muted-color);
+    text-align: center;
+}
+
+.site-footer p {
+    margin: 0;
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--font-monospace), ui-monospace, SFMono-Regular, Menlo,
+        Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    line-height: 1.2;
 }
 
 h1 {
-    font-weight: 500;
-    text-align: center;
-    font-family: var(--font-monospace);
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin: 0 0 var(--space-2);
 }
 
-h2,
+h2 {
+    font-size: 1.25rem;
+    margin: var(--space-4) 0 var(--space-2);
+}
+
 h3 {
-    font-weight: 600;
-    font-family: var(--font-monospace);
-    margin-top: 1.5em;
+    font-size: 1.05rem;
+    margin: var(--space-3) 0 var(--space-2);
+}
+
+p {
+    margin: 0 0 var(--space-2);
+    max-width: 70ch;
+}
+
+ul,
+ol {
+    padding-left: 1.25rem;
+}
+
+code {
+    font-family: var(--font-monospace), ui-monospace, SFMono-Regular, Menlo,
+        Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.95em;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: var(--space-2);
+    margin: var(--space-3) 0;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5ch;
+    padding: 0.5rem 0.75rem;
+    border-radius: 999px;
+    background: var(--text-color);
+    color: var(--background-color);
+    border: 1px solid var(--text-color);
+    text-decoration: none;
+    font-family: var(--font-monospace), ui-monospace, SFMono-Regular, Menlo,
+        Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.9rem;
+}
+
+.button:hover {
+    background: var(--background-color);
+    color: var(--text-color);
 }

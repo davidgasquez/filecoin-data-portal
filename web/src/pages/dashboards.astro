@@ -12,92 +12,45 @@ import Card from "../components/Card.astro";
         compare them.
     </p>
 
-    <h3>
-        <a href="https://numbers.filecoindataportal.xyz/">Filecoin In Numbers</a
-        >
-    </h3>
+    <h2>Available dashboards</h2>
 
-    <p>
-        A high level view into Filecoin Network core metrics with over detailed
-        50 charts.
-    </p>
+    <div class="card-grid">
+        <Card
+            title="Filecoin In Numbers"
+            description="A high-level view into Filecoin Network core metrics with over 50 charts."
+            buttons={[
+                { text: "Visit", link: "https://numbers.filecoindataportal.xyz/" },
+            ]}
+        />
 
-    <a href="https://numbers.filecoindataportal.xyz/" class="dashboard-button"
-        >Visit Dashboard</a
-    >
+        <Card
+            title="Filecoin Pulse"
+            description="Operational dashboard for Filecoin with metrics per Storage Provider, Client, and Allocator."
+            buttons={[
+                { text: "Visit", link: "https://pulse.filecoindataportal.xyz/" },
+            ]}
+        />
 
-    <h3>
-        <a href="https://pulse.filecoindataportal.xyz/">Filecoin In Pulse</a>
-    </h3>
+        <Card
+            title="Dune Filecoin Metrics"
+            description="The same metrics as Filecoin In Numbers, but in Dune Analytics."
+            buttons={[
+                {
+                    text: "Visit",
+                    link: "https://dune.com/kalen/filecoin-daily-metrics",
+                },
+            ]}
+        />
 
-    <p>
-        Operational dashboard for Filecoin. Access information at the Storage
-        Provider, Client, or, Allocator level.
-    </p>
-
-    <a href="https://pulse.filecoindataportal.xyz/" class="dashboard-button"
-        >Visit Dashboard</a
-    >
-
-    <h3>
-        <a href="https://dune.com/kalen/filecoin-daily-metrics"
-            >Dune Filecoin Metrics</a
-        >
-    </h3>
-
-    <p>
-        Same metrics as the Filecoin In Numbers dashboard, but in Dune
-        Analytics, providing a view into the Filecoin Ecosystem.
-    </p>
-
-    <a
-        href="https://dune.com/kalen/filecoin-daily-metrics"
-        class="dashboard-button">Visit Dashboard</a
-    >
-
-    <h3>
-        <a
-            href="https://filecoin-project.github.io/filecoin-storage-providers-market/"
-            >Filecoin Storage Providers Market Dashboard</a
-        >
-    </h3>
-
-    <p>
-        Charts to improve visibility into the market between Storage Clients and
-        Storage Providers.
-    </p>
-
-    <a
-        href="https://filecoin-project.github.io/filecoin-storage-providers-market/"
-        class="dashboard-button">Visit Dashboard</a
-    >
+        <Card
+            title="Storage Providers Market"
+            description="Charts to improve visibility into the market between Storage Clients and Storage Providers."
+            buttons={[
+                {
+                    text: "Visit",
+                    link: "https://filecoin-project.github.io/filecoin-storage-providers-market/",
+                },
+            ]}
+        />
+    </div>
 </Layout>
-
-<style>
-    h3 {
-        margin-top: 2em;
-        text-transform: uppercase;
-        font-size: 1.1em;
-        border-bottom: 1px solid #dddddd;
-        padding-bottom: 0.2em;
-    }
-
-    .dashboard-button {
-        display: inline-block;
-        background-color: var(--text-color);
-        color: var(--background-color);
-        padding: 8px 15px;
-        border: none;
-        text-decoration: none;
-        text-align: center;
-        align-self: flex-start;
-        border-bottom: none;
-        font-size: 0.9em;
-        cursor: pointer;
-        margin-bottom: 1em;
-    }
-
-    .dashboard-button:hover {
-        background-color: var(--link-underline-color);
-    }
-</style>
