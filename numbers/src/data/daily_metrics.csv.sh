@@ -74,6 +74,7 @@ COPY (
     sector_expire_quality_adjusted_power_pibs,
     sector_snap_raw_power_pibs,
     sector_snap_quality_adjusted_power_pibs,
+    active_sector_count,
 
     -- Sector Events
     commit_capacity_added_events_count,

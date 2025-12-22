@@ -48,12 +48,14 @@ def raw_oso_daily_filecoin_collection_events(
         order by date desc, metric_name desc
     """
 
-    schema = pa.schema([
-        pa.field("event_type", pa.string()),
-        pa.field("event_display_name", pa.string()),
-        pa.field("date", pa.date32()),
-        pa.field("amount", pa.int64()),
-    ])
+    schema = pa.schema(
+        [
+            pa.field("event_type", pa.string()),
+            pa.field("event_display_name", pa.string()),
+            pa.field("date", pa.date32()),
+            pa.field("amount", pa.int64()),
+        ]
+    )
 
     scanner = fdp_bigquery.query_to_scanner(query, schema)  # noqa: F841
 

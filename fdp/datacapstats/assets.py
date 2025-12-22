@@ -1,7 +1,8 @@
+from urllib.parse import urlparse
+
 import dagster as dg
 import httpx
 import polars as pl
-from urllib.parse import urlparse
 from dagster_duckdb import DuckDBResource
 
 from fdp.resources import HttpClientResource
@@ -77,7 +78,9 @@ def raw_datacap_allocators_registry(
                     try:
                         files_data.append(file_response.json())
                     except Exception as e:
-                        context.log.warning(f"Failed to parse JSON for {file['name']}: {e}")
+                        context.log.warning(
+                            f"Failed to parse JSON for {file['name']}: {e}"
+                        )
                 else:
                     context.log.warning(f"Failed to fetch file: {file['download_url']}")
                     context.log.warning(f"Status code: {file_response.status_code}")
@@ -212,9 +215,7 @@ def raw_datacap_github_applications(
                         context.log.warning(
                             f"Failed to fetch file: {file.get('download_url')}"
                         )
-                        context.log.warning(
-                            f"Status code: {file_response.status_code}"
-                        )
+                        context.log.warning(f"Status code: {file_response.status_code}")
                         context.log.debug(f"Response text: {file_response.text}")
         else:
             context.log.warning(

@@ -282,6 +282,20 @@ movingAverageLinePlot({
 
 </div>
 
+<div class="card" id="active-sectors">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("Active Sectors", "active-sectors"),
+  subtitle: "Total active sectors on the network over time.",
+  yField: "active_sector_count",
+  yLabel: "Active Sectors",
+  showArea: true,
+})
+```
+</div>
+
 <div class="card" id="sector-data-by-event">
 
 ```js
