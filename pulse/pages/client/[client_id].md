@@ -211,7 +211,6 @@ select
   p.days_with_deals,
   deals / sp.total_deals as client_provider_deal_share,
   onboarded_data_tibs / sp.total_data_uploaded_tibs as client_provider_data_share,
-  sp.mean_spark_retrieval_success_rate_7d,
   p.first_deal_at,
   p.last_deal_at,
   sp.total_unique_clients,

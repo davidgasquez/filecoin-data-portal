@@ -919,47 +919,6 @@ movingAverageLinePlot({
 ```
 </div>
 
-## Retrievals
-
-<details>
-
-<summary>About</summary>
-
-These metrics track the success rate of retrievals via Spark over time.
-You can see more fine grained charts on the [Official Spark Dashboards](https://dashboard.filspark.com/).
-
-</details>
-
-<div class="grid grid-cols-2">
-<div class="card" id="spark-retrieval-success-rate">
-
-```js
-movingAverageLinePlot({
-  metrics,
-  title: title_anchor("Spark Retrieval Success Rate", "spark-retrieval-success-rate"),
-  subtitle: "Average success rate of retrievals via Spark over time.",
-  yField: "mean_spark_retrieval_success_rate",
-  yLabel: "Percentage (%)",
-  yTransform: (d) => d * 100,
-})
-```
-</div>
-
-<div class="card" id="providers-with-successful-retrieval">
-
-```js
-movingAverageLinePlot({
-  metrics,
-  title: title_anchor("Providers With Successful Retrievals", "providers-with-successful-retrieval"),
-  subtitle: "How many providers have successfully retrieved data via Spark over time.",
-  yField: "providers_with_successful_retrieval",
-  yLabel: "Providers",
-})
-```
-
-</div>
-</div>
-
 ## Economics
 
 ```js
