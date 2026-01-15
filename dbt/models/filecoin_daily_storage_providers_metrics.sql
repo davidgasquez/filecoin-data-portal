@@ -207,16 +207,6 @@ sector_durations as (
     from {{ source("raw_assets", "raw_storage_providers_sector_durations") }}
 ),
 
-spark_retrievals as (
-    select
-        date,
-        provider_id,
-        total_retrieval_requests,
-        successful_retrieval_requests,
-        spark_retrieval_success_rate
-    from {{ ref('filecoin_spark_retrievals') }}
-),
-
 rewards_data as (
     select
         stat_date::date as date,
@@ -397,11 +387,6 @@ select
     rd.total_win_count,
     rd.total_rewards,
 
-    -- Retrieval Metrics
-    spark.spark_retrieval_success_rate,
-    spark.total_retrieval_requests,
-    spark.successful_retrieval_requests,
-
     -- Deal Metrics
     dec.total_regular_deal_count,
     dec.total_verified_deal_count,
@@ -457,7 +442,6 @@ full outer join sector_extensions sext on dc.date = sext.date and spp.provider_i
 full outer join sector_snaps ss on dc.date = ss.date and spp.provider_id = ss.provider_id
 full outer join sector_durations sd on dc.date = sd.date and spp.provider_id = sd.provider_id
 full outer join rewards_data rd on dc.date = rd.date and spp.provider_id = rd.provider_id
-full outer join spark_retrievals spark on dc.date = spark.date and spp.provider_id = spark.provider_id
 full outer join deal_count dec on dc.date = dec.date and spp.provider_id = dec.provider_id
 full outer join deal_duration ded on dc.date = ded.date and spp.provider_id = ded.provider_id
 full outer join deal_revenue der on dc.date = der.date and spp.provider_id = der.provider_id

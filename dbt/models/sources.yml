@@ -40,10 +40,6 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_storage_providers_rewards"]
-      - name: raw_spark_retrievals_onchain_data
-        meta:
-          dagster:
-            asset_key: ["raw_spark_retrievals_onchain_data"]
       - name: raw_datacap_allocators_registry
         meta:
           dagster:
