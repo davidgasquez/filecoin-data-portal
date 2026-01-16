@@ -164,3 +164,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_fil_price"]
+      - name: goldsky_foc_metrics
+        meta:
+          dagster:
+            asset_key: ["goldsky_foc_metrics"]
