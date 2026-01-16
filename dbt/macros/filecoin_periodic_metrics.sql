@@ -198,15 +198,6 @@ new_pieces as (
     order by 1 desc
 ),
 
-retrieval_metrics as (
-    select
-        time_bucket(interval '1 {{ period }}', date, date '2020-10-01') as date,
-        mean(spark_retrieval_success_rate) as mean_spark_retrieval_success_rate,
-        approx_count_distinct(provider_id) filter (spark_retrieval_success_rate > 0) as providers_with_successful_retrieval,
-    from {{ ref('filecoin_spark_retrievals') }}
-    group by 1
-),
-
 providers_adding_capacity as (
     with pwp as (
         select
@@ -398,10 +389,6 @@ select
     sector_snapped_events_count,
     sector_terminated_events_count,
 
-    -- Retrieval Metrics
-    mean_spark_retrieval_success_rate,
-    providers_with_successful_retrieval,
-
     -- Economics
     circulating_fil,
     (circulating_fil - lag(circulating_fil, {{ period_lookback }}) over (order by date_calendar.date)) as yearly_circulating_fil_delta,
@@ -457,7 +444,6 @@ left join new_providers on date_calendar.date = new_providers.date
 left join network_user_address_count on date_calendar.date = network_user_address_count.date
 left join direct_data_onboarding on date_calendar.date = direct_data_onboarding.date
 left join new_pieces on date_calendar.date = new_pieces.date
-left join retrieval_metrics on date_calendar.date = retrieval_metrics.date
 left join providers_adding_capacity on date_calendar.date = providers_adding_capacity.date
 left join circulating_supply on date_calendar.date = circulating_supply.date
 left join block_rewards on date_calendar.date = block_rewards.date

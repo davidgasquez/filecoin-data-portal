@@ -171,16 +171,6 @@ where provider_id = '${params.provider_id}'
 
 <BigValue
   data={filtered_provider_info}
-  value=mean_spark_retrieval_success_rate_7d
-/>
-
-<BigValue
-  data={filtered_provider_info}
-  value=stddev_spark_retrieval_success_rate_7d
-/>
-
-<BigValue
-  data={filtered_provider_info}
   value=capacity_utilization_ratio
 />
 
@@ -231,27 +221,6 @@ where 1=1
   and provider_id = '${params.provider_id}'
   and date between '${inputs.range.start}' and '${inputs.range.end}'
 ```
-
-```sql storage_provider_spark_retrievals
-select
-  date,
-  spark_retrieval_success_rate
-from filecoin_storage_providers_spark_retrievals
-where 1=1
-  and provider_id = '${params.provider_id}'
-  and date between '${inputs.range.start}' and '${inputs.range.end}'
-```
-
-## Retrievals
-
-<LineChart
-  data={storage_provider_spark_retrievals}
-  x=date
-  y=spark_retrieval_success_rate
-  title="Retrieval Success Rate (Spark)"
-  emptySet=pass
-  emptySetText="No Retrievals"
-/>
 
 ## Provider Power
 

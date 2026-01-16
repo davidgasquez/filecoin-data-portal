@@ -59,7 +59,6 @@ You can run the Filecoin Data Portal locally using Python Virtual Environment or
 
 - A `SPACESCOPE_TOKEN` to access [Spacescope](https://spacescope.io/) API.
 - A Google Cloud Platform `GOOGLE_APPLICATION_CREDENTIALS` for accessing BigQuery.
-- A `SPARK_API_BEARER_TOKEN` for accessing Spark retrievals API.
 - A `DUNE_API_KEY` for accessing Dune Analytics.
 
 ### 🐍 Python Setup

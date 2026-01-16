@@ -4,8 +4,6 @@ version = "1.0.0"
 authors = [{ name = "David Gasquez" }]
 dependencies = [
     "altair>=6.0.0",
-    "carbox>=0.3",
-    "dag-json>=0.3",
     "dagster>=1.12.4",
     "dagster-dbt>=0.28.4",
     "dagster-duckdb-pandas>=0.28.4",
@@ -21,7 +19,6 @@ dependencies = [
     "pandas>=2.3.3",
     "polars>=1.36.0",
     "pyarrow>=22.0.0",
-    "web3>=7.14.0",
 ]
 requires-python = ">=3.10, <3.14"
 readme = "README.md"

@@ -13,11 +13,6 @@ with base_providers as (
         distinct trim(miner_id) as provider_id
     from {{ source("raw_assets", "raw_storage_providers_token_balances") }}
     where provider_id is not null
-    union
-    select distinct
-        trim(provider_id) as provider_id
-    from {{ ref('filecoin_spark_retrievals') }}
-    where provider_id is not null
 ),
 
 storage_provider_location as (
@@ -146,7 +141,6 @@ latest_sp_data as (
         total_rewards,
         avg_active_sector_duration_days,
         std_active_sector_duration_days,
-        spark_retrieval_success_rate,
         total_regular_deal_count,
         total_verified_deal_count,
         daily_new_regular_deal_count,
@@ -215,15 +209,6 @@ provider_metrics_aggregations as (
         avg(onboarded_data_tibs) as avg_data_uploaded_tibs_per_day,
     from {{ ref("filecoin_daily_storage_providers_metrics") }}
     group by provider_id
-),
-
-retrieval_data as (
-    select
-        trim(provider_id) as provider_id,
-        mean(spark_retrieval_success_rate) over (partition by provider_id order by date desc rows between 6 preceding and current row) as mean_spark_retrieval_success_rate_7d,
-        stddev(spark_retrieval_success_rate) over (partition by provider_id order by date desc rows between 6 preceding and current row) as stddev_spark_retrieval_success_rate_7d
-    from {{ ref("filecoin_spark_retrievals") }}
-    qualify row_number() over (partition by provider_id order by date desc) = 1
 ),
 
 energy_name_mapping as (
@@ -350,7 +335,6 @@ select
     latest_sp_data.total_rewards,
     latest_sp_data.avg_active_sector_duration_days,
     latest_sp_data.std_active_sector_duration_days,
-    latest_sp_data.spark_retrieval_success_rate,
     latest_sp_data.total_regular_deal_count,
     latest_sp_data.total_verified_deal_count,
     latest_sp_data.daily_new_regular_deal_count,
@@ -369,8 +353,6 @@ select
     reputation_data.filrep_uptime_average,
     reputation_data.filrep_score,
     reputation_data.filrep_rank,
-    retrieval_data.mean_spark_retrieval_success_rate_7d,
-    retrieval_data.stddev_spark_retrieval_success_rate_7d,
     energy_name_mapping.green_score,
     provider_metrics_aggregations.stddev_raw_power_pibs_30d,
     provider_metrics_aggregations.stddev_quality_adjusted_power_pibs_30d,
@@ -418,7 +400,6 @@ left join stats on base.provider_id = stats.provider_id
 left join storage_provider_location on base.provider_id = storage_provider_location.provider_id
 left join reputation_data on base.provider_id = reputation_data.provider_id
 left join latest_sp_data on base.provider_id = latest_sp_data.provider_id
-left join retrieval_data on base.provider_id = retrieval_data.provider_id
 left join energy_name_mapping on base.provider_id = energy_name_mapping.provider_id
 left join provider_metrics_aggregations on base.provider_id = provider_metrics_aggregations.provider_id
 left join addresses_mapping on base.provider_id = addresses_mapping.id
