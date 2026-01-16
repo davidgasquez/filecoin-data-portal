@@ -110,7 +110,11 @@ COPY (
     -- FIL Price (USD)
     fil_token_price_avg_usd,
     fil_token_volume_usd,
-    fil_token_market_cap_usd
+    fil_token_market_cap_usd,
+
+    -- Filecoin Onchain Cloud
+    total_active_payers,
+    total_usdfc_settled
   FROM read_parquet('https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet')
 ) TO STDOUT (FORMAT 'CSV');
 EOF

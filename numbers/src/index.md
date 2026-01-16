@@ -698,6 +698,42 @@ movingAverageLinePlot({
 
 </div>
 
+## Filecoin Onchain Cloud
+
+<div class="grid grid-cols-2">
+
+<div class="card" id="foc-total-active-payers">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("Total Active Payers", "foc-total-active-payers"),
+  subtitle: "Total number of active payers using Filecoin Onchain Cloud.",
+  yField: "total_active_payers",
+  yLabel: "Payers",
+  showArea: true,
+})
+```
+
+</div>
+
+<div class="card" id="foc-total-usdfc-settled">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("Total USDFC Settled", "foc-total-usdfc-settled"),
+  subtitle: "Total USDFC settled via Filecoin Onchain Cloud.",
+  yField: "total_usdfc_settled",
+  yLabel: "USDFC",
+  showArea: true,
+})
+```
+
+</div>
+
+</div>
+
 ## State Market Deals
 
 <div class="card" id="data-flow">
