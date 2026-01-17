@@ -13,7 +13,8 @@ export function movingAverageLinePlot({
     yType,            // Optional y-axis type
     yTransform,       // Optional y-axis transform function
     showArea = false, // Optional boolean to show area instead of line
-    caption = "Displaying 30-day moving average", // Optional caption
+    windowSize = 30, // Optional moving average window size (days)
+    caption = `Displaying ${windowSize}-day moving average`, // Optional caption
     horizontalRule = null, // Optional horizontal rule value (e.g., 0.3 for 30%)
     marks: customMarks, // Explicitly capture custom marks if provided
     ...otherPlotOptions // Capture the rest of the plot options
@@ -29,14 +30,14 @@ export function movingAverageLinePlot({
             ...(yDomain && { clip: true })
         }),
         Plot.ruleY([0]),
-        showArea && Plot.areaY(metrics, Plot.windowY(30, {
+        showArea && Plot.areaY(metrics, Plot.windowY(windowSize, {
             x: xField,
             y: yField,
             tip: false,
             fill: "var(--theme-foreground-fainter)",
             ...(yDomain && { clip: true })
         })),
-        Plot.lineY(metrics, Plot.windowY(30, {
+        Plot.lineY(metrics, Plot.windowY(windowSize, {
             x: xField,
             y: yField,
             stroke: "var(--theme-foreground-focus)",
