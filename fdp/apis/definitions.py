@@ -1,9 +1,9 @@
 import dagster as dg
 
-from fdp.apis import assets, goldsky
+from fdp.apis import assets, fevm, goldsky
 from fdp.resources import HttpClientResource
 
-api_assets = dg.load_assets_from_modules([assets, goldsky])
+api_assets = dg.load_assets_from_modules([assets, fevm, goldsky])
 
 definitions = dg.Definitions(
     assets=api_assets,
