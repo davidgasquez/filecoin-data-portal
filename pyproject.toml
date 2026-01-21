@@ -19,6 +19,7 @@ dependencies = [
     "pandas>=2.3.3",
     "polars>=1.37.1",
     "pyarrow>=22.0.0",
+    "web3>=6.20.0",
 ]
 requires-python = ">=3.10, <3.14"
 readme = "README.md"
