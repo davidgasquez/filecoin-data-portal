@@ -20,6 +20,9 @@ ABI_REGISTRY = [
     {
         "name": "filecoin_pay_v1",
         "abi_url": "https://raw.githubusercontent.com/FilOzone/filecoin-services/refs/heads/main/service_contracts/abi/FilecoinPayV1.abi.json",
+        "related_contracts": [
+            "0x23b1e018f08bb982348b15a86ee926eebf7f4daa",
+        ],
     }
 ]
 
@@ -79,8 +82,14 @@ def _build_event_map(
     for entry in registry:
         name = entry["name"]
         abi_url = entry["abi_url"]
-        addresses = entry.get("addresses") or None
-        address_set = {addr.lower() for addr in addresses} if addresses else None
+        related_contracts = (
+            entry.get("related_contracts") or entry.get("addresses") or None
+        )
+        address_set = (
+            {addr.lower() for addr in related_contracts}
+            if related_contracts
+            else None
+        )
         abi = _load_abi(abi_url)
         for abi_entry in abi:
             if abi_entry.get("type") != "event":
@@ -96,14 +105,17 @@ def _build_event_map(
     return event_map
 
 
-def _select_decoder(decoders: list[EventDecoder], address: str) -> EventDecoder:
+def _select_decoder(
+    decoders: list[EventDecoder],
+    address: str,
+) -> EventDecoder | None:
     for decoder in decoders:
         if decoder.addresses and address in decoder.addresses:
             return decoder
     for decoder in decoders:
         if decoder.addresses is None:
             return decoder
-    return decoders[0]
+    return None
 
 
 def _topic0_from_value(value: Any) -> str:
@@ -156,6 +168,8 @@ def _decode_row(
 
     log = _log_from_row(row)
     decoder = _select_decoder(decoders, log["address"].lower())
+    if decoder is None:
+        return None
     decoded = get_event_data(web3.codec, decoder.event_abi, log)
 
     args = {key: _normalize(value) for key, value in decoded["args"].items()}
@@ -221,6 +235,15 @@ def raw_ribrpc_eth_logs(
         current = from_day
         while current <= to_day:
             url = _build_url(current)
+            response = httpx.head(url, follow_redirects=True, timeout=10)
+            if response.status_code == 404:
+                context.log.warning(
+                    f"Missing logs for {current:%Y-%m-%d}. Skipping {url}"
+                )
+                current += datetime.timedelta(days=1)
+                continue
+            response.raise_for_status()
+
             context.log.info(f"Loading {url}")
             select_sql = _select_sql(url, current)
             if not table_exists:
@@ -253,36 +276,60 @@ def raw_ribrpc_eth_logs_decoded(
         "args_json",
         "file_date",
     ]
+    output_index = pd.Index(output_columns)
+    chunk_size = 50_000
+    decoded_count = 0
+    table_initialized = False
+    select_sql = """
+    select
+        address,
+        block_number,
+        log_index,
+        transaction_hash,
+        transaction_index,
+        topic0,
+        event_name,
+        abi_name,
+        cast(args_json as json) as args,
+        file_date
+    from df
+    """
 
     with duckdb.get_connection() as conn:
-        raw_df = conn.execute("select * from raw.raw_ribrpc_eth_logs").df()
+        total_rows = conn.execute(
+            "select count(*) from raw.raw_ribrpc_eth_logs"
+        ).fetchone()[0]
+        total_rows = int(total_rows)
 
-    decoded_rows: list[dict[str, Any]] = []
-    columns = list(raw_df.columns)
-    for row in raw_df.itertuples(index=False, name=None):
-        entry = dict(zip(columns, row))
-        decoded = _decode_row(web3, entry, event_map)
-        if decoded:
-            decoded_rows.append(decoded)
+        for offset in range(0, total_rows, chunk_size):
+            raw_df = conn.execute(
+                "select * from raw.raw_ribrpc_eth_logs limit ? offset ?",
+                [chunk_size, offset],
+            ).df()
+            if raw_df.empty:
+                continue
 
-    df = pd.DataFrame(decoded_rows, columns=pd.Index(output_columns))
+            decoded_rows: list[dict[str, Any]] = []
+            columns = list(raw_df.columns)
+            for row in raw_df.itertuples(index=False, name=None):
+                entry = dict(zip(columns, row))
+                decoded = _decode_row(web3, entry, event_map)
+                if decoded:
+                    decoded_rows.append(decoded)
 
-    with duckdb.get_connection() as conn:
-        query = f"""
-        create or replace table raw.{table_name} as
-        select
-            address,
-            block_number,
-            log_index,
-            transaction_hash,
-            transaction_index,
-            topic0,
-            event_name,
-            abi_name,
-            cast(args_json as json) as args,
-            file_date
-        from df
-        """
-        conn.sql(query)
+            if not decoded_rows:
+                continue
 
-    return dg.MaterializeResult(metadata={"dagster/row_count": df.shape[0]})
+            df = pd.DataFrame(decoded_rows, columns=output_index)
+            if not table_initialized:
+                conn.sql(f"create or replace table raw.{table_name} as {select_sql}")
+                table_initialized = True
+            else:
+                conn.sql(f"insert into raw.{table_name} {select_sql}")
+            decoded_count += df.shape[0]
+
+        if not table_initialized:
+            df = pd.DataFrame(columns=output_index)
+            conn.sql(f"create or replace table raw.{table_name} as {select_sql}")
+
+    return dg.MaterializeResult(metadata={"dagster/row_count": decoded_count})
