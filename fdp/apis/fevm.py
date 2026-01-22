@@ -86,9 +86,7 @@ def _build_event_map(
             entry.get("related_contracts") or entry.get("addresses") or None
         )
         address_set = (
-            {addr.lower() for addr in related_contracts}
-            if related_contracts
-            else None
+            {addr.lower() for addr in related_contracts} if related_contracts else None
         )
         abi = _load_abi(abi_url)
         for abi_entry in abi:
