@@ -15,7 +15,9 @@ PAGE_SIZE = 1000
 getcontext().prec = 50
 
 
-def gql(url: str, query: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
+def gql(
+    url: str, query: str, variables: dict[str, Any] | None = None
+) -> dict[str, Any]:
     body: dict[str, Any] = {"query": query}
     if variables:
         body["variables"] = variables
@@ -80,9 +82,7 @@ def fetch_daily_token_metrics(url: str, page_size: int) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     last = "0x00"
     while True:
-        data = gql(url, query, {"first": page_size, "last": last})[
-            "dailyTokenMetrics"
-        ]
+        data = gql(url, query, {"first": page_size, "last": last})["dailyTokenMetrics"]
         if not data:
             break
         out.extend(data)

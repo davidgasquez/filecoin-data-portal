@@ -28,7 +28,7 @@ def fetch_and_persist_data(
                     max(stat_date) as max_date
                 from raw.{table_name}
                 """
-            ).fetchone()[0]  # type: ignore
+            ).fetchone()[0]
 
             if from_day:
                 from_day = pd.to_datetime(from_day).date() + datetime.timedelta(days=1)
@@ -343,7 +343,7 @@ def raw_storage_providers_sector_totals(
         try:
             from_day = conn.execute(
                 f"select max(stat_date) as max_date from raw.{table_name}"
-            ).fetchone()[0]  # type: ignore
+            ).fetchone()[0]
 
             if from_day:
                 from_day = pd.to_datetime(from_day).date() + datetime.timedelta(days=1)
@@ -425,7 +425,7 @@ def raw_storage_providers_sector_terminations(
         try:
             from_day = conn.execute(
                 f"select max(stat_date) as max_date from raw.{table_name}"
-            ).fetchone()[0]  # type: ignore
+            ).fetchone()[0]
 
             if from_day:
                 from_day = pd.to_datetime(from_day).date() + datetime.timedelta(days=1)
@@ -824,7 +824,7 @@ def raw_circulating_supply(
         df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
 
         context.log.info(
-            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"  # type: ignore
+            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"
         )
 
         current_start_day = current_end_day + datetime.timedelta(days=1)
@@ -1040,7 +1040,7 @@ def raw_storage_providers_deal_count(
         df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
 
         context.log.info(
-            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"  # type: ignore
+            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"
         )
 
         current_start_day = current_end_day + datetime.timedelta(days=1)
@@ -1094,7 +1094,7 @@ def raw_storage_providers_deal_duration(
         df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
 
         context.log.info(
-            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"  # type: ignore
+            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"
         )
 
         current_start_day = current_end_day + datetime.timedelta(days=1)
@@ -1148,7 +1148,7 @@ def raw_storage_providers_deal_revenue(
         df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
 
         context.log.info(
-            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"  # type: ignore
+            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"
         )
 
         current_start_day = current_end_day + datetime.timedelta(days=1)
@@ -1203,7 +1203,7 @@ def raw_gas_daily_usage(
         df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
 
         context.log.info(
-            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"  # type: ignore
+            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"
         )
 
         current_start_day = current_end_day + datetime.timedelta(days=1)
@@ -1258,7 +1258,7 @@ def raw_daily_direct_data_onboarding(
         df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
 
         context.log.info(
-            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"  # type: ignore
+            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"
         )
 
         current_start_day = current_end_day + datetime.timedelta(days=1)
@@ -1312,7 +1312,7 @@ def raw_storage_providers_gas_network_fee(
         df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
 
         context.log.info(
-            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"  # type: ignore
+            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"
         )
 
         current_start_day = current_end_day + datetime.timedelta(days=1)
@@ -1366,7 +1366,7 @@ def raw_storage_providers_gas_commit_fee(
         df = pd.concat([df, pd.DataFrame(batch_df)], ignore_index=True)
 
         context.log.info(
-            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"  # type: ignore
+            f"Fetched {len(batch_df)} rows from {current_start_day} to {current_end_day}"
         )
 
         current_start_day = current_end_day + datetime.timedelta(days=1)

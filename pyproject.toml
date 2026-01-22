@@ -18,8 +18,8 @@ dependencies = [
     "marimo[lsp,recommended,sql]>=0.19.4",
     "pandas>=2.3.3",
     "polars>=1.37.1",
-    "pyarrow>=22.0.0",
-    "web3>=6.20.0",
+    "pyarrow>=23.0.0",
+    "web3>=7.14.0",
 ]
 requires-python = ">=3.10, <3.14"
 readme = "README.md"
@@ -29,8 +29,10 @@ license = { text = "MIT" }
 dev = [
     "dagster-webserver>=1.12.11",
     "ipykernel>=7.1.0",
+    "prek>=0.3.0",
     "pyarrow-stubs>=20.0.0.20251215",
     "ruff>=0.14.13",
+    "ty>=0.0.13",
 ]
 
 [project.urls]

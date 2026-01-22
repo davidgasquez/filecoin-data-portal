@@ -10,8 +10,9 @@ dev:
 	@uv run dagster dev
 
 lint:
-	@uvx ruff check
-	@uvx ty check
+	@uv run ruff check
+	@uv run ty check
+	@uv run prek -a
 
 .PHONY: setup
 setup:
