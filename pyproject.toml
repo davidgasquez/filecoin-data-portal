@@ -16,7 +16,7 @@ dependencies = [
     "ipykernel>=7.1.0",
     "ipywidgets>=8.1.8",
     "marimo[lsp,recommended,sql]>=0.19.4",
-    "pandas>=2.3.3",
+    "pandas==2.3.3",
     "polars>=1.37.1",
     "pyarrow>=23.0.0",
     "web3>=7.14.0",
