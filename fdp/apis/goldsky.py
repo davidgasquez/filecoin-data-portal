@@ -180,10 +180,17 @@ def build_foc_metrics_df(
             }
         )
 
+    active_values: list[Decimal | None] = []
+    last_active: Decimal | None = None
+    for d in all_dates:
+        if d in active_map:
+            last_active = active_map[d]
+        active_values.append(last_active)
+
     df = pd.DataFrame(
         {
             "date": all_dates,
-            "total_active_payers": [active_map.get(d) for d in all_dates],
+            "total_active_payers": active_values,
             "total_usdfc_settled": [settled_map.get(d) for d in all_dates],
         }
     )
@@ -192,7 +199,7 @@ def build_foc_metrics_df(
 
 
 @dg.asset(compute_kind="python")
-def goldsky_foc_metrics(
+def raw_goldsky_foc_metrics(
     context: dg.AssetExecutionContext, duckdb: DuckDBResource
 ) -> dg.MaterializeResult:
     accounts = fetch_accounts(DEFAULT_URL, PAGE_SIZE)

@@ -282,12 +282,12 @@ fil_price as (
     order by 1 desc
 ),
 
-goldsky_foc_metrics as (
+raw_goldsky_foc_metrics as (
     select
         time_bucket(interval '1 {{ period }}', cast(date as date), date '2020-10-01') as date,
         max(total_active_payers) as total_active_payers,
         max(total_usdfc_settled) as total_usdfc_settled
-    from {{ source("raw_assets", "goldsky_foc_metrics") }}
+    from {{ source("raw_assets", "raw_goldsky_foc_metrics") }}
     group by 1
     order by 1 desc
 )
@@ -466,7 +466,7 @@ left join gas_usage on date_calendar.date = gas_usage.date
 left join oso_filecoin_collection_events on date_calendar.date = oso_filecoin_collection_events.date
 left join transactions on date_calendar.date = transactions.date
 left join fil_price on date_calendar.date = fil_price.date
-left join goldsky_foc_metrics on date_calendar.date = goldsky_foc_metrics.date
+left join raw_goldsky_foc_metrics on date_calendar.date = raw_goldsky_foc_metrics.date
 order by date_calendar.date desc
 
 {% endmacro %}
