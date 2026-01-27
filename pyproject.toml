@@ -4,9 +4,4 @@ version = "2.0.0"
 readme = "README.md"
 authors = [{ name = "David Gasquez", email = "davidgasquez@gmail.com" }]
 requires-python = ">=3.14"
-dependencies = [
-    "duckdb>=1.4.3",
-    "google-cloud-bigquery[bqstorage]>=3.40.0",
-    "httpx>=0.28.1",
-    "polars>=1.37.1",
-]
+dependencies = ["duckdb>=1.4.4", "httpx>=0.28.1", "polars>=1.37.1"]
