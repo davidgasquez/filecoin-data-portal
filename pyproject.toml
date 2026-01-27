@@ -19,6 +19,7 @@ dependencies = [
     "pandas==2.3.3",
     "polars>=1.37.1",
     "pyarrow>=23.0.0",
+    "pyoso>=0.8.0",
     "web3>=7.14.0",
 ]
 requires-python = ">=3.10, <3.14"
