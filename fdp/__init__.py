@@ -15,12 +15,29 @@ import polars as pl
 DATASETS_DIR_NAME = "datasets"
 DatasetResult: TypeAlias = None | pl.DataFrame
 DatasetFn = Callable[..., DatasetResult]
+DatasetDeps: TypeAlias = dict[str, str]
 DEFAULT_DB_PATH = Path(os.environ.get("FDP_DB_PATH", "fdp.duckdb"))
 
 
-def dataset(func: DatasetFn) -> DatasetFn:
-    setattr(func, "_fdp_dataset", True)
-    return func
+def dataset(
+    func: DatasetFn | None = None,
+    *,
+    depends_on: DatasetDeps | None = None,
+    schema: str | None = "raw",
+    table: str | None = None,
+) -> DatasetFn | Callable[[DatasetFn], DatasetFn]:
+    def wrap(fn: DatasetFn) -> DatasetFn:
+        setattr(fn, "_fdp_dataset", True)
+        setattr(fn, "_fdp_depends", dict(depends_on or {}))
+        fn_name = getattr(fn, "__name__", fn.__class__.__name__)
+        resolved_table = fn_name if table is None else table
+        setattr(fn, "_fdp_schema", schema)
+        setattr(fn, "_fdp_table", resolved_table)
+        return fn
+
+    if func is None:
+        return wrap
+    return wrap(func)
 
 
 @contextmanager
@@ -57,10 +74,8 @@ def find_datasets_root() -> Path:
 def discover_datasets(datasets_root: Path) -> dict[str, DatasetFn]:
     datasets: dict[str, DatasetFn] = {}
     for module_path in _dataset_files(datasets_root):
-        schema, table = _schema_table(datasets_root, module_path)
         module = _load_module(module_path)
-        for table_name, loader in _module_datasets(module, table).items():
-            dataset_name = f"{schema}.{table_name}"
+        for dataset_name, loader in _module_datasets(module).items():
             if dataset_name in datasets:
                 raise ValueError(f"Duplicate dataset name: {dataset_name}")
             datasets[dataset_name] = loader
@@ -73,17 +88,6 @@ def _dataset_files(datasets_root: Path) -> list[Path]:
         for path in datasets_root.rglob("*.py")
         if path.is_file() and not path.name.startswith("_")
     )
-
-
-def _schema_table(datasets_root: Path, module_path: Path) -> tuple[str, str]:
-    relative = module_path.relative_to(datasets_root)
-    if len(relative.parts) < 2:
-        raise ValueError(
-            "Dataset modules must live under datasets/<schema>/filename.py"
-        )
-    schema = relative.parts[0]
-    table_parts = [*relative.parts[1:-1], module_path.stem]
-    return schema, "_".join(table_parts)
 
 
 def _load_module(module_path: Path) -> ModuleType:
@@ -101,7 +105,7 @@ def _module_name(module_path: Path) -> str:
     return f"fdp_dataset_{sanitized}"
 
 
-def _module_datasets(module: ModuleType, default_table: str) -> dict[str, DatasetFn]:
+def _module_datasets(module: ModuleType) -> dict[str, DatasetFn]:
     datasets: dict[str, DatasetFn] = {}
     for name, value in vars(module).items():
         if callable(value) and getattr(value, "_fdp_dataset", False):

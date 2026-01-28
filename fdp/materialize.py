@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from graphlib import CycleError, TopologicalSorter
+import inspect
 
+import duckdb
 import polars as pl
 
 from fdp import DatasetFn, db_connection, discover_datasets, find_datasets_root
@@ -14,60 +17,136 @@ def materialize(
 ) -> None:
     datasets_root = find_datasets_root()
     datasets = discover_datasets(datasets_root)
-    selected = _select_datasets(names, all_datasets, datasets)
+    deps_map = {name: _dataset_deps(fn) for name, fn in datasets.items()}
+    params_map = {name: _dataset_params(name, fn) for name, fn in datasets.items()}
+    _validate_datasets(datasets, deps_map, params_map)
+    selected = _resolve_selection(names, all_datasets, datasets, deps_map)
+    graph = {name: list(deps_map[name].values()) for name in selected}
+    try:
+        order = list(TopologicalSorter(graph).static_order())
+    except CycleError as exc:
+        raise ValueError(f"Dependency cycle detected: {exc}") from exc
+    frames: dict[str, pl.DataFrame] = {}
     with db_connection() as conn:
-        for dataset_name, loader in selected:
-            schema, table = _split_name(dataset_name)
-            conn.execute(f"create schema if not exists {schema}")
-            table_name = f"{schema}.{table}"
-            result = _call_dataset(loader, conn, table_name)
+        for name in order:
+            fn = datasets[name]
+            deps = deps_map[name]
+            param_names = params_map[name]
+            kwargs = _resolve_kwargs(name, deps, frames, param_names)
+            result = fn(**kwargs) if param_names else fn()
             if result is None:
                 continue
-            if isinstance(result, pl.DataFrame):
-                conn.register("_fdp_frame", result)
-                try:
-                    conn.execute(
-                        f"create or replace table {table_name} as "
-                        "select * from _fdp_frame",
-                    )
-                finally:
-                    conn.unregister("_fdp_frame")
+            if not isinstance(result, pl.DataFrame):
+                raise TypeError("Dataset must return None or polars.DataFrame.")
+            frames[name] = result
+            schema, table = _dataset_meta(fn)
+            if schema is None or table is None:
                 continue
-            raise TypeError("Dataset must return None or polars.DataFrame.")
+            _write_table(conn, schema, table, result)
 
 
-def _select_datasets(
+def _dataset_deps(fn: DatasetFn) -> dict[str, str]:
+    return getattr(fn, "_fdp_depends", {})
+
+
+def _dataset_params(name: str, fn: DatasetFn) -> list[str]:
+    signature = inspect.signature(fn)
+    parameters = list(signature.parameters.values())
+    if any(
+        param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+        for param in parameters
+    ):
+        raise ValueError(f"{name} uses *args or **kwargs. Not supported.")
+    return [param.name for param in parameters]
+
+
+def _dataset_meta(fn: DatasetFn) -> tuple[str | None, str | None]:
+    schema = getattr(fn, "_fdp_schema", "raw")
+    fn_name = getattr(fn, "__name__", fn.__class__.__name__)
+    table = getattr(fn, "_fdp_table", fn_name)
+    return schema, table
+
+
+def _validate_datasets(
+    datasets: dict[str, DatasetFn],
+    deps_map: dict[str, dict[str, str]],
+    params_map: dict[str, list[str]],
+) -> None:
+    names = set(datasets)
+    for name, deps in deps_map.items():
+        missing_deps = sorted({dep for dep in deps.values() if dep not in names})
+        if missing_deps:
+            missing_list = ", ".join(missing_deps)
+            raise ValueError(f"Unknown dependencies for {name}: {missing_list}")
+        param_names = set(params_map[name])
+        if not param_names:
+            continue
+        dep_names = set(deps)
+        missing_params = sorted(dep_names - param_names)
+        extra_params = sorted(param_names - dep_names)
+        if missing_params or extra_params:
+            problems = []
+            if missing_params:
+                problems.append(f"missing params: {', '.join(missing_params)}")
+            if extra_params:
+                problems.append(f"unexpected params: {', '.join(extra_params)}")
+            raise ValueError(f"{name} dependency mismatch: {', '.join(problems)}")
+
+
+def _resolve_selection(
     names: Iterable[str] | None,
     all_datasets: bool,
     datasets: dict[str, DatasetFn],
-) -> list[tuple[str, DatasetFn]]:
+    deps_map: dict[str, dict[str, str]],
+) -> set[str]:
     if all_datasets:
-        return sorted(datasets.items())
-    if not names:
-        raise ValueError("Pass --all or dataset names to materialize.")
-    unknown = [name for name in names if name not in datasets]
-    if unknown:
-        unknown_list = ", ".join(sorted(set(unknown)))
-        raise ValueError(f"Unknown datasets: {unknown_list}")
-    return [(name, datasets[name]) for name in names]
+        selected = set(datasets)
+    else:
+        if not names:
+            raise ValueError("Pass --all or dataset names to materialize.")
+        requested = list(names)
+        unknown = sorted({name for name in requested if name not in datasets})
+        if unknown:
+            unknown_list = ", ".join(unknown)
+            raise ValueError(f"Unknown datasets: {unknown_list}")
+        selected = set(requested)
+    stack = list(selected)
+    while stack:
+        name = stack.pop()
+        for dep in deps_map[name].values():
+            if dep not in selected:
+                selected.add(dep)
+                stack.append(dep)
+    return selected
 
 
-def _split_name(dataset_name: str) -> tuple[str, str]:
-    parts = dataset_name.split(".", maxsplit=1)
-    if len(parts) == 2:
-        return parts[0], parts[1]
-    return "raw", parts[0]
+def _resolve_kwargs(
+    name: str,
+    deps: dict[str, str],
+    frames: dict[str, pl.DataFrame],
+    param_names: list[str],
+) -> dict[str, pl.DataFrame]:
+    if not param_names:
+        return {}
+    missing = sorted({dep for dep in deps.values() if dep not in frames})
+    if missing:
+        missing_list = ", ".join(missing)
+        raise ValueError(f"Missing dependency frames for {name}: {missing_list}")
+    return {alias: frames[dep] for alias, dep in deps.items()}
 
 
-def _call_dataset(
-    loader: DatasetFn,
+def _write_table(
     conn: duckdb.DuckDBPyConnection,
+    schema: str,
     table: str,
-) -> None | pl.DataFrame:
+    frame: pl.DataFrame,
+) -> None:
+    conn.execute(f"create schema if not exists {schema}")
+    table_name = f"{schema}.{table}"
+    conn.register("_fdp_frame", frame)
     try:
-        return loader(conn, table)
-    except TypeError as exc:
-        message = str(exc)
-        if "positional" not in message and "arguments" not in message:
-            raise
-        return loader()
+        conn.execute(
+            f"create or replace table {table_name} as select * from _fdp_frame",
+        )
+    finally:
+        conn.unregister("_fdp_frame")
