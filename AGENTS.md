@@ -4,6 +4,8 @@ The Filecoin Data Portal is a minimalistic and functional open data platform to 
 
 ### Principles
 
-- Simple, functional, opinionated
+- Minimal and simple
+- Functional and idempotent transformations
+- Opinionated
 - Low abstractions, no frameworks
 - UNIX philosophy
