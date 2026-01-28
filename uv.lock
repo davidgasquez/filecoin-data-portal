@@ -41,7 +41,7 @@ wheels = [
 [[package]]
 name = "fdp"
 version = "2.0.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "duckdb" },
     { name = "httpx" },
