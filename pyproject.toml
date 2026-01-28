@@ -4,7 +4,12 @@ version = "2.0.0"
 readme = "README.md"
 authors = [{ name = "David Gasquez", email = "davidgasquez@gmail.com" }]
 requires-python = ">=3.14"
-dependencies = ["duckdb>=1.4.4", "httpx>=0.28.1", "polars>=1.37.1"]
+dependencies = [
+    "duckdb>=1.4.4",
+    "httpx>=0.28.1",
+    "polars>=1.37.1",
+    "pyarrow>=23.0.0",
+]
 
 [project.scripts]
 fdp = "fdp.cli:main"
@@ -16,3 +21,10 @@ build-backend = "uv_build"
 [tool.uv.build-backend]
 module-name = "fdp"
 module-root = ""
+
+[dependency-groups]
+dev = [
+    "prek>=0.3.0",
+    "ruff>=0.14.14",
+    "ty>=0.0.14",
+]

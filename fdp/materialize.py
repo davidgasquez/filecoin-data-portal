@@ -1,30 +1,39 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from pathlib import Path
-import tempfile
 
-import duckdb
 import polars as pl
 
-from fdp.datasets import DatasetFn, discover_datasets, find_datasets_root
-
-DEFAULT_DB_PATH = Path("fdp.duckdb")
+from fdp import DatasetFn, db_connection, discover_datasets, find_datasets_root
 
 
 def materialize(
     names: Iterable[str] | None = None,
     *,
     all_datasets: bool = False,
-    db_path: Path = DEFAULT_DB_PATH,
 ) -> None:
     datasets_root = find_datasets_root()
     datasets = discover_datasets(datasets_root)
     selected = _select_datasets(names, all_datasets, datasets)
-    with duckdb.connect(db_path) as conn:
+    with db_connection() as conn:
         for dataset_name, loader in selected:
             schema, table = _split_name(dataset_name)
-            _write_table(conn, schema, table, loader())
+            conn.execute(f"create schema if not exists {schema}")
+            table_name = f"{schema}.{table}"
+            result = _call_dataset(loader, conn, table_name)
+            if result is None:
+                continue
+            if isinstance(result, pl.DataFrame):
+                conn.register("_fdp_frame", result)
+                try:
+                    conn.execute(
+                        f"create or replace table {table_name} as "
+                        "select * from _fdp_frame",
+                    )
+                finally:
+                    conn.unregister("_fdp_frame")
+                continue
+            raise TypeError("Dataset must return None or polars.DataFrame.")
 
 
 def _select_datasets(
@@ -50,18 +59,15 @@ def _split_name(dataset_name: str) -> tuple[str, str]:
     return "raw", parts[0]
 
 
-def _write_table(
+def _call_dataset(
+    loader: DatasetFn,
     conn: duckdb.DuckDBPyConnection,
-    schema: str,
     table: str,
-    frame: pl.DataFrame,
-) -> None:
-    conn.execute(f"create schema if not exists {schema}")
-    with tempfile.TemporaryDirectory() as tmpdir:
-        path = Path(tmpdir) / f"{schema}.{table}.parquet"
-        frame.write_parquet(path)
-        conn.execute(
-            f"create or replace table {schema}.{table} as "
-            "select * from parquet_scan(?)",
-            [str(path)],
-        )
+) -> None | pl.DataFrame:
+    try:
+        return loader(conn, table)
+    except TypeError as exc:
+        message = str(exc)
+        if "positional" not in message and "arguments" not in message:
+            raise
+        return loader()

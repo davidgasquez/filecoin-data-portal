@@ -9,3 +9,4 @@ The Filecoin Data Portal is a minimalistic and functional open data platform to 
 - Opinionated
 - Low abstractions, no frameworks
 - UNIX philosophy
+- The database layout is the `datasets` one. Folders are schemas.

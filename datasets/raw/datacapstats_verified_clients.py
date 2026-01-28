@@ -1,8 +1,9 @@
 import polars as pl
 
-from fdp.http import fetch_json
+from fdp import dataset, fetch_json
 
 
+@dataset
 def datacapstats_verified_clients() -> pl.DataFrame:
     """
     Verified Clients information from Datacapstats API.
