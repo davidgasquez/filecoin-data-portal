@@ -23,7 +23,31 @@ ABI_REGISTRY = [
         "related_contracts": [
             "0x23b1e018f08bb982348b15a86ee926eebf7f4daa",
         ],
-    }
+    },
+    {
+        "name": "pdp_verifier",
+        "abi_url": "https://raw.githubusercontent.com/FilOzone/filecoin-services/refs/heads/main/service_contracts/abi/PDPVerifier.abi.json",
+        "related_contracts": [
+            "0xbadd0b92c1c71d02e7d520f64c0876538fa2557f",
+            "0xe2dc211bffca499761570e04e8143be2ba66095f",
+        ],
+    },
+    {
+        "name": "service_provider_registry",
+        "abi_url": "https://raw.githubusercontent.com/FilOzone/filecoin-services/refs/heads/main/service_contracts/abi/ServiceProviderRegistry.abi.json",
+        "related_contracts": [
+            "0xf55ddbf63f1b55c3f1d4fa7e339a68ab7b64a5eb",
+            "0xe255d3a89d6b326b48bc0fc94a472a839471d6b0",
+        ],
+    },
+    {
+        "name": "filecoin_warm_storage_service",
+        "abi_url": "https://raw.githubusercontent.com/FilOzone/filecoin-services/refs/heads/main/service_contracts/abi/FilecoinWarmStorageService.abi.json",
+        "related_contracts": [
+            "0x8408502033c418e1bbc97ce9ac48e5528f371a9f",
+            "0xd60b90f6d3c42b26a246e141ec701a20dde2fa61",
+        ],
+    },
 ]
 
 
