@@ -168,3 +168,7 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_goldsky_foc_metrics"]
+      - name: raw_ribrpc_eth_logs_decoded
+        meta:
+          dagster:
+            asset_key: ["raw_ribrpc_eth_logs_decoded"]
