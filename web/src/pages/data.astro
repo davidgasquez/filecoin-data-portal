@@ -120,6 +120,40 @@ import Card from "../components/Card.astro";
                 ]}
             />
         </div>
+
+        <div class="grid-item medium">
+            <Card
+                title="Onramps Daily"
+                description="Onramps specific metrics, at the daily level."
+                buttons={[
+                    {
+                        text: "Download",
+                        link: "https://data.filecoindataportal.xyz/filecoin_daily_onramps_metrics.parquet",
+                    },
+                    {
+                        text: "Preview",
+                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_daily_onramps_metrics.parquet",
+                    },
+                ]}
+            />
+        </div>
+
+        <div class="grid-item medium">
+            <Card
+                title="Upcoming Sector Expirations Daily"
+                description="Daily view of upcoming sector expirations across the network."
+                buttons={[
+                    {
+                        text: "Download",
+                        link: "https://data.filecoindataportal.xyz/filecoin_daily_upcoming_sector_expirations.parquet",
+                    },
+                    {
+                        text: "Preview",
+                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_daily_upcoming_sector_expirations.parquet",
+                    },
+                ]}
+            />
+        </div>
     </div>
 
     <h2 id="entities">Entities</h2>
@@ -176,6 +210,23 @@ import Card from "../components/Card.astro";
                     {
                         text: "Sheet",
                         link: "https://docs.google.com/spreadsheets/d/1uixeylC3pTeOkKh0L2fGsd7YKuyaA6Hse_fhWrm1BIA/edit?usp=sharing",
+                    },
+                ]}
+            />
+        </div>
+
+        <div class="grid-item medium">
+            <Card
+                title="Onramps"
+                description="Information and metrics about all known onramp entities."
+                buttons={[
+                    {
+                        text: "Download",
+                        link: "https://data.filecoindataportal.xyz/filecoin_onramps.parquet",
+                    },
+                    {
+                        text: "Preview",
+                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_onramps.parquet",
                     },
                 ]}
             />
