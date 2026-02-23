@@ -146,7 +146,7 @@ where allocator_id = '${params.allocator_id}'
 
 <BigValue
   data={filtered_allocator_info}
-  value=minimum_required_storage_povider_replication
+  value=minimum_required_storage_provider_replication
 />
 
 <BigValue
