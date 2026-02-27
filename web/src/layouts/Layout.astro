@@ -1,5 +1,6 @@
 ---
 import "../styles.css"
+import { ClientRouter } from "astro:transitions"
 import Head from "../components/Head.astro"
 
 interface Props {
@@ -16,8 +17,6 @@ const {
   canonicalUrl = Astro.url.pathname,
 } = Astro.props
 
-const pathname = Astro.url.pathname
-
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
@@ -25,11 +24,6 @@ const navItems = [
   { href: "/dashboards", label: "Dashboards" },
   { href: "/docs", label: "Documentation" },
 ]
-
-const normalizePath = (value: string) =>
-  value === "/" ? value : value.replace(/\/$/, "")
-
-const currentPath = normalizePath(pathname)
 ---
 
 <!doctype html>
@@ -41,13 +35,19 @@ const currentPath = normalizePath(pathname)
       image={image}
       canonicalUrl={canonicalUrl}
     />
+    <ClientRouter fallback="none" />
   </head>
 
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    <header class="site-header">
-      <a class="site-logo-link" href="/" aria-label="Filecoin Data Portal home">
+    <header class="site-header" transition:persist>
+      <a
+        class="site-logo-link"
+        href="/"
+        aria-label="Filecoin Data Portal home"
+        transition:persist
+      >
         <img
           src="/favicon.svg"
           alt="Filecoin Data Portal logo"
@@ -61,17 +61,11 @@ const currentPath = normalizePath(pathname)
       <nav class="site-nav" aria-label="Primary">
         <ul>
           {
-            navItems.map(({ href, label }) => {
-              const isCurrent = currentPath === normalizePath(href)
-
-              return (
-                <li>
-                  <a href={href} aria-current={isCurrent ? "page" : undefined}>
-                    {label}
-                  </a>
-                </li>
-              )
-            })
+            navItems.map(({ href, label }) => (
+              <li>
+                <a href={href}>{label}</a>
+              </li>
+            ))
           }
         </ul>
       </nav>

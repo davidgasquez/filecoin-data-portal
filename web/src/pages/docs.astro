@@ -10,6 +10,12 @@ import Layout from "../layouts/Layout.astro"
         <h1 id="docs-title">Documentation</h1>
     </section>
 
+    <nav class="section-nav" aria-label="Documentation sections">
+        <a href="#sources-title">Data Sources</a>
+        <a href="#using-datasets">Using Datasets</a>
+        <a href="#others-title">Others</a>
+    </nav>
+
     <section class="content-flow" aria-labelledby="sources-title">
     <h2 id="sources-title" class="section-title">Data Sources</h2>
 
@@ -219,7 +225,7 @@ import Layout from "../layouts/Layout.astro"
         <li><a href="https://github.com/FilForge/pylotus-rpc/">PyLotus</a></li>
     </ul>
 
-    <h2>Using Datasets</h2>
+    <h2 id="using-datasets" class="section-title">Using Datasets</h2>
     <p>
         The Filecoin Data Portal publishes up to date dataset on a daily bases
         as
@@ -341,7 +347,7 @@ import Layout from "../layouts/Layout.astro"
         > too.
     </p>
 
-    <h2 class="section-title">Others</h2>
+    <h2 id="others-title" class="section-title">Others</h2>
 
     <p>
         Do you have any other tool you want to use to explore the datasets? <a

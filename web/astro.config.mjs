@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig, fontProviders } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config"
 
 export default defineConfig({
   site: "https://filecoindataportal.xyz",
@@ -14,14 +14,9 @@ export default defineConfig({
     fonts: [
       {
         provider: fontProviders.bunny(),
-        name: "Inter",
-        cssVariable: "--font-sans",
-      },
-      {
-        provider: fontProviders.bunny(),
         name: "JetBrains Mono",
         cssVariable: "--font-monospace",
       },
     ],
   },
-});
+})
