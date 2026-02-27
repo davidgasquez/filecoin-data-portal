@@ -275,8 +275,8 @@ filecoin_daily_aggregations as (
     select
         time_bucket(interval '1 {{ period }}', date, date '2020-10-01') as date,
         sum(miner_tip_fil) as miner_tip_fil,
-        sum(miner_tips_plus_burnt_fil) as miner_tips_plus_burnt_fil
-    from {{ ref('filecoin_daily_aggregations') }}
+        sum(miner_tip_fil + burnt_fil) as miner_tips_plus_burnt_fil
+    from {{ source('raw_assets', 'raw_filecoin_daily_aggregations') }}
     group by 1
     order by date desc
 ),
