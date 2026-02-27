@@ -1,11 +1,17 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import Layout from "../layouts/Layout.astro"
 ---
 
-<Layout>
-    <h1>Documentation</h1>
+<Layout
+    title="Documentation | Filecoin Data Portal"
+    description="Data sources and usage patterns for Filecoin Data Portal datasets."
+>
+    <section class="page-header" aria-labelledby="docs-title">
+        <h1 id="docs-title">Documentation</h1>
+    </section>
 
-    <h2>Data Sources</h2>
+    <section class="content-flow" aria-labelledby="sources-title">
+    <h2 id="sources-title" class="section-title">Data Sources</h2>
 
     <p>
         Most of the data used through the portal comes from the Filecoin chain.
@@ -20,7 +26,7 @@ import Layout from "../layouts/Layout.astro";
         </a> that are collected from other places.
     </p>
 
-    <h3>Deals</h3>
+    <h3 id="deals">Deals</h3>
     <p>
         Deals data is available on chain and can be obtained in different ways:
     </p>
@@ -217,7 +223,7 @@ import Layout from "../layouts/Layout.astro";
     <p>
         The Filecoin Data Portal publishes up to date dataset on a daily bases
         as
-        <a href="/data.html">static Parquet files</a>. You can then use any tool
+        <a href="/data">static Parquet files</a>. You can then use any tool
         you want to explore and use these datasets! Let's go through some
         examples.
     </p>
@@ -335,7 +341,7 @@ import Layout from "../layouts/Layout.astro";
         > too.
     </p>
 
-    <h2>Others</h2>
+    <h2 class="section-title">Others</h2>
 
     <p>
         Do you have any other tool you want to use to explore the datasets? <a
@@ -343,14 +349,5 @@ import Layout from "../layouts/Layout.astro";
             >Reach out</a
         > and let's explore how to use the datasets with your favorite tools!
     </p>
+    </section>
 </Layout>
-
-<style>
-    h3 {
-        margin-top: 2em;
-        text-transform: uppercase;
-        font-size: 1.1em;
-        border-bottom: 1px solid #dddddd;
-        padding-bottom: 0.2em;
-    }
-</style>

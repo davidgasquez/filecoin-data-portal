@@ -1,68 +1,54 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import Card from "../components/Card.astro";
+import Layout from "../layouts/Layout.astro"
+import Card from "../components/Card.astro"
 ---
 
-<Layout>
-    <div class="hero">
-        <h1>Filecoin Data Portal</h1>
+<Layout
+  title="Filecoin Data Portal"
+  description="Open source, serverless, local first data platform for the Filecoin ecosystem."
+>
+  <section class="page-header" aria-labelledby="home-title">
+    <h1 id="home-title">Filecoin Data Portal</h1>
+    <p>
+      Open source, serverless, and local first data platform for the Filecoin
+      ecosystem.
+    </p>
+  </section>
 
-        <p>
-            Open source, serverless, and local-first Data Platform for the
-            Filecoin ecosystem.
-        </p>
+  <section aria-label="Portal highlights">
+    <div class="card-grid">
+      <Card
+        title="Open Data"
+        description="Download Filecoin datasets with key metrics and entities."
+        buttons={[{ text: "Get datasets", link: "/data" }]}
+      />
+      <Card
+        title="Dashboards"
+        description="Explore dashboards with key metrics from the Filecoin ecosystem."
+        buttons={[{ text: "Explore", link: "/dashboards" }]}
+      />
+      <Card
+        title="Data Requests"
+        description="Need specific data or metrics reflected. Let us know."
+        buttons={[
+          {
+            text: "Request dataset",
+            link: "https://github.com/davidgasquez/filecoin-data-portal/issues/new",
+            target: "_blank",
+          },
+        ]}
+      />
+      <Card
+        title="Support on Drips"
+        description="Support platform development via Drips."
+        buttons={[
+          {
+            text: "Support",
+            link: "https://www.drips.network/app/projects/github/davidgasquez/filecoin-data-portal",
+            target: "_blank",
+          },
+        ]}
+      />
     </div>
-
-    <div class="grid-container">
-        <Card
-            title="Open Data"
-            description="Download Filecoin datasets with key metrics and entities."
-            buttons={[{ text: "Get Datasets", link: "/data" }]}
-        />
-        <Card
-            title="Dashboards"
-            description="Explore dashboards with key metrics from the Filecoin ecosystem."
-            buttons={[{ text: "Explore", link: "/dashboards" }]}
-        />
-        <Card
-            title="Data Requests"
-            description="Need specific data? Want some metric reflected? Let's chat!"
-            buttons={[
-                {
-                    text: "Request Dataset",
-                    link: "https://github.com/davidgasquez/filecoin-data-portal/issues/new",
-                },
-            ]}
-        />
-        <Card
-            title="Support on Drips"
-            description="Support the data platform development via Drips."
-            buttons={[
-                {
-                    text: "Support",
-                    link: "https://www.drips.network/app/projects/github/davidgasquez/filecoin-data-portal",
-                },
-            ]}
-        />
-    </div>
+  </section>
 </Layout>
-
-<style>
-    .grid-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        margin-top: 40px;
-        margin-bottom: 40px;
-    }
-
-    @media (max-width: 768px) {
-        .grid-container {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .hero {
-        text-align: center;
-    }
-</style>

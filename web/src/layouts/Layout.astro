@@ -1,103 +1,91 @@
 ---
-import Head from "../components/Head.astro";
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const banner = new URL(Astro.props.image || "/banner.png", Astro.site);
-import { Font } from "astro:assets";
+import "../styles.css"
+import Head from "../components/Head.astro"
+
+interface Props {
+  title?: string
+  description?: string
+  image?: string
+  canonicalUrl?: string
+}
+
+const {
+  title = "Filecoin Data Portal",
+  description = "Open Data Platform for the Filecoin ecosystem.",
+  image = "/banner.png",
+  canonicalUrl = Astro.url.pathname,
+} = Astro.props
+
+const pathname = Astro.url.pathname
+
+const navItems = [
+  { href: "/", label: "Home" },
+  { href: "/about", label: "About" },
+  { href: "/data", label: "Data" },
+  { href: "/dashboards", label: "Dashboards" },
+  { href: "/docs", label: "Documentation" },
+]
+
+const normalizePath = (value: string) =>
+  value === "/" ? value : value.replace(/\/$/, "")
+
+const currentPath = normalizePath(pathname)
 ---
 
 <!doctype html>
 <html lang="en">
-    <head>
-        <Head
-            title="Filecoin Data Portal"
-            author="Nexus Data Labs"
-            description="Open Data Platform for the Filecoin Ecosystem."
+  <head>
+    <Head
+      title={title}
+      description={description}
+      image={image}
+      canonicalUrl={canonicalUrl}
+    />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <header class="site-header">
+      <a class="site-logo-link" href="/" aria-label="Filecoin Data Portal home">
+        <img
+          src="/favicon.svg"
+          alt="Filecoin Data Portal logo"
+          width="96"
+          height="96"
+          loading="eager"
+          decoding="async"
         />
-    </head>
+      </a>
 
-    <nav class="navbar">
+      <nav class="site-nav" aria-label="Primary">
         <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/data">Data</a></li>
-            <li><a href="/dashboards">Dashboards</a></li>
-            <li><a href="/docs">Documentation</a></li>
+          {
+            navItems.map(({ href, label }) => {
+              const isCurrent = currentPath === normalizePath(href)
+
+              return (
+                <li>
+                  <a href={href} aria-current={isCurrent ? "page" : undefined}>
+                    {label}
+                  </a>
+                </li>
+              )
+            })
+          }
         </ul>
-    </nav>
+      </nav>
+    </header>
 
-    <body>
-        <div class="logo">
-            <a href="/">
-                <img
-                    src="/favicon.svg"
-                    alt="Filecoin Data Portal Logo"
-                    width="120"
-                    height="120"
-                />
-            </a>
-        </div>
+    <main id="main-content" class="site-main">
+      <slot />
+    </main>
 
-        <slot />
-
-        <footer>
-            <p>
-                <a href="https://davidgasquez.com/">Reach Out</a> or explore the
-                <a href="https://github.com/davidgasquez/filecoin-data-portal"
-                    >project's code</a
-                >.
-            </p>
-        </footer>
-    </body>
+    <footer class="site-footer">
+      <p>
+        <a href="https://davidgasquez.com/">Reach out</a> or explore the
+        <a href="https://github.com/davidgasquez/filecoin-data-portal">project code</a>.
+      </p>
+    </footer>
+  </body>
 </html>
-
-<style>
-    .navbar {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 1rem;
-        width: 100%;
-    }
-
-    .navbar ul {
-        display: flex;
-        list-style: none;
-        padding: 0;
-        justify-content: center;
-        gap: 2em;
-        flex-wrap: wrap;
-    }
-
-    @media (max-width: 768px) {
-        .navbar ul {
-            flex-direction: column;
-            align-items: center;
-            gap: 1em;
-        }
-    }
-
-    .logo {
-        display: flex;
-        justify-content: center;
-        margin: 1rem 0;
-    }
-
-    .logo a:hover {
-        opacity: 0.8;
-        text-decoration: none;
-        border-bottom: none;
-    }
-
-    footer {
-        text-align: center;
-        padding: 1rem;
-        width: 100%;
-        font-size: 0.9rem;
-    }
-
-    footer a {
-        color: var(--text-color);
-        text-decoration: none;
-        border-bottom: 1px solid var(--link-underline-color);
-    }
-</style>

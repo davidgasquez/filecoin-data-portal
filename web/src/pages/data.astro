@@ -1,347 +1,308 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import Card from "../components/Card.astro";
+import Layout from "../layouts/Layout.astro"
+import Card from "../components/Card.astro"
+
+const quakPreview = (fileName: string) =>
+  `https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/${fileName}`
+
+const metricsDatasets = [
+  {
+    title: "Daily",
+    description: "Collection of Filecoin related metrics at daily resolution.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet",
+      },
+      {
+        text: "Sheet",
+        link: "https://docs.google.com/spreadsheets/d/1uq9J_WTJO6kAvQlrqkqR8GHfQfh3SJ84OSj88Mff6vY/edit?usp=sharing",
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Weekly",
+    description: "Collection of Filecoin related metrics at weekly resolution.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_weekly_metrics.parquet",
+      },
+      {
+        text: "Preview",
+        link: quakPreview("filecoin_weekly_metrics.parquet"),
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Monthly",
+    description: "Collection of Filecoin related metrics at monthly resolution.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_monthly_metrics.parquet",
+      },
+      {
+        text: "Preview",
+        link: quakPreview("filecoin_monthly_metrics.parquet"),
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Storage Providers Daily",
+    description: "Storage Provider specific metrics at daily resolution.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_daily_storage_providers_metrics.parquet",
+      },
+      {
+        text: "Preview",
+        link: quakPreview("filecoin_daily_storage_providers_metrics.parquet"),
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Clients Daily",
+    description: "Client specific metrics at daily resolution.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_daily_clients_metrics.parquet",
+      },
+      {
+        text: "Preview",
+        link: quakPreview("filecoin_daily_clients_metrics.parquet"),
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Transactions Daily",
+    description: "Transaction specific metrics at daily resolution.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_daily_transactions.parquet",
+      },
+      {
+        text: "Preview",
+        link: quakPreview("filecoin_daily_transactions.parquet"),
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Onramps Daily",
+    description: "Onramp specific metrics at daily resolution.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_daily_onramps_metrics.parquet",
+      },
+      {
+        text: "Preview",
+        link: quakPreview("filecoin_daily_onramps_metrics.parquet"),
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Upcoming Sector Expirations Daily",
+    description: "Daily view of upcoming sector expirations across the network.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_daily_upcoming_sector_expirations.parquet",
+      },
+      {
+        text: "Preview",
+        link: quakPreview("filecoin_daily_upcoming_sector_expirations.parquet"),
+        target: "_blank" as const,
+      },
+    ],
+  },
+]
+
+const entityDatasets = [
+  {
+    title: "Storage Providers",
+    description: "Information and metrics about all Storage Providers.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_storage_providers.parquet",
+      },
+      {
+        text: "Sheet",
+        link: "https://docs.google.com/spreadsheets/d/1hC5HwuiqQvQcVvV06n3SH0wKkZwbw20EufGYHSyENs0/edit?usp=sharing",
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Clients",
+    description: "Information and metrics about all Clients.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_clients.parquet",
+      },
+      {
+        text: "Sheet",
+        link: "https://docs.google.com/spreadsheets/d/15xi39OheVJ-_WyI7sxwmvgMIVFkZN07NOYWLe5iKXnI/edit?usp=sharing",
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Allocators",
+    description: "Information and metrics about all Allocators.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_allocators.parquet",
+      },
+      {
+        text: "Sheet",
+        link: "https://docs.google.com/spreadsheets/d/1uixeylC3pTeOkKh0L2fGsd7YKuyaA6Hse_fhWrm1BIA/edit?usp=sharing",
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Onramps",
+    description: "Information and metrics about known onramp entities.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_onramps.parquet",
+      },
+      {
+        text: "Preview",
+        link: quakPreview("filecoin_onramps.parquet"),
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Deals",
+    description: "Information and metrics about all deals.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_state_market_deals.parquet",
+      },
+      {
+        text: "Preview",
+        link: "https://sql-workbench.com/#queries=v0,select-*-from-'https%3A%2F%2Fdata.filecoindataportal.xyz%2Ffilecoin_state_market_deals.parquet'-limit-1000~",
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Datacap Allocations",
+    description: "Details about all Datacap allocations.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_datacap_allocations.parquet",
+      },
+      {
+        text: "Preview",
+        link: quakPreview("filecoin_datacap_allocations.parquet"),
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Allocators Datacap Allowances",
+    description: "Details about Datacap allowances for allocators.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_allocators_datacap_allowances.parquet",
+      },
+      {
+        text: "Preview",
+        link: quakPreview("filecoin_allocators_datacap_allowances.parquet"),
+        target: "_blank" as const,
+      },
+    ],
+  },
+  {
+    title: "Clients Datacap Allowances",
+    description: "Details about Datacap allowances for clients.",
+    buttons: [
+      {
+        text: "Download",
+        link: "https://data.filecoindataportal.xyz/filecoin_clients_datacap_allowances.parquet",
+      },
+      {
+        text: "Preview",
+        link: quakPreview("filecoin_clients_datacap_allowances.parquet"),
+        target: "_blank" as const,
+      },
+    ],
+  },
+]
 ---
 
-<Layout>
-    <h1>Data</h1>
-
+<Layout
+  title="Data | Filecoin Data Portal"
+  description="Browse and download open Filecoin datasets in Parquet and companion formats."
+>
+  <section class="page-header" aria-labelledby="data-title">
+    <h1 id="data-title">Data</h1>
     <p>
-        The Filecoin Data Portal provides multiple datasets for users to explore
-        and analyze. These datasets are updated on a daily bases and are
-        available for download in various formats.
+      Open datasets for Filecoin metrics and entities. Updated daily and
+      available in multiple formats.
+    </p>
+  </section>
+
+  <section class="content-flow" aria-labelledby="metrics">
+    <h2 id="metrics" class="section-title">Metrics</h2>
+    <p>
+      Datasets with metrics to analyze the Filecoin ecosystem at different time
+      scales.
     </p>
 
-    <h2 id="metrics">Metrics</h2>
-    <p>
-        These datasets offer a wide range of metrics that can be used to analyze
-        the Filecoin Ecosystem at different timescales.
-    </p>
-
-    <div class="grid">
-        <div class="grid-item">
-            <Card
-                title="Daily"
-                description="Collection of Filecoin related metrics at the daily level."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet",
-                    },
-                    {
-                        text: "Sheet",
-                        link: "https://docs.google.com/spreadsheets/d/1uq9J_WTJO6kAvQlrqkqR8GHfQfh3SJ84OSj88Mff6vY/edit?usp=sharing",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item">
-            <Card
-                title="Weekly"
-                description="Collection of Filecoin related metrics at the weekly level."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_weekly_metrics.parquet",
-                    },
-                    {
-                        text: "Preview",
-                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_weekly_metrics.parquet",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item">
-            <Card
-                title="Monthly"
-                description="Collection of Filecoin related metrics at the monthly level."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_monthly_metrics.parquet",
-                    },
-                    {
-                        text: "Preview",
-                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_monthly_metrics.parquet",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item medium">
-            <Card
-                title="Storage Providers Daily"
-                description="Storage Providers specific metrics, at the daily level."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_daily_storage_providers_metrics.parquet",
-                    },
-                    {
-                        text: "Preview",
-                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_daily_storage_providers_metrics.parquet",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item medium">
-            <Card
-                title="Clients Daily"
-                description="Clients specific metrics, at the daily level."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_daily_clients_metrics.parquet",
-                    },
-                    {
-                        text: "Preview",
-                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_daily_clients_metrics.parquet",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item medium">
-            <Card
-                title="Transactions Daily"
-                description="Transactions specific metrics, at the daily level."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_daily_transactions.parquet",
-                    },
-                    {
-                        text: "Preview",
-                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_daily_transactions.parquet",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item medium">
-            <Card
-                title="Onramps Daily"
-                description="Onramps specific metrics, at the daily level."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_daily_onramps_metrics.parquet",
-                    },
-                    {
-                        text: "Preview",
-                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_daily_onramps_metrics.parquet",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item medium">
-            <Card
-                title="Upcoming Sector Expirations Daily"
-                description="Daily view of upcoming sector expirations across the network."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_daily_upcoming_sector_expirations.parquet",
-                    },
-                    {
-                        text: "Preview",
-                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_daily_upcoming_sector_expirations.parquet",
-                    },
-                ]}
-            />
-        </div>
+    <div class="card-grid">
+      {
+        metricsDatasets.map((dataset) => (
+          <Card
+            title={dataset.title}
+            description={dataset.description}
+            headingLevel="h3"
+            buttons={dataset.buttons}
+          />
+        ))
+      }
     </div>
+  </section>
 
-    <h2 id="entities">Entities</h2>
+  <section class="content-flow" aria-labelledby="entities">
+    <h2 id="entities" class="section-title">Entities</h2>
     <p>
-        These datasets provide information and up to date metrics about the
-        different entities in the Filecoin Ecosystem. Each row in these datasets
-        represents a unique entity (deal, client, provider).
+      Datasets with entity level metrics where each row represents a unique
+      deal, client, provider, or related participant.
     </p>
 
-    <div class="grid">
-        <div class="grid-item medium">
-            <Card
-                title="Storage Providers"
-                description="Information and metrics about all the Storage Providers."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_storage_providers.parquet",
-                    },
-                    {
-                        text: "Sheet",
-                        link: "https://docs.google.com/spreadsheets/d/1hC5HwuiqQvQcVvV06n3SH0wKkZwbw20EufGYHSyENs0/edit?usp=sharing",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item medium">
-            <Card
-                title="Clients"
-                description="Information and metrics about all the Clients."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_clients.parquet",
-                    },
-                    {
-                        text: "Sheet",
-                        link: "https://docs.google.com/spreadsheets/d/15xi39OheVJ-_WyI7sxwmvgMIVFkZN07NOYWLe5iKXnI/edit?usp=sharing",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item medium">
-            <Card
-                title="Allocators"
-                description="Information and metrics about all the Allocators."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_allocators.parquet",
-                    },
-                    {
-                        text: "Sheet",
-                        link: "https://docs.google.com/spreadsheets/d/1uixeylC3pTeOkKh0L2fGsd7YKuyaA6Hse_fhWrm1BIA/edit?usp=sharing",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item medium">
-            <Card
-                title="Onramps"
-                description="Information and metrics about all known onramp entities."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_onramps.parquet",
-                    },
-                    {
-                        text: "Preview",
-                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_onramps.parquet",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item medium">
-            <Card
-                title="Deals"
-                description="Information and metrics about all the Deals."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_state_market_deals.parquet",
-                    },
-                    {
-                        text: "Preview",
-                        link: "https://sql-workbench.com/#queries=v0,select-*-from-'https%3A%2F%2Fdata.filecoindataportal.xyz%2Ffilecoin_state_market_deals.parquet'-limit-1000~",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item medium">
-            <Card
-                title="Datacap Allocations"
-                description="Details about all the Datacap Allocations."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_datacap_allocations.parquet",
-                    },
-                    {
-                        text: "Preview",
-                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_datacap_allocations.parquet",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item medium">
-            <Card
-                title="Allocators Datacap Allowances"
-                description="Details about all the Datacap Allowances for Allocators."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_allocators_datacap_allowances.parquet",
-                    },
-                    {
-                        text: "Preview",
-                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_allocators_datacap_allowances.parquet",
-                    },
-                ]}
-            />
-        </div>
-
-        <div class="grid-item medium">
-            <Card
-                title="Clients Datacap Allowances"
-                description="Details about all the Datacap Allowances for Clients."
-                buttons={[
-                    {
-                        text: "Download",
-                        link: "https://data.filecoindataportal.xyz/filecoin_clients_datacap_allowances.parquet",
-                    },
-                    {
-                        text: "Preview",
-                        link: "https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/filecoin_clients_datacap_allowances.parquet",
-                    },
-                ]}
-            />
-        </div>
+    <div class="card-grid">
+      {
+        entityDatasets.map((dataset) => (
+          <Card
+            title={dataset.title}
+            description={dataset.description}
+            headingLevel="h3"
+            buttons={dataset.buttons}
+          />
+        ))
+      }
     </div>
+  </section>
 </Layout>
-
-<style>
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-        margin: 30px 0;
-    }
-
-    .grid-item {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .grid-item.medium {
-        grid-column: span 1;
-    }
-
-    .grid-item.full {
-        grid-column: span 3;
-    }
-
-    /* Responsive grid */
-    @media (max-width: 768px) {
-        .grid {
-            grid-template-columns: 1fr;
-        }
-
-        .grid-item.medium,
-        .grid-item.full {
-            grid-column: span 1;
-        }
-    }
-
-    @media (min-width: 769px) and (max-width: 1024px) {
-        .grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .grid-item.full {
-            grid-column: span 2;
-        }
-    }
-</style>

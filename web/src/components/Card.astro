@@ -1,82 +1,101 @@
 ---
 interface Button {
-    text: string;
-    link: string;
-    target?: string;
+  text: string
+  link: string
+  target?: "_blank" | "_self"
 }
 
 interface Props {
-    title: string;
-    description: string;
-    buttons?: Button[];
+  title: string
+  description: string
+  buttons?: Button[]
+  headingLevel?: "h2" | "h3"
 }
 
-const { title, description, buttons = [] } = Astro.props;
+const {
+  title,
+  description,
+  buttons = [],
+  headingLevel = "h2",
+} = Astro.props
+
+const HeadingTag = headingLevel
 ---
 
-<div class="card">
-    <div>
-        <h2>{title}</h2>
-        <p>{description}</p>
-    </div>
-    {
-        buttons.length > 0 && (
-            <div class="button-group">
-                {buttons.map((button) => (
-                    <a href={button.link} class="button" target={button.target}>
-                        {button.text}
-                    </a>
-                ))}
-            </div>
-        )
-    }
-</div>
+<article class="card">
+  <div class="card-body">
+    <HeadingTag class="card-title">{title}</HeadingTag>
+    <p>{description}</p>
+  </div>
+
+  {
+    buttons.length > 0 && (
+      <div class="card-actions" aria-label={`${title} links`}>
+        {buttons.map((button) => {
+          const isExternal = button.target === "_blank"
+
+          return (
+            <a
+              href={button.link}
+              class="card-action"
+              target={button.target}
+              rel={isExternal ? "noopener noreferrer" : undefined}
+            >
+              {button.text}
+            </a>
+          )
+        })}
+      </div>
+    )
+  }
+</article>
 
 <style>
-    .card {
-        border: 1px solid var(--link-underline-color);
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 100%;
-    }
+  .card {
+    display: grid;
+    gap: var(--space-4);
+    border: 1px solid var(--color-border);
+    padding: var(--space-4);
+    block-size: 100%;
+  }
 
-    .card h2 {
-        margin-top: 0;
-        margin-bottom: 10px;
-        font-size: 1.2em;
-        color: var(--text-color);
-    }
+  .card-body {
+    display: grid;
+    gap: var(--space-3);
+  }
 
-    .card p {
-        margin-bottom: 20px;
-        flex-grow: 1;
-        color: var(--text-color);
-    }
+  .card-title {
+    margin: 0;
+    font-size: 1.2rem;
+    text-transform: none;
+    letter-spacing: normal;
+  }
 
-    .button-group {
-        display: flex;
-        gap: 5px;
-        flex-wrap: wrap;
-        align-items: flex-start;
-    }
+  .card-body p {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
 
-    .button {
-        background-color: var(--text-color);
-        color: var(--background-color);
-        padding: 8px 15px;
-        border: none;
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-        align-self: flex-start;
-        border-bottom: none;
-        font-size: 0.9em;
-        cursor: pointer;
-    }
+  .card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
 
-    .button:hover {
-        background-color: var(--link-underline-color);
-    }
+  .card-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid var(--color-text);
+    background: var(--color-text);
+    color: var(--color-bg);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .card-action:hover {
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
 </style>

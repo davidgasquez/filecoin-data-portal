@@ -1,103 +1,65 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import Card from "../components/Card.astro";
+import Layout from "../layouts/Layout.astro"
+import Card from "../components/Card.astro"
+
+const dashboards = [
+  {
+    title: "Filecoin In Numbers",
+    description:
+      "High level view into core Filecoin network metrics with a rich chart set.",
+    link: "https://numbers.filecoindataportal.xyz/",
+  },
+  {
+    title: "Filecoin Pulse",
+    description:
+      "Operational dashboard with Storage Provider, Client, and Allocator level metrics.",
+    link: "https://pulse.filecoindataportal.xyz/",
+  },
+  {
+    title: "Dune Filecoin Metrics",
+    description:
+      "Core Filecoin metrics in Dune Analytics for SQL based exploration.",
+    link: "https://dune.com/kalen/filecoin-daily-metrics",
+  },
+  {
+    title: "Storage Providers Market",
+    description:
+      "Visibility into the market between Storage Clients and Storage Providers.",
+    link: "https://filecoin-project.github.io/filecoin-storage-providers-market/",
+  },
+]
 ---
 
-<Layout>
-    <h1>Dashboards</h1>
-
+<Layout
+  title="Dashboards | Filecoin Data Portal"
+  description="Explore public dashboards powered by Filecoin Data Portal datasets."
+>
+  <section class="page-header" aria-labelledby="dashboards-title">
+    <h1 id="dashboards-title">Dashboards</h1>
     <p>
-        The Filecoin Data Portal powers multiple public dashboards for anyone to
-        explore. These are all built on top of the same data, so you can easily
-        compare them.
+      Multiple public dashboards powered by the same open datasets. Compare
+      views and drill down by use case.
     </p>
+  </section>
 
-    <h3>
-        <a href="https://numbers.filecoindataportal.xyz/">Filecoin In Numbers</a
-        >
-    </h3>
-
-    <p>
-        A high level view into Filecoin Network core metrics with over detailed
-        50 charts.
-    </p>
-
-    <a href="https://numbers.filecoindataportal.xyz/" class="dashboard-button"
-        >Visit Dashboard</a
-    >
-
-    <h3>
-        <a href="https://pulse.filecoindataportal.xyz/">Filecoin In Pulse</a>
-    </h3>
-
-    <p>
-        Operational dashboard for Filecoin. Access information at the Storage
-        Provider, Client, or, Allocator level.
-    </p>
-
-    <a href="https://pulse.filecoindataportal.xyz/" class="dashboard-button"
-        >Visit Dashboard</a
-    >
-
-    <h3>
-        <a href="https://dune.com/kalen/filecoin-daily-metrics"
-            >Dune Filecoin Metrics</a
-        >
-    </h3>
-
-    <p>
-        Same metrics as the Filecoin In Numbers dashboard, but in Dune
-        Analytics, providing a view into the Filecoin Ecosystem.
-    </p>
-
-    <a
-        href="https://dune.com/kalen/filecoin-daily-metrics"
-        class="dashboard-button">Visit Dashboard</a
-    >
-
-    <h3>
-        <a
-            href="https://filecoin-project.github.io/filecoin-storage-providers-market/"
-            >Filecoin Storage Providers Market Dashboard</a
-        >
-    </h3>
-
-    <p>
-        Charts to improve visibility into the market between Storage Clients and
-        Storage Providers.
-    </p>
-
-    <a
-        href="https://filecoin-project.github.io/filecoin-storage-providers-market/"
-        class="dashboard-button">Visit Dashboard</a
-    >
+  <section aria-label="Dashboard list">
+    <div class="card-grid">
+      {
+        dashboards.map((dashboard) => (
+          <Card
+            title={dashboard.title}
+            description={dashboard.description}
+            headingLevel="h3"
+            buttons={[
+              {
+                text: "Visit dashboard",
+                link: dashboard.link,
+                target: "_blank",
+              },
+            ]}
+          />
+        ))
+      }
+    </div>
+  </section>
 </Layout>
-
-<style>
-    h3 {
-        margin-top: 2em;
-        text-transform: uppercase;
-        font-size: 1.1em;
-        border-bottom: 1px solid #dddddd;
-        padding-bottom: 0.2em;
-    }
-
-    .dashboard-button {
-        display: inline-block;
-        background-color: var(--text-color);
-        color: var(--background-color);
-        padding: 8px 15px;
-        border: none;
-        text-decoration: none;
-        text-align: center;
-        align-self: flex-start;
-        border-bottom: none;
-        font-size: 0.9em;
-        cursor: pointer;
-        margin-bottom: 1em;
-    }
-
-    .dashboard-button:hover {
-        background-color: var(--link-underline-color);
-    }
-</style>
