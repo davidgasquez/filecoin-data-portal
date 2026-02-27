@@ -229,6 +229,64 @@ def raw_filecoin_state_market_deals(
 
 
 @dg.asset(compute_kind="python")
+def raw_filecoin_daily_aggregations(
+    context: dg.AssetExecutionContext,
+    lily_bigquery: BigQueryArrowResource,
+    duckdb: DuckDBResource,
+) -> None:
+    query = """
+        with miner_tips_by_height as (
+            select
+                height,
+                sum(cast(miner_tip as numeric)) as miner_tip_attofil
+            from `lily-data.lily.derived_gas_outputs`
+            group by 1
+        ),
+
+        burnt_fil_delta_by_height as (
+            select
+                height,
+                cast(burnt_fil as numeric) - lag(cast(burnt_fil as numeric)) over (order by height) as burnt_fil_delta_attofil
+            from `lily-data.lily.chain_economics`
+        ),
+
+        combined as (
+            select
+                coalesce(m.height, b.height) as height,
+                coalesce(m.miner_tip_attofil, 0) as miner_tip_attofil,
+                coalesce(b.burnt_fil_delta_attofil, 0) as burnt_fil_delta_attofil
+            from miner_tips_by_height as m
+            full outer join burnt_fil_delta_by_height as b using (height)
+        )
+
+        select
+            date(timestamp_seconds((height * 30) + 1598306400)) as date,
+            sum(miner_tip_attofil) / 1e18 as miner_tip_fil,
+            sum(burnt_fil_delta_attofil) / 1e18 as burnt_fil
+        from combined
+        group by 1
+        order by 1 desc
+    """
+
+    with lily_bigquery.get_client() as client:
+        job = client.query(query)
+        arrow_result = job.to_arrow(create_bqstorage_client=True)
+
+    context.log.info(f"Fetched {arrow_result.num_rows} rows from BigQuery")
+
+    with duckdb.get_connection() as duckdb_con:
+        _ = duckdb_con.execute(
+            """
+            create or replace table raw.raw_filecoin_daily_aggregations as (
+                select * from arrow_result
+            )
+            """
+        )
+
+        context.log.info(f"Persisted {arrow_result.num_rows} rows")
+
+
+@dg.asset(compute_kind="python")
 def raw_filecoin_transactions(
     context: dg.AssetExecutionContext,
     lily_bigquery: BigQueryArrowResource,

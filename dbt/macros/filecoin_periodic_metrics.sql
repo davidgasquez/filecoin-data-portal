@@ -271,6 +271,16 @@ transactions as (
     order by date desc
 ),
 
+filecoin_daily_aggregations as (
+    select
+        time_bucket(interval '1 {{ period }}', date, date '2020-10-01') as date,
+        sum(miner_tip_fil) as miner_tip_fil,
+        sum(miner_tip_fil + burnt_fil) as miner_tips_plus_burnt_fil
+    from {{ source('raw_assets', 'raw_filecoin_daily_aggregations') }}
+    group by 1
+    order by date desc
+),
+
 fil_price as (
     select
         time_bucket(interval '1 {{ period }}', cast(time_start as timestamp), date '2020-10-01') as date,
@@ -408,6 +418,8 @@ select
     reserve_disbursed_fil,
     locked_fil,
     burnt_fil,
+    miner_tips_plus_burnt_fil,
+    miner_tip_fil,
     reward_per_wincount,
 
     -- Fil Plus Shares
@@ -465,6 +477,7 @@ left join network_base_fee on date_calendar.date = network_base_fee.date
 left join gas_usage on date_calendar.date = gas_usage.date
 left join oso_filecoin_collection_events on date_calendar.date = oso_filecoin_collection_events.date
 left join transactions on date_calendar.date = transactions.date
+left join filecoin_daily_aggregations on date_calendar.date = filecoin_daily_aggregations.date
 left join fil_price on date_calendar.date = fil_price.date
 left join raw_goldsky_foc_metrics on date_calendar.date = raw_goldsky_foc_metrics.date
 order by date_calendar.date desc
