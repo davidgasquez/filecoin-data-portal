@@ -48,6 +48,8 @@ COPY (
     storage_providers_collateral - lag(storage_providers_collateral) over (order by date) as storage_providers_collateral_delta,
     burnt_fil,
     burnt_fil - lag(burnt_fil) over (order by date) as burnt_fil_delta,
+    miner_tip_fil,
+    miner_tips_plus_burnt_fil,
     reward_per_wincount,
     reward_per_wincount - lag(reward_per_wincount) over (order by date) as reward_per_wincount_delta,
     unit_base_fee,

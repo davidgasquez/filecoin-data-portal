@@ -1170,6 +1170,21 @@ movingAverageLinePlot({
 ```
 </div>
 
+<div class="card" id="miner-tip-fil">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("Miner Tip FIL", "miner-tip-fil"),
+  subtitle: "Daily miner tips paid on-chain.",
+  caption: "Displaying 30-day moving average",
+  yField: "miner_tip_fil",
+  yLabel: "FIL",
+  showArea: true
+})
+```
+</div>
+
 <div class="card" id="burnt-fil-delta">
 
 ```js

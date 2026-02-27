@@ -144,6 +144,10 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_filecoin_transactions"]
+      - name: raw_filecoin_daily_aggregations
+        meta:
+          dagster:
+            asset_key: ["raw_filecoin_daily_aggregations"]
       - name: raw_filecoin_storage_providers_information
         meta:
           dagster:
