@@ -27,3 +27,14 @@ Downstream applications use the published public Parquet files at `https://data.
 1. Add/modify assets within the appropriate module under `fdp/`
 2. Create or update the relevant `dbt` models in `dbt/models/`
 3. Run the asset with `uv run dagster asset materialize --select $ASSET_NAME -m fdp.definitions` CLI
+
+## Tools
+
+### BigQuery CLI
+
+Run arbitrary queries against BigQuery with `uv run tools/bq_query.py`.
+
+- Run: `uv run tools/bq_query.py "SELECT 1 AS value"`
+- Query input: argument, `--file path.sql`, or stdin
+- Useful flags: `--dry-run`, `--project`, `--location`, `--max-results`, `--pretty`
+- Limit results to avoid large outputs
