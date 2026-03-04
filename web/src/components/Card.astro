@@ -53,9 +53,10 @@ const HeadingTag = headingLevel
 <style>
   .card {
     display: grid;
+    grid-template-rows: 1fr auto;
     gap: var(--space-4);
     border: 1px solid var(--color-border);
-    background: var(--color-bg-muted);
+    background: var(--color-bg);
     padding: var(--space-4);
     block-size: 100%;
   }
@@ -63,6 +64,7 @@ const HeadingTag = headingLevel
   .card-body {
     display: grid;
     gap: var(--space-3);
+    align-content: start;
   }
 
   .card-title {
@@ -87,12 +89,15 @@ const HeadingTag = headingLevel
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.45rem 0.75rem;
+    min-block-size: 2.25rem;
+    padding: 0.45rem 0.85rem;
     border: 1px solid var(--color-text);
     background: var(--color-text);
     color: var(--color-bg);
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .card-action:hover {
