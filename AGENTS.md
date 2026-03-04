@@ -38,3 +38,12 @@ Run arbitrary queries against BigQuery with `uv run tools/bq_query.py`.
 - Query input: argument, `--file path.sql`, or stdin
 - Useful flags: `--dry-run`, `--project`, `--location`, `--max-results`, `--pretty`
 - Limit results to avoid large outputs
+
+### MotherDuck CLI
+
+Run arbitrary queries against MotherDuck with `uv run --env-file .env tools/md_query.py`.
+
+- Run: `uv run --env-file .env tools/md_query.py "SELECT 1 AS value"`
+- Query input: argument, `--file path.sql`, or stdin
+- Useful flags: `--database`, `--max-results`, `--pretty`, `--read-only`
+- Requires `DATABASE_PATH` and MotherDuck token (`motherduck_token` or `MOTHERDUCK_TOKEN`)
