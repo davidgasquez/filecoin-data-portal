@@ -167,11 +167,6 @@ cython_debug/
 .jupyter_cache/
 _freeze/
 
-# Ignore data files
-data/*
-!data/.gitkeep
-!data/IPFS_CID
-
 # Node
 .DS_Store
 /dist/
