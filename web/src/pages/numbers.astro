@@ -1,0 +1,61 @@
+---
+import Layout from "../layouts/Layout.astro"
+import LineChart from "../components/LineChart.astro"
+
+const charts = [
+  {
+    title: "Daily Data Onboarding",
+    metricKey: "sector_onboarding_raw_power_pibs",
+    yLabel: "Raw Power",
+    format: "pib",
+  },
+  {
+    title: "Clients with 1 TiB+ Active Data",
+    metricKey: "clients_with_active_data_gt_1_tibs",
+    yLabel: "Clients",
+    format: "integer",
+  },
+  {
+    title: "Total FIL in Paid Deals",
+    metricKey: "deal_storage_cost_fil",
+    yLabel: "FIL",
+    format: "fil",
+  },
+  {
+    title: "Total Value Flow",
+    metricKey: "total_value_flow_fil",
+    yLabel: "FIL",
+    format: "mfil",
+  },
+] as const
+---
+
+<Layout
+  title="Filecoin in Numbers | Filecoin Data Portal"
+  description="Core Filecoin metrics with interactive KPI charts."
+>
+  <section class="page-header" aria-labelledby="numbers-title">
+    <h1 id="numbers-title">Filecoin in Numbers</h1>
+  </section>
+
+  <section class="kpi-section" aria-label="KPI charts">
+    <div class="kpi-range-toggle" role="group" aria-label="KPI timeframe">
+      <button type="button" data-kpi-range="1y" aria-pressed="true">1Y</button>
+      <button type="button" data-kpi-range="all" aria-pressed="false">All</button>
+    </div>
+
+    <div class="card-grid card-grid--two-up">
+      {
+        charts.map((chart) => (
+          <LineChart
+            title={chart.title}
+            metricKey={chart.metricKey}
+            yLabel={chart.yLabel}
+            format={chart.format}
+            showMovingAverage
+          />
+        ))
+      }
+    </div>
+  </section>
+</Layout>
