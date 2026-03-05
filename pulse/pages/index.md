@@ -4,6 +4,10 @@ title: Filecoin Pulse
 
 _A view into the Filecoin Network. Powered by the [Filecoin Data Portal](https://filecoindataportal.xyz/)._
 
+<Alert status="warning">
+  Pulse is being considered for deprecation. Prefer [DataCap Stats](https://datacapstats.io/), [Filecoin Tools](https://filecoin.tools/), or [Filecoin in Numbers](https://numbers.filecoindataportal.xyz/). If none of these fit your use case, [open an issue](https://github.com/davidgasquez/filecoin-data-portal/issues/new).
+</Alert>
+
 <DateRange
   name=date_filter
   start=2020-09-01

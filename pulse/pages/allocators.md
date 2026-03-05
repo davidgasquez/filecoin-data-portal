@@ -4,6 +4,10 @@ title: Allocators
 
 _A detailed view into Filecoin Allocators._
 
+<Alert status="warning">
+  Pulse is being considered for deprecation. Prefer [DataCap Stats](https://datacapstats.io/), [Filecoin Tools](https://filecoin.tools/), or [Filecoin in Numbers](https://numbers.filecoindataportal.xyz/). If none of these fit your use case, [open an issue](https://github.com/davidgasquez/filecoin-data-portal/issues/new).
+</Alert>
+
 <BigLink href='https://docs.google.com/spreadsheets/d/1uixeylC3pTeOkKh0L2fGsd7YKuyaA6Hse_fhWrm1BIA'>
   <p style="font-size: 1.3rem; text-align: center; font-family: monospace;">Allocators Google Sheets</p>
 </BigLink>

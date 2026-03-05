@@ -4,6 +4,10 @@ title: Onramps
 
 _A detailed view into Filecoin Onramps._
 
+<Alert status="warning">
+  Pulse is being considered for deprecation. Prefer [DataCap Stats](https://datacapstats.io/), [Filecoin Tools](https://filecoin.tools/), or [Filecoin in Numbers](https://numbers.filecoindataportal.xyz/). If none of these fit your use case, [open an issue](https://github.com/davidgasquez/filecoin-data-portal/issues/new).
+</Alert>
+
 <Alert status="info">
   These comparisons rely solely on on-chain sector data. Some onramps may self-deal, pad sectors, or perform other pre/post activities that are not captured here. Deals data comes from State Market Deals and excludes DDO deals.
 </Alert>

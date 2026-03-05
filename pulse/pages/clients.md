@@ -4,6 +4,10 @@ title: Clients
 
 _A detailed view into Filecoin Clients._
 
+<Alert status="warning">
+  Pulse is being considered for deprecation. Prefer [DataCap Stats](https://datacapstats.io/), [Filecoin Tools](https://filecoin.tools/), or [Filecoin in Numbers](https://numbers.filecoindataportal.xyz/). If none of these fit your use case, [open an issue](https://github.com/davidgasquez/filecoin-data-portal/issues/new).
+</Alert>
+
 <BigLink href='https://docs.google.com/spreadsheets/d/15xi39OheVJ-_WyI7sxwmvgMIVFkZN07NOYWLe5iKXnI'>
   Explore Clients on Google Sheets
 </BigLink>
