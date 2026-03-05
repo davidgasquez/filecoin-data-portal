@@ -295,24 +295,6 @@
     margin-block-end: var(--space-6);
   }
 
-  .kpi-section__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    flex-wrap: wrap;
-  }
-
-  .kpi-section__header .section-title {
-    margin: 0;
-    border: 0;
-    padding: 0;
-  }
-
-  .kpi-section__copy {
-    margin-block: var(--space-3) 0;
-  }
-
   .kpi-range-toggle {
     display: inline-flex;
     border: 1px solid var(--color-border-strong);
@@ -347,6 +329,13 @@
     gap: var(--space-1);
   }
 
+  .line-chart__title-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
   .line-chart__header h3,
   .line-chart__header p {
     margin: 0;
@@ -354,6 +343,15 @@
 
   .line-chart__header h3 {
     font-size: 1rem;
+  }
+
+  .line-chart__headline {
+    border: 1px solid var(--color-border-strong);
+    padding: 0.08rem 0.35rem;
+    font-size: 0.82rem;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: 0.01em;
   }
 
   .line-chart__header p {
@@ -364,16 +362,26 @@
   .line-chart__canvas {
     position: relative;
     inline-size: 100%;
-    min-block-size: 300px;
+    min-block-size: 340px;
   }
 
   .line-chart__svg {
     inline-size: 100%;
-    block-size: 300px;
+    block-size: 340px;
   }
 
   .line-chart__path {
     fill: none;
+    stroke: var(--color-border-strong);
+    stroke-width: 2;
+  }
+
+  .line-chart__path--raw {
+    stroke: var(--color-border);
+    stroke-width: 1.25;
+  }
+
+  .line-chart__path--average {
     stroke: var(--color-border-strong);
     stroke-width: 2;
   }

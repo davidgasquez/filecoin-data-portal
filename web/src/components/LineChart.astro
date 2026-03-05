@@ -8,9 +8,10 @@ interface Props {
     | "total_value_flow_fil"
   yLabel: string
   format: "pib" | "integer" | "fil" | "mfil"
+  showMovingAverage?: boolean
 }
 
-const { title, metricKey, yLabel, format } = Astro.props
+const { title, metricKey, yLabel, format, showMovingAverage = false } = Astro.props
 ---
 
 <article
@@ -18,9 +19,13 @@ const { title, metricKey, yLabel, format } = Astro.props
   data-kpi-chart
   data-metric-key={metricKey}
   data-format={format}
+  data-show-moving-average={String(showMovingAverage)}
 >
   <header class="line-chart__header">
-    <h3>{title}</h3>
+    <div class="line-chart__title-row">
+      <h3>{title}</h3>
+      <span class="line-chart__headline" data-kpi-last-value hidden></span>
+    </div>
     <p>{yLabel}</p>
   </header>
 
@@ -51,6 +56,14 @@ const { title, metricKey, yLabel, format } = Astro.props
 
   const CHART_SELECTOR = "[data-kpi-chart]"
   const RANGE_BUTTON_SELECTOR = "[data-kpi-range]"
+  const CHART_HEIGHT = 340
+  const CHART_MARGIN = { top: 14, right: 12, bottom: 40, left: 74 }
+  const MOVING_AVERAGE_WINDOW_DAYS = 30
+  const MOVING_AVERAGE_LABEL = `MA${MOVING_AVERAGE_WINDOW_DAYS}`
+  const HOVER_SYNC_EVENT = "kpi-chart-hover-sync"
+  const HOVER_CLEAR_EVENT = "kpi-chart-hover-clear"
+
+  const renderCleanupMap = new WeakMap<HTMLElement, () => void>()
 
   const chartNodes = Array.from(document.querySelectorAll<HTMLElement>(CHART_SELECTOR))
 
@@ -84,7 +97,7 @@ const { title, metricKey, yLabel, format } = Astro.props
     timeZone: "UTC",
   })
 
-  function formatValue(value: number, format: string): string {
+  function formatValue(value: number, format: Props["format"]): string {
     if (format === "integer") {
       return Math.round(value).toLocaleString("en-US")
     }
@@ -106,7 +119,7 @@ const { title, metricKey, yLabel, format } = Astro.props
     })} FIL`
   }
 
-  function formatTickValue(value: number, format: string): string {
+  function formatTickValue(value: number, format: Props["format"]): string {
     if (format === "integer") {
       return Math.round(value).toLocaleString("en-US")
     }
@@ -128,6 +141,28 @@ const { title, metricKey, yLabel, format } = Astro.props
     })
   }
 
+  function formatHeadlineValue(value: number, format: Props["format"]): string {
+    if (format === "integer") {
+      return Math.round(value).toLocaleString("en-US")
+    }
+
+    if (format === "pib") {
+      return `${value.toLocaleString("en-US", {
+        maximumFractionDigits: 2,
+      })}PiB`
+    }
+
+    if (format === "mfil") {
+      return `${(value / 1e6).toLocaleString("en-US", {
+        maximumFractionDigits: 2,
+      })}MFIL`
+    }
+
+    return `${value.toLocaleString("en-US", {
+      maximumFractionDigits: 2,
+    })}FIL`
+  }
+
   function getRowsForRange(range: RangeType): ParsedKpiRow[] {
     if (range === "all") {
       return rows
@@ -146,7 +181,7 @@ const { title, metricKey, yLabel, format } = Astro.props
     return rows.filter((row) => row.timestamp >= oneYearAgo)
   }
 
-  function findClosestPointIndex(points: { x: number; y: number }[], x: number): number {
+  function findClosestPointIndex(points: { x: number }[], x: number): number {
     if (points.length === 1) {
       return 0
     }
@@ -172,6 +207,51 @@ const { title, metricKey, yLabel, format } = Astro.props
       : leftCandidate
   }
 
+  function findClosestTimestampIndex(points: { timestamp: number }[], timestamp: number): number {
+    if (points.length === 1) {
+      return 0
+    }
+
+    let left = 0
+    let right = points.length - 1
+
+    while (left < right) {
+      const mid = Math.floor((left + right) / 2)
+      if (points[mid].timestamp < timestamp) {
+        left = mid + 1
+      } else {
+        right = mid
+      }
+    }
+
+    const rightCandidate = left
+    const leftCandidate = Math.max(0, rightCandidate - 1)
+
+    return Math.abs(points[rightCandidate].timestamp - timestamp) <
+      Math.abs(points[leftCandidate].timestamp - timestamp)
+      ? rightCandidate
+      : leftCandidate
+  }
+
+  function buildMovingAverage(values: number[], windowSize: number): number[] {
+    if (windowSize < 1) {
+      throw new Error("Moving average window size must be greater than zero")
+    }
+
+    let runningTotal = 0
+
+    return values.map((value, index) => {
+      runningTotal += value
+
+      if (index >= windowSize) {
+        runningTotal -= values[index - windowSize]
+      }
+
+      const sampleSize = Math.min(windowSize, index + 1)
+      return runningTotal / sampleSize
+    })
+  }
+
   function buildTicks(min: number, max: number, count: number): number[] {
     if (count < 2) {
       return [min]
@@ -193,52 +273,69 @@ const { title, metricKey, yLabel, format } = Astro.props
 
   function renderChart(node: HTMLElement, filteredRows: ParsedKpiRow[]): void {
     const metricKey = node.dataset.metricKey as keyof ParsedKpiRow
-    const format = node.dataset.format ?? "integer"
+    const format = (node.dataset.format as Props["format"] | undefined) ?? "integer"
+    const shouldShowMovingAverage = node.dataset.showMovingAverage === "true"
 
     const svg = node.querySelector<SVGElement>(".line-chart__svg")
     const tooltip = node.querySelector<HTMLDivElement>(".line-chart__tooltip")
     const emptyMessage = node.querySelector<HTMLParagraphElement>(".line-chart__empty")
+    const headlineValue = node.querySelector<HTMLSpanElement>("[data-kpi-last-value]")
 
-    if (!svg || !tooltip || !emptyMessage) {
+    if (!svg || !tooltip || !emptyMessage || !headlineValue) {
       throw new Error("Line chart markup is incomplete")
     }
 
-    const width = Math.max(360, node.clientWidth)
-    const height = 300
-    const margin = { top: 12, right: 12, bottom: 36, left: 74 }
+    const previousCleanup = renderCleanupMap.get(node)
+    if (previousCleanup) {
+      previousCleanup()
+      renderCleanupMap.delete(node)
+    }
+
+    const width = Math.max(380, node.clientWidth)
+    const height = CHART_HEIGHT
+    const margin = CHART_MARGIN
     const plotWidth = width - margin.left - margin.right
     const plotHeight = height - margin.top - margin.bottom
 
-    const series = filteredRows
+    const rawSeries = filteredRows
       .map((row) => ({
         timestamp: row.timestamp,
         value: Number(row[metricKey]),
       }))
       .filter((row) => Number.isFinite(row.value))
 
-    if (series.length < 2) {
+    if (rawSeries.length < 2) {
       svg.innerHTML = ""
       emptyMessage.hidden = false
       tooltip.hidden = true
+      headlineValue.hidden = true
+      headlineValue.textContent = ""
       return
     }
 
     emptyMessage.hidden = true
 
-    const minX = series[0].timestamp
-    const maxX = series[series.length - 1].timestamp
+    const minX = rawSeries[0].timestamp
+    const maxX = rawSeries[rawSeries.length - 1].timestamp
 
-    let minY = Math.min(...series.map((point) => point.value))
-    let maxY = Math.max(...series.map((point) => point.value))
+    const rawValues = rawSeries.map((point) => point.value)
+    const displayValues = shouldShowMovingAverage
+      ? buildMovingAverage(rawValues, MOVING_AVERAGE_WINDOW_DAYS)
+      : rawValues
 
-    if (minY === maxY) {
-      minY -= 1
-      maxY += 1
+    const dataMinY = Math.min(...rawValues)
+    const dataMaxY = Math.max(...rawValues)
+
+    const startsAtZero = dataMinY >= 0
+    let minY = startsAtZero ? 0 : dataMinY
+    let maxY = dataMaxY
+
+    if (maxY === minY) {
+      maxY = minY + 1
     }
 
-    const yPadding = (maxY - minY) * 0.08
-    minY -= yPadding
-    maxY += yPadding
+    const yPaddingTop = (maxY - minY) * 0.08
+    maxY += yPaddingTop
 
     const scaleX = (value: number): number =>
       margin.left + ((value - minX) / (maxX - minX)) * plotWidth
@@ -246,13 +343,30 @@ const { title, metricKey, yLabel, format } = Astro.props
     const scaleY = (value: number): number =>
       margin.top + ((maxY - value) / (maxY - minY)) * plotHeight
 
-    const points = series.map((point) => ({
+    const rawPoints = rawSeries.map((point) => ({
       ...point,
       x: scaleX(point.timestamp),
       y: scaleY(point.value),
     }))
 
-    const path = points
+    const points = rawSeries.map((point, index) => ({
+      timestamp: point.timestamp,
+      rawValue: point.value,
+      value: displayValues[index],
+      x: scaleX(point.timestamp),
+      y: scaleY(displayValues[index]),
+    }))
+
+    const latestPoint = points[points.length - 1]
+    const headlineSuffix = shouldShowMovingAverage ? ` [${MOVING_AVERAGE_LABEL}]` : ""
+    headlineValue.textContent = `${formatHeadlineValue(latestPoint.value, format)}${headlineSuffix}`
+    headlineValue.hidden = false
+
+    const rawPath = rawPoints
+      .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+      .join(" ")
+
+    const displayPath = points
       .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
       .join(" ")
 
@@ -288,13 +402,20 @@ const { title, metricKey, yLabel, format } = Astro.props
       })
       .join("")
 
+    const pathMarkup = shouldShowMovingAverage
+      ? `
+        <path d="${rawPath}" class="line-chart__path line-chart__path--raw" />
+        <path d="${displayPath}" class="line-chart__path line-chart__path--average" />
+      `
+      : `<path d="${displayPath}" class="line-chart__path" />`
+
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
     svg.innerHTML = `
       ${yTickMarkup}
       ${xTickMarkup}
       <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}" class="line-chart__axis" />
       <line x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}" class="line-chart__axis" />
-      <path d="${path}" class="line-chart__path" />
+      ${pathMarkup}
       <line x1="0" y1="0" x2="0" y2="0" class="line-chart__crosshair" visibility="hidden" />
       <circle cx="0" cy="0" r="4" class="line-chart__dot" visibility="hidden" />
       <rect x="${margin.left}" y="${margin.top}" width="${plotWidth}" height="${plotHeight}" class="line-chart__overlay" />
@@ -308,24 +429,32 @@ const { title, metricKey, yLabel, format } = Astro.props
       throw new Error("Line chart interactive layer could not be initialized")
     }
 
+    const chartId = String(metricKey)
+
+    const emitHoverSync = (timestamp: number): void => {
+      window.dispatchEvent(new CustomEvent(HOVER_SYNC_EVENT, {
+        detail: {
+          sourceId: chartId,
+          timestamp,
+        },
+      }))
+    }
+
+    const emitHoverClear = (): void => {
+      window.dispatchEvent(new CustomEvent(HOVER_CLEAR_EVENT, {
+        detail: {
+          sourceId: chartId,
+        },
+      }))
+    }
+
     const hideTooltip = (): void => {
       crosshair.setAttribute("visibility", "hidden")
       dot.setAttribute("visibility", "hidden")
       tooltip.hidden = true
     }
 
-    const showTooltip = (clientX: number): void => {
-      const rect = svg.getBoundingClientRect()
-      const pointerX = ((clientX - rect.left) / rect.width) * width
-
-      if (pointerX < margin.left || pointerX > width - margin.right) {
-        hideTooltip()
-        return
-      }
-
-      const closestPointIndex = findClosestPointIndex(points, pointerX)
-      const point = points[closestPointIndex]
-
+    const showTooltipForPoint = (point: (typeof points)[number]): void => {
       crosshair.setAttribute("x1", String(point.x))
       crosshair.setAttribute("y1", String(margin.top))
       crosshair.setAttribute("x2", String(point.x))
@@ -336,7 +465,14 @@ const { title, metricKey, yLabel, format } = Astro.props
       dot.setAttribute("cy", String(point.y))
       dot.setAttribute("visibility", "visible")
 
-      tooltip.textContent = `${tooltipDateFormatter.format(new Date(point.timestamp))} · ${formatValue(point.value, format)}`
+      const formattedDate = tooltipDateFormatter.format(new Date(point.timestamp))
+
+      if (shouldShowMovingAverage) {
+        tooltip.textContent = `${formattedDate} · ${MOVING_AVERAGE_LABEL} ${formatValue(point.value, format)} · Raw ${formatValue(point.rawValue, format)}`
+      } else {
+        tooltip.textContent = `${formattedDate} · ${formatValue(point.value, format)}`
+      }
+
       tooltip.hidden = false
 
       const tooltipPadding = 10
@@ -351,31 +487,93 @@ const { title, metricKey, yLabel, format } = Astro.props
       tooltip.style.top = `${tooltipTop}px`
     }
 
-    overlay.addEventListener("pointermove", (event) => {
-      showTooltip(event.clientX)
-    })
+    const showTooltipFromClientX = (clientX: number): void => {
+      const rect = svg.getBoundingClientRect()
+      const pointerX = ((clientX - rect.left) / rect.width) * width
 
-    overlay.addEventListener("mousemove", (event) => {
-      showTooltip(event.clientX)
-    })
-
-    overlay.addEventListener("touchstart", (event) => {
-      const touch = event.touches[0]
-      if (touch) {
-        showTooltip(touch.clientX)
+      if (pointerX < margin.left || pointerX > width - margin.right) {
+        hideTooltip()
+        emitHoverClear()
+        return
       }
-    }, { passive: true })
 
-    overlay.addEventListener("touchmove", (event) => {
-      const touch = event.touches[0]
-      if (touch) {
-        showTooltip(touch.clientX)
+      const closestPointIndex = findClosestPointIndex(points, pointerX)
+      const point = points[closestPointIndex]
+
+      showTooltipForPoint(point)
+      emitHoverSync(point.timestamp)
+    }
+
+    const showTooltipAtTimestamp = (timestamp: number): void => {
+      const closestPointIndex = findClosestTimestampIndex(points, timestamp)
+      const point = points[closestPointIndex]
+      showTooltipForPoint(point)
+    }
+
+    const handleHoverSync = (event: Event): void => {
+      const customEvent = event as CustomEvent<{ sourceId?: string; timestamp?: number }>
+      if (customEvent.detail?.sourceId === chartId) {
+        return
       }
-    }, { passive: true })
 
-    overlay.addEventListener("pointerleave", hideTooltip)
-    overlay.addEventListener("mouseleave", hideTooltip)
-    overlay.addEventListener("touchend", hideTooltip)
+      const timestamp = customEvent.detail?.timestamp
+      if (typeof timestamp !== "number") {
+        return
+      }
+
+      showTooltipAtTimestamp(timestamp)
+    }
+
+    const handleHoverClear = (event: Event): void => {
+      const customEvent = event as CustomEvent<{ sourceId?: string }>
+      if (customEvent.detail?.sourceId === chartId) {
+        return
+      }
+
+      hideTooltip()
+    }
+
+    const handlePointerMove = (event: PointerEvent): void => {
+      showTooltipFromClientX(event.clientX)
+    }
+
+    const handlePointerDown = (event: PointerEvent): void => {
+      showTooltipFromClientX(event.clientX)
+    }
+
+    const handlePointerUp = (event: PointerEvent): void => {
+      if (event.pointerType !== "touch") {
+        return
+      }
+
+      hideTooltip()
+      emitHoverClear()
+    }
+
+    const handlePointerLeave = (): void => {
+      hideTooltip()
+      emitHoverClear()
+    }
+
+    overlay.addEventListener("pointerdown", handlePointerDown)
+    overlay.addEventListener("pointermove", handlePointerMove)
+    overlay.addEventListener("pointerup", handlePointerUp)
+    overlay.addEventListener("pointercancel", handlePointerLeave)
+    overlay.addEventListener("pointerleave", handlePointerLeave)
+
+    window.addEventListener(HOVER_SYNC_EVENT, handleHoverSync as EventListener)
+    window.addEventListener(HOVER_CLEAR_EVENT, handleHoverClear as EventListener)
+
+    renderCleanupMap.set(node, () => {
+      overlay.removeEventListener("pointerdown", handlePointerDown)
+      overlay.removeEventListener("pointermove", handlePointerMove)
+      overlay.removeEventListener("pointerup", handlePointerUp)
+      overlay.removeEventListener("pointercancel", handlePointerLeave)
+      overlay.removeEventListener("pointerleave", handlePointerLeave)
+
+      window.removeEventListener(HOVER_SYNC_EVENT, handleHoverSync as EventListener)
+      window.removeEventListener(HOVER_CLEAR_EVENT, handleHoverClear as EventListener)
+    })
   }
 
   function renderAllCharts(): void {
@@ -417,6 +615,13 @@ const { title, metricKey, yLabel, format } = Astro.props
   window.addEventListener("beforeunload", () => {
     for (const observer of observers) {
       observer.disconnect()
+    }
+
+    for (const chartNode of chartNodes) {
+      const cleanup = renderCleanupMap.get(chartNode)
+      if (cleanup) {
+        cleanup()
+      }
     }
   })
 </script>

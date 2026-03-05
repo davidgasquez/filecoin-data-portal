@@ -4,6 +4,9 @@ dist/
 # generated types
 .astro/
 
+# generated datasets
+src/data/generated/
+
 # dependencies
 node_modules/
 

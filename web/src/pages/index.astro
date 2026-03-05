@@ -1,7 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro"
 import Card from "../components/Card.astro"
-import LineChart from "../components/LineChart.astro"
 ---
 
 <Layout
@@ -14,48 +13,6 @@ import LineChart from "../components/LineChart.astro"
       Open source, serverless, and local first data platform for the Filecoin
       ecosystem.
     </p>
-  </section>
-
-  <section class="kpi-section" aria-labelledby="kpi-title">
-    <div class="kpi-section__header">
-      <h2 id="kpi-title" class="section-title">KPIs</h2>
-
-      <div class="kpi-range-toggle" role="group" aria-label="KPI timeframe">
-        <button type="button" data-kpi-range="1y" aria-pressed="true">1Y</button>
-        <button type="button" data-kpi-range="all" aria-pressed="false">All</button>
-      </div>
-    </div>
-
-    <p class="kpi-section__copy">
-      Four headline Filecoin KPIs from the daily metrics dataset.
-    </p>
-
-    <div class="card-grid card-grid--two-up">
-      <LineChart
-        title="Daily Data Onboarding"
-        metricKey="sector_onboarding_raw_power_pibs"
-        yLabel="Raw Power"
-        format="pib"
-      />
-      <LineChart
-        title="Clients with 1 TiB+ Active Data"
-        metricKey="clients_with_active_data_gt_1_tibs"
-        yLabel="Clients"
-        format="integer"
-      />
-      <LineChart
-        title="Total FIL in Paid Deals"
-        metricKey="deal_storage_cost_fil"
-        yLabel="FIL"
-        format="fil"
-      />
-      <LineChart
-        title="Total Value Flow"
-        metricKey="total_value_flow_fil"
-        yLabel="FIL"
-        format="mfil"
-      />
-    </div>
   </section>
 
   <section aria-label="Portal highlights">
