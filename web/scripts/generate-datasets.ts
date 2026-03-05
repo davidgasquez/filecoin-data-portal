@@ -1,11 +1,16 @@
-import { readdir } from "node:fs/promises"
+import { mkdir, readdir, unlink, writeFile } from "node:fs/promises"
 import type { Dirent } from "node:fs"
 import path from "node:path"
 import { pathToFileURL } from "node:url"
 
-type DatasetGenerator = () => Promise<void>
+type JsonPrimitive = boolean | number | string | null
+type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue }
+type DatasetGenerator = () => Promise<JsonValue>
 
 const datasetsDir = path.resolve(process.cwd(), "datasets")
+const generatedDir = path.resolve(process.cwd(), "src/data/generated")
+
+await mkdir(generatedDir, { recursive: true })
 
 const entries = await readdir(datasetsDir, { withFileTypes: true })
 const datasetFiles = entries
@@ -13,10 +18,9 @@ const datasetFiles = entries
   .map((entry: Dirent) => entry.name)
   .sort()
 
-if (datasetFiles.length === 0) {
-  console.log(`No dataset scripts found in ${datasetsDir}`)
-  process.exit(0)
-}
+const expectedOutputFiles = new Set(
+  datasetFiles.map((datasetFile) => `${path.basename(datasetFile, ".ts")}.json`),
+)
 
 for (const datasetFile of datasetFiles) {
   const modulePath = path.join(datasetsDir, datasetFile)
@@ -29,5 +33,30 @@ for (const datasetFile of datasetFiles) {
   }
 
   console.log(`Generating dataset from ${path.relative(process.cwd(), modulePath)}`)
-  await datasetModule.default()
+  const dataset = await datasetModule.default()
+  const outputPath = path.join(
+    generatedDir,
+    `${path.basename(datasetFile, path.extname(datasetFile))}.json`,
+  )
+  await writeFile(outputPath, JSON.stringify(dataset))
+}
+
+const generatedEntries = await readdir(generatedDir, { withFileTypes: true })
+
+for (const entry of generatedEntries) {
+  if (!entry.isFile() || !entry.name.endsWith(".json")) {
+    continue
+  }
+
+  if (expectedOutputFiles.has(entry.name)) {
+    continue
+  }
+
+  const staleOutputPath = path.join(generatedDir, entry.name)
+  console.log(`Removing stale generated dataset ${path.relative(process.cwd(), staleOutputPath)}`)
+  await unlink(staleOutputPath)
+}
+
+if (datasetFiles.length === 0) {
+  console.log(`No dataset scripts found in ${datasetsDir}`)
 }

@@ -4,7 +4,10 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "astro dev",
-    "generate:datasets": "node --import=tsx ./scripts/generate-datasets.ts",
+    "generate:datasets": "tsx ./scripts/generate-datasets.ts",
+    "predev": "npm run generate:datasets",
+    "check": "astro check",
+    "precheck": "npm run generate:datasets",
     "prebuild": "npm run generate:datasets",
     "build": "astro build",
     "preview": "astro preview",

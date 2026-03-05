@@ -1,30 +1,64 @@
 ---
-interface Props {
-  title: string
-  metricKey:
-    | "sector_onboarding_raw_power_pibs"
-    | "clients_with_active_data_gt_1_tibs"
-    | "deal_storage_cost_fil"
-    | "total_value_flow_fil"
-  yLabel: string
-  format: "pib" | "integer" | "fil" | "mfil"
-  showMovingAverage?: boolean
+type LineChartPoint = {
+  timestamp: number
+  value: number
 }
 
-const { title, metricKey, yLabel, format, showMovingAverage = false } = Astro.props
+type LineChartFormat =
+  | "integer"
+  | "number"
+  | "pib"
+  | "tib"
+  | "fil"
+  | "mfil"
+  | "usdfc"
+  | "usd"
+  | "percent"
+
+interface Props {
+  id?: string
+  title: string
+  yLabel: string
+  data: LineChartPoint[]
+  format?: LineChartFormat
+  showMovingAverage?: boolean
+  movingAverageWindowDays?: number
+}
+
+const {
+  id,
+  title,
+  yLabel,
+  data,
+  format = "number",
+  showMovingAverage = false,
+  movingAverageWindowDays = 30,
+} = Astro.props
+
+const chartId =
+  id ??
+  title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+
+const serializedData = JSON.stringify(
+  data.map(({ timestamp, value }) => [timestamp, value] satisfies readonly [number, number]),
+)
 ---
 
 <article
   class="line-chart"
-  data-kpi-chart
-  data-metric-key={metricKey}
+  data-line-chart
+  data-chart-id={chartId}
   data-format={format}
   data-show-moving-average={String(showMovingAverage)}
+  data-moving-average-window-days={String(movingAverageWindowDays)}
 >
   <header class="line-chart__header">
     <div class="line-chart__title-row">
       <h3>{title}</h3>
-      <span class="line-chart__headline" data-kpi-last-value hidden></span>
+      <span class="line-chart__headline" data-line-chart-last-value hidden></span>
     </div>
     <p>{yLabel}</p>
   </header>
@@ -33,595 +67,654 @@ const { title, metricKey, yLabel, format, showMovingAverage = false } = Astro.pr
     <svg class="line-chart__svg" aria-hidden="true"></svg>
     <p class="line-chart__empty" hidden>No data available for this range.</p>
     <div class="line-chart__tooltip" hidden></div>
+    <script
+      type="application/json"
+      is:inline
+      data-line-chart-data
+      set:html={serializedData}
+    ></script>
   </div>
 </article>
 
 <script>
-  import compactDataset from "../data/generated/filecoin-daily-kpis.json"
-
-  type ParsedKpiRow = {
+  type LineChartPoint = {
     timestamp: number
-    sector_onboarding_raw_power_pibs: number
-    clients_with_active_data_gt_1_tibs: number
-    deal_storage_cost_fil: number
-    total_value_flow_fil: number
+    value: number
   }
 
-  type CompactKpiDataset = {
-    s: string
-    r: Array<[number, number, number, number, number]>
-  }
+  type SerializedLineChartPoint = [number, number]
+
+  type LineChartFormat =
+    | "integer"
+    | "number"
+    | "pib"
+    | "tib"
+    | "fil"
+    | "mfil"
+    | "usdfc"
+    | "usd"
+    | "percent"
 
   type RangeType = "1y" | "all"
 
-  const CHART_SELECTOR = "[data-kpi-chart]"
-  const RANGE_BUTTON_SELECTOR = "[data-kpi-range]"
+  type ParsedChart = {
+    id: string
+    node: HTMLElement
+    data: LineChartPoint[]
+    format: LineChartFormat
+    showMovingAverage: boolean
+    movingAverageWindowDays: number
+  }
+
+  const CHART_SELECTOR = "[data-line-chart]"
+  const RANGE_BUTTON_SELECTOR = "[data-line-chart-range]"
   const CHART_HEIGHT = 340
   const CHART_MARGIN = { top: 14, right: 12, bottom: 40, left: 74 }
-  const MOVING_AVERAGE_WINDOW_DAYS = 30
-  const MOVING_AVERAGE_LABEL = `MA${MOVING_AVERAGE_WINDOW_DAYS}`
-  const HOVER_SYNC_EVENT = "kpi-chart-hover-sync"
-  const HOVER_CLEAR_EVENT = "kpi-chart-hover-clear"
+  const DAY_IN_MS = 86_400_000
+  const HOVER_SYNC_EVENT = "line-chart-hover-sync"
+  const HOVER_CLEAR_EVENT = "line-chart-hover-clear"
 
   const renderCleanupMap = new WeakMap<HTMLElement, () => void>()
 
   const chartNodes = Array.from(document.querySelectorAll<HTMLElement>(CHART_SELECTOR))
 
-  if (chartNodes.length === 0) {
-    throw new Error("No KPI chart containers found")
-  }
+  if (chartNodes.length > 0) {
+    const charts = chartNodes.map(parseChart)
 
-  const compactRows = compactDataset as CompactKpiDataset
-  const startTimestamp = new Date(`${compactRows.s}T00:00:00Z`).getTime()
+    let currentRange: RangeType =
+      document.querySelector(RANGE_BUTTON_SELECTOR) instanceof HTMLButtonElement ? "1y" : "all"
 
-  const rows: ParsedKpiRow[] = compactRows.r
-    .map(([dayOffset, sectorOnboardingMicroPibs, clients, dealStorageCostNanoFil, totalValueFlowMilliFil]) => ({
-      timestamp: startTimestamp + dayOffset * 86_400_000,
-      sector_onboarding_raw_power_pibs: sectorOnboardingMicroPibs / 1_000_000,
-      clients_with_active_data_gt_1_tibs: clients,
-      deal_storage_cost_fil: dealStorageCostNanoFil / 1_000_000_000,
-      total_value_flow_fil: totalValueFlowMilliFil / 1_000,
-    }))
-    .sort((a, b) => a.timestamp - b.timestamp)
-
-  if (rows.length === 0) {
-    throw new Error("KPI dataset is empty")
-  }
-
-  let currentRange: RangeType = "1y"
-
-  const tooltipDateFormatter = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  })
-
-  function formatValue(value: number, format: Props["format"]): string {
-    if (format === "integer") {
-      return Math.round(value).toLocaleString("en-US")
-    }
-
-    if (format === "pib") {
-      return `${value.toLocaleString("en-US", {
-        maximumFractionDigits: 2,
-      })} PiB`
-    }
-
-    if (format === "mfil") {
-      return `${(value / 1e6).toLocaleString("en-US", {
-        maximumFractionDigits: 2,
-      })} M FIL`
-    }
-
-    return `${value.toLocaleString("en-US", {
-      maximumFractionDigits: 2,
-    })} FIL`
-  }
-
-  function formatTickValue(value: number, format: Props["format"]): string {
-    if (format === "integer") {
-      return Math.round(value).toLocaleString("en-US")
-    }
-
-    if (format === "mfil") {
-      return `${(value / 1e6).toLocaleString("en-US", {
-        maximumFractionDigits: 1,
-      })}M`
-    }
-
-    if (format === "fil") {
-      return value.toLocaleString("en-US", {
-        maximumFractionDigits: 0,
-      })
-    }
-
-    return value.toLocaleString("en-US", {
-      maximumFractionDigits: 2,
-    })
-  }
-
-  function formatHeadlineValue(value: number, format: Props["format"]): string {
-    if (format === "integer") {
-      return Math.round(value).toLocaleString("en-US")
-    }
-
-    if (format === "pib") {
-      return `${value.toLocaleString("en-US", {
-        maximumFractionDigits: 2,
-      })}PiB`
-    }
-
-    if (format === "mfil") {
-      return `${(value / 1e6).toLocaleString("en-US", {
-        maximumFractionDigits: 2,
-      })}MFIL`
-    }
-
-    return `${value.toLocaleString("en-US", {
-      maximumFractionDigits: 2,
-    })}FIL`
-  }
-
-  function getRowsForRange(range: RangeType): ParsedKpiRow[] {
-    if (range === "all") {
-      return rows
-    }
-
-    const latestTimestamp = rows[rows.length - 1].timestamp
-    const latestDate = new Date(latestTimestamp)
-    const oneYearAgo = new Date(
-      Date.UTC(
-        latestDate.getUTCFullYear() - 1,
-        latestDate.getUTCMonth(),
-        latestDate.getUTCDate(),
-      ),
-    ).getTime()
-
-    return rows.filter((row) => row.timestamp >= oneYearAgo)
-  }
-
-  function findClosestPointIndex(points: { x: number }[], x: number): number {
-    if (points.length === 1) {
-      return 0
-    }
-
-    let left = 0
-    let right = points.length - 1
-
-    while (left < right) {
-      const mid = Math.floor((left + right) / 2)
-      if (points[mid].x < x) {
-        left = mid + 1
-      } else {
-        right = mid
-      }
-    }
-
-    const rightCandidate = left
-    const leftCandidate = Math.max(0, rightCandidate - 1)
-
-    return Math.abs(points[rightCandidate].x - x) <
-      Math.abs(points[leftCandidate].x - x)
-      ? rightCandidate
-      : leftCandidate
-  }
-
-  function findClosestTimestampIndex(points: { timestamp: number }[], timestamp: number): number {
-    if (points.length === 1) {
-      return 0
-    }
-
-    let left = 0
-    let right = points.length - 1
-
-    while (left < right) {
-      const mid = Math.floor((left + right) / 2)
-      if (points[mid].timestamp < timestamp) {
-        left = mid + 1
-      } else {
-        right = mid
-      }
-    }
-
-    const rightCandidate = left
-    const leftCandidate = Math.max(0, rightCandidate - 1)
-
-    return Math.abs(points[rightCandidate].timestamp - timestamp) <
-      Math.abs(points[leftCandidate].timestamp - timestamp)
-      ? rightCandidate
-      : leftCandidate
-  }
-
-  function buildMovingAverage(values: number[], windowSize: number): number[] {
-    if (windowSize < 1) {
-      throw new Error("Moving average window size must be greater than zero")
-    }
-
-    let runningTotal = 0
-
-    return values.map((value, index) => {
-      runningTotal += value
-
-      if (index >= windowSize) {
-        runningTotal -= values[index - windowSize]
-      }
-
-      const sampleSize = Math.min(windowSize, index + 1)
-      return runningTotal / sampleSize
-    })
-  }
-
-  function buildTicks(min: number, max: number, count: number): number[] {
-    if (count < 2) {
-      return [min]
-    }
-
-    const step = (max - min) / (count - 1)
-    return Array.from({ length: count }, (_, index) => min + index * step)
-  }
-
-  function updateRangeButtons(range: RangeType): void {
-    const buttons = document.querySelectorAll<HTMLButtonElement>(RANGE_BUTTON_SELECTOR)
-
-    for (const button of buttons) {
-      const buttonRange = button.dataset.kpiRange as RangeType
-      const isActive = buttonRange === range
-      button.setAttribute("aria-pressed", String(isActive))
-    }
-  }
-
-  function renderChart(node: HTMLElement, filteredRows: ParsedKpiRow[]): void {
-    const metricKey = node.dataset.metricKey as keyof ParsedKpiRow
-    const format = (node.dataset.format as Props["format"] | undefined) ?? "integer"
-    const shouldShowMovingAverage = node.dataset.showMovingAverage === "true"
-
-    const svg = node.querySelector<SVGElement>(".line-chart__svg")
-    const tooltip = node.querySelector<HTMLDivElement>(".line-chart__tooltip")
-    const emptyMessage = node.querySelector<HTMLParagraphElement>(".line-chart__empty")
-    const headlineValue = node.querySelector<HTMLSpanElement>("[data-kpi-last-value]")
-
-    if (!svg || !tooltip || !emptyMessage || !headlineValue) {
-      throw new Error("Line chart markup is incomplete")
-    }
-
-    const previousCleanup = renderCleanupMap.get(node)
-    if (previousCleanup) {
-      previousCleanup()
-      renderCleanupMap.delete(node)
-    }
-
-    const width = Math.max(380, node.clientWidth)
-    const height = CHART_HEIGHT
-    const margin = CHART_MARGIN
-    const plotWidth = width - margin.left - margin.right
-    const plotHeight = height - margin.top - margin.bottom
-
-    const rawSeries = filteredRows
-      .map((row) => ({
-        timestamp: row.timestamp,
-        value: Number(row[metricKey]),
-      }))
-      .filter((row) => Number.isFinite(row.value))
-
-    if (rawSeries.length < 2) {
-      svg.innerHTML = ""
-      emptyMessage.hidden = false
-      tooltip.hidden = true
-      headlineValue.hidden = true
-      headlineValue.textContent = ""
-      return
-    }
-
-    emptyMessage.hidden = true
-
-    const minX = rawSeries[0].timestamp
-    const maxX = rawSeries[rawSeries.length - 1].timestamp
-
-    const rawValues = rawSeries.map((point) => point.value)
-    const displayValues = shouldShowMovingAverage
-      ? buildMovingAverage(rawValues, MOVING_AVERAGE_WINDOW_DAYS)
-      : rawValues
-
-    const dataMinY = Math.min(...rawValues)
-    const dataMaxY = Math.max(...rawValues)
-
-    const startsAtZero = dataMinY >= 0
-    let minY = startsAtZero ? 0 : dataMinY
-    let maxY = dataMaxY
-
-    if (maxY === minY) {
-      maxY = minY + 1
-    }
-
-    const yPaddingTop = (maxY - minY) * 0.08
-    maxY += yPaddingTop
-
-    const scaleX = (value: number): number =>
-      margin.left + ((value - minX) / (maxX - minX)) * plotWidth
-
-    const scaleY = (value: number): number =>
-      margin.top + ((maxY - value) / (maxY - minY)) * plotHeight
-
-    const rawPoints = rawSeries.map((point) => ({
-      ...point,
-      x: scaleX(point.timestamp),
-      y: scaleY(point.value),
-    }))
-
-    const points = rawSeries.map((point, index) => ({
-      timestamp: point.timestamp,
-      rawValue: point.value,
-      value: displayValues[index],
-      x: scaleX(point.timestamp),
-      y: scaleY(displayValues[index]),
-    }))
-
-    const latestPoint = points[points.length - 1]
-    const headlineSuffix = shouldShowMovingAverage ? ` [${MOVING_AVERAGE_LABEL}]` : ""
-    headlineValue.textContent = `${formatHeadlineValue(latestPoint.value, format)}${headlineSuffix}`
-    headlineValue.hidden = false
-
-    const rawPath = rawPoints
-      .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-      .join(" ")
-
-    const displayPath = points
-      .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-      .join(" ")
-
-    const rangeDays = Math.round((maxX - minX) / 86_400_000)
-    const xTickDateFormatter = new Intl.DateTimeFormat("en-US", {
+    const tooltipDateFormatter = new Intl.DateTimeFormat("en-US", {
       month: "short",
-      ...(rangeDays > 500 ? { year: "2-digit" } : { day: "numeric", year: "2-digit" }),
+      day: "numeric",
+      year: "numeric",
       timeZone: "UTC",
     })
 
-    const yTicks = buildTicks(minY, maxY, 5)
-    const xTicks = buildTicks(minX, maxX, 5)
-
-    const yTickMarkup = yTicks
-      .map((tick) => {
-        const y = scaleY(tick)
-
-        return `
-          <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" class="line-chart__gridline" />
-          <text x="${margin.left - 8}" y="${y + 3}" text-anchor="end" class="line-chart__label">${formatTickValue(tick, format)}</text>
-        `
-      })
-      .join("")
-
-    const xTickMarkup = xTicks
-      .map((tick) => {
-        const x = scaleX(tick)
-
-        return `
-          <line x1="${x}" y1="${margin.top}" x2="${x}" y2="${height - margin.bottom}" class="line-chart__gridline line-chart__gridline--vertical" />
-          <text x="${x}" y="${height - 8}" text-anchor="middle" class="line-chart__label">${xTickDateFormatter.format(new Date(tick))}</text>
-        `
-      })
-      .join("")
-
-    const pathMarkup = shouldShowMovingAverage
-      ? `
-        <path d="${rawPath}" class="line-chart__path line-chart__path--raw" />
-        <path d="${displayPath}" class="line-chart__path line-chart__path--average" />
-      `
-      : `<path d="${displayPath}" class="line-chart__path" />`
-
-    svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
-    svg.innerHTML = `
-      ${yTickMarkup}
-      ${xTickMarkup}
-      <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}" class="line-chart__axis" />
-      <line x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}" class="line-chart__axis" />
-      ${pathMarkup}
-      <line x1="0" y1="0" x2="0" y2="0" class="line-chart__crosshair" visibility="hidden" />
-      <circle cx="0" cy="0" r="4" class="line-chart__dot" visibility="hidden" />
-      <rect x="${margin.left}" y="${margin.top}" width="${plotWidth}" height="${plotHeight}" class="line-chart__overlay" />
-    `
-
-    const crosshair = svg.querySelector<SVGLineElement>(".line-chart__crosshair")
-    const dot = svg.querySelector<SVGCircleElement>(".line-chart__dot")
-    const overlay = svg.querySelector<SVGRectElement>(".line-chart__overlay")
-
-    if (!crosshair || !dot || !overlay) {
-      throw new Error("Line chart interactive layer could not be initialized")
-    }
-
-    const chartId = String(metricKey)
-
-    const emitHoverSync = (timestamp: number): void => {
-      window.dispatchEvent(new CustomEvent(HOVER_SYNC_EVENT, {
-        detail: {
-          sourceId: chartId,
-          timestamp,
-        },
-      }))
-    }
-
-    const emitHoverClear = (): void => {
-      window.dispatchEvent(new CustomEvent(HOVER_CLEAR_EVENT, {
-        detail: {
-          sourceId: chartId,
-        },
-      }))
-    }
-
-    const hideTooltip = (): void => {
-      crosshair.setAttribute("visibility", "hidden")
-      dot.setAttribute("visibility", "hidden")
-      tooltip.hidden = true
-    }
-
-    const showTooltipForPoint = (point: (typeof points)[number]): void => {
-      crosshair.setAttribute("x1", String(point.x))
-      crosshair.setAttribute("y1", String(margin.top))
-      crosshair.setAttribute("x2", String(point.x))
-      crosshair.setAttribute("y2", String(height - margin.bottom))
-      crosshair.setAttribute("visibility", "visible")
-
-      dot.setAttribute("cx", String(point.x))
-      dot.setAttribute("cy", String(point.y))
-      dot.setAttribute("visibility", "visible")
-
-      const formattedDate = tooltipDateFormatter.format(new Date(point.timestamp))
-
-      if (shouldShowMovingAverage) {
-        tooltip.textContent = `${formattedDate} · ${MOVING_AVERAGE_LABEL} ${formatValue(point.value, format)} · Raw ${formatValue(point.rawValue, format)}`
-      } else {
-        tooltip.textContent = `${formattedDate} · ${formatValue(point.value, format)}`
+    function parseChart(node: HTMLElement): ParsedChart {
+      const chartId = node.dataset.chartId
+      if (!chartId) {
+        throw new Error("Line chart is missing data-chart-id")
       }
 
-      tooltip.hidden = false
+      const dataScript = node.querySelector<HTMLScriptElement>("[data-line-chart-data]")
+      if (!dataScript?.textContent) {
+        throw new Error(`Line chart ${chartId} is missing its serialized data`)
+      }
 
-      const tooltipPadding = 10
-      const tooltipHalfWidth = tooltip.offsetWidth / 2
-      const minLeft = tooltipPadding
-      const maxLeft = width - tooltip.offsetWidth - tooltipPadding
+      const rawData = JSON.parse(dataScript.textContent) as unknown
 
-      const tooltipLeft = Math.min(maxLeft, Math.max(minLeft, point.x - tooltipHalfWidth))
-      const tooltipTop = Math.max(tooltipPadding, point.y - 34)
+      if (!Array.isArray(rawData)) {
+        throw new Error(`Line chart ${chartId} data must be an array`)
+      }
 
-      tooltip.style.left = `${tooltipLeft}px`
-      tooltip.style.top = `${tooltipTop}px`
+      return {
+        id: chartId,
+        node,
+        data: rawData.map((point, index) => parsePoint(chartId, point, index)),
+        format: parseFormat(node.dataset.format),
+        showMovingAverage: node.dataset.showMovingAverage === "true",
+        movingAverageWindowDays: parsePositiveInteger(
+          node.dataset.movingAverageWindowDays,
+          30,
+        ),
+      }
     }
 
-    const showTooltipFromClientX = (clientX: number): void => {
-      const rect = svg.getBoundingClientRect()
-      const pointerX = ((clientX - rect.left) / rect.width) * width
+    function parsePoint(chartId: string, point: unknown, index: number): LineChartPoint {
+      if (!Array.isArray(point) || point.length !== 2) {
+        throw new Error(`Line chart ${chartId} point ${index} is malformed`)
+      }
 
-      if (pointerX < margin.left || pointerX > width - margin.right) {
+      const [timestamp, value] = point as SerializedLineChartPoint
+
+      if (!Number.isFinite(timestamp) || !Number.isFinite(value)) {
+        throw new Error(`Line chart ${chartId} point ${index} contains a non-finite value`)
+      }
+
+      return { timestamp, value }
+    }
+
+    function parseFormat(value: string | undefined): LineChartFormat {
+      switch (value) {
+        case "integer":
+        case "number":
+        case "pib":
+        case "tib":
+        case "fil":
+        case "mfil":
+        case "usdfc":
+        case "usd":
+        case "percent":
+          return value
+        case undefined:
+          return "number"
+        default:
+          throw new Error(`Unsupported line chart format: ${value}`)
+      }
+    }
+
+    function parsePositiveInteger(value: string | undefined, fallback: number): number {
+      const parsed = Number(value)
+
+      if (!Number.isInteger(parsed) || parsed <= 0) {
+        return fallback
+      }
+
+      return parsed
+    }
+
+    function formatDecimal(value: number, maximumFractionDigits: number): string {
+      return value.toLocaleString("en-US", {
+        maximumFractionDigits,
+      })
+    }
+
+    function formatUsd(value: number, maximumFractionDigits: number): string {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits,
+      }).format(value)
+    }
+
+    function formatValue(
+      value: number,
+      format: LineChartFormat,
+      context: "headline" | "tick" | "tooltip",
+    ): string {
+      if (format === "integer") {
+        return Math.round(value).toLocaleString("en-US")
+      }
+
+      if (format === "mfil") {
+        const scaledValue = value / 1_000_000
+        const suffix = context === "tick" ? "M" : " M FIL"
+        return `${formatDecimal(scaledValue, context === "tick" ? 1 : 2)}${suffix}`
+      }
+
+      if (format === "usd") {
+        return formatUsd(value, context === "tick" ? 0 : 2)
+      }
+
+      if (format === "percent") {
+        return `${formatDecimal(value, context === "tick" ? 0 : 2)}%`
+      }
+
+      const suffixByFormat = {
+        number: "",
+        pib: " PiB",
+        tib: " TiB",
+        fil: " FIL",
+        usdfc: " USDFC",
+      } satisfies Record<Exclude<LineChartFormat, "integer" | "mfil" | "usd" | "percent">, string>
+
+      const maximumFractionDigits = context === "tick" ? 1 : 2
+      return `${formatDecimal(value, maximumFractionDigits)}${suffixByFormat[format]}`
+    }
+
+    function getPointsForRange(points: LineChartPoint[], range: RangeType): LineChartPoint[] {
+      if (range === "all") {
+        return points
+      }
+
+      const latestTimestamp = points[points.length - 1]?.timestamp
+      if (latestTimestamp == null) {
+        return []
+      }
+
+      const latestDate = new Date(latestTimestamp)
+      const oneYearAgo = new Date(
+        Date.UTC(
+          latestDate.getUTCFullYear() - 1,
+          latestDate.getUTCMonth(),
+          latestDate.getUTCDate(),
+        ),
+      ).getTime()
+
+      return points.filter((point) => point.timestamp >= oneYearAgo)
+    }
+
+    function findClosestPointIndex(points: { x: number }[], x: number): number {
+      if (points.length === 1) {
+        return 0
+      }
+
+      let left = 0
+      let right = points.length - 1
+
+      while (left < right) {
+        const mid = Math.floor((left + right) / 2)
+
+        if (points[mid].x < x) {
+          left = mid + 1
+        } else {
+          right = mid
+        }
+      }
+
+      const rightCandidate = left
+      const leftCandidate = Math.max(0, rightCandidate - 1)
+
+      return Math.abs(points[rightCandidate].x - x) <
+        Math.abs(points[leftCandidate].x - x)
+        ? rightCandidate
+        : leftCandidate
+    }
+
+    function findClosestTimestampIndex(points: { timestamp: number }[], timestamp: number): number {
+      if (points.length === 1) {
+        return 0
+      }
+
+      let left = 0
+      let right = points.length - 1
+
+      while (left < right) {
+        const mid = Math.floor((left + right) / 2)
+
+        if (points[mid].timestamp < timestamp) {
+          left = mid + 1
+        } else {
+          right = mid
+        }
+      }
+
+      const rightCandidate = left
+      const leftCandidate = Math.max(0, rightCandidate - 1)
+
+      return Math.abs(points[rightCandidate].timestamp - timestamp) <
+        Math.abs(points[leftCandidate].timestamp - timestamp)
+        ? rightCandidate
+        : leftCandidate
+    }
+
+    function buildMovingAverage(values: number[], windowSize: number): number[] {
+      if (windowSize < 1) {
+        throw new Error("Moving average window size must be greater than zero")
+      }
+
+      let runningTotal = 0
+
+      return values.map((value, index) => {
+        runningTotal += value
+
+        if (index >= windowSize) {
+          runningTotal -= values[index - windowSize]
+        }
+
+        const sampleSize = Math.min(windowSize, index + 1)
+        return runningTotal / sampleSize
+      })
+    }
+
+    function buildTicks(min: number, max: number, count: number): number[] {
+      if (count < 2) {
+        return [min]
+      }
+
+      const step = (max - min) / (count - 1)
+      return Array.from({ length: count }, (_, index) => min + index * step)
+    }
+
+    function updateRangeButtons(range: RangeType): void {
+      const buttons = document.querySelectorAll<HTMLButtonElement>(RANGE_BUTTON_SELECTOR)
+
+      for (const button of buttons) {
+        const buttonRange = button.dataset.lineChartRange
+        const isActive = buttonRange === range
+        button.setAttribute("aria-pressed", String(isActive))
+      }
+    }
+
+    function renderChart(chart: ParsedChart): void {
+      const filteredData = getPointsForRange(chart.data, currentRange)
+
+      const svg = chart.node.querySelector<SVGElement>(".line-chart__svg")
+      const tooltip = chart.node.querySelector<HTMLDivElement>(".line-chart__tooltip")
+      const emptyMessage = chart.node.querySelector<HTMLParagraphElement>(".line-chart__empty")
+      const headlineValue = chart.node.querySelector<HTMLSpanElement>("[data-line-chart-last-value]")
+
+      if (!svg || !tooltip || !emptyMessage || !headlineValue) {
+        throw new Error(`Line chart ${chart.id} markup is incomplete`)
+      }
+
+      const previousCleanup = renderCleanupMap.get(chart.node)
+      if (previousCleanup) {
+        previousCleanup()
+        renderCleanupMap.delete(chart.node)
+      }
+
+      const width = Math.max(320, chart.node.clientWidth)
+      const height = CHART_HEIGHT
+      const margin = CHART_MARGIN
+      const plotWidth = width - margin.left - margin.right
+      const plotHeight = height - margin.top - margin.bottom
+
+      if (filteredData.length < 2) {
+        svg.innerHTML = ""
+        emptyMessage.hidden = false
+        tooltip.hidden = true
+        headlineValue.hidden = true
+        headlineValue.textContent = ""
+        return
+      }
+
+      emptyMessage.hidden = true
+
+      const minX = filteredData[0].timestamp
+      const maxX = filteredData[filteredData.length - 1].timestamp
+      const rawValues = filteredData.map((point) => point.value)
+      const displayValues = chart.showMovingAverage
+        ? buildMovingAverage(rawValues, chart.movingAverageWindowDays)
+        : rawValues
+
+      const dataMinY = Math.min(...rawValues)
+      const dataMaxY = Math.max(...rawValues)
+
+      const startsAtZero = dataMinY >= 0
+      let minY = startsAtZero ? 0 : dataMinY
+      let maxY = dataMaxY
+
+      if (maxY === minY) {
+        maxY = minY + 1
+      }
+
+      const yPaddingTop = (maxY - minY) * 0.08
+      maxY += yPaddingTop
+
+      const scaleX = (value: number): number =>
+        margin.left + ((value - minX) / Math.max(maxX - minX, DAY_IN_MS)) * plotWidth
+
+      const scaleY = (value: number): number =>
+        margin.top + ((maxY - value) / (maxY - minY)) * plotHeight
+
+      const rawPoints = filteredData.map((point) => ({
+        ...point,
+        x: scaleX(point.timestamp),
+        y: scaleY(point.value),
+      }))
+
+      const points = filteredData.map((point, index) => ({
+        timestamp: point.timestamp,
+        rawValue: point.value,
+        value: displayValues[index],
+        x: scaleX(point.timestamp),
+        y: scaleY(displayValues[index]),
+      }))
+
+      const latestPoint = points[points.length - 1]
+      const headlineSuffix = chart.showMovingAverage ? ` [MA${chart.movingAverageWindowDays}]` : ""
+      headlineValue.textContent =
+        `${formatValue(latestPoint.value, chart.format, "headline")}${headlineSuffix}`
+      headlineValue.hidden = false
+
+      const rawPath = rawPoints
+        .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+        .join(" ")
+
+      const displayPath = points
+        .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+        .join(" ")
+
+      const rangeDays = Math.round((maxX - minX) / DAY_IN_MS)
+      const xTickDateFormatter = new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        ...(rangeDays > 500 ? { year: "2-digit" } : { day: "numeric", year: "2-digit" }),
+        timeZone: "UTC",
+      })
+
+      const yTicks = buildTicks(minY, maxY, 5)
+      const xTicks = buildTicks(minX, maxX, 5)
+
+      const yTickMarkup = yTicks
+        .map((tick) => {
+          const y = scaleY(tick)
+
+          return `
+            <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" class="line-chart__gridline" />
+            <text x="${margin.left - 8}" y="${y + 3}" text-anchor="end" class="line-chart__label">${formatValue(tick, chart.format, "tick")}</text>
+          `
+        })
+        .join("")
+
+      const xTickMarkup = xTicks
+        .map((tick) => {
+          const x = scaleX(tick)
+
+          return `
+            <line x1="${x}" y1="${margin.top}" x2="${x}" y2="${height - margin.bottom}" class="line-chart__gridline line-chart__gridline--vertical" />
+            <text x="${x}" y="${height - 8}" text-anchor="middle" class="line-chart__label">${xTickDateFormatter.format(new Date(tick))}</text>
+          `
+        })
+        .join("")
+
+      const pathMarkup = chart.showMovingAverage
+        ? `
+          <path d="${rawPath}" class="line-chart__path line-chart__path--raw" />
+          <path d="${displayPath}" class="line-chart__path line-chart__path--average" />
+        `
+        : `<path d="${displayPath}" class="line-chart__path" />`
+
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
+      svg.innerHTML = `
+        ${yTickMarkup}
+        ${xTickMarkup}
+        <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}" class="line-chart__axis" />
+        <line x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}" class="line-chart__axis" />
+        ${pathMarkup}
+        <line x1="0" y1="0" x2="0" y2="0" class="line-chart__crosshair" visibility="hidden" />
+        <circle cx="0" cy="0" r="4" class="line-chart__dot" visibility="hidden" />
+        <rect x="${margin.left}" y="${margin.top}" width="${plotWidth}" height="${plotHeight}" class="line-chart__overlay" />
+      `
+
+      const crosshair = svg.querySelector<SVGLineElement>(".line-chart__crosshair")
+      const dot = svg.querySelector<SVGCircleElement>(".line-chart__dot")
+      const overlay = svg.querySelector<SVGRectElement>(".line-chart__overlay")
+
+      if (!crosshair || !dot || !overlay) {
+        throw new Error(`Line chart ${chart.id} interactive layer could not be initialized`)
+      }
+
+      const emitHoverSync = (timestamp: number): void => {
+        window.dispatchEvent(new CustomEvent(HOVER_SYNC_EVENT, {
+          detail: {
+            sourceId: chart.id,
+            timestamp,
+          },
+        }))
+      }
+
+      const emitHoverClear = (): void => {
+        window.dispatchEvent(new CustomEvent(HOVER_CLEAR_EVENT, {
+          detail: {
+            sourceId: chart.id,
+          },
+        }))
+      }
+
+      const hideTooltip = (): void => {
+        crosshair.setAttribute("visibility", "hidden")
+        dot.setAttribute("visibility", "hidden")
+        tooltip.hidden = true
+      }
+
+      const showTooltipForPoint = (point: (typeof points)[number]): void => {
+        crosshair.setAttribute("x1", String(point.x))
+        crosshair.setAttribute("y1", String(margin.top))
+        crosshair.setAttribute("x2", String(point.x))
+        crosshair.setAttribute("y2", String(height - margin.bottom))
+        crosshair.setAttribute("visibility", "visible")
+
+        dot.setAttribute("cx", String(point.x))
+        dot.setAttribute("cy", String(point.y))
+        dot.setAttribute("visibility", "visible")
+
+        const formattedDate = tooltipDateFormatter.format(new Date(point.timestamp))
+
+        if (chart.showMovingAverage) {
+          tooltip.textContent =
+            `${formattedDate} · MA${chart.movingAverageWindowDays} ${formatValue(point.value, chart.format, "tooltip")} · Raw ${formatValue(point.rawValue, chart.format, "tooltip")}`
+        } else {
+          tooltip.textContent = `${formattedDate} · ${formatValue(point.value, chart.format, "tooltip")}`
+        }
+
+        tooltip.hidden = false
+
+        const tooltipPadding = 10
+        const tooltipHalfWidth = tooltip.offsetWidth / 2
+        const minLeft = tooltipPadding
+        const maxLeft = width - tooltip.offsetWidth - tooltipPadding
+
+        const tooltipLeft = Math.min(maxLeft, Math.max(minLeft, point.x - tooltipHalfWidth))
+        const tooltipTop = Math.max(tooltipPadding, point.y - 34)
+
+        tooltip.style.left = `${tooltipLeft}px`
+        tooltip.style.top = `${tooltipTop}px`
+      }
+
+      const showTooltipFromClientX = (clientX: number): void => {
+        const rect = svg.getBoundingClientRect()
+        const pointerX = ((clientX - rect.left) / rect.width) * width
+
+        if (pointerX < margin.left || pointerX > width - margin.right) {
+          hideTooltip()
+          emitHoverClear()
+          return
+        }
+
+        const closestPointIndex = findClosestPointIndex(points, pointerX)
+        const point = points[closestPointIndex]
+
+        showTooltipForPoint(point)
+        emitHoverSync(point.timestamp)
+      }
+
+      const showTooltipAtTimestamp = (timestamp: number): void => {
+        const closestPointIndex = findClosestTimestampIndex(points, timestamp)
+        const point = points[closestPointIndex]
+        showTooltipForPoint(point)
+      }
+
+      const handleHoverSync = (event: Event): void => {
+        const customEvent = event as CustomEvent<{ sourceId?: string; timestamp?: number }>
+
+        if (customEvent.detail?.sourceId === chart.id) {
+          return
+        }
+
+        const timestamp = customEvent.detail?.timestamp
+        if (typeof timestamp !== "number") {
+          return
+        }
+
+        showTooltipAtTimestamp(timestamp)
+      }
+
+      const handleHoverClear = (event: Event): void => {
+        const customEvent = event as CustomEvent<{ sourceId?: string }>
+
+        if (customEvent.detail?.sourceId === chart.id) {
+          return
+        }
+
+        hideTooltip()
+      }
+
+      const handlePointerMove = (event: PointerEvent): void => {
+        showTooltipFromClientX(event.clientX)
+      }
+
+      const handlePointerDown = (event: PointerEvent): void => {
+        showTooltipFromClientX(event.clientX)
+      }
+
+      const handlePointerUp = (event: PointerEvent): void => {
+        if (event.pointerType !== "touch") {
+          return
+        }
+
         hideTooltip()
         emitHoverClear()
-        return
       }
 
-      const closestPointIndex = findClosestPointIndex(points, pointerX)
-      const point = points[closestPointIndex]
-
-      showTooltipForPoint(point)
-      emitHoverSync(point.timestamp)
-    }
-
-    const showTooltipAtTimestamp = (timestamp: number): void => {
-      const closestPointIndex = findClosestTimestampIndex(points, timestamp)
-      const point = points[closestPointIndex]
-      showTooltipForPoint(point)
-    }
-
-    const handleHoverSync = (event: Event): void => {
-      const customEvent = event as CustomEvent<{ sourceId?: string; timestamp?: number }>
-      if (customEvent.detail?.sourceId === chartId) {
-        return
+      const handlePointerLeave = (): void => {
+        hideTooltip()
+        emitHoverClear()
       }
 
-      const timestamp = customEvent.detail?.timestamp
-      if (typeof timestamp !== "number") {
-        return
+      overlay.addEventListener("pointerdown", handlePointerDown)
+      overlay.addEventListener("pointermove", handlePointerMove)
+      overlay.addEventListener("pointerup", handlePointerUp)
+      overlay.addEventListener("pointercancel", handlePointerLeave)
+      overlay.addEventListener("pointerleave", handlePointerLeave)
+
+      window.addEventListener(HOVER_SYNC_EVENT, handleHoverSync as EventListener)
+      window.addEventListener(HOVER_CLEAR_EVENT, handleHoverClear as EventListener)
+
+      renderCleanupMap.set(chart.node, () => {
+        overlay.removeEventListener("pointerdown", handlePointerDown)
+        overlay.removeEventListener("pointermove", handlePointerMove)
+        overlay.removeEventListener("pointerup", handlePointerUp)
+        overlay.removeEventListener("pointercancel", handlePointerLeave)
+        overlay.removeEventListener("pointerleave", handlePointerLeave)
+
+        window.removeEventListener(HOVER_SYNC_EVENT, handleHoverSync as EventListener)
+        window.removeEventListener(HOVER_CLEAR_EVENT, handleHoverClear as EventListener)
+      })
+    }
+
+    function renderAllCharts(): void {
+      for (const chart of charts) {
+        renderChart(chart)
       }
-
-      showTooltipAtTimestamp(timestamp)
     }
 
-    const handleHoverClear = (event: Event): void => {
-      const customEvent = event as CustomEvent<{ sourceId?: string }>
-      if (customEvent.detail?.sourceId === chartId) {
-        return
-      }
+    const observers = charts.map((chart) => {
+      const observer = new ResizeObserver(() => {
+        renderChart(chart)
+      })
 
-      hideTooltip()
-    }
-
-    const handlePointerMove = (event: PointerEvent): void => {
-      showTooltipFromClientX(event.clientX)
-    }
-
-    const handlePointerDown = (event: PointerEvent): void => {
-      showTooltipFromClientX(event.clientX)
-    }
-
-    const handlePointerUp = (event: PointerEvent): void => {
-      if (event.pointerType !== "touch") {
-        return
-      }
-
-      hideTooltip()
-      emitHoverClear()
-    }
-
-    const handlePointerLeave = (): void => {
-      hideTooltip()
-      emitHoverClear()
-    }
-
-    overlay.addEventListener("pointerdown", handlePointerDown)
-    overlay.addEventListener("pointermove", handlePointerMove)
-    overlay.addEventListener("pointerup", handlePointerUp)
-    overlay.addEventListener("pointercancel", handlePointerLeave)
-    overlay.addEventListener("pointerleave", handlePointerLeave)
-
-    window.addEventListener(HOVER_SYNC_EVENT, handleHoverSync as EventListener)
-    window.addEventListener(HOVER_CLEAR_EVENT, handleHoverClear as EventListener)
-
-    renderCleanupMap.set(node, () => {
-      overlay.removeEventListener("pointerdown", handlePointerDown)
-      overlay.removeEventListener("pointermove", handlePointerMove)
-      overlay.removeEventListener("pointerup", handlePointerUp)
-      overlay.removeEventListener("pointercancel", handlePointerLeave)
-      overlay.removeEventListener("pointerleave", handlePointerLeave)
-
-      window.removeEventListener(HOVER_SYNC_EVENT, handleHoverSync as EventListener)
-      window.removeEventListener(HOVER_CLEAR_EVENT, handleHoverClear as EventListener)
-    })
-  }
-
-  function renderAllCharts(): void {
-    const filteredRows = getRowsForRange(currentRange)
-
-    for (const chartNode of chartNodes) {
-      renderChart(chartNode, filteredRows)
-    }
-  }
-
-  const observers = chartNodes.map((chartNode) => {
-    const observer = new ResizeObserver(() => {
-      renderChart(chartNode, getRowsForRange(currentRange))
+      observer.observe(chart.node)
+      return observer
     })
 
-    observer.observe(chartNode)
-    return observer
-  })
+    const rangeButtons = document.querySelectorAll<HTMLButtonElement>(RANGE_BUTTON_SELECTOR)
 
-  const rangeButtons = document.querySelectorAll<HTMLButtonElement>(RANGE_BUTTON_SELECTOR)
+    for (const button of rangeButtons) {
+      button.addEventListener("click", () => {
+        const range = button.dataset.lineChartRange
 
-  for (const button of rangeButtons) {
-    button.addEventListener("click", () => {
-      const range = button.dataset.kpiRange as RangeType
+        if (range !== "1y" && range !== "all") {
+          return
+        }
 
-      if (range === currentRange) {
-        return
+        if (range === currentRange) {
+          return
+        }
+
+        currentRange = range
+        updateRangeButtons(currentRange)
+        renderAllCharts()
+      })
+    }
+
+    const cleanupAllCharts = (): void => {
+      for (const observer of observers) {
+        observer.disconnect()
       }
 
-      currentRange = range
-      updateRangeButtons(currentRange)
-      renderAllCharts()
-    })
+      for (const chart of charts) {
+        const cleanup = renderCleanupMap.get(chart.node)
+        if (cleanup) {
+          cleanup()
+        }
+      }
+    }
+
+    updateRangeButtons(currentRange)
+    renderAllCharts()
+
+    window.addEventListener("pagehide", cleanupAllCharts, { once: true })
   }
-
-  updateRangeButtons(currentRange)
-  renderAllCharts()
-
-  window.addEventListener("beforeunload", () => {
-    for (const observer of observers) {
-      observer.disconnect()
-    }
-
-    for (const chartNode of chartNodes) {
-      const cleanup = renderCleanupMap.get(chartNode)
-      if (cleanup) {
-        cleanup()
-      }
-    }
-  })
 </script>

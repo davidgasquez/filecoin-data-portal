@@ -291,16 +291,23 @@
     text-align: center;
   }
 
-  .kpi-section {
-    margin-block-end: var(--space-6);
+  .numbers-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-block-end: var(--space-5);
   }
 
-  .kpi-range-toggle {
+  .numbers-section + .numbers-section {
+    margin-block-start: var(--space-6);
+  }
+
+  .chart-range-toggle {
     display: inline-flex;
     border: 1px solid var(--color-border-strong);
   }
 
-  .kpi-range-toggle button {
+  .chart-range-toggle button {
     border: 0;
     border-inline-end: 1px solid var(--color-border-strong);
     background: var(--color-bg);
@@ -310,11 +317,11 @@
     cursor: pointer;
   }
 
-  .kpi-range-toggle button:last-child {
+  .chart-range-toggle button:last-child {
     border-inline-end: 0;
   }
 
-  .kpi-range-toggle button[aria-pressed="true"] {
+  .chart-range-toggle button[aria-pressed="true"] {
     background: var(--color-text);
     color: var(--color-bg);
   }

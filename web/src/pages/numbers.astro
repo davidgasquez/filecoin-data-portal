@@ -1,61 +1,282 @@
 ---
-import Layout from "../layouts/Layout.astro"
+import type { ComponentProps } from "astro/types"
+import compactDataset from "../data/generated/filecoin-daily-metrics.json"
 import LineChart from "../components/LineChart.astro"
+import Layout from "../layouts/Layout.astro"
 
-const charts = [
+type LineChartProps = ComponentProps<typeof LineChart>
+type LineChartPoint = LineChartProps["data"][number]
+
+type NumbersChartConfig = {
+  metricKey: string
+} & Pick<
+  LineChartProps,
+  "id" | "title" | "yLabel" | "format" | "showMovingAverage" | "movingAverageWindowDays"
+>
+
+type NumbersSectionConfig = {
+  id: string
+  title: string
+  charts: NumbersChartConfig[]
+}
+
+type CompactDailyMetricsDataset = {
+  s: string
+  c: string[]
+  r: Array<[number, ...number[]]>
+}
+
+type DecodedRow = {
+  timestamp: number
+  values: number[]
+}
+
+type RenderedNumbersChart = NumbersChartConfig & {
+  data: LineChartProps["data"]
+}
+
+type RenderedNumbersSection = {
+  id: string
+  title: string
+  charts: RenderedNumbersChart[]
+}
+
+const DAY_IN_MS = 86_400_000
+
+const sections = [
   {
-    title: "Daily Data Onboarding",
-    metricKey: "sector_onboarding_raw_power_pibs",
-    yLabel: "Raw Power",
-    format: "pib",
+    id: "kpis",
+    title: "KPIs",
+    charts: [
+      {
+        id: "daily-data-onboarding",
+        title: "Daily Data Onboarding",
+        metricKey: "sector_onboarding_raw_power_pibs",
+        yLabel: "PiBs",
+        format: "pib",
+      },
+      {
+        id: "clients-with-1tib",
+        title: "Clients with 1 TiB or more active data",
+        metricKey: "clients_with_active_data_gt_1_tibs",
+        yLabel: "Clients",
+        format: "integer",
+      },
+      {
+        id: "paid-deals-fil",
+        title: "Total FIL in Paid Deals",
+        metricKey: "deal_storage_cost_fil",
+        yLabel: "FIL",
+        format: "fil",
+      },
+      {
+        id: "total-value-flow",
+        title: "Total Value Flow",
+        metricKey: "total_value_flow_fil",
+        yLabel: "FIL (Millions)",
+        format: "mfil",
+      },
+    ],
   },
   {
-    title: "Clients with 1 TiB+ Active Data",
-    metricKey: "clients_with_active_data_gt_1_tibs",
-    yLabel: "Clients",
-    format: "integer",
+    id: "power",
+    title: "Power",
+    charts: [
+      {
+        id: "raw-power",
+        title: "Raw Power",
+        metricKey: "raw_power_pibs",
+        yLabel: "PiBs",
+        format: "pib",
+      },
+      {
+        id: "quality-adjusted-power",
+        title: "Quality Adjusted Power",
+        metricKey: "quality_adjusted_power_pibs",
+        yLabel: "PiBs",
+        format: "pib",
+      },
+      {
+        id: "verified-data-power",
+        title: "Verified Data Power",
+        metricKey: "verified_data_power_pibs",
+        yLabel: "PiBs",
+        format: "pib",
+      },
+      {
+        id: "providers-with-power",
+        title: "Providers With Power",
+        metricKey: "providers_with_power",
+        yLabel: "Providers",
+        format: "integer",
+      },
+      {
+        id: "network-utilization-ratio",
+        title: "Network Utilization Ratio",
+        metricKey: "network_utilization_ratio",
+        yLabel: "Percentage (%)",
+        format: "percent",
+      },
+      {
+        id: "active-sectors",
+        title: "Active Sectors",
+        metricKey: "active_sector_count",
+        yLabel: "Active Sectors",
+        format: "integer",
+      },
+    ],
   },
   {
-    title: "Total FIL in Paid Deals",
-    metricKey: "deal_storage_cost_fil",
-    yLabel: "FIL",
-    format: "fil",
+    id: "state-market-deals",
+    title: "State Market Deals",
+    charts: [
+      {
+        id: "data-on-active-deals",
+        title: "Data On Active Deals",
+        metricKey: "data_on_active_deals_pibs",
+        yLabel: "PiBs",
+        format: "pib",
+      },
+      {
+        id: "clients-with-active-deals",
+        title: "Clients With Active Deals",
+        metricKey: "clients_with_active_deals",
+        yLabel: "Clients",
+        format: "integer",
+      },
+      {
+        id: "providers-with-active-deals",
+        title: "Providers With Active Deals",
+        metricKey: "providers_with_active_deals",
+        yLabel: "Providers",
+        format: "integer",
+      },
+      {
+        id: "dealmaking-clients",
+        title: "Dealmaking Clients",
+        metricKey: "unique_deal_making_clients",
+        yLabel: "Clients",
+        format: "integer",
+      },
+      {
+        id: "dealmaking-providers",
+        title: "Dealmaking Providers",
+        metricKey: "unique_deal_making_providers",
+        yLabel: "Providers",
+        format: "integer",
+      },
+      {
+        id: "data-onboarding-with-payments",
+        title: "Data Onboarding with Payments",
+        metricKey: "onboarded_data_tibs_with_payments",
+        yLabel: "TiBs",
+        format: "tib",
+      },
+      {
+        id: "direct-data-onboarding",
+        title: "Direct Data Onboarding",
+        metricKey: "ddo_sector_onboarding_raw_power_tibs",
+        yLabel: "TiBs / day",
+        format: "tib",
+      },
+    ],
   },
-  {
-    title: "Total Value Flow",
-    metricKey: "total_value_flow_fil",
-    yLabel: "FIL",
-    format: "mfil",
-  },
-] as const
+] satisfies NumbersSectionConfig[]
+
+const dataset = compactDataset as CompactDailyMetricsDataset
+
+if (dataset.r.length === 0) {
+  throw new Error("Generated daily metrics dataset is empty")
+}
+
+const startTimestamp = new Date(`${dataset.s}T00:00:00Z`).getTime()
+
+if (Number.isNaN(startTimestamp)) {
+  throw new Error(`Invalid dataset start date: ${dataset.s}`)
+}
+
+const columnIndexByMetric = new Map(dataset.c.map((column, index) => [column, index]))
+
+const decodedRows: DecodedRow[] = dataset.r.map(([dayOffset, ...values]) => ({
+  timestamp: startTimestamp + dayOffset * DAY_IN_MS,
+  values: values.map((value) => Number(value)),
+}))
+
+function getChartData(metricKey: string): LineChartPoint[] {
+  const columnIndex = columnIndexByMetric.get(metricKey)
+
+  if (columnIndex == null) {
+    throw new Error(`Metric ${metricKey} is missing from the generated daily metrics dataset`)
+  }
+
+  return decodedRows
+    .map((row) => ({
+      timestamp: row.timestamp,
+      value: row.values[columnIndex],
+    }))
+    .filter((point) => Number.isFinite(point.value))
+}
+
+const metricKeys = Array.from(
+  new Set(sections.flatMap((section) => section.charts.map((chart) => chart.metricKey))),
+)
+
+const chartDataByMetric = new Map(metricKeys.map((metricKey) => [metricKey, getChartData(metricKey)]))
+
+const renderedSections: RenderedNumbersSection[] = sections.map((section) => ({
+  id: section.id,
+  title: section.title,
+  charts: section.charts.map((chart) => {
+    const data = chartDataByMetric.get(chart.metricKey)
+
+    if (!data) {
+      throw new Error(`Chart data for ${chart.metricKey} was not generated`)
+    }
+
+    return {
+      ...chart,
+      data,
+    }
+  }),
+}))
 ---
 
 <Layout
   title="Filecoin in Numbers | Filecoin Data Portal"
-  description="Core Filecoin metrics with interactive KPI charts."
+  description="Core Filecoin metrics with interactive charts for KPIs, power, and state market deals."
 >
   <section class="page-header" aria-labelledby="numbers-title">
     <h1 id="numbers-title">Filecoin in Numbers</h1>
   </section>
 
-  <section class="kpi-section" aria-label="KPI charts">
-    <div class="kpi-range-toggle" role="group" aria-label="KPI timeframe">
-      <button type="button" data-kpi-range="1y" aria-pressed="true">1Y</button>
-      <button type="button" data-kpi-range="all" aria-pressed="false">All</button>
+  <div class="numbers-controls">
+    <div class="chart-range-toggle" role="group" aria-label="Chart timeframe">
+      <button type="button" data-line-chart-range="1y" aria-pressed="true">1Y</button>
+      <button type="button" data-line-chart-range="all" aria-pressed="false">All</button>
     </div>
+  </div>
 
-    <div class="card-grid card-grid--two-up">
-      {
-        charts.map((chart) => (
-          <LineChart
-            title={chart.title}
-            metricKey={chart.metricKey}
-            yLabel={chart.yLabel}
-            format={chart.format}
-            showMovingAverage
-          />
-        ))
-      }
-    </div>
-  </section>
+  {
+    renderedSections.map((section) => (
+      <section class="numbers-section" aria-labelledby={section.id}>
+        <h2 id={section.id} class="section-title">{section.title}</h2>
+
+        <div class="card-grid card-grid--two-up">
+          {
+            section.charts.map((chart) => (
+              <LineChart
+                id={chart.id}
+                title={chart.title}
+                yLabel={chart.yLabel}
+                data={chart.data}
+                format={chart.format}
+                showMovingAverage={chart.showMovingAverage ?? true}
+                movingAverageWindowDays={chart.movingAverageWindowDays ?? 30}
+              />
+            ))
+          }
+        </div>
+      </section>
+    ))
+  }
 </Layout>
