@@ -10,12 +10,18 @@ type LineChartFormat =
   | "usd"
   | "percent"
 
+type PercentMode = "fraction" | "points"
+
 interface Props {
   id: string
   title: string
   x: string
   y: string
   format?: LineChartFormat
+  formatScale?: number
+  formatPrefix?: string
+  formatSuffix?: string
+  percentMode?: PercentMode
   showMovingAverage?: boolean
   movingAverageWindowDays?: number
 }
@@ -26,6 +32,10 @@ const {
   x,
   y,
   format = "number",
+  formatScale,
+  formatPrefix,
+  formatSuffix,
+  percentMode = "fraction",
   showMovingAverage = false,
   movingAverageWindowDays = 30,
 } = Astro.props
@@ -38,6 +48,10 @@ const {
   data-x={x}
   data-y={y}
   data-format={format}
+  data-format-scale={formatScale}
+  data-format-prefix={formatPrefix}
+  data-format-suffix={formatSuffix}
+  data-percent-mode={percentMode}
   data-show-moving-average={String(showMovingAverage)}
   data-moving-average-window-days={String(movingAverageWindowDays)}
 >

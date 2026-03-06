@@ -7,13 +7,23 @@ type DatasetValue = boolean | number | string | null
 type DatasetRow = Record<string, DatasetValue>
 
 const SQL = `
+  WITH daily_metrics AS (
+    SELECT
+      * REPLACE (
+        coalesce(onboarded_data_pibs_with_payments, 0) AS onboarded_data_pibs_with_payments
+      )
+    FROM read_parquet('${DAILY_METRICS_PARQUET_URL}')
+    WHERE date IS NOT NULL
+  )
   SELECT
-    * REPLACE (
-      coalesce(onboarded_data_pibs_with_payments, 0) AS onboarded_data_pibs_with_payments
-    ),
-    coalesce(total_value_fil, 0) + coalesce(total_gas_used_millions, 0) AS total_value_flow_fil
-  FROM read_parquet('${DAILY_METRICS_PARQUET_URL}')
-  WHERE date IS NOT NULL
+    *,
+    coalesce(total_value_fil, 0) + coalesce(total_gas_used_millions, 0) AS total_value_flow_fil,
+    coalesce(locked_fil / nullif(circulating_fil, 0), 0) AS locked_to_circulating_ratio,
+    coalesce(
+      ((mined_fil - lag(mined_fil) OVER (ORDER BY date)) / nullif(locked_fil, 0)) * 365,
+      0
+    ) AS mining_yield
+  FROM daily_metrics
   ORDER BY date
 `
 

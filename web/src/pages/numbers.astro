@@ -8,7 +8,17 @@ type LineChartProps = ComponentProps<typeof LineChart>
 type DatasetRowValue = string | number | null
 type DatasetRow = Record<string, DatasetRowValue>
 
-type NumbersChartConfig = Pick<LineChartProps, "id" | "title" | "y" | "format">
+type NumbersChartConfig = Pick<
+  LineChartProps,
+  | "id"
+  | "title"
+  | "y"
+  | "format"
+  | "formatScale"
+  | "formatPrefix"
+  | "formatSuffix"
+  | "percentMode"
+>
 
 type NumbersSectionConfig = {
   id: string
@@ -56,6 +66,24 @@ const sections = [
     ],
   },
   {
+    id: "sectors",
+    title: "Sectors",
+    charts: [
+      {
+        id: "sector-onboarding",
+        title: "Sector Onboarding",
+        y: "sector_onboarding_raw_power_pibs",
+        format: "pib",
+      },
+      {
+        id: "sector-termination",
+        title: "Sector Termination",
+        y: "sector_terminated_raw_power_pibs",
+        format: "pib",
+      },
+    ],
+  },
+  {
     id: "power",
     title: "Power",
     charts: [
@@ -94,6 +122,49 @@ const sections = [
         title: "Active Sectors",
         y: "active_sector_count",
         format: "integer",
+      },
+    ],
+  },
+  {
+    id: "activity",
+    title: "Activity",
+    charts: [
+      {
+        id: "active-addresses",
+        title: "Active Addresses",
+        y: "active_address_count_daily",
+        format: "integer",
+      },
+      {
+        id: "total-value-fil",
+        title: "Total Value FIL",
+        y: "total_value_fil",
+        format: "number",
+        formatScale: 1_000_000,
+        formatSuffix: " M FIL",
+      },
+      {
+        id: "all-transactions",
+        title: "All Transactions",
+        y: "transactions",
+        format: "number",
+        formatScale: 1_000_000,
+        formatSuffix: " M",
+      },
+      {
+        id: "total-gas-used",
+        title: "Total Gas Used",
+        y: "total_gas_used_millions",
+        format: "number",
+        formatScale: 1_000_000,
+        formatSuffix: " T Gas",
+      },
+      {
+        id: "unit-base-fee",
+        title: "Unit Base Fee",
+        y: "unit_base_fee",
+        format: "number",
+        formatSuffix: " nanoFIL",
       },
     ],
   },
@@ -145,12 +216,129 @@ const sections = [
       },
     ],
   },
-] satisfies NumbersSectionConfig[]
+  {
+    id: "economics",
+    title: "Economics",
+    charts: [
+      {
+        id: "circulating-fil",
+        title: "Circulating FIL",
+        y: "circulating_fil",
+        format: "number",
+        formatScale: 1_000_000,
+        formatSuffix: " M FIL",
+      },
+      {
+        id: "mined-fil",
+        title: "Mined FIL",
+        y: "mined_fil",
+        format: "number",
+        formatScale: 1_000_000,
+        formatSuffix: " M FIL",
+      },
+      {
+        id: "mining-yield",
+        title: "Mining Yield",
+        y: "mining_yield",
+        format: "percent",
+      },
+      {
+        id: "vested-fil",
+        title: "Vested FIL",
+        y: "vested_fil",
+        format: "number",
+        formatScale: 1_000_000,
+        formatSuffix: " M FIL",
+      },
+      {
+        id: "locked-fil",
+        title: "Locked FIL",
+        y: "locked_fil",
+        format: "number",
+        formatScale: 1_000_000,
+        formatSuffix: " M FIL",
+      },
+      {
+        id: "storage-providers-collateral",
+        title: "Storage Providers Collateral",
+        y: "storage_providers_collateral",
+        format: "fil",
+      },
+      {
+        id: "burnt-fil",
+        title: "Burnt FIL",
+        y: "burnt_fil",
+        format: "number",
+        formatScale: 1_000_000,
+        formatSuffix: " M FIL",
+      },
+      {
+        id: "miner-tip-fil",
+        title: "Miner Tip FIL",
+        y: "miner_tip_fil",
+        format: "fil",
+      },
+      {
+        id: "reward-per-wincount",
+        title: "Reward Per Wincount",
+        y: "reward_per_wincount",
+        format: "fil",
+      },
+      {
+        id: "locked-to-circulating-ratio",
+        title: "Locked to Circulating Ratio",
+        y: "locked_to_circulating_ratio",
+        format: "percent",
+      },
+      {
+        id: "yearly-inflation-rate",
+        title: "Yearly Inflation Rate",
+        y: "yearly_inflation_rate",
+        format: "percent",
+        percentMode: "points",
+      },
+      {
+        id: "fil-token-price",
+        title: "FIL Token Price",
+        y: "fil_token_price_avg_usd",
+        format: "usd",
+      },
+      {
+        id: "fil-token-volume",
+        title: "FIL Token Volume",
+        y: "fil_token_volume_usd",
+        format: "usd",
+        formatScale: 1_000_000,
+        formatSuffix: "M",
+      },
+      {
+        id: "fil-token-market-cap",
+        title: "FIL Token Market Cap",
+        y: "fil_token_market_cap_usd",
+        format: "usd",
+        formatScale: 1_000_000_000,
+        formatSuffix: "B",
+      },
+      {
+        id: "fil-plus-bytes-share",
+        title: "Filecoin Plus Bytes Share",
+        y: "fil_plus_bytes_share",
+        format: "percent",
+      },
+      {
+        id: "fil-plus-rewards-share",
+        title: "Filecoin Plus Rewards Share",
+        y: "fil_plus_rewards_share",
+        format: "percent",
+      },
+    ],
+  },
+] as NumbersSectionConfig[]
 ---
 
 <Layout
   title="Filecoin in Numbers | Filecoin Data Portal"
-  description="Core Filecoin metrics with interactive charts for KPIs, power, and state market deals."
+  description="Core Filecoin metrics with interactive charts for KPIs, sectors, power, activity, state market deals, and economics."
 >
   <div class="numbers-toolbar">
     <h1>Filecoin in Numbers</h1>
@@ -175,6 +363,10 @@ const sections = [
                 x={chartX}
                 y={chart.y}
                 format={chart.format}
+                formatScale={chart.formatScale}
+                formatPrefix={chart.formatPrefix}
+                formatSuffix={chart.formatSuffix}
+                percentMode={chart.percentMode}
                 showMovingAverage={true}
                 movingAverageWindowDays={30}
               />
@@ -212,6 +404,8 @@ const sections = [
       | "usd"
       | "percent"
 
+    type PercentMode = "fraction" | "points"
+
     type RangeType = "6m" | "1y" | "all"
 
     type ParsedChart = {
@@ -219,6 +413,10 @@ const sections = [
       node: HTMLElement
       data: LineChartPoint[]
       format: LineChartFormat
+      formatScale: number
+      formatPrefix: string
+      formatSuffix: string
+      percentMode: PercentMode
       showMovingAverage: boolean
       movingAverageWindowDays: number
     }
@@ -277,6 +475,10 @@ const sections = [
             .filter((point): point is LineChartPoint => point !== null)
             .sort((left, right) => left.timestamp - right.timestamp),
           format: parseFormat(node.dataset.format),
+          formatScale: parsePositiveNumber(node.dataset.formatScale, 1),
+          formatPrefix: node.dataset.formatPrefix ?? "",
+          formatSuffix: node.dataset.formatSuffix ?? "",
+          percentMode: parsePercentMode(node.dataset.percentMode),
           showMovingAverage: node.dataset.showMovingAverage === "true",
           movingAverageWindowDays: parsePositiveInteger(
             node.dataset.movingAverageWindowDays,
@@ -354,6 +556,24 @@ const sections = [
         return parsed
       }
 
+      function parsePositiveNumber(value: string | undefined, fallback: number): number {
+        const parsed = Number(value)
+
+        if (!Number.isFinite(parsed) || parsed <= 0) {
+          return fallback
+        }
+
+        return parsed
+      }
+
+      function parsePercentMode(value: string | undefined): PercentMode {
+        if (value === "points") {
+          return value
+        }
+
+        return "fraction"
+      }
+
       function getInitialRange(): RangeType {
         const activeButton = document.querySelector<HTMLButtonElement>(
           `${RANGE_BUTTON_SELECTOR}[aria-pressed="true"]`,
@@ -378,28 +598,36 @@ const sections = [
         }).format(value)
       }
 
+      function scaleDisplayValue(value: number, scale: number): number {
+        return value / scale
+      }
+
       function formatValue(
         value: number,
-        format: LineChartFormat,
+        chart: Pick<ParsedChart, "format" | "formatScale" | "formatPrefix" | "formatSuffix" | "percentMode">,
         context: "headline" | "tick" | "tooltip",
       ): string {
-        if (format === "integer") {
-          return Math.round(value).toLocaleString("en-US")
+        const maximumFractionDigits = context === "tick" ? 1 : 2
+        const scaledValue = scaleDisplayValue(value, chart.formatScale)
+
+        if (chart.format === "integer") {
+          return `${chart.formatPrefix}${Math.round(scaledValue).toLocaleString("en-US")}${chart.formatSuffix}`
         }
 
-        if (format === "mfil") {
-          const scaledValue = value / 1_000_000
-          const suffix = context === "tick" ? "M" : " M FIL"
-          return `${formatDecimal(scaledValue, context === "tick" ? 1 : 2)}${suffix}`
+        if (chart.format === "mfil") {
+          const millionsValue = scaledValue / 1_000_000
+          const suffix = context === "tick" ? `M${chart.formatSuffix}` : ` M FIL${chart.formatSuffix}`
+          return `${chart.formatPrefix}${formatDecimal(millionsValue, context === "tick" ? 1 : 2)}${suffix}`
         }
 
-        if (format === "usd") {
-          return formatUsd(value, context === "tick" ? 0 : 2)
+        if (chart.format === "usd") {
+          return `${chart.formatPrefix}${formatUsd(scaledValue, context === "tick" ? 0 : 2)}${chart.formatSuffix}`
         }
 
-        if (format === "percent") {
-          const scaledValue = value * 100
-          return `${formatDecimal(scaledValue, context === "tick" ? 0 : 2)}%`
+        if (chart.format === "percent") {
+          const percentValue = chart.percentMode === "fraction" ? scaledValue * 100 : scaledValue
+          const percentFractionDigits = context === "tick" ? 0 : 2
+          return `${chart.formatPrefix}${formatDecimal(percentValue, percentFractionDigits)}%${chart.formatSuffix}`
         }
 
         const suffixByFormat = {
@@ -410,8 +638,7 @@ const sections = [
           usdfc: " USDFC",
         } satisfies Record<Exclude<LineChartFormat, "integer" | "mfil" | "usd" | "percent">, string>
 
-        const maximumFractionDigits = context === "tick" ? 1 : 2
-        return `${formatDecimal(value, maximumFractionDigits)}${suffixByFormat[format]}`
+        return `${chart.formatPrefix}${formatDecimal(scaledValue, maximumFractionDigits)}${suffixByFormat[chart.format]}${chart.formatSuffix}`
       }
 
       function getPointsForRange(points: LineChartPoint[], range: RangeType): LineChartPoint[] {
@@ -606,10 +833,10 @@ const sections = [
           const compareIndex = Math.max(0, points.length - 1 - chart.movingAverageWindowDays)
           const prevValue = points[compareIndex].value
           const trend = latestPoint.value > prevValue ? "▲" : latestPoint.value < prevValue ? "▼" : "■"
-          const now = formatValue(latestPoint.value, chart.format, "tooltip")
-          const ago = formatValue(prevValue, chart.format, "tooltip")
+          const now = formatValue(latestPoint.value, chart, "tooltip")
+          const ago = formatValue(prevValue, chart, "tooltip")
 
-          headlineValue.textContent = `${formatValue(latestPoint.value, chart.format, "headline")} ${trend}`
+          headlineValue.textContent = `${formatValue(latestPoint.value, chart, "headline")} ${trend}`
           setupHeadlineTip(
             chart.node,
             headlineValue,
@@ -617,7 +844,7 @@ const sections = [
             `<span class="tip-row"><span>30 Days Ago</span><span class="tip-dots"></span><span>${ago}</span></span>`,
           )
         } else {
-          headlineValue.textContent = formatValue(latestPoint.value, chart.format, "headline")
+          headlineValue.textContent = formatValue(latestPoint.value, chart, "headline")
           setupHeadlineTip(chart.node, headlineValue, "")
         }
 
@@ -647,7 +874,7 @@ const sections = [
 
             return `
               <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" class="line-chart__gridline" />
-              <text x="${margin.left + 4}" y="${y - 4}" text-anchor="start" class="line-chart__label">${formatValue(tick, chart.format, "tick")}</text>
+              <text x="${margin.left + 4}" y="${y - 4}" text-anchor="start" class="line-chart__label">${formatValue(tick, chart, "tick")}</text>
             `
           })
           .join("")
@@ -720,9 +947,9 @@ const sections = [
 
           if (chart.showMovingAverage) {
             tooltip.textContent =
-              `${formattedDate} · MA${chart.movingAverageWindowDays} ${formatValue(point.value, chart.format, "tooltip")} · Raw ${formatValue(point.rawValue, chart.format, "tooltip")}`
+              `${formattedDate} · MA${chart.movingAverageWindowDays} ${formatValue(point.value, chart, "tooltip")} · Raw ${formatValue(point.rawValue, chart, "tooltip")}`
           } else {
-            tooltip.textContent = `${formattedDate} · ${formatValue(point.value, chart.format, "tooltip")}`
+            tooltip.textContent = `${formattedDate} · ${formatValue(point.value, chart, "tooltip")}`
           }
 
           tooltip.hidden = false
