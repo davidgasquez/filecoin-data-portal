@@ -294,19 +294,42 @@
     text-align: center;
   }
 
-  .numbers-controls {
+  .numbers-toolbar {
     position: sticky;
     inset-block-start: 0;
     z-index: 10;
     display: flex;
-    justify-content: flex-end;
+    align-items: baseline;
+    justify-content: space-between;
     padding-block: var(--space-3);
     margin-block-end: var(--space-4);
     background: var(--color-bg);
   }
 
+  .numbers-toolbar h1 {
+    margin: 0;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .numbers-section {
+    border: 1px solid var(--color-border);
+    padding: var(--space-4);
+  }
+
   .numbers-section + .numbers-section {
-    margin-block-start: var(--space-7);
+    margin-block-start: var(--space-5);
+  }
+
+  .numbers-section__legend {
+    margin: 0 0 var(--space-3) 0;
+    padding: 0;
+    border: 0;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--color-text-muted);
   }
 
   .chart-range-toggle {
@@ -336,75 +359,120 @@
   .line-chart {
     display: grid;
     gap: var(--space-1);
+    margin: 0;
+    padding: var(--space-2);
+    border: 1px solid transparent;
+    transition: border-color 0.1s;
   }
 
-  .line-chart__title-row {
+  .line-chart:hover {
+    border-color: var(--color-border);
+  }
+
+  .line-chart__header {
+    position: relative;
     display: flex;
     align-items: baseline;
-    padding-inline: 60px 12px;
+    gap: var(--space-2);
   }
 
-  .line-chart__title-row h3 {
+  .line-chart__title {
     margin: 0;
-    font-size: 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .line-chart__title:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--color-border);
+    text-underline-offset: 0.16em;
   }
 
   .line-chart__headline {
     margin-inline-start: auto;
-    font-size: 0.82rem;
-    line-height: 1.2;
+    font-size: 0.78rem;
     font-weight: 400;
-    color: var(--color-text-muted);
-    letter-spacing: 0.01em;
+    color: inherit;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+
+  .line-chart__headline[data-has-tip] {
+    cursor: default;
+  }
+
+  .line-chart__headline-tip {
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: 100%;
+    z-index: 3;
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-bg);
+    color: var(--color-text);
+    padding: 0.25rem 0.4rem;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    pointer-events: none;
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .line-chart__headline-tip[hidden] {
+    display: none;
+  }
+
+  .tip-row {
+    display: flex;
+    gap: 0.3em;
+  }
+
+  .tip-dots {
+    flex: 1;
+    border-block-end: 1px dotted var(--color-border);
+    margin-block-end: 0.25em;
   }
 
   .line-chart__canvas {
     position: relative;
     inline-size: 100%;
-    min-block-size: 420px;
+    min-block-size: 240px;
   }
 
   .line-chart__svg {
     inline-size: 100%;
-    block-size: 420px;
+    block-size: 240px;
   }
 
   .line-chart__path {
     fill: none;
     stroke: var(--color-border-strong);
-    stroke-width: 2;
+    stroke-width: 1.5;
   }
 
   .line-chart__path--raw {
     stroke: var(--color-border);
-    stroke-width: 1.25;
+    stroke-width: 1;
+    opacity: 0.35;
   }
 
   .line-chart__path--average {
     stroke: var(--color-border-strong);
-    stroke-width: 2;
+    stroke-width: 1.5;
   }
 
   .line-chart__gridline {
     stroke: var(--color-border);
-    stroke-width: 0.7;
-    shape-rendering: crispEdges;
-  }
-
-  .line-chart__gridline--vertical {
+    stroke-width: 0.5;
     stroke-dasharray: 2 3;
-  }
-
-  .line-chart__axis {
-    stroke: var(--color-border-strong);
-    stroke-width: 1;
     shape-rendering: crispEdges;
   }
 
   .line-chart__label {
     fill: var(--color-text-muted);
-    font-size: 10px;
+    font-size: 9px;
     font-family: var(--font-monospace), ui-monospace, monospace;
   }
 
@@ -417,7 +485,7 @@
   .line-chart__dot {
     fill: var(--color-bg);
     stroke: var(--color-border-strong);
-    stroke-width: 2;
+    stroke-width: 1.5;
   }
 
   .line-chart__overlay {
@@ -433,8 +501,8 @@
     border: 1px solid var(--color-border-strong);
     background: var(--color-bg);
     color: var(--color-text);
-    padding: 0.25rem 0.45rem;
-    font-size: 0.72rem;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
     white-space: nowrap;
   }
 
@@ -450,7 +518,7 @@
     place-items: center;
     pointer-events: none;
     color: var(--color-text-muted);
-    font-size: 0.85rem;
+    font-size: 0.82rem;
   }
 
   .line-chart__empty[hidden] {

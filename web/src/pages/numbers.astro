@@ -26,8 +26,8 @@ if (dailyMetrics.length === 0) {
 
 const sections = [
   {
-    id: "kpis",
-    title: "KPIs",
+    id: "key-metrics",
+    title: "Key Metrics",
     charts: [
       {
         id: "daily-data-onboarding",
@@ -152,21 +152,19 @@ const sections = [
   title="Filecoin in Numbers | Filecoin Data Portal"
   description="Core Filecoin metrics with interactive charts for KPIs, power, and state market deals."
 >
-  <section class="page-header" aria-labelledby="numbers-title">
-    <h1 id="numbers-title">Filecoin in Numbers</h1>
-  </section>
-
-  <div class="numbers-controls">
+  <div class="numbers-toolbar">
+    <h1>Filecoin in Numbers</h1>
     <div class="chart-range-toggle" role="group" aria-label="Chart timeframe">
+      <button type="button" data-line-chart-range="6m" aria-pressed="false">6M</button>
       <button type="button" data-line-chart-range="1y" aria-pressed="true">1Y</button>
       <button type="button" data-line-chart-range="all" aria-pressed="false">All</button>
     </div>
   </div>
 
   {
-    sections.map((section, index) => (
+    sections.map((section) => (
       <section class="numbers-section" aria-labelledby={section.id}>
-        {index > 0 && <h2 id={section.id} class="section-title">{section.title}</h2>}
+        <h2 id={section.id} class="numbers-section__legend">{section.title}</h2>
 
         <div class="card-grid card-grid--two-up">
           {
@@ -214,7 +212,7 @@ const sections = [
       | "usd"
       | "percent"
 
-    type RangeType = "1y" | "all"
+    type RangeType = "6m" | "1y" | "all"
 
     type ParsedChart = {
       id: string
@@ -228,8 +226,8 @@ const sections = [
     const DATASET_SELECTOR = "[data-numbers-dataset]"
     const CHART_SELECTOR = "[data-line-chart]"
     const RANGE_BUTTON_SELECTOR = "[data-line-chart-range]"
-    const CHART_HEIGHT = 420
-    const CHART_MARGIN = { top: 14, right: 12, bottom: 40, left: 60 }
+    const CHART_HEIGHT = 240
+    const CHART_MARGIN = { top: 22, right: 10, bottom: 28, left: 10 }
     const DAY_IN_MS = 86_400_000
 
     const chartNodes = Array.from(document.querySelectorAll<HTMLElement>(CHART_SELECTOR))
@@ -361,7 +359,9 @@ const sections = [
           `${RANGE_BUTTON_SELECTOR}[aria-pressed="true"]`,
         )
 
-        return activeButton?.dataset.lineChartRange === "all" ? "all" : "1y"
+        const range = activeButton?.dataset.lineChartRange
+        if (range === "6m" || range === "all") return range
+        return "1y"
       }
 
       function formatDecimal(value: number, maximumFractionDigits: number): string {
@@ -426,15 +426,16 @@ const sections = [
         }
 
         const latestDate = new Date(latestTimestamp)
-        const oneYearAgo = new Date(
+        const monthsBack = range === "6m" ? 6 : 12
+        const cutoff = new Date(
           Date.UTC(
-            latestDate.getUTCFullYear() - 1,
-            latestDate.getUTCMonth(),
+            latestDate.getUTCFullYear(),
+            latestDate.getUTCMonth() - monthsBack,
             latestDate.getUTCDate(),
           ),
         ).getTime()
 
-        return points.filter((point) => point.timestamp >= oneYearAgo)
+        return points.filter((point) => point.timestamp >= cutoff)
       }
 
       function findClosestPointIndex(points: { x: number }[], x: number): number {
@@ -498,6 +499,35 @@ const sections = [
         for (const button of buttons) {
           const isActive = button.dataset.lineChartRange === range
           button.setAttribute("aria-pressed", String(isActive))
+        }
+      }
+
+      function setupHeadlineTip(
+        chartNode: HTMLElement,
+        trigger: HTMLElement,
+        text: string,
+      ): void {
+        const tip = chartNode.querySelector<HTMLElement>("[data-line-chart-headline-tip]")
+
+        if (!tip) {
+          return
+        }
+
+        if (!text) {
+          tip.hidden = true
+          trigger.removeAttribute("data-has-tip")
+          return
+        }
+
+        tip.innerHTML = text
+        trigger.setAttribute("data-has-tip", "")
+
+        trigger.onmouseenter = () => {
+          tip.hidden = false
+        }
+
+        trigger.onmouseleave = () => {
+          tip.hidden = true
         }
       }
 
@@ -571,10 +601,26 @@ const sections = [
         }))
 
         const latestPoint = points[points.length - 1]
-        const headlineSuffix = chart.showMovingAverage ? ` [MA${chart.movingAverageWindowDays}]` : ""
 
-        headlineValue.textContent =
-          `${formatValue(latestPoint.value, chart.format, "headline")}${headlineSuffix}`
+        if (chart.showMovingAverage) {
+          const compareIndex = Math.max(0, points.length - 1 - chart.movingAverageWindowDays)
+          const prevValue = points[compareIndex].value
+          const trend = latestPoint.value > prevValue ? "▲" : latestPoint.value < prevValue ? "▼" : "■"
+          const now = formatValue(latestPoint.value, chart.format, "tooltip")
+          const ago = formatValue(prevValue, chart.format, "tooltip")
+
+          headlineValue.textContent = `${formatValue(latestPoint.value, chart.format, "headline")} ${trend}`
+          setupHeadlineTip(
+            chart.node,
+            headlineValue,
+            `<span class="tip-row"><span>Now</span><span class="tip-dots"></span><span>${now}</span></span>` +
+            `<span class="tip-row"><span>30 Days Ago</span><span class="tip-dots"></span><span>${ago}</span></span>`,
+          )
+        } else {
+          headlineValue.textContent = formatValue(latestPoint.value, chart.format, "headline")
+          setupHeadlineTip(chart.node, headlineValue, "")
+        }
+
         headlineValue.hidden = false
 
         const rawPath = rawPoints
@@ -592,8 +638,8 @@ const sections = [
           timeZone: "UTC",
         })
 
-        const yTicks = buildTicks(minY, maxY, 5)
-        const xTicks = buildTicks(minX, maxX, 5)
+        const yTicks = buildTicks(minY, maxY, 4)
+        const xTicks = buildTicks(minX, maxX, 4)
 
         const yTickMarkup = yTicks
           .map((tick) => {
@@ -601,18 +647,18 @@ const sections = [
 
             return `
               <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" class="line-chart__gridline" />
-              <text x="${margin.left - 8}" y="${y + 3}" text-anchor="end" class="line-chart__label">${formatValue(tick, chart.format, "tick")}</text>
+              <text x="${margin.left + 4}" y="${y - 4}" text-anchor="start" class="line-chart__label">${formatValue(tick, chart.format, "tick")}</text>
             `
           })
           .join("")
 
         const xTickMarkup = xTicks
-          .map((tick) => {
+          .map((tick, index) => {
             const x = scaleX(tick)
+            const anchor = index === 0 ? "start" : index === xTicks.length - 1 ? "end" : "middle"
 
             return `
-              <line x1="${x}" y1="${margin.top}" x2="${x}" y2="${height - margin.bottom}" class="line-chart__gridline line-chart__gridline--vertical" />
-              <text x="${x}" y="${height - 8}" text-anchor="middle" class="line-chart__label">${xTickDateFormatter.format(new Date(tick))}</text>
+              <text x="${x}" y="${height - 6}" text-anchor="${anchor}" class="line-chart__label">${xTickDateFormatter.format(new Date(tick))}</text>
             `
           })
           .join("")
@@ -628,11 +674,9 @@ const sections = [
         svg.innerHTML = `
           ${yTickMarkup}
           ${xTickMarkup}
-          <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}" class="line-chart__axis" />
-          <line x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}" class="line-chart__axis" />
           ${pathMarkup}
           <line x1="0" y1="0" x2="0" y2="0" class="line-chart__crosshair" visibility="hidden" />
-          <circle cx="0" cy="0" r="4" class="line-chart__dot" visibility="hidden" />
+          <circle cx="0" cy="0" r="3" class="line-chart__dot" visibility="hidden" />
           <rect x="${margin.left}" y="${margin.top}" width="${plotWidth}" height="${plotHeight}" class="line-chart__overlay" />
         `
 
@@ -688,7 +732,7 @@ const sections = [
           const minLeft = tooltipPadding
           const maxLeft = width - tooltip.offsetWidth - tooltipPadding
           const tooltipLeft = Math.min(maxLeft, Math.max(minLeft, point.x - tooltipHalfWidth))
-          const tooltipTop = Math.max(tooltipPadding, point.y - 34)
+          const tooltipTop = Math.max(tooltipPadding, point.y - 28)
 
           tooltip.style.left = `${tooltipLeft}px`
           tooltip.style.top = `${tooltipTop}px`
@@ -726,7 +770,7 @@ const sections = [
         button.addEventListener("click", () => {
           const range = button.dataset.lineChartRange
 
-          if (range !== "1y" && range !== "all") {
+          if (range !== "6m" && range !== "1y" && range !== "all") {
             return
           }
 

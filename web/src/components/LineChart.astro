@@ -31,7 +31,7 @@ const {
 } = Astro.props
 ---
 
-<article
+<figure
   class="line-chart"
   data-line-chart
   data-chart-id={id}
@@ -41,14 +41,15 @@ const {
   data-show-moving-average={String(showMovingAverage)}
   data-moving-average-window-days={String(movingAverageWindowDays)}
 >
-  <div class="line-chart__title-row">
-    <h3>{title}</h3>
+  <figcaption class="line-chart__header">
+    <a href={`#${id}`} id={id} class="line-chart__title">{title}</a>
     <span class="line-chart__headline" data-line-chart-last-value hidden></span>
-  </div>
+    <span class="line-chart__headline-tip" data-line-chart-headline-tip hidden></span>
+  </figcaption>
 
   <div class="line-chart__canvas">
     <svg class="line-chart__svg" aria-hidden="true"></svg>
     <p class="line-chart__empty" hidden>No data available for this range.</p>
     <div class="line-chart__tooltip" hidden></div>
   </div>
-</article>
+</figure>
