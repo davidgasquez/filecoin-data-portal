@@ -1,10 +1,11 @@
 import dagster as dg
 
-from fdp.apis import assets, fevm, goldsky, oso
+from fdp.apis import assets, fevm, oso
 from fdp.apis.resources import OsoResource
 from fdp.resources import HttpClientResource
 
-api_assets = dg.load_assets_from_modules([assets, fevm, goldsky, oso])
+# raw_goldsky_foc_metrics is temporarily disabled due to recurring upstream Goldsky failures.
+api_assets = dg.load_assets_from_modules([assets, fevm, oso])
 
 definitions = dg.Definitions(
     assets=api_assets,
