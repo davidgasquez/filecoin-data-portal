@@ -57,7 +57,7 @@
     --space-6: 2rem;
     --space-7: 3rem;
 
-    --container-width: min(100% - 2rem, 72rem);
+    --container-width: min(100% - 2rem, 96rem);
   }
 }
 
@@ -238,9 +238,12 @@
   }
 
   .section-title {
-    margin-block-start: var(--space-6);
-    padding-block-end: var(--space-2);
+    margin-block-start: 0;
+    padding-block-end: var(--space-3);
     border-block-end: 1px solid var(--color-border);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: 1.1rem;
   }
 
   .card-grid {
@@ -292,14 +295,18 @@
   }
 
   .numbers-controls {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 10;
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-    margin-block-end: var(--space-5);
+    justify-content: flex-end;
+    padding-block: var(--space-3);
+    margin-block-end: var(--space-4);
+    background: var(--color-bg);
   }
 
   .numbers-section + .numbers-section {
-    margin-block-start: var(--space-6);
+    margin-block-start: var(--space-7);
   }
 
   .chart-range-toggle {
@@ -328,53 +335,39 @@
 
   .line-chart {
     display: grid;
-    gap: var(--space-2);
-  }
-
-  .line-chart__header {
-    display: grid;
     gap: var(--space-1);
   }
 
   .line-chart__title-row {
     display: flex;
     align-items: baseline;
-    gap: var(--space-2);
-    flex-wrap: wrap;
+    padding-inline: 60px 12px;
   }
 
-  .line-chart__header h3,
-  .line-chart__header p {
+  .line-chart__title-row h3 {
     margin: 0;
-  }
-
-  .line-chart__header h3 {
     font-size: 1rem;
   }
 
   .line-chart__headline {
-    border: 1px solid var(--color-border-strong);
-    padding: 0.08rem 0.35rem;
+    margin-inline-start: auto;
     font-size: 0.82rem;
     line-height: 1.2;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-  }
-
-  .line-chart__header p {
+    font-weight: 400;
     color: var(--color-text-muted);
-    font-size: 0.85rem;
+    letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
   }
 
   .line-chart__canvas {
     position: relative;
     inline-size: 100%;
-    min-block-size: 340px;
+    min-block-size: 420px;
   }
 
   .line-chart__svg {
     inline-size: 100%;
-    block-size: 340px;
+    block-size: 420px;
   }
 
   .line-chart__path {

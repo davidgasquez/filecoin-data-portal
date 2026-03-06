@@ -18,7 +18,6 @@ type LineChartFormat =
 interface Props {
   id?: string
   title: string
-  yLabel: string
   data: LineChartPoint[]
   format?: LineChartFormat
   showMovingAverage?: boolean
@@ -28,7 +27,6 @@ interface Props {
 const {
   id,
   title,
-  yLabel,
   data,
   format = "number",
   showMovingAverage = false,
@@ -55,13 +53,10 @@ const serializedData = JSON.stringify(
   data-show-moving-average={String(showMovingAverage)}
   data-moving-average-window-days={String(movingAverageWindowDays)}
 >
-  <header class="line-chart__header">
-    <div class="line-chart__title-row">
-      <h3>{title}</h3>
-      <span class="line-chart__headline" data-line-chart-last-value hidden></span>
-    </div>
-    <p>{yLabel}</p>
-  </header>
+  <div class="line-chart__title-row">
+    <h3>{title}</h3>
+    <span class="line-chart__headline" data-line-chart-last-value hidden></span>
+  </div>
 
   <div class="line-chart__canvas">
     <svg class="line-chart__svg" aria-hidden="true"></svg>
@@ -108,11 +103,9 @@ const serializedData = JSON.stringify(
 
   const CHART_SELECTOR = "[data-line-chart]"
   const RANGE_BUTTON_SELECTOR = "[data-line-chart-range]"
-  const CHART_HEIGHT = 340
-  const CHART_MARGIN = { top: 14, right: 12, bottom: 40, left: 74 }
+  const CHART_HEIGHT = 420
+  const CHART_MARGIN = { top: 14, right: 12, bottom: 40, left: 60 }
   const DAY_IN_MS = 86_400_000
-  const HOVER_SYNC_EVENT = "line-chart-hover-sync"
-  const HOVER_CLEAR_EVENT = "line-chart-hover-clear"
 
   const renderCleanupMap = new WeakMap<HTMLElement, () => void>()
 
@@ -298,33 +291,6 @@ const serializedData = JSON.stringify(
 
       return Math.abs(points[rightCandidate].x - x) <
         Math.abs(points[leftCandidate].x - x)
-        ? rightCandidate
-        : leftCandidate
-    }
-
-    function findClosestTimestampIndex(points: { timestamp: number }[], timestamp: number): number {
-      if (points.length === 1) {
-        return 0
-      }
-
-      let left = 0
-      let right = points.length - 1
-
-      while (left < right) {
-        const mid = Math.floor((left + right) / 2)
-
-        if (points[mid].timestamp < timestamp) {
-          left = mid + 1
-        } else {
-          right = mid
-        }
-      }
-
-      const rightCandidate = left
-      const leftCandidate = Math.max(0, rightCandidate - 1)
-
-      return Math.abs(points[rightCandidate].timestamp - timestamp) <
-        Math.abs(points[leftCandidate].timestamp - timestamp)
         ? rightCandidate
         : leftCandidate
     }
@@ -516,30 +482,24 @@ const serializedData = JSON.stringify(
         throw new Error(`Line chart ${chart.id} interactive layer could not be initialized`)
       }
 
-      const emitHoverSync = (timestamp: number): void => {
-        window.dispatchEvent(new CustomEvent(HOVER_SYNC_EVENT, {
-          detail: {
-            sourceId: chart.id,
-            timestamp,
-          },
-        }))
-      }
-
-      const emitHoverClear = (): void => {
-        window.dispatchEvent(new CustomEvent(HOVER_CLEAR_EVENT, {
-          detail: {
-            sourceId: chart.id,
-          },
-        }))
-      }
-
       const hideTooltip = (): void => {
         crosshair.setAttribute("visibility", "hidden")
         dot.setAttribute("visibility", "hidden")
         tooltip.hidden = true
       }
 
-      const showTooltipForPoint = (point: (typeof points)[number]): void => {
+      const showTooltipFromClientX = (clientX: number): void => {
+        const rect = svg.getBoundingClientRect()
+        const pointerX = ((clientX - rect.left) / rect.width) * width
+
+        if (pointerX < margin.left || pointerX > width - margin.right) {
+          hideTooltip()
+          return
+        }
+
+        const closestPointIndex = findClosestPointIndex(points, pointerX)
+        const point = points[closestPointIndex]
+
         crosshair.setAttribute("x1", String(point.x))
         crosshair.setAttribute("y1", String(margin.top))
         crosshair.setAttribute("x2", String(point.x))
@@ -573,94 +533,16 @@ const serializedData = JSON.stringify(
         tooltip.style.top = `${tooltipTop}px`
       }
 
-      const showTooltipFromClientX = (clientX: number): void => {
-        const rect = svg.getBoundingClientRect()
-        const pointerX = ((clientX - rect.left) / rect.width) * width
-
-        if (pointerX < margin.left || pointerX > width - margin.right) {
-          hideTooltip()
-          emitHoverClear()
-          return
-        }
-
-        const closestPointIndex = findClosestPointIndex(points, pointerX)
-        const point = points[closestPointIndex]
-
-        showTooltipForPoint(point)
-        emitHoverSync(point.timestamp)
-      }
-
-      const showTooltipAtTimestamp = (timestamp: number): void => {
-        const closestPointIndex = findClosestTimestampIndex(points, timestamp)
-        const point = points[closestPointIndex]
-        showTooltipForPoint(point)
-      }
-
-      const handleHoverSync = (event: Event): void => {
-        const customEvent = event as CustomEvent<{ sourceId?: string; timestamp?: number }>
-
-        if (customEvent.detail?.sourceId === chart.id) {
-          return
-        }
-
-        const timestamp = customEvent.detail?.timestamp
-        if (typeof timestamp !== "number") {
-          return
-        }
-
-        showTooltipAtTimestamp(timestamp)
-      }
-
-      const handleHoverClear = (event: Event): void => {
-        const customEvent = event as CustomEvent<{ sourceId?: string }>
-
-        if (customEvent.detail?.sourceId === chart.id) {
-          return
-        }
-
-        hideTooltip()
-      }
-
-      const handlePointerMove = (event: PointerEvent): void => {
-        showTooltipFromClientX(event.clientX)
-      }
-
-      const handlePointerDown = (event: PointerEvent): void => {
-        showTooltipFromClientX(event.clientX)
-      }
-
-      const handlePointerUp = (event: PointerEvent): void => {
-        if (event.pointerType !== "touch") {
-          return
-        }
-
-        hideTooltip()
-        emitHoverClear()
-      }
-
-      const handlePointerLeave = (): void => {
-        hideTooltip()
-        emitHoverClear()
-      }
-
-      overlay.addEventListener("pointerdown", handlePointerDown)
-      overlay.addEventListener("pointermove", handlePointerMove)
-      overlay.addEventListener("pointerup", handlePointerUp)
-      overlay.addEventListener("pointercancel", handlePointerLeave)
-      overlay.addEventListener("pointerleave", handlePointerLeave)
-
-      window.addEventListener(HOVER_SYNC_EVENT, handleHoverSync as EventListener)
-      window.addEventListener(HOVER_CLEAR_EVENT, handleHoverClear as EventListener)
+      overlay.addEventListener("pointermove", (e) => showTooltipFromClientX(e.clientX))
+      overlay.addEventListener("pointerdown", (e) => showTooltipFromClientX(e.clientX))
+      overlay.addEventListener("pointerleave", hideTooltip)
+      overlay.addEventListener("pointercancel", hideTooltip)
+      overlay.addEventListener("pointerup", (e) => {
+        if (e.pointerType === "touch") hideTooltip()
+      })
 
       renderCleanupMap.set(chart.node, () => {
-        overlay.removeEventListener("pointerdown", handlePointerDown)
-        overlay.removeEventListener("pointermove", handlePointerMove)
-        overlay.removeEventListener("pointerup", handlePointerUp)
-        overlay.removeEventListener("pointercancel", handlePointerLeave)
-        overlay.removeEventListener("pointerleave", handlePointerLeave)
-
-        window.removeEventListener(HOVER_SYNC_EVENT, handleHoverSync as EventListener)
-        window.removeEventListener(HOVER_CLEAR_EVENT, handleHoverClear as EventListener)
+        overlay.replaceWith(overlay.cloneNode(true))
       })
     }
 

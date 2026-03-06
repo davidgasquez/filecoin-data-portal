@@ -11,7 +11,7 @@ type NumbersChartConfig = {
   metricKey: string
 } & Pick<
   LineChartProps,
-  "id" | "title" | "yLabel" | "format" | "showMovingAverage" | "movingAverageWindowDays"
+  "id" | "title" | "format" | "showMovingAverage" | "movingAverageWindowDays"
 >
 
 type NumbersSectionConfig = {
@@ -52,28 +52,24 @@ const sections = [
         id: "daily-data-onboarding",
         title: "Daily Data Onboarding",
         metricKey: "sector_onboarding_raw_power_pibs",
-        yLabel: "PiBs",
         format: "pib",
       },
       {
         id: "clients-with-1tib",
         title: "Clients with 1 TiB or more active data",
         metricKey: "clients_with_active_data_gt_1_tibs",
-        yLabel: "Clients",
         format: "integer",
       },
       {
         id: "paid-deals-fil",
         title: "Total FIL in Paid Deals",
         metricKey: "deal_storage_cost_fil",
-        yLabel: "FIL",
         format: "fil",
       },
       {
         id: "total-value-flow",
         title: "Total Value Flow",
         metricKey: "total_value_flow_fil",
-        yLabel: "FIL (Millions)",
         format: "mfil",
       },
     ],
@@ -86,42 +82,36 @@ const sections = [
         id: "raw-power",
         title: "Raw Power",
         metricKey: "raw_power_pibs",
-        yLabel: "PiBs",
         format: "pib",
       },
       {
         id: "quality-adjusted-power",
         title: "Quality Adjusted Power",
         metricKey: "quality_adjusted_power_pibs",
-        yLabel: "PiBs",
         format: "pib",
       },
       {
         id: "verified-data-power",
         title: "Verified Data Power",
         metricKey: "verified_data_power_pibs",
-        yLabel: "PiBs",
         format: "pib",
       },
       {
         id: "providers-with-power",
         title: "Providers With Power",
         metricKey: "providers_with_power",
-        yLabel: "Providers",
         format: "integer",
       },
       {
         id: "network-utilization-ratio",
         title: "Network Utilization Ratio",
         metricKey: "network_utilization_ratio",
-        yLabel: "Percentage (%)",
         format: "percent",
       },
       {
         id: "active-sectors",
         title: "Active Sectors",
         metricKey: "active_sector_count",
-        yLabel: "Active Sectors",
         format: "integer",
       },
     ],
@@ -134,49 +124,42 @@ const sections = [
         id: "data-on-active-deals",
         title: "Data On Active Deals",
         metricKey: "data_on_active_deals_pibs",
-        yLabel: "PiBs",
         format: "pib",
       },
       {
         id: "clients-with-active-deals",
         title: "Clients With Active Deals",
         metricKey: "clients_with_active_deals",
-        yLabel: "Clients",
         format: "integer",
       },
       {
         id: "providers-with-active-deals",
         title: "Providers With Active Deals",
         metricKey: "providers_with_active_deals",
-        yLabel: "Providers",
         format: "integer",
       },
       {
         id: "dealmaking-clients",
         title: "Dealmaking Clients",
         metricKey: "unique_deal_making_clients",
-        yLabel: "Clients",
         format: "integer",
       },
       {
         id: "dealmaking-providers",
         title: "Dealmaking Providers",
         metricKey: "unique_deal_making_providers",
-        yLabel: "Providers",
         format: "integer",
       },
       {
         id: "data-onboarding-with-payments",
         title: "Data Onboarding with Payments",
         metricKey: "onboarded_data_tibs_with_payments",
-        yLabel: "TiBs",
         format: "tib",
       },
       {
         id: "direct-data-onboarding",
         title: "Direct Data Onboarding",
         metricKey: "ddo_sector_onboarding_raw_power_tibs",
-        yLabel: "TiBs / day",
         format: "tib",
       },
     ],
@@ -257,9 +240,9 @@ const renderedSections: RenderedNumbersSection[] = sections.map((section) => ({
   </div>
 
   {
-    renderedSections.map((section) => (
+    renderedSections.map((section, index) => (
       <section class="numbers-section" aria-labelledby={section.id}>
-        <h2 id={section.id} class="section-title">{section.title}</h2>
+        {index > 0 && <h2 id={section.id} class="section-title">{section.title}</h2>}
 
         <div class="card-grid card-grid--two-up">
           {
@@ -267,7 +250,6 @@ const renderedSections: RenderedNumbersSection[] = sections.map((section) => ({
               <LineChart
                 id={chart.id}
                 title={chart.title}
-                yLabel={chart.yLabel}
                 data={chart.data}
                 format={chart.format}
                 showMovingAverage={chart.showMovingAverage ?? true}
