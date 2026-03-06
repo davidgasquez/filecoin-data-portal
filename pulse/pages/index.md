@@ -5,7 +5,15 @@ title: Filecoin Pulse
 _A view into the Filecoin Network. Powered by the [Filecoin Data Portal](https://filecoindataportal.xyz/)._
 
 <Alert status="warning">
-  Pulse is being considered for deprecation. Prefer [DataCap Stats](https://datacapstats.io/), [Filecoin Tools](https://filecoin.tools/), or [Filecoin in Numbers](https://numbers.filecoindataportal.xyz/). If none of these fit your use case, [open an issue](https://github.com/davidgasquez/filecoin-data-portal/issues/new).
+  <div>Pulse is being considered for deprecation.</div>
+  <div>
+    Prefer
+    <a href="https://datacapstats.io/">DataCap Stats</a>,
+    <a href="https://filecoin.tools/">Filecoin Tools</a>, or
+    <a href="https://numbers.filecoindataportal.xyz/">Filecoin in Numbers</a>.
+    If none of these fit your use case,
+    <a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new">open an issue</a>.
+  </div>
 </Alert>
 
 <DateRange
