@@ -1,8 +1,6 @@
 ---
-type LineChartPoint = {
-  timestamp: number
-  value: number
-}
+type LineChartRowValue = string | number | null
+type LineChartRow = Record<string, LineChartRowValue>
 
 type LineChartFormat =
   | "integer"
@@ -18,7 +16,9 @@ type LineChartFormat =
 interface Props {
   id?: string
   title: string
-  data: LineChartPoint[]
+  data: LineChartRow[]
+  x: string
+  y: string
   format?: LineChartFormat
   showMovingAverage?: boolean
   movingAverageWindowDays?: number
@@ -28,10 +28,51 @@ const {
   id,
   title,
   data,
+  x,
+  y,
   format = "number",
   showMovingAverage = false,
   movingAverageWindowDays = 30,
 } = Astro.props
+
+type LineChartPoint = {
+  timestamp: number
+  value: number
+}
+
+function toTimestamp(value: LineChartRowValue): number {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value
+  }
+
+  if (typeof value === "string") {
+    const timestamp = new Date(value).getTime()
+
+    if (Number.isFinite(timestamp)) {
+      return timestamp
+    }
+  }
+
+  throw new Error(`Line chart ${title} has an invalid x value for ${x}: ${String(value)}`)
+}
+
+function toPoint(row: LineChartRow, rowIndex: number): LineChartPoint | null {
+  const rawTimestamp = row[x]
+  const rawValue = row[y]
+
+  if (rawTimestamp == null || rawValue == null) {
+    return null
+  }
+
+  const timestamp = toTimestamp(rawTimestamp)
+  const value = Number(rawValue)
+
+  if (!Number.isFinite(value)) {
+    throw new Error(`Line chart ${title} row ${rowIndex} has an invalid y value for ${y}`)
+  }
+
+  return { timestamp, value }
+}
 
 const chartId =
   id ??
@@ -40,8 +81,13 @@ const chartId =
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "")
 
+const points = data
+  .map((row, rowIndex) => toPoint(row, rowIndex))
+  .filter((point): point is LineChartPoint => point !== null)
+  .sort((left, right) => left.timestamp - right.timestamp)
+
 const serializedData = JSON.stringify(
-  data.map(({ timestamp, value }) => [timestamp, value] satisfies readonly [number, number]),
+  points.map(({ timestamp, value }) => [timestamp, value] satisfies readonly [number, number]),
 )
 ---
 
@@ -231,7 +277,8 @@ const serializedData = JSON.stringify(
       }
 
       if (format === "percent") {
-        return `${formatDecimal(value, context === "tick" ? 0 : 2)}%`
+        const scaledValue = value * 100
+        return `${formatDecimal(scaledValue, context === "tick" ? 0 : 2)}%`
       }
 
       const suffixByFormat = {

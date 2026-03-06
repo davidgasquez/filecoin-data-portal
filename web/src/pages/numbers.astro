@@ -1,18 +1,17 @@
 ---
 import type { ComponentProps } from "astro/types"
-import compactDataset from "../data/generated/filecoin-daily-metrics.json"
+import dailyMetricsDataset from "../data/generated/filecoin-daily-metrics.json"
 import LineChart from "../components/LineChart.astro"
 import Layout from "../layouts/Layout.astro"
 
 type LineChartProps = ComponentProps<typeof LineChart>
-type LineChartPoint = LineChartProps["data"][number]
+type DatasetRow = Record<string, string | number | null>
 
 type NumbersChartConfig = {
-  metricKey: string
-} & Pick<
-  LineChartProps,
-  "id" | "title" | "format" | "showMovingAverage" | "movingAverageWindowDays"
->
+  id: string
+  title: string
+  y: string
+} & Pick<LineChartProps, "format">
 
 type NumbersSectionConfig = {
   id: string
@@ -20,28 +19,12 @@ type NumbersSectionConfig = {
   charts: NumbersChartConfig[]
 }
 
-type CompactDailyMetricsDataset = {
-  s: string
-  c: string[]
-  r: Array<[number, ...number[]]>
-}
+const dailyMetrics = dailyMetricsDataset as DatasetRow[]
+const x = "date"
 
-type DecodedRow = {
-  timestamp: number
-  values: number[]
+if (dailyMetrics.length === 0) {
+  throw new Error("Generated daily metrics dataset is empty")
 }
-
-type RenderedNumbersChart = NumbersChartConfig & {
-  data: LineChartProps["data"]
-}
-
-type RenderedNumbersSection = {
-  id: string
-  title: string
-  charts: RenderedNumbersChart[]
-}
-
-const DAY_IN_MS = 86_400_000
 
 const sections = [
   {
@@ -51,25 +34,25 @@ const sections = [
       {
         id: "daily-data-onboarding",
         title: "Daily Data Onboarding",
-        metricKey: "sector_onboarding_raw_power_pibs",
+        y: "sector_onboarding_raw_power_pibs",
         format: "pib",
       },
       {
         id: "clients-with-1tib",
         title: "Clients with 1 TiB or more active data",
-        metricKey: "clients_with_active_data_gt_1_tibs",
+        y: "clients_with_active_data_gt_1_tibs",
         format: "integer",
       },
       {
         id: "paid-deals-fil",
         title: "Total FIL in Paid Deals",
-        metricKey: "deal_storage_cost_fil",
+        y: "deal_storage_cost_fil",
         format: "fil",
       },
       {
         id: "total-value-flow",
         title: "Total Value Flow",
-        metricKey: "total_value_flow_fil",
+        y: "total_value_flow_fil",
         format: "mfil",
       },
     ],
@@ -81,37 +64,37 @@ const sections = [
       {
         id: "raw-power",
         title: "Raw Power",
-        metricKey: "raw_power_pibs",
+        y: "raw_power_pibs",
         format: "pib",
       },
       {
         id: "quality-adjusted-power",
         title: "Quality Adjusted Power",
-        metricKey: "quality_adjusted_power_pibs",
+        y: "quality_adjusted_power_pibs",
         format: "pib",
       },
       {
         id: "verified-data-power",
         title: "Verified Data Power",
-        metricKey: "verified_data_power_pibs",
+        y: "verified_data_power_pibs",
         format: "pib",
       },
       {
         id: "providers-with-power",
         title: "Providers With Power",
-        metricKey: "providers_with_power",
+        y: "providers_with_power",
         format: "integer",
       },
       {
         id: "network-utilization-ratio",
         title: "Network Utilization Ratio",
-        metricKey: "network_utilization_ratio",
+        y: "network_utilization_ratio",
         format: "percent",
       },
       {
         id: "active-sectors",
         title: "Active Sectors",
-        metricKey: "active_sector_count",
+        y: "active_sector_count",
         format: "integer",
       },
     ],
@@ -123,105 +106,48 @@ const sections = [
       {
         id: "data-on-active-deals",
         title: "Data On Active Deals",
-        metricKey: "data_on_active_deals_pibs",
+        y: "data_on_active_deals_pibs",
         format: "pib",
       },
       {
         id: "clients-with-active-deals",
         title: "Clients With Active Deals",
-        metricKey: "clients_with_active_deals",
+        y: "clients_with_active_deals",
         format: "integer",
       },
       {
         id: "providers-with-active-deals",
         title: "Providers With Active Deals",
-        metricKey: "providers_with_active_deals",
+        y: "providers_with_active_deals",
         format: "integer",
       },
       {
         id: "dealmaking-clients",
         title: "Dealmaking Clients",
-        metricKey: "unique_deal_making_clients",
+        y: "unique_deal_making_clients",
         format: "integer",
       },
       {
         id: "dealmaking-providers",
         title: "Dealmaking Providers",
-        metricKey: "unique_deal_making_providers",
+        y: "unique_deal_making_providers",
         format: "integer",
       },
       {
         id: "data-onboarding-with-payments",
         title: "Data Onboarding with Payments",
-        metricKey: "onboarded_data_tibs_with_payments",
-        format: "tib",
+        y: "onboarded_data_pibs_with_payments",
+        format: "pib",
       },
       {
         id: "direct-data-onboarding",
         title: "Direct Data Onboarding",
-        metricKey: "ddo_sector_onboarding_raw_power_tibs",
+        y: "ddo_sector_onboarding_raw_power_tibs",
         format: "tib",
       },
     ],
   },
 ] satisfies NumbersSectionConfig[]
-
-const dataset = compactDataset as CompactDailyMetricsDataset
-
-if (dataset.r.length === 0) {
-  throw new Error("Generated daily metrics dataset is empty")
-}
-
-const startTimestamp = new Date(`${dataset.s}T00:00:00Z`).getTime()
-
-if (Number.isNaN(startTimestamp)) {
-  throw new Error(`Invalid dataset start date: ${dataset.s}`)
-}
-
-const columnIndexByMetric = new Map(dataset.c.map((column, index) => [column, index]))
-
-const decodedRows: DecodedRow[] = dataset.r.map(([dayOffset, ...values]) => ({
-  timestamp: startTimestamp + dayOffset * DAY_IN_MS,
-  values: values.map((value) => Number(value)),
-}))
-
-function getChartData(metricKey: string): LineChartPoint[] {
-  const columnIndex = columnIndexByMetric.get(metricKey)
-
-  if (columnIndex == null) {
-    throw new Error(`Metric ${metricKey} is missing from the generated daily metrics dataset`)
-  }
-
-  return decodedRows
-    .map((row) => ({
-      timestamp: row.timestamp,
-      value: row.values[columnIndex],
-    }))
-    .filter((point) => Number.isFinite(point.value))
-}
-
-const metricKeys = Array.from(
-  new Set(sections.flatMap((section) => section.charts.map((chart) => chart.metricKey))),
-)
-
-const chartDataByMetric = new Map(metricKeys.map((metricKey) => [metricKey, getChartData(metricKey)]))
-
-const renderedSections: RenderedNumbersSection[] = sections.map((section) => ({
-  id: section.id,
-  title: section.title,
-  charts: section.charts.map((chart) => {
-    const data = chartDataByMetric.get(chart.metricKey)
-
-    if (!data) {
-      throw new Error(`Chart data for ${chart.metricKey} was not generated`)
-    }
-
-    return {
-      ...chart,
-      data,
-    }
-  }),
-}))
 ---
 
 <Layout
@@ -240,7 +166,7 @@ const renderedSections: RenderedNumbersSection[] = sections.map((section) => ({
   </div>
 
   {
-    renderedSections.map((section, index) => (
+    sections.map((section, index) => (
       <section class="numbers-section" aria-labelledby={section.id}>
         {index > 0 && <h2 id={section.id} class="section-title">{section.title}</h2>}
 
@@ -250,10 +176,12 @@ const renderedSections: RenderedNumbersSection[] = sections.map((section) => ({
               <LineChart
                 id={chart.id}
                 title={chart.title}
-                data={chart.data}
+                data={dailyMetrics}
+                x={x}
+                y={chart.y}
                 format={chart.format}
-                showMovingAverage={chart.showMovingAverage ?? true}
-                movingAverageWindowDays={chart.movingAverageWindowDays ?? 30}
+                showMovingAverage={true}
+                movingAverageWindowDays={30}
               />
             ))
           }

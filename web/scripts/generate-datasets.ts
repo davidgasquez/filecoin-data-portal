@@ -4,8 +4,36 @@ import path from "node:path"
 import { pathToFileURL } from "node:url"
 
 type JsonPrimitive = boolean | number | string | null
-type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue }
-type DatasetGenerator = () => Promise<JsonValue>
+type DatasetRow = Record<string, JsonPrimitive>
+type DatasetGenerator = () => Promise<DatasetRow[]>
+
+function assertDatasetRows(dataset: unknown, datasetFile: string): asserts dataset is DatasetRow[] {
+  if (!Array.isArray(dataset)) {
+    throw new Error(`Dataset script ${datasetFile} must return an array of rows`)
+  }
+
+  for (const [rowIndex, row] of dataset.entries()) {
+    if (row == null || Array.isArray(row) || typeof row !== "object") {
+      throw new Error(`Dataset script ${datasetFile} row ${rowIndex} must be a plain object`)
+    }
+
+    for (const [column, value] of Object.entries(row)) {
+      const valueType = typeof value
+
+      if (value == null || valueType === "boolean" || valueType === "string") {
+        continue
+      }
+
+      if (valueType === "number" && Number.isFinite(value)) {
+        continue
+      }
+
+      throw new Error(
+        `Dataset script ${datasetFile} row ${rowIndex} column ${column} must be a JSON primitive`,
+      )
+    }
+  }
+}
 
 const datasetsDir = path.resolve(process.cwd(), "datasets")
 const generatedDir = path.resolve(process.cwd(), "src/data/generated")
@@ -34,6 +62,7 @@ for (const datasetFile of datasetFiles) {
 
   console.log(`Generating dataset from ${path.relative(process.cwd(), modulePath)}`)
   const dataset = await datasetModule.default()
+  assertDatasetRows(dataset, datasetFile)
   const outputPath = path.join(
     generatedDir,
     `${path.basename(datasetFile, path.extname(datasetFile))}.json`,
