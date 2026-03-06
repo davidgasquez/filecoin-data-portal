@@ -28,12 +28,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v2
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
-      - name: Install Python 3.13
-        run: uv python install 3.13.1
+      - name: Show Python version
+        run: uv run python -V
 
       - name: Run
         run: make run

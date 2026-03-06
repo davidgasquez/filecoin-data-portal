@@ -22,7 +22,7 @@ dependencies = [
     "pyoso>=0.8.1",
     "web3>=7.14.1",
 ]
-requires-python = ">=3.10, <3.14"
+requires-python = ">=3.13, <3.14"
 readme = "README.md"
 license = { text = "MIT" }
 
