@@ -119,24 +119,6 @@ where provider_id = '${params.provider_id}'
 
 <BigValue
   data={filtered_provider_info}
-  value=is_reachable
-  title="Is Reachable"
-/>
-
-<BigValue
-  data={filtered_provider_info}
-  value=filrep_uptime_average
-  title="FilRepUptime Average"
-/>
-
-<BigValue
-  data={filtered_provider_info}
-  value=filrep_score
-  title="FilRep Score"
-/>
-
-<BigValue
-  data={filtered_provider_info}
   value=total_rewards
   title="Total Rewards (FIL)"
 />

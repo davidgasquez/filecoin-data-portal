@@ -131,7 +131,9 @@ def run_query(args: argparse.Namespace, query: str) -> int:
 
     database = load_database(args)
     token = resolve_motherduck_token()
-    config = {"motherduck_token": token} if token else {}
+    config: dict[str, str | bool | int | float | list[str]] | None = None
+    if token:
+        config = {"motherduck_token": token}
 
     indent = 2 if args.pretty else None
     row_count = 0

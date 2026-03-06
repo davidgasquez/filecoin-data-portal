@@ -61,18 +61,6 @@ stats as (
     group by 1
 ),
 
-reputation_data as (
-    select
-        address as provider_id,
-        if(reachability = 'reachable', true, false) as is_reachable,
-        name as provider_name,
-        uptimeaverage as filrep_uptime_average,
-        score as filrep_score,
-        rank as filrep_rank
-    from {{ source('raw_assets', 'raw_storage_providers_filrep_reputation') }}
-    qualify row_number() over (partition by address order by name desc) = 1
-),
-
 latest_sp_data as (
     select distinct
         provider_id,
@@ -211,13 +199,12 @@ provider_metrics_aggregations as (
     group by provider_id
 ),
 
-energy_name_mapping as (
+provider_labels as (
     select
         trim(provider_id) as provider_id,
-        storage_provider_name,
-        green_score
-    from {{ source("raw_assets", "raw_storage_providers_energy_name_mapping") }}
-    qualify row_number() over (partition by trim(provider_id) order by green_score desc) = 1
+        label as provider_name
+    from {{ source("raw_assets", "raw_storage_provider_labels") }}
+    qualify row_number() over (partition by trim(provider_id) order by added_at desc, source desc) = 1
 ),
 
 addresses_mapping as (
@@ -348,12 +335,7 @@ select
     storage_provider_location.country,
     storage_provider_location.latitude,
     storage_provider_location.longitude,
-    coalesce(energy_name_mapping.storage_provider_name, reputation_data.provider_name) as provider_name,
-    reputation_data.is_reachable,
-    reputation_data.filrep_uptime_average,
-    reputation_data.filrep_score,
-    reputation_data.filrep_rank,
-    energy_name_mapping.green_score,
+    provider_labels.provider_name,
     provider_metrics_aggregations.stddev_raw_power_pibs_30d,
     provider_metrics_aggregations.stddev_quality_adjusted_power_pibs_30d,
     provider_metrics_aggregations.stddev_verified_data_power_pibs_30d,
@@ -398,9 +380,8 @@ select
 from base_providers as base
 left join stats on base.provider_id = stats.provider_id
 left join storage_provider_location on base.provider_id = storage_provider_location.provider_id
-left join reputation_data on base.provider_id = reputation_data.provider_id
 left join latest_sp_data on base.provider_id = latest_sp_data.provider_id
-left join energy_name_mapping on base.provider_id = energy_name_mapping.provider_id
+left join provider_labels on base.provider_id = provider_labels.provider_id
 left join provider_metrics_aggregations on base.provider_id = provider_metrics_aggregations.provider_id
 left join addresses_mapping on base.provider_id = addresses_mapping.id
 left join basic_info on base.provider_id = basic_info.provider_id
