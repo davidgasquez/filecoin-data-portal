@@ -7,6 +7,8 @@ import Layout from "../layouts/Layout.astro"
 type LineChartProps = ComponentProps<typeof LineChart>
 type DatasetRowValue = string | number | null
 type DatasetRow = Record<string, DatasetRowValue>
+type DatasetColumn = DatasetRowValue[]
+type ColumnarDataset = Record<string, DatasetColumn>
 
 type NumbersChartConfig = Pick<
   LineChartProps,
@@ -27,8 +29,6 @@ type NumbersSectionConfig = {
 }
 
 const dailyMetrics = dailyMetricsDataset as DatasetRow[]
-const chartX = "date"
-const serializedDailyMetrics = JSON.stringify(dailyMetrics)
 
 if (dailyMetrics.length === 0) {
   throw new Error("Generated daily metrics dataset is empty")
@@ -334,6 +334,14 @@ const sections = [
     ],
   },
 ] as NumbersSectionConfig[]
+
+const chartX = "date"
+const datasetColumnNames = [chartX, ...new Set(sections.flatMap((section) => section.charts.map((chart) => chart.y)))]
+const serializedDailyMetrics = JSON.stringify(
+  Object.fromEntries(
+    datasetColumnNames.map((key) => [key, dailyMetrics.map((row) => row[key] ?? null)]),
+  ) satisfies ColumnarDataset,
+)
 ---
 
 <Layout
@@ -386,7 +394,8 @@ const sections = [
 
   <script>
     type DatasetRowValue = string | number | null
-    type DatasetRow = Record<string, DatasetRowValue>
+    type DatasetColumn = DatasetRowValue[]
+    type ColumnarDataset = Record<string, DatasetColumn>
 
     type LineChartPoint = {
       timestamp: number
@@ -442,7 +451,7 @@ const sections = [
         timeZone: "UTC",
       })
 
-      function parseDataset(): DatasetRow[] {
+      function parseDataset(): ColumnarDataset {
         const datasetScript = document.querySelector<HTMLScriptElement>(DATASET_SELECTOR)
 
         if (!datasetScript?.textContent) {
@@ -451,14 +460,26 @@ const sections = [
 
         const rawDataset = JSON.parse(datasetScript.textContent) as unknown
 
-        if (!Array.isArray(rawDataset)) {
-          throw new Error("Numbers dataset must be an array")
+        if (
+          rawDataset === null ||
+          typeof rawDataset !== "object" ||
+          Array.isArray(rawDataset)
+        ) {
+          throw new Error("Numbers dataset must be a columnar object")
         }
 
-        return rawDataset as DatasetRow[]
+        const dataset = rawDataset as Record<string, unknown>
+
+        for (const [key, value] of Object.entries(dataset)) {
+          if (!Array.isArray(value)) {
+            throw new Error(`Numbers dataset column ${key} must be an array`)
+          }
+        }
+
+        return dataset as ColumnarDataset
       }
 
-      function parseChart(node: HTMLElement, rows: DatasetRow[]): ParsedChart {
+      function parseChart(node: HTMLElement, dataset: ColumnarDataset): ParsedChart {
         const chartId = node.dataset.chartId
         const x = node.dataset.x
         const y = node.dataset.y
@@ -467,11 +488,24 @@ const sections = [
           throw new Error("Line chart is missing required dataset attributes")
         }
 
+        const xColumn = dataset[x]
+        const yColumn = dataset[y]
+
+        if (!xColumn || !yColumn) {
+          throw new Error(`Line chart ${chartId} references missing dataset columns`)
+        }
+
+        if (xColumn.length !== yColumn.length) {
+          throw new Error(`Line chart ${chartId} dataset columns must be the same length`)
+        }
+
         return {
           id: chartId,
           node,
-          data: rows
-            .map((row, rowIndex) => toPoint(chartId, row, x, y, rowIndex))
+          data: xColumn
+            .map((rawTimestamp, rowIndex) =>
+              toPoint(chartId, rawTimestamp, yColumn[rowIndex], y, rowIndex),
+            )
             .filter((point): point is LineChartPoint => point !== null)
             .sort((left, right) => left.timestamp - right.timestamp),
           format: parseFormat(node.dataset.format),
@@ -489,19 +523,16 @@ const sections = [
 
       function toPoint(
         chartId: string,
-        row: DatasetRow,
-        x: string,
+        rawTimestamp: DatasetRowValue,
+        rawValue: DatasetRowValue,
         y: string,
         rowIndex: number,
       ): LineChartPoint | null {
-        const rawTimestamp = row[x]
-        const rawValue = row[y]
-
         if (rawTimestamp == null || rawValue == null) {
           return null
         }
 
-        const timestamp = toTimestamp(chartId, x, rawTimestamp)
+        const timestamp = toTimestamp(chartId, rawTimestamp)
         const value = Number(rawValue)
 
         if (!Number.isFinite(value)) {
@@ -511,7 +542,7 @@ const sections = [
         return { timestamp, value }
       }
 
-      function toTimestamp(chartId: string, x: string, value: DatasetRowValue): number {
+      function toTimestamp(chartId: string, value: DatasetRowValue): number {
         if (typeof value === "number" && Number.isFinite(value)) {
           return value
         }
@@ -524,7 +555,7 @@ const sections = [
           }
         }
 
-        throw new Error(`Line chart ${chartId} has an invalid x value for ${x}: ${String(value)}`)
+        throw new Error(`Line chart ${chartId} has an invalid x value: ${String(value)}`)
       }
 
       function parseFormat(value: string | undefined): LineChartFormat {
