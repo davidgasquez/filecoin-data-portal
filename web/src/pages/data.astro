@@ -2,8 +2,23 @@
 import Layout from "../layouts/Layout.astro"
 import Card from "../components/Card.astro"
 
-const quakPreview = (fileName: string) =>
-  `https://manzt.github.io/quak/?source=https://data.filecoindataportal.xyz/${fileName}`
+interface Button {
+  text: string
+  link: string
+  target?: "_blank" | "_self"
+}
+
+const downloadUrl = (fileName: string) =>
+  `https://data.filecoindataportal.xyz/${fileName}`
+
+const sqlWorkbenchQuery = (url: string) =>
+  `https://sql-workbench.com/#queries=v0,select-*-from-'${encodeURIComponent(url)}'-limit-10~`
+
+const queryButton = (url: string): Button => ({
+  text: "Query",
+  link: sqlWorkbenchQuery(url),
+  target: "_blank",
+})
 
 const metricsDatasets = [
   {
@@ -12,8 +27,9 @@ const metricsDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet",
+        link: downloadUrl("filecoin_daily_metrics.parquet"),
       },
+      queryButton(downloadUrl("filecoin_daily_metrics.parquet")),
       {
         text: "Sheet",
         link: "https://docs.google.com/spreadsheets/d/1uq9J_WTJO6kAvQlrqkqR8GHfQfh3SJ84OSj88Mff6vY/edit?usp=sharing",
@@ -27,13 +43,9 @@ const metricsDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_weekly_metrics.parquet",
+        link: downloadUrl("filecoin_weekly_metrics.parquet"),
       },
-      {
-        text: "Preview",
-        link: quakPreview("filecoin_weekly_metrics.parquet"),
-        target: "_blank" as const,
-      },
+      queryButton(downloadUrl("filecoin_weekly_metrics.parquet")),
     ],
   },
   {
@@ -42,13 +54,9 @@ const metricsDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_monthly_metrics.parquet",
+        link: downloadUrl("filecoin_monthly_metrics.parquet"),
       },
-      {
-        text: "Preview",
-        link: quakPreview("filecoin_monthly_metrics.parquet"),
-        target: "_blank" as const,
-      },
+      queryButton(downloadUrl("filecoin_monthly_metrics.parquet")),
     ],
   },
   {
@@ -57,13 +65,9 @@ const metricsDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_daily_storage_providers_metrics.parquet",
+        link: downloadUrl("filecoin_daily_storage_providers_metrics.parquet"),
       },
-      {
-        text: "Preview",
-        link: quakPreview("filecoin_daily_storage_providers_metrics.parquet"),
-        target: "_blank" as const,
-      },
+      queryButton(downloadUrl("filecoin_daily_storage_providers_metrics.parquet")),
     ],
   },
   {
@@ -72,13 +76,9 @@ const metricsDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_daily_clients_metrics.parquet",
+        link: downloadUrl("filecoin_daily_clients_metrics.parquet"),
       },
-      {
-        text: "Preview",
-        link: quakPreview("filecoin_daily_clients_metrics.parquet"),
-        target: "_blank" as const,
-      },
+      queryButton(downloadUrl("filecoin_daily_clients_metrics.parquet")),
     ],
   },
   {
@@ -87,13 +87,9 @@ const metricsDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_daily_transactions.parquet",
+        link: downloadUrl("filecoin_daily_transactions.parquet"),
       },
-      {
-        text: "Preview",
-        link: quakPreview("filecoin_daily_transactions.parquet"),
-        target: "_blank" as const,
-      },
+      queryButton(downloadUrl("filecoin_daily_transactions.parquet")),
     ],
   },
   {
@@ -102,13 +98,9 @@ const metricsDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_daily_onramps_metrics.parquet",
+        link: downloadUrl("filecoin_daily_onramps_metrics.parquet"),
       },
-      {
-        text: "Preview",
-        link: quakPreview("filecoin_daily_onramps_metrics.parquet"),
-        target: "_blank" as const,
-      },
+      queryButton(downloadUrl("filecoin_daily_onramps_metrics.parquet")),
     ],
   },
   {
@@ -117,13 +109,9 @@ const metricsDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_daily_upcoming_sector_expirations.parquet",
+        link: downloadUrl("filecoin_daily_upcoming_sector_expirations.parquet"),
       },
-      {
-        text: "Preview",
-        link: quakPreview("filecoin_daily_upcoming_sector_expirations.parquet"),
-        target: "_blank" as const,
-      },
+      queryButton(downloadUrl("filecoin_daily_upcoming_sector_expirations.parquet")),
     ],
   },
 ]
@@ -135,8 +123,9 @@ const entityDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_storage_providers.parquet",
+        link: downloadUrl("filecoin_storage_providers.parquet"),
       },
+      queryButton(downloadUrl("filecoin_storage_providers.parquet")),
       {
         text: "Sheet",
         link: "https://docs.google.com/spreadsheets/d/1hC5HwuiqQvQcVvV06n3SH0wKkZwbw20EufGYHSyENs0/edit?usp=sharing",
@@ -150,8 +139,9 @@ const entityDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_clients.parquet",
+        link: downloadUrl("filecoin_clients.parquet"),
       },
+      queryButton(downloadUrl("filecoin_clients.parquet")),
       {
         text: "Sheet",
         link: "https://docs.google.com/spreadsheets/d/15xi39OheVJ-_WyI7sxwmvgMIVFkZN07NOYWLe5iKXnI/edit?usp=sharing",
@@ -165,8 +155,9 @@ const entityDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_allocators.parquet",
+        link: downloadUrl("filecoin_allocators.parquet"),
       },
+      queryButton(downloadUrl("filecoin_allocators.parquet")),
       {
         text: "Sheet",
         link: "https://docs.google.com/spreadsheets/d/1uixeylC3pTeOkKh0L2fGsd7YKuyaA6Hse_fhWrm1BIA/edit?usp=sharing",
@@ -180,13 +171,9 @@ const entityDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_onramps.parquet",
+        link: downloadUrl("filecoin_onramps.parquet"),
       },
-      {
-        text: "Preview",
-        link: quakPreview("filecoin_onramps.parquet"),
-        target: "_blank" as const,
-      },
+      queryButton(downloadUrl("filecoin_onramps.parquet")),
     ],
   },
   {
@@ -195,13 +182,9 @@ const entityDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_state_market_deals.parquet",
+        link: downloadUrl("filecoin_state_market_deals.parquet"),
       },
-      {
-        text: "Preview",
-        link: "https://sql-workbench.com/#queries=v0,select-*-from-'https%3A%2F%2Fdata.filecoindataportal.xyz%2Ffilecoin_state_market_deals.parquet'-limit-1000~",
-        target: "_blank" as const,
-      },
+      queryButton(downloadUrl("filecoin_state_market_deals.parquet")),
     ],
   },
   {
@@ -210,13 +193,9 @@ const entityDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_datacap_allocations.parquet",
+        link: downloadUrl("filecoin_datacap_allocations.parquet"),
       },
-      {
-        text: "Preview",
-        link: quakPreview("filecoin_datacap_allocations.parquet"),
-        target: "_blank" as const,
-      },
+      queryButton(downloadUrl("filecoin_datacap_allocations.parquet")),
     ],
   },
   {
@@ -225,13 +204,9 @@ const entityDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_allocators_datacap_allowances.parquet",
+        link: downloadUrl("filecoin_allocators_datacap_allowances.parquet"),
       },
-      {
-        text: "Preview",
-        link: quakPreview("filecoin_allocators_datacap_allowances.parquet"),
-        target: "_blank" as const,
-      },
+      queryButton(downloadUrl("filecoin_allocators_datacap_allowances.parquet")),
     ],
   },
   {
@@ -240,13 +215,9 @@ const entityDatasets = [
     buttons: [
       {
         text: "Download",
-        link: "https://data.filecoindataportal.xyz/filecoin_clients_datacap_allowances.parquet",
+        link: downloadUrl("filecoin_clients_datacap_allowances.parquet"),
       },
-      {
-        text: "Preview",
-        link: quakPreview("filecoin_clients_datacap_allowances.parquet"),
-        target: "_blank" as const,
-      },
+      queryButton(downloadUrl("filecoin_clients_datacap_allowances.parquet")),
     ],
   },
 ]
