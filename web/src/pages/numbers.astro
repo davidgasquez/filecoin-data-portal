@@ -420,6 +420,8 @@ const serializedDailyMetrics = JSON.stringify(
     type ParsedChart = {
       id: string
       node: HTMLElement
+      toggleButton: HTMLButtonElement
+      title: string
       data: LineChartPoint[]
       format: LineChartFormat
       formatScale: number
@@ -433,7 +435,8 @@ const serializedDailyMetrics = JSON.stringify(
     const DATASET_SELECTOR = "[data-numbers-dataset]"
     const CHART_SELECTOR = "[data-line-chart]"
     const RANGE_BUTTON_SELECTOR = "[data-line-chart-range]"
-    const CHART_HEIGHT = 240
+    const EXPANDED_CHART_PARAM = "chart"
+    const RANGE_PARAM = "range"
     const CHART_MARGIN = { top: 22, right: 10, bottom: 28, left: 10 }
     const DAY_IN_MS = 86_400_000
 
@@ -442,7 +445,8 @@ const serializedDailyMetrics = JSON.stringify(
     if (chartNodes.length > 0) {
       const dataset = parseDataset()
       const charts = chartNodes.map((node) => parseChart(node, dataset))
-      let currentRange = getInitialRange()
+      let currentRange = getInitialRangeFromUrl()
+      let expandedChartId = getExpandedChartFromUrl()
 
       const tooltipDateFormatter = new Intl.DateTimeFormat("en-US", {
         month: "short",
@@ -483,9 +487,15 @@ const serializedDailyMetrics = JSON.stringify(
         const chartId = node.dataset.chartId
         const x = node.dataset.x
         const y = node.dataset.y
+        const toggleButton = node.querySelector<HTMLButtonElement>("[data-line-chart-toggle]")
+        const titleNode = node.querySelector<HTMLElement>(".line-chart__title")
 
         if (!chartId || !x || !y) {
           throw new Error("Line chart is missing required dataset attributes")
+        }
+
+        if (!toggleButton || !titleNode?.textContent?.trim()) {
+          throw new Error(`Line chart ${chartId} markup is incomplete`)
         }
 
         const xColumn = dataset[x]
@@ -502,6 +512,8 @@ const serializedDailyMetrics = JSON.stringify(
         return {
           id: chartId,
           node,
+          toggleButton,
+          title: titleNode.textContent.trim(),
           data: xColumn
             .map((rawTimestamp, rowIndex) =>
               toPoint(chartId, rawTimestamp, yColumn[rowIndex], y, rowIndex),
@@ -605,14 +617,26 @@ const serializedDailyMetrics = JSON.stringify(
         return "fraction"
       }
 
-      function getInitialRange(): RangeType {
+      function parseRange(value: string | null): RangeType | null {
+        if (value === "6m" || value === "1y" || value === "all") {
+          return value
+        }
+
+        return null
+      }
+
+      function getDefaultRange(): RangeType {
         const activeButton = document.querySelector<HTMLButtonElement>(
           `${RANGE_BUTTON_SELECTOR}[aria-pressed="true"]`,
         )
 
-        const range = activeButton?.dataset.lineChartRange
-        if (range === "6m" || range === "all") return range
-        return "1y"
+        return parseRange(activeButton?.dataset.lineChartRange ?? null) ?? "1y"
+      }
+
+      function getInitialRangeFromUrl(): RangeType {
+        const range = parseRange(new URL(window.location.href).searchParams.get(RANGE_PARAM))
+
+        return range ?? getDefaultRange()
       }
 
       function formatDecimal(value: number, maximumFractionDigits: number): string {
@@ -670,6 +694,17 @@ const serializedDailyMetrics = JSON.stringify(
         } satisfies Record<Exclude<LineChartFormat, "integer" | "mfil" | "usd" | "percent">, string>
 
         return `${chart.formatPrefix}${formatDecimal(scaledValue, maximumFractionDigits)}${suffixByFormat[chart.format]}${chart.formatSuffix}`
+      }
+
+      function formatPercentChange(currentValue: number, previousValue: number): string {
+        if (previousValue === 0) {
+          return currentValue === 0 ? "0.00%" : "N/A"
+        }
+
+        const percentChange = ((currentValue - previousValue) / previousValue) * 100
+        const sign = percentChange > 0 ? "+" : ""
+
+        return `${sign}${formatDecimal(percentChange, 2)}%`
       }
 
       function getPointsForRange(points: LineChartPoint[], range: RangeType): LineChartPoint[] {
@@ -760,6 +795,111 @@ const serializedDailyMetrics = JSON.stringify(
         }
       }
 
+      function getChartHeight(chartNode: HTMLElement): number {
+        const value = Number.parseFloat(
+          getComputedStyle(chartNode).getPropertyValue("--line-chart-height"),
+        )
+
+        if (!Number.isFinite(value) || value <= 0) {
+          return 240
+        }
+
+        return value
+      }
+
+      function getChartById(chartId: string | null): ParsedChart | undefined {
+        if (chartId === null) {
+          return undefined
+        }
+
+        return charts.find((chart) => chart.id === chartId)
+      }
+
+      function getExpandedChartFromUrl(): string | null {
+        const chartId = new URL(window.location.href).searchParams.get(EXPANDED_CHART_PARAM)
+
+        return getChartById(chartId)?.id ?? null
+      }
+
+      function updateUrlState(): void {
+        const url = new URL(window.location.href)
+
+        if (expandedChartId) {
+          url.searchParams.set(EXPANDED_CHART_PARAM, expandedChartId)
+        } else {
+          url.searchParams.delete(EXPANDED_CHART_PARAM)
+        }
+
+        if (currentRange === "1y") {
+          url.searchParams.delete(RANGE_PARAM)
+        } else {
+          url.searchParams.set(RANGE_PARAM, currentRange)
+        }
+
+        history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`)
+      }
+
+      function scrollExpandedChartIntoView(): void {
+        const expandedChart = getChartById(expandedChartId)
+        const toolbar = document.querySelector<HTMLElement>(".numbers-toolbar")
+
+        if (!expandedChart) {
+          return
+        }
+
+        const toolbarOffset = toolbar ? toolbar.getBoundingClientRect().height + 16 : 16
+        const chartTop = window.scrollY + expandedChart.node.getBoundingClientRect().top
+
+        window.scrollTo({
+          top: Math.max(0, chartTop - toolbarOffset),
+          behavior: "smooth",
+        })
+      }
+
+      function syncExpandedChartState(): void {
+        for (const chart of charts) {
+          const isExpanded = chart.id === expandedChartId
+          chart.node.classList.toggle("is-expanded", isExpanded)
+          chart.toggleButton.setAttribute("aria-expanded", String(isExpanded))
+          chart.toggleButton.setAttribute(
+            "aria-label",
+            `${isExpanded ? "Close" : "Expand"} ${chart.title}`,
+          )
+          chart.toggleButton.title = `${isExpanded ? "Close" : "Expand"} ${chart.title}`
+          chart.toggleButton.textContent = isExpanded ? "-" : "+"
+        }
+      }
+
+      function setExpandedChart(
+        nextChartId: string | null,
+        options: { scrollIntoView?: boolean } = {},
+      ): void {
+        if (expandedChartId === nextChartId) {
+          return
+        }
+
+        const previousExpandedChartId = expandedChartId
+        expandedChartId = nextChartId
+        updateUrlState()
+        syncExpandedChartState()
+        renderAllCharts()
+
+        if (options.scrollIntoView && nextChartId) {
+          requestAnimationFrame(() => {
+            scrollExpandedChartIntoView()
+          })
+        }
+
+        if (nextChartId) {
+          getChartById(nextChartId)?.toggleButton.focus()
+          return
+        }
+
+        if (previousExpandedChartId) {
+          getChartById(previousExpandedChartId)?.toggleButton.focus()
+        }
+      }
+
       function setupHeadlineTip(
         chartNode: HTMLElement,
         trigger: HTMLElement,
@@ -802,7 +942,7 @@ const serializedDailyMetrics = JSON.stringify(
         }
 
         const width = Math.max(320, chart.node.clientWidth)
-        const height = CHART_HEIGHT
+        const height = getChartHeight(chart.node)
         const margin = CHART_MARGIN
         const plotWidth = width - margin.left - margin.right
         const plotHeight = height - margin.top - margin.bottom
@@ -866,13 +1006,15 @@ const serializedDailyMetrics = JSON.stringify(
           const trend = latestPoint.value > prevValue ? "▲" : latestPoint.value < prevValue ? "▼" : "■"
           const now = formatValue(latestPoint.value, chart, "tooltip")
           const ago = formatValue(prevValue, chart, "tooltip")
+          const monthOverMonthChange = formatPercentChange(latestPoint.value, prevValue)
 
           headlineValue.textContent = `${formatValue(latestPoint.value, chart, "headline")} ${trend}`
           setupHeadlineTip(
             chart.node,
             headlineValue,
             `<span class="tip-row"><span>Now</span><span class="tip-dots"></span><span>${now}</span></span>` +
-            `<span class="tip-row"><span>30 Days Ago</span><span class="tip-dots"></span><span>${ago}</span></span>`,
+            `<span class="tip-row"><span>30 Days Ago</span><span class="tip-dots"></span><span>${ago}</span></span>` +
+            `<span class="tip-row"><span>MoM % Change</span><span class="tip-dots"></span><span>${monthOverMonthChange}</span></span>`,
           )
         } else {
           headlineValue.textContent = formatValue(latestPoint.value, chart, "headline")
@@ -1038,16 +1180,45 @@ const serializedDailyMetrics = JSON.stringify(
 
           currentRange = range
           updateRangeButtons(currentRange)
+          updateUrlState()
           renderAllCharts()
         })
       }
 
+      for (const chart of charts) {
+        chart.toggleButton.addEventListener("click", () => {
+          setExpandedChart(expandedChartId === chart.id ? null : chart.id, {
+            scrollIntoView: expandedChartId !== chart.id,
+          })
+        })
+      }
+
+      const onKeyDown = (event: KeyboardEvent): void => {
+        if (event.key !== "Escape" || expandedChartId === null) {
+          return
+        }
+
+        setExpandedChart(null)
+      }
+
+      document.addEventListener("keydown", onKeyDown)
+
       updateRangeButtons(currentRange)
+      syncExpandedChartState()
+      updateUrlState()
       renderAllCharts()
+
+      if (expandedChartId) {
+        requestAnimationFrame(() => {
+          scrollExpandedChartIntoView()
+        })
+      }
 
       window.addEventListener(
         "pagehide",
         () => {
+          document.removeEventListener("keydown", onKeyDown)
+
           for (const observer of observers) {
             observer.disconnect()
           }

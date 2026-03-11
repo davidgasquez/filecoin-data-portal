@@ -357,6 +357,7 @@
   }
 
   .line-chart {
+    --line-chart-height: 240px;
     display: grid;
     gap: var(--space-1);
     margin: 0;
@@ -367,6 +368,15 @@
 
   .line-chart:hover {
     border-color: var(--color-border);
+  }
+
+  .line-chart.is-expanded {
+    --line-chart-height: 360px;
+    grid-column: 1 / -1;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border-color: var(--color-border-strong);
+    background: var(--color-bg-muted);
   }
 
   .line-chart__header {
@@ -404,6 +414,24 @@
     cursor: default;
   }
 
+  .line-chart__toggle {
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-bg);
+    color: var(--color-text);
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    padding: 0;
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .line-chart__toggle:hover {
+    background: var(--color-text);
+    color: var(--color-bg);
+  }
+
   .line-chart__headline-tip {
     position: absolute;
     inset-inline-end: 0;
@@ -438,12 +466,12 @@
   .line-chart__canvas {
     position: relative;
     inline-size: 100%;
-    min-block-size: 240px;
+    min-block-size: var(--line-chart-height);
   }
 
   .line-chart__svg {
     inline-size: 100%;
-    block-size: 240px;
+    block-size: var(--line-chart-height);
   }
 
   .line-chart__path {
