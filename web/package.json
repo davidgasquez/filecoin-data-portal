@@ -2,6 +2,9 @@
   "name": "filecoindataportal.xyz",
   "type": "module",
   "version": "0.0.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "generate:datasets": "tsx ./scripts/generate-datasets.ts",
@@ -14,13 +17,13 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@duckdb/node-api": "^1.4.4-r.3",
-    "astro": "^5.18.0"
+    "@duckdb/node-api": "^1.5.0-r.1",
+    "astro": "^6.0.3"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.6",
-    "@types/node": "^24.4.0",
-    "tsx": "^4.20.6",
+    "@astrojs/check": "^0.9.7",
+    "@types/node": "^25.4.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }
