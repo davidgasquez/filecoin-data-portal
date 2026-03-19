@@ -2,6 +2,7 @@
 import type { ComponentProps } from "astro/types"
 import dailyMetricsDataset from "../data/generated/filecoin-daily-metrics.json"
 import LineChart from "../components/LineChart.astro"
+import StatCard from "../components/StatCard.astro"
 import Layout from "../layouts/Layout.astro"
 
 type LineChartProps = ComponentProps<typeof LineChart>
@@ -362,9 +363,25 @@ const serializedDailyMetrics = JSON.stringify(
       <section class="numbers-section" aria-labelledby={section.id}>
         <h2 id={section.id} class="numbers-section__legend">{section.title}</h2>
 
-        <div class="card-grid card-grid--two-up">
-          {
-            section.charts.map((chart) => (
+        {section.id === "key-metrics" ? (
+          <div class="stat-grid">
+            {section.charts.map((chart) => (
+              <StatCard
+                id={chart.id}
+                title={chart.title}
+                x={chartX}
+                y={chart.y}
+                format={chart.format}
+                formatScale={chart.formatScale}
+                formatPrefix={chart.formatPrefix}
+                formatSuffix={chart.formatSuffix}
+                percentMode={chart.percentMode}
+              />
+            ))}
+          </div>
+        ) : (
+          <div class="card-grid card-grid--two-up">
+            {section.charts.map((chart) => (
               <LineChart
                 id={chart.id}
                 title={chart.title}
@@ -378,9 +395,9 @@ const serializedDailyMetrics = JSON.stringify(
                 showMovingAverage={true}
                 movingAverageWindowDays={30}
               />
-            ))
-          }
-        </div>
+            ))}
+          </div>
+        )}
       </section>
     ))
   }
@@ -434,6 +451,7 @@ const serializedDailyMetrics = JSON.stringify(
 
     const DATASET_SELECTOR = "[data-numbers-dataset]"
     const CHART_SELECTOR = "[data-line-chart]"
+    const STAT_CARD_SELECTOR = "[data-stat-card]"
     const RANGE_BUTTON_SELECTOR = "[data-line-chart-range]"
     const EXPANDED_CHART_PARAM = "chart"
     const RANGE_PARAM = "range"
@@ -1155,7 +1173,109 @@ const serializedDailyMetrics = JSON.stringify(
         }
       }
 
-      const observers = charts.map((chart) => {
+      type ParsedStatCard = {
+        node: HTMLElement
+        data: LineChartPoint[]
+        format: LineChartFormat
+        formatScale: number
+        formatPrefix: string
+        formatSuffix: string
+        percentMode: PercentMode
+      }
+
+      const statCardNodes = Array.from(document.querySelectorAll<HTMLElement>(STAT_CARD_SELECTOR))
+      const statCards: ParsedStatCard[] = statCardNodes.map((node) => {
+        const x = node.dataset.x
+        const y = node.dataset.y
+        const chartId = node.dataset.chartId
+
+        if (!chartId || !x || !y) {
+          throw new Error("Stat card is missing required dataset attributes")
+        }
+
+        const xColumn = dataset[x]
+        const yColumn = dataset[y]
+
+        if (!xColumn || !yColumn) {
+          throw new Error(`Stat card ${chartId} references missing columns`)
+        }
+
+        const data: LineChartPoint[] = []
+
+        for (let i = 0; i < xColumn.length; i++) {
+          const rawX = xColumn[i]
+          const rawY = yColumn[i]
+          if (rawX == null || rawY == null) continue
+          const timestamp = toTimestamp(chartId, rawX)
+          const value = Number(rawY)
+          if (!Number.isFinite(value)) continue
+          data.push({ timestamp, value })
+        }
+
+        return {
+          node,
+          data,
+          format: parseFormat(node.dataset.format),
+          formatScale: parsePositiveNumber(node.dataset.formatScale, 1),
+          formatPrefix: node.dataset.formatPrefix ?? "",
+          formatSuffix: node.dataset.formatSuffix ?? "",
+          percentMode: parsePercentMode(node.dataset.percentMode),
+        }
+      })
+
+      function renderStatCard(card: ParsedStatCard): void {
+        const points = getPointsForRange(card.data, currentRange)
+        const valueEl = card.node.querySelector<HTMLElement>("[data-stat-card-value]")
+        const trendEl = card.node.querySelector<HTMLElement>("[data-stat-card-trend]")
+        const svg = card.node.querySelector<SVGElement>(".stat-card__spark")
+
+        if (!valueEl || !trendEl || !svg) return
+        if (points.length < 2) {
+          valueEl.textContent = "—"
+          trendEl.textContent = ""
+          svg.innerHTML = ""
+          return
+        }
+
+        const ma = buildMovingAverage(points.map((p) => p.value), 30)
+        const latest = ma[ma.length - 1]
+        const compareIndex = Math.max(0, ma.length - 1 - 30)
+        const prev = ma[compareIndex]
+
+        valueEl.textContent = formatValue(latest, card, "headline")
+
+        const pctChange = prev !== 0 ? ((latest - prev) / prev) * 100 : 0
+        const sign = pctChange > 0 ? "+" : ""
+        const trend = pctChange > 0 ? "▲" : pctChange < 0 ? "▼" : "■"
+        trendEl.textContent = `${trend} ${sign}${formatDecimal(pctChange, 2)}% 30d`
+
+        // Sparkline
+        const width = card.node.clientWidth
+        const height = 48
+        const pad = 2
+
+        const minX = points[0].timestamp
+        const maxX = points[points.length - 1].timestamp
+        const minY = Math.min(...ma)
+        let maxY = Math.max(...ma)
+        if (maxY === minY) maxY = minY + 1
+
+        const sx = (t: number) => pad + ((t - minX) / Math.max(maxX - minX, DAY_IN_MS)) * (width - pad * 2)
+        const sy = (v: number) => pad + ((maxY - v) / (maxY - minY)) * (height - pad * 2)
+
+        const d = ma.map((v, i) => `${i === 0 ? "M" : "L"} ${sx(points[i].timestamp)} ${sy(v)}`).join(" ")
+
+        svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
+        svg.innerHTML = `<path d="${d}" fill="none" stroke="var(--color-border-strong)" stroke-width="1.5" />`
+      }
+
+      function renderAllStatCards(): void {
+        for (const card of statCards) {
+          renderStatCard(card)
+        }
+      }
+
+      const observers: ResizeObserver[] = charts.map((chart) => {
         const observer = new ResizeObserver(() => {
           renderChart(chart)
         })
@@ -1163,6 +1283,12 @@ const serializedDailyMetrics = JSON.stringify(
         observer.observe(chart.node)
         return observer
       })
+
+      for (const card of statCards) {
+        const observer = new ResizeObserver(() => renderStatCard(card))
+        observer.observe(card.node)
+        observers.push(observer)
+      }
 
       const rangeButtons = document.querySelectorAll<HTMLButtonElement>(RANGE_BUTTON_SELECTOR)
 
@@ -1182,6 +1308,7 @@ const serializedDailyMetrics = JSON.stringify(
           updateRangeButtons(currentRange)
           updateUrlState()
           renderAllCharts()
+          renderAllStatCards()
         })
       }
 
@@ -1207,6 +1334,7 @@ const serializedDailyMetrics = JSON.stringify(
       syncExpandedChartState()
       updateUrlState()
       renderAllCharts()
+      renderAllStatCards()
 
       if (expandedChartId) {
         requestAnimationFrame(() => {

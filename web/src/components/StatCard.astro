@@ -1,0 +1,80 @@
+---
+type LineChartFormat =
+  | "integer"
+  | "number"
+  | "pib"
+  | "tib"
+  | "fil"
+  | "mfil"
+  | "usdfc"
+  | "usd"
+  | "percent"
+
+type PercentMode = "fraction" | "points"
+
+interface Props {
+  id: string
+  title: string
+  x: string
+  y: string
+  format?: LineChartFormat
+  formatScale?: number
+  formatPrefix?: string
+  formatSuffix?: string
+  percentMode?: PercentMode
+}
+
+const {
+  id,
+  title,
+  x,
+  y,
+  format = "number",
+  formatScale,
+  formatPrefix,
+  formatSuffix,
+  percentMode = "fraction",
+} = Astro.props
+---
+
+<figure
+  class="stat-card"
+  data-stat-card
+  data-line-chart
+  data-chart-id={id}
+  data-x={x}
+  data-y={y}
+  data-format={format}
+  data-format-scale={formatScale}
+  data-format-prefix={formatPrefix}
+  data-format-suffix={formatSuffix}
+  data-percent-mode={percentMode}
+  data-show-moving-average="true"
+  data-moving-average-window-days="30"
+>
+  <figcaption class="stat-card__header">
+    <a href={`#${id}`} id={id} class="stat-card__label line-chart__title">{title}</a>
+    <span class="line-chart__headline" data-line-chart-last-value hidden></span>
+    <span class="line-chart__headline-tip" data-line-chart-headline-tip hidden></span>
+    <button
+      type="button"
+      class="line-chart__toggle"
+      data-line-chart-toggle
+      aria-expanded="false"
+      aria-label={`Expand ${title}`}
+      title={`Expand ${title}`}
+    >
+      +
+    </button>
+  </figcaption>
+
+  <span class="stat-card__value" data-stat-card-value></span>
+  <span class="stat-card__trend" data-stat-card-trend></span>
+  <svg class="stat-card__spark" aria-hidden="true"></svg>
+
+  <div class="line-chart__canvas">
+    <svg class="line-chart__svg" aria-hidden="true"></svg>
+    <p class="line-chart__empty" hidden>No data available for this range.</p>
+    <div class="line-chart__tooltip" hidden></div>
+  </div>
+</figure>
