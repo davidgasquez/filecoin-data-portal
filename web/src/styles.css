@@ -86,7 +86,6 @@
   h2,
   h3,
   h4 {
-    font-family: var(--font-monospace), ui-monospace, monospace;
     line-height: 1.2;
     text-wrap: balance;
     margin-block: 0 0.75em;
@@ -130,7 +129,6 @@
   }
 
   code {
-    font-family: var(--font-monospace), ui-monospace, monospace;
     background: var(--color-bg-muted);
     padding-inline: 0.2em;
   }
@@ -192,7 +190,6 @@
     align-items: center;
     justify-content: center;
     padding: var(--space-1) var(--space-3);
-    font-family: var(--font-monospace), ui-monospace, monospace;
     text-decoration: none;
     border: 1px solid transparent;
   }
@@ -210,7 +207,6 @@
     border-block-start: 1px solid var(--color-border);
     padding-block: var(--space-4) var(--space-6);
     text-align: center;
-    font-family: var(--font-monospace), ui-monospace, monospace;
     font-size: 0.9rem;
   }
 
@@ -610,7 +606,6 @@
   .line-chart__label {
     fill: var(--color-text-muted);
     font-size: 9px;
-    font-family: var(--font-monospace), ui-monospace, monospace;
   }
 
   .line-chart__crosshair {
