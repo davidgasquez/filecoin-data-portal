@@ -1170,6 +1170,21 @@ movingAverageLinePlot({
 ```
 </div>
 
+<div class="card" id="miner-tip-fil">
+
+```js
+movingAverageLinePlot({
+  metrics,
+  title: title_anchor("Miner Tip FIL", "miner-tip-fil"),
+  subtitle: "Daily miner tips paid on-chain.",
+  caption: "Displaying 30-day moving average",
+  yField: "miner_tip_fil",
+  yLabel: "FIL",
+  showArea: true
+})
+```
+</div>
+
 <div class="card" id="burnt-fil-delta">
 
 ```js
@@ -1376,77 +1391,6 @@ resize((width) => Plot.plot({
 
 </div> -->
 
-## Developer Activity
-
-<details>
-<summary>About</summary>
-<p>
-These metrics track developer activity related to the Filecoin project on GitHub, sourced via <a href="https://opensource.observer/">Open Source Observer (OSO)</a>. The data includes contributions, comments, stars, forks, releases, and commits across several Filecoin ecosystems repositories. Check them out under the <a href="https://github.com/opensource-observer/oss-directory/blob/main/data/collections/filecoin-foundation.yaml">'filecoin-foundation'</a> and <a href="https://github.com/opensource-observer/oss-directory/blob/main/data/collections/filecoin-core.yaml">'filecoin-core'</a> collections.
-</p>
-</details>
-
-
-<div class="grid grid-cols-2">
-
-<div class="card">
-
-```js
-movingAverageLinePlot({
-  metrics,
-  title: "Contributors",
-  subtitle: "Number of contributors per day on the core Filecoin repositories.",
-  caption: "Displaying 30-day moving average",
-  yField: "github_contributors",
-  yLabel: "Contributors"
-})
-```
-
-</div>
-
-<div class="card">
-
-```js
-movingAverageLinePlot({
-  metrics,
-  title: "Comments",
-  subtitle: "Number of comments per day on the core Filecoin repositories.",
-  caption: "Displaying 30-day moving average",
-  yField: "github_comments",
-  yLabel: "Comments"
-})
-```
-
-</div>
-
-<div class="card">
-
-```js
-movingAverageLinePlot({
-  metrics,
-  title: "Stars",
-  subtitle: "Number of stars per day on the core Filecoin repositories.",
-  caption: "Displaying 30-day moving average",
-  yField: "github_stars",
-  yLabel: "Stars"
-})
-```
-</div>
-
-<div class="card">
-
-```js
-movingAverageLinePlot({
-  metrics,
-  title: "Forks",
-  subtitle: "Number of forks per day on the core Filecoin repositories.",
-  caption: "Displaying 30-day moving average",
-  yField: "github_forks",
-  yLabel: "Forks"
-})
-```
-</div>
-
-</div>
 
 ## Resources
 

@@ -246,27 +246,22 @@ network_base_fee as (
     order by date desc
 ),
 
-oso_filecoin_collection_events as (
-    select
-        date,
-        sum(amount) filter (where event_type = 'GITHUB_repositories_daily') as github_repositories,
-        sum(amount) filter (where event_type = 'GITHUB_contributors_daily') as github_contributors,
-        sum(amount) filter (where event_type = 'GITHUB_comments_daily') as github_comments,
-        sum(amount) filter (where event_type = 'GITHUB_stars_daily') as github_stars,
-        sum(amount) filter (where event_type = 'GITHUB_forks_daily') as github_forks,
-        sum(amount) filter (where event_type = 'GITHUB_releases_daily') as github_releases,
-        sum(amount) filter (where event_type = 'GITHUB_commits_daily') as github_commits,
-    from {{ source("raw_assets", "raw_oso_daily_filecoin_collection_events") }}
-    group by date
-    order by date desc
-),
-
 transactions as (
     select
         time_bucket(interval '1 {{ period }}', date, date '2020-10-01') as date,
         sum(transactions) as transactions,
         sum(total_value_fil) as total_value_fil
     from {{ source("raw_assets", "raw_filecoin_transactions") }}
+    group by 1
+    order by date desc
+),
+
+filecoin_daily_aggregations as (
+    select
+        time_bucket(interval '1 {{ period }}', date, date '2020-10-01') as date,
+        sum(miner_tip_fil) as miner_tip_fil,
+        sum(miner_tip_fil + burnt_fil) as miner_tips_plus_burnt_fil
+    from {{ source('raw_assets', 'raw_filecoin_daily_aggregations') }}
     group by 1
     order by date desc
 ),
@@ -408,6 +403,8 @@ select
     reserve_disbursed_fil,
     locked_fil,
     burnt_fil,
+    miner_tips_plus_burnt_fil,
+    miner_tip_fil,
     reward_per_wincount,
 
     -- Fil Plus Shares
@@ -423,15 +420,6 @@ select
     precommit_sector_batch_gas_used_millions,
     publish_storage_deals_gas_used_millions,
     submit_windowed_post_gas_used_millions,
-
-    -- Oso Filecoin Collection Events
-    github_repositories,
-    github_contributors,
-    github_comments,
-    github_stars,
-    github_forks,
-    github_releases,
-    github_commits,
 
     -- Transactions
     transactions,
@@ -463,8 +451,8 @@ left join circulating_supply on date_calendar.date = circulating_supply.date
 left join block_rewards on date_calendar.date = block_rewards.date
 left join network_base_fee on date_calendar.date = network_base_fee.date
 left join gas_usage on date_calendar.date = gas_usage.date
-left join oso_filecoin_collection_events on date_calendar.date = oso_filecoin_collection_events.date
 left join transactions on date_calendar.date = transactions.date
+left join filecoin_daily_aggregations on date_calendar.date = filecoin_daily_aggregations.date
 left join fil_price on date_calendar.date = fil_price.date
 left join raw_goldsky_foc_metrics on date_calendar.date = raw_goldsky_foc_metrics.date
 order by date_calendar.date desc

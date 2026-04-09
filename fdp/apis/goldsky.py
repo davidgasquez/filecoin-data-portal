@@ -8,7 +8,7 @@ import httpx
 import pandas as pd
 from dagster_duckdb import DuckDBResource
 
-DEFAULT_URL = "https://api.goldsky.com/api/public/project_cmb9tuo8r1xdw01ykb8uidk7h/subgraphs/filecoin-pay-mainnet-tim/1.2.0/gn"
+DEFAULT_URL = "https://api.goldsky.com/api/public/project_cmb9tuo8r1xdw01ykb8uidk7h/subgraphs/filecoin-pay-mainnet/1.0.6/gn"
 HEADERS = {"Content-Type": "application/json", "User-Agent": "curl"}
 PAGE_SIZE = 1000
 

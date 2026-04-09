@@ -4,6 +4,18 @@ title: Allocators
 
 _A detailed view into Filecoin Allocators._
 
+<Alert status="warning">
+  <div>Pulse is being considered for deprecation.</div>
+  <div>
+    Prefer
+    <a href="https://datacapstats.io/">DataCap Stats</a>,
+    <a href="https://filecoin.tools/">Filecoin Tools</a>, or
+    <a href="https://numbers.filecoindataportal.xyz/">Filecoin in Numbers</a>.
+    If none of these fit your use case,
+    <a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new">open an issue</a>.
+  </div>
+</Alert>
+
 <BigLink href='https://docs.google.com/spreadsheets/d/1uixeylC3pTeOkKh0L2fGsd7YKuyaA6Hse_fhWrm1BIA'>
   <p style="font-size: 1.3rem; text-align: center; font-family: monospace;">Allocators Google Sheets</p>
 </BigLink>
@@ -210,7 +222,6 @@ order by verified_clients_count desc
   rowLines=false
   downloadable=true
 />
-
 
 ### Pathway Distribution
 

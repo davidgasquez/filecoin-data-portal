@@ -4,6 +4,18 @@ title: Storage Providers
 
 _A quick view into Filecoin Storage Providers Metrics_
 
+<Alert status="warning">
+  <div>Pulse is being considered for deprecation.</div>
+  <div>
+    Prefer
+    <a href="https://datacapstats.io/">DataCap Stats</a>,
+    <a href="https://filecoin.tools/">Filecoin Tools</a>, or
+    <a href="https://numbers.filecoindataportal.xyz/">Filecoin in Numbers</a>.
+    If none of these fit your use case,
+    <a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new">open an issue</a>.
+  </div>
+</Alert>
+
 ## Explorer
 
 <BigLink href='https://docs.google.com/spreadsheets/d/1hC5HwuiqQvQcVvV06n3SH0wKkZwbw20EufGYHSyENs0'>

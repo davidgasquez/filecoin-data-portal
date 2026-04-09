@@ -1,5 +1,17 @@
 # {$page.params.provider_id}
 
+<Alert status="warning">
+  <div>Pulse is being considered for deprecation.</div>
+  <div>
+    Prefer
+    <a href="https://datacapstats.io/">DataCap Stats</a>,
+    <a href="https://filecoin.tools/">Filecoin Tools</a>, or
+    <a href="https://numbers.filecoindataportal.xyz/">Filecoin in Numbers</a>.
+    If none of these fit your use case,
+    <a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new">open an issue</a>.
+  </div>
+</Alert>
+
 <DateRange
   name=range
   defaultValue={'Last 365 Days'}
@@ -107,24 +119,6 @@ where provider_id = '${params.provider_id}'
 
 <BigValue
   data={filtered_provider_info}
-  value=is_reachable
-  title="Is Reachable"
-/>
-
-<BigValue
-  data={filtered_provider_info}
-  value=filrep_uptime_average
-  title="FilRepUptime Average"
-/>
-
-<BigValue
-  data={filtered_provider_info}
-  value=filrep_score
-  title="FilRep Score"
-/>
-
-<BigValue
-  data={filtered_provider_info}
   value=total_rewards
   title="Total Rewards (FIL)"
 />
@@ -183,7 +177,6 @@ where provider_id = '${params.provider_id}'
   data={filtered_provider_info}
   value=avg_data_uploaded_tibs_per_day
 />
-
 
 </Grid>
 

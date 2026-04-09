@@ -4,6 +4,18 @@ title: Onramps
 
 _A detailed view into Filecoin Onramps._
 
+<Alert status="warning">
+  <div>Pulse is being considered for deprecation.</div>
+  <div>
+    Prefer
+    <a href="https://datacapstats.io/">DataCap Stats</a>,
+    <a href="https://filecoin.tools/">Filecoin Tools</a>, or
+    <a href="https://numbers.filecoindataportal.xyz/">Filecoin in Numbers</a>.
+    If none of these fit your use case,
+    <a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new">open an issue</a>.
+  </div>
+</Alert>
+
 <Alert status="info">
   These comparisons rely solely on on-chain sector data. Some onramps may self-deal, pad sectors, or perform other pre/post activities that are not captured here. Deals data comes from State Market Deals and excludes DDO deals.
 </Alert>
@@ -79,7 +91,6 @@ order by data_uploaded_tibs_6m desc
   start=2023-01-01
   defaultValue={'Last 365 Days'}
 />
-
 
 ```sql onramps_daily_metrics
 select

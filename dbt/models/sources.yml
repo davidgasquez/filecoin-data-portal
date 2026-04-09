@@ -20,10 +20,6 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_storage_providers_location_provider_quest"]
-      - name: raw_storage_providers_filrep_reputation
-        meta:
-          dagster:
-            asset_key: ["raw_storage_providers_filrep_reputation"]
       - name: raw_verified_registry_verifiers
         meta:
           dagster:
@@ -44,10 +40,10 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_datacap_allocators_registry"]
-      - name: raw_storage_providers_energy_name_mapping
+      - name: raw_storage_provider_labels
         meta:
           dagster:
-            asset_key: ["raw_storage_providers_energy_name_mapping"]
+            asset_key: ["raw_storage_provider_labels"]
       - name: raw_storage_providers_sector_totals
         meta:
           dagster:
@@ -128,10 +124,6 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_gas_daily_usage"]
-      - name: raw_oso_daily_filecoin_collection_events
-        meta:
-          dagster:
-            asset_key: ["raw_oso_daily_filecoin_collection_events"]
       - name: raw_daily_providers_sector_events
         meta:
           dagster:
@@ -144,10 +136,18 @@ sources:
         meta:
           dagster:
             asset_key: ["raw_filecoin_transactions"]
+      - name: raw_filecoin_daily_aggregations
+        meta:
+          dagster:
+            asset_key: ["raw_filecoin_daily_aggregations"]
       - name: raw_filecoin_storage_providers_information
         meta:
           dagster:
             asset_key: ["raw_filecoin_storage_providers_information"]
+      - name: raw_filecoin_daily_upcoming_sector_expirations
+        meta:
+          dagster:
+            asset_key: ["raw_filecoin_daily_upcoming_sector_expirations"]
       - name: raw_storage_providers_gas_network_fee
         meta:
           dagster:

@@ -1,5 +1,17 @@
 # {$page.params.client_id}
 
+<Alert status="warning">
+  <div>Pulse is being considered for deprecation.</div>
+  <div>
+    Prefer
+    <a href="https://datacapstats.io/">DataCap Stats</a>,
+    <a href="https://filecoin.tools/">Filecoin Tools</a>, or
+    <a href="https://numbers.filecoindataportal.xyz/">Filecoin in Numbers</a>.
+    If none of these fit your use case,
+    <a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new">open an issue</a>.
+  </div>
+</Alert>
+
 <DateRange
   name=range
   start=2020-09-01
@@ -45,7 +57,6 @@ where client_id = '${params.client_id}'
   title="Last Deal"
 />
 
-
 <BigValue
   data={filtered_client}
   value=total_active_unique_providers
@@ -68,7 +79,6 @@ where client_id = '${params.client_id}'
   data={filtered_client}
   value=allocator_id
 />
-
 
 </Grid>
 
@@ -184,7 +194,6 @@ order by date desc, provider_id asc
   value=onboarded_data_tibs
   title="Onboarding Data (TiBs)"
 /> -->
-
 
 ## Client Interactions with Storage Providers
 

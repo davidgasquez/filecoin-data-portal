@@ -3,12 +3,13 @@
 .PHONY: run
 run:
 	@uv run dagster-dbt project prepare-and-package --file fdp/dbt/resources.py
-	@uv run dagster asset materialize --select \* -m fdp.definitions
+	@uv run dagster job execute -j __ASSET_JOB -m fdp.definitions
 
 .PHONY: dev
 dev:
 	@uv run dagster dev
 
+.PHONY: lint
 lint:
 	@uv run ruff check
 	@uv run ty check

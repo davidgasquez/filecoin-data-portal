@@ -1,17 +1,17 @@
 # Repository Guidelines
 
-The repository contains the code for an open source data platform for Filecoin alongside other derived subprojects like dashboards.
+Open source data platform for Filecoin.
 
 ## Project Structure
 
-- `fdp`: Python package with Dagster assets and resources. One folder per category/type
-- `dbt`: dbt project. Linked to Dagster assets
+- `fdp`: Dagster assets and resources
+- `dbt`: dbt project
 - `data`: local artifacts and exported tables (`make tables`)
 - `Makefile` as the entrypoint to the core tasks
 
 ### Applications
 
-All web applications use the published public Parquet files on `https://data.filecoindataportal.xyz/$DBT_MODEL_FILE_NAME.parquet`.
+Downstream applications use the published public Parquet files at `https://data.filecoindataportal.xyz/$DBT_MODEL_FILE_NAME.parquet`.
 
 - **Web** (`web/`): Astro-based static site. Contains docs, showcases the datasets, and links to the other applications
 - **Numbers** (`numbers/`): Observable Framework dashboard for visualizing the core ecosystem metrics
@@ -35,3 +35,22 @@ You can query the production database directly using DuckDB.
 ```bash
 uv run --env-file .env bash -lc 'duckdb "$DATABASE_PATH" -c "select count(*) from fdp.main.filecoin_clients;"'
 ```
+## Tools
+
+### BigQuery CLI
+
+Run arbitrary queries against BigQuery with `uv run tools/bq_query.py`.
+
+- Run: `uv run tools/bq_query.py "SELECT 1 AS value"`
+- Query input: argument, `--file path.sql`, or stdin
+- Useful flags: `--dry-run`, `--project`, `--location`, `--max-results`, `--pretty`
+- Limit results to avoid large outputs
+
+### MotherDuck CLI
+
+Run arbitrary queries against MotherDuck with `uv run --env-file .env tools/md_query.py`.
+
+- Run: `uv run --env-file .env tools/md_query.py "SELECT 1 AS value"`
+- Query input: argument, `--file path.sql`, or stdin
+- Useful flags: `--database`, `--max-results`, `--pretty`, `--read-only`
+- Requires `DATABASE_PATH` and MotherDuck token (`motherduck_token` or `MOTHERDUCK_TOKEN`)

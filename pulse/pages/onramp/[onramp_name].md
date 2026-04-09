@@ -1,5 +1,17 @@
 # {$page.params.onramp_name}
 
+<Alert status="warning">
+  <div>Pulse is being considered for deprecation.</div>
+  <div>
+    Prefer
+    <a href="https://datacapstats.io/">DataCap Stats</a>,
+    <a href="https://filecoin.tools/">Filecoin Tools</a>, or
+    <a href="https://numbers.filecoindataportal.xyz/">Filecoin in Numbers</a>.
+    If none of these fit your use case,
+    <a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new">open an issue</a>.
+  </div>
+</Alert>
+
 <Alert status="info">
   Metrics shown here are derived solely from on-chain sector data. Some onramps may self-deal, pad sectors, or perform pre/post activities that are not visible in this dataset. Deals data comes from State Market Deals and excludes DDO deals.
 </Alert>
