@@ -1,14 +1,13 @@
 # {$page.params.allocator_id}
 
 <Alert status="warning">
-  <div>Pulse is being considered for deprecation.</div>
+  <div>Filecoin Pulse will stop working on May 1st 2026.</div>
   <div>
-    Prefer
-    <a href="https://datacapstats.io/">DataCap Stats</a>,
-    <a href="https://filecoin.tools/">Filecoin Tools</a>, or
-    <a href="https://numbers.filecoindataportal.xyz/">Filecoin in Numbers</a>.
-    If none of these fit your use case,
-    <a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new">open an issue</a>.
+    As of today,
+    <a href="https://datacapstats.io/">datacapstats</a>
+    offers a better view into the operational data Pulse covers.
+    For high level network metrics and dashboards, visit
+    <a href="https://numbers.filecoindataportal.xyz/">Filecoin In Numbers</a>.
   </div>
 </Alert>
 
