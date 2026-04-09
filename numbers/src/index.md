@@ -10,8 +10,12 @@ Your **high-level** view into the Filecoin Ecosystem!
 
 </center>
 
-<div class="legacy-banner">
-  Looking for the previous layout? Visit the <a href="/legacy">legacy dashboard</a>.
+<div class="promo-banner">
+  <a href="https://filecoindataportal.xyz/numbers" target="_blank" rel="noopener noreferrer">
+    <span class="promo-banner__badge">New</span>
+    <span class="promo-banner__text">Checkout the next version of Filecoin in Numbers!</span>
+    <span class="promo-banner__arrow">→</span>
+  </a>
 </div>
 
 ```js
