@@ -22,8 +22,6 @@ interface Props {
   formatPrefix?: string
   formatSuffix?: string
   percentMode?: PercentMode
-  showMovingAverage?: boolean
-  movingAverageWindowDays?: number
 }
 
 const {
@@ -36,13 +34,12 @@ const {
   formatPrefix,
   formatSuffix,
   percentMode = "fraction",
-  showMovingAverage = false,
-  movingAverageWindowDays = 30,
 } = Astro.props
 ---
 
 <figure
-  class="line-chart"
+  class="stat-card"
+  data-stat-card
   data-line-chart
   data-chart-id={id}
   data-x={x}
@@ -52,11 +49,11 @@ const {
   data-format-prefix={formatPrefix}
   data-format-suffix={formatSuffix}
   data-percent-mode={percentMode}
-  data-show-moving-average={String(showMovingAverage)}
-  data-moving-average-window-days={String(movingAverageWindowDays)}
+  data-show-moving-average="true"
+  data-moving-average-window-days="30"
 >
-  <figcaption class="line-chart__header">
-    <a href={`#${id}`} id={id} class="line-chart__title">{title}</a>
+  <figcaption class="stat-card__header">
+    <a href={`#${id}`} id={id} class="stat-card__label line-chart__title">{title}</a>
     <span class="line-chart__headline" data-line-chart-last-value hidden></span>
     <span class="line-chart__headline-tip" data-line-chart-headline-tip hidden></span>
     <button
@@ -70,6 +67,10 @@ const {
       +
     </button>
   </figcaption>
+
+  <span class="stat-card__value" data-stat-card-value></span>
+  <span class="stat-card__trend" data-stat-card-trend></span>
+  <svg class="stat-card__spark" aria-hidden="true"></svg>
 
   <div class="line-chart__canvas">
     <svg class="line-chart__svg" aria-hidden="true"></svg>

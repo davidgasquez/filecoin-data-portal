@@ -2,11 +2,14 @@
 import type { ComponentProps } from "astro/types"
 import dailyMetricsDataset from "../data/generated/filecoin-daily-metrics.json"
 import LineChart from "../components/LineChart.astro"
+import StatCard from "../components/StatCard.astro"
 import Layout from "../layouts/Layout.astro"
 
 type LineChartProps = ComponentProps<typeof LineChart>
 type DatasetRowValue = string | number | null
 type DatasetRow = Record<string, DatasetRowValue>
+type DatasetColumn = DatasetRowValue[]
+type ColumnarDataset = Record<string, DatasetColumn>
 
 type NumbersChartConfig = Pick<
   LineChartProps,
@@ -27,8 +30,6 @@ type NumbersSectionConfig = {
 }
 
 const dailyMetrics = dailyMetricsDataset as DatasetRow[]
-const chartX = "date"
-const serializedDailyMetrics = JSON.stringify(dailyMetrics)
 
 if (dailyMetrics.length === 0) {
   throw new Error("Generated daily metrics dataset is empty")
@@ -334,6 +335,14 @@ const sections = [
     ],
   },
 ] as NumbersSectionConfig[]
+
+const chartX = "date"
+const datasetColumnNames = [chartX, ...new Set(sections.flatMap((section) => section.charts.map((chart) => chart.y)))]
+const serializedDailyMetrics = JSON.stringify(
+  Object.fromEntries(
+    datasetColumnNames.map((key) => [key, dailyMetrics.map((row) => row[key] ?? null)]),
+  ) satisfies ColumnarDataset,
+)
 ---
 
 <Layout
@@ -354,9 +363,25 @@ const sections = [
       <section class="numbers-section" aria-labelledby={section.id}>
         <h2 id={section.id} class="numbers-section__legend">{section.title}</h2>
 
-        <div class="card-grid card-grid--two-up">
-          {
-            section.charts.map((chart) => (
+        {section.id === "key-metrics" ? (
+          <div class="stat-grid">
+            {section.charts.map((chart) => (
+              <StatCard
+                id={chart.id}
+                title={chart.title}
+                x={chartX}
+                y={chart.y}
+                format={chart.format}
+                formatScale={chart.formatScale}
+                formatPrefix={chart.formatPrefix}
+                formatSuffix={chart.formatSuffix}
+                percentMode={chart.percentMode}
+              />
+            ))}
+          </div>
+        ) : (
+          <div class="card-grid card-grid--two-up">
+            {section.charts.map((chart) => (
               <LineChart
                 id={chart.id}
                 title={chart.title}
@@ -370,9 +395,9 @@ const sections = [
                 showMovingAverage={true}
                 movingAverageWindowDays={30}
               />
-            ))
-          }
-        </div>
+            ))}
+          </div>
+        )}
       </section>
     ))
   }
@@ -386,7 +411,8 @@ const sections = [
 
   <script>
     type DatasetRowValue = string | number | null
-    type DatasetRow = Record<string, DatasetRowValue>
+    type DatasetColumn = DatasetRowValue[]
+    type ColumnarDataset = Record<string, DatasetColumn>
 
     type LineChartPoint = {
       timestamp: number
@@ -411,6 +437,8 @@ const sections = [
     type ParsedChart = {
       id: string
       node: HTMLElement
+      toggleButton: HTMLButtonElement
+      title: string
       data: LineChartPoint[]
       format: LineChartFormat
       formatScale: number
@@ -423,8 +451,10 @@ const sections = [
 
     const DATASET_SELECTOR = "[data-numbers-dataset]"
     const CHART_SELECTOR = "[data-line-chart]"
+    const STAT_CARD_SELECTOR = "[data-stat-card]"
     const RANGE_BUTTON_SELECTOR = "[data-line-chart-range]"
-    const CHART_HEIGHT = 240
+    const EXPANDED_CHART_PARAM = "chart"
+    const RANGE_PARAM = "range"
     const CHART_MARGIN = { top: 22, right: 10, bottom: 28, left: 10 }
     const DAY_IN_MS = 86_400_000
 
@@ -433,7 +463,8 @@ const sections = [
     if (chartNodes.length > 0) {
       const dataset = parseDataset()
       const charts = chartNodes.map((node) => parseChart(node, dataset))
-      let currentRange = getInitialRange()
+      let currentRange = getInitialRangeFromUrl()
+      let expandedChartId = getExpandedChartFromUrl()
 
       const tooltipDateFormatter = new Intl.DateTimeFormat("en-US", {
         month: "short",
@@ -442,7 +473,7 @@ const sections = [
         timeZone: "UTC",
       })
 
-      function parseDataset(): DatasetRow[] {
+      function parseDataset(): ColumnarDataset {
         const datasetScript = document.querySelector<HTMLScriptElement>(DATASET_SELECTOR)
 
         if (!datasetScript?.textContent) {
@@ -451,27 +482,60 @@ const sections = [
 
         const rawDataset = JSON.parse(datasetScript.textContent) as unknown
 
-        if (!Array.isArray(rawDataset)) {
-          throw new Error("Numbers dataset must be an array")
+        if (
+          rawDataset === null ||
+          typeof rawDataset !== "object" ||
+          Array.isArray(rawDataset)
+        ) {
+          throw new Error("Numbers dataset must be a columnar object")
         }
 
-        return rawDataset as DatasetRow[]
+        const dataset = rawDataset as Record<string, unknown>
+
+        for (const [key, value] of Object.entries(dataset)) {
+          if (!Array.isArray(value)) {
+            throw new Error(`Numbers dataset column ${key} must be an array`)
+          }
+        }
+
+        return dataset as ColumnarDataset
       }
 
-      function parseChart(node: HTMLElement, rows: DatasetRow[]): ParsedChart {
+      function parseChart(node: HTMLElement, dataset: ColumnarDataset): ParsedChart {
         const chartId = node.dataset.chartId
         const x = node.dataset.x
         const y = node.dataset.y
+        const toggleButton = node.querySelector<HTMLButtonElement>("[data-line-chart-toggle]")
+        const titleNode = node.querySelector<HTMLElement>(".line-chart__title")
 
         if (!chartId || !x || !y) {
           throw new Error("Line chart is missing required dataset attributes")
         }
 
+        if (!toggleButton || !titleNode?.textContent?.trim()) {
+          throw new Error(`Line chart ${chartId} markup is incomplete`)
+        }
+
+        const xColumn = dataset[x]
+        const yColumn = dataset[y]
+
+        if (!xColumn || !yColumn) {
+          throw new Error(`Line chart ${chartId} references missing dataset columns`)
+        }
+
+        if (xColumn.length !== yColumn.length) {
+          throw new Error(`Line chart ${chartId} dataset columns must be the same length`)
+        }
+
         return {
           id: chartId,
           node,
-          data: rows
-            .map((row, rowIndex) => toPoint(chartId, row, x, y, rowIndex))
+          toggleButton,
+          title: titleNode.textContent.trim(),
+          data: xColumn
+            .map((rawTimestamp, rowIndex) =>
+              toPoint(chartId, rawTimestamp, yColumn[rowIndex], y, rowIndex),
+            )
             .filter((point): point is LineChartPoint => point !== null)
             .sort((left, right) => left.timestamp - right.timestamp),
           format: parseFormat(node.dataset.format),
@@ -489,19 +553,16 @@ const sections = [
 
       function toPoint(
         chartId: string,
-        row: DatasetRow,
-        x: string,
+        rawTimestamp: DatasetRowValue,
+        rawValue: DatasetRowValue,
         y: string,
         rowIndex: number,
       ): LineChartPoint | null {
-        const rawTimestamp = row[x]
-        const rawValue = row[y]
-
         if (rawTimestamp == null || rawValue == null) {
           return null
         }
 
-        const timestamp = toTimestamp(chartId, x, rawTimestamp)
+        const timestamp = toTimestamp(chartId, rawTimestamp)
         const value = Number(rawValue)
 
         if (!Number.isFinite(value)) {
@@ -511,7 +572,7 @@ const sections = [
         return { timestamp, value }
       }
 
-      function toTimestamp(chartId: string, x: string, value: DatasetRowValue): number {
+      function toTimestamp(chartId: string, value: DatasetRowValue): number {
         if (typeof value === "number" && Number.isFinite(value)) {
           return value
         }
@@ -524,7 +585,7 @@ const sections = [
           }
         }
 
-        throw new Error(`Line chart ${chartId} has an invalid x value for ${x}: ${String(value)}`)
+        throw new Error(`Line chart ${chartId} has an invalid x value: ${String(value)}`)
       }
 
       function parseFormat(value: string | undefined): LineChartFormat {
@@ -574,14 +635,26 @@ const sections = [
         return "fraction"
       }
 
-      function getInitialRange(): RangeType {
+      function parseRange(value: string | null): RangeType | null {
+        if (value === "6m" || value === "1y" || value === "all") {
+          return value
+        }
+
+        return null
+      }
+
+      function getDefaultRange(): RangeType {
         const activeButton = document.querySelector<HTMLButtonElement>(
           `${RANGE_BUTTON_SELECTOR}[aria-pressed="true"]`,
         )
 
-        const range = activeButton?.dataset.lineChartRange
-        if (range === "6m" || range === "all") return range
-        return "1y"
+        return parseRange(activeButton?.dataset.lineChartRange ?? null) ?? "1y"
+      }
+
+      function getInitialRangeFromUrl(): RangeType {
+        const range = parseRange(new URL(window.location.href).searchParams.get(RANGE_PARAM))
+
+        return range ?? getDefaultRange()
       }
 
       function formatDecimal(value: number, maximumFractionDigits: number): string {
@@ -639,6 +712,17 @@ const sections = [
         } satisfies Record<Exclude<LineChartFormat, "integer" | "mfil" | "usd" | "percent">, string>
 
         return `${chart.formatPrefix}${formatDecimal(scaledValue, maximumFractionDigits)}${suffixByFormat[chart.format]}${chart.formatSuffix}`
+      }
+
+      function formatPercentChange(currentValue: number, previousValue: number): string {
+        if (previousValue === 0) {
+          return currentValue === 0 ? "0.00%" : "N/A"
+        }
+
+        const percentChange = ((currentValue - previousValue) / previousValue) * 100
+        const sign = percentChange > 0 ? "+" : ""
+
+        return `${sign}${formatDecimal(percentChange, 2)}%`
       }
 
       function getPointsForRange(points: LineChartPoint[], range: RangeType): LineChartPoint[] {
@@ -729,6 +813,111 @@ const sections = [
         }
       }
 
+      function getChartHeight(chartNode: HTMLElement): number {
+        const value = Number.parseFloat(
+          getComputedStyle(chartNode).getPropertyValue("--line-chart-height"),
+        )
+
+        if (!Number.isFinite(value) || value <= 0) {
+          return 240
+        }
+
+        return value
+      }
+
+      function getChartById(chartId: string | null): ParsedChart | undefined {
+        if (chartId === null) {
+          return undefined
+        }
+
+        return charts.find((chart) => chart.id === chartId)
+      }
+
+      function getExpandedChartFromUrl(): string | null {
+        const chartId = new URL(window.location.href).searchParams.get(EXPANDED_CHART_PARAM)
+
+        return getChartById(chartId)?.id ?? null
+      }
+
+      function updateUrlState(): void {
+        const url = new URL(window.location.href)
+
+        if (expandedChartId) {
+          url.searchParams.set(EXPANDED_CHART_PARAM, expandedChartId)
+        } else {
+          url.searchParams.delete(EXPANDED_CHART_PARAM)
+        }
+
+        if (currentRange === "1y") {
+          url.searchParams.delete(RANGE_PARAM)
+        } else {
+          url.searchParams.set(RANGE_PARAM, currentRange)
+        }
+
+        history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`)
+      }
+
+      function scrollExpandedChartIntoView(): void {
+        const expandedChart = getChartById(expandedChartId)
+        const toolbar = document.querySelector<HTMLElement>(".numbers-toolbar")
+
+        if (!expandedChart) {
+          return
+        }
+
+        const toolbarOffset = toolbar ? toolbar.getBoundingClientRect().height + 16 : 16
+        const chartTop = window.scrollY + expandedChart.node.getBoundingClientRect().top
+
+        window.scrollTo({
+          top: Math.max(0, chartTop - toolbarOffset),
+          behavior: "smooth",
+        })
+      }
+
+      function syncExpandedChartState(): void {
+        for (const chart of charts) {
+          const isExpanded = chart.id === expandedChartId
+          chart.node.classList.toggle("is-expanded", isExpanded)
+          chart.toggleButton.setAttribute("aria-expanded", String(isExpanded))
+          chart.toggleButton.setAttribute(
+            "aria-label",
+            `${isExpanded ? "Close" : "Expand"} ${chart.title}`,
+          )
+          chart.toggleButton.title = `${isExpanded ? "Close" : "Expand"} ${chart.title}`
+          chart.toggleButton.textContent = isExpanded ? "-" : "+"
+        }
+      }
+
+      function setExpandedChart(
+        nextChartId: string | null,
+        options: { scrollIntoView?: boolean } = {},
+      ): void {
+        if (expandedChartId === nextChartId) {
+          return
+        }
+
+        const previousExpandedChartId = expandedChartId
+        expandedChartId = nextChartId
+        updateUrlState()
+        syncExpandedChartState()
+        renderAllCharts()
+
+        if (options.scrollIntoView && nextChartId) {
+          requestAnimationFrame(() => {
+            scrollExpandedChartIntoView()
+          })
+        }
+
+        if (nextChartId) {
+          getChartById(nextChartId)?.toggleButton.focus()
+          return
+        }
+
+        if (previousExpandedChartId) {
+          getChartById(previousExpandedChartId)?.toggleButton.focus()
+        }
+      }
+
       function setupHeadlineTip(
         chartNode: HTMLElement,
         trigger: HTMLElement,
@@ -771,7 +960,7 @@ const sections = [
         }
 
         const width = Math.max(320, chart.node.clientWidth)
-        const height = CHART_HEIGHT
+        const height = getChartHeight(chart.node)
         const margin = CHART_MARGIN
         const plotWidth = width - margin.left - margin.right
         const plotHeight = height - margin.top - margin.bottom
@@ -835,13 +1024,15 @@ const sections = [
           const trend = latestPoint.value > prevValue ? "▲" : latestPoint.value < prevValue ? "▼" : "■"
           const now = formatValue(latestPoint.value, chart, "tooltip")
           const ago = formatValue(prevValue, chart, "tooltip")
+          const monthOverMonthChange = formatPercentChange(latestPoint.value, prevValue)
 
           headlineValue.textContent = `${formatValue(latestPoint.value, chart, "headline")} ${trend}`
           setupHeadlineTip(
             chart.node,
             headlineValue,
             `<span class="tip-row"><span>Now</span><span class="tip-dots"></span><span>${now}</span></span>` +
-            `<span class="tip-row"><span>30 Days Ago</span><span class="tip-dots"></span><span>${ago}</span></span>`,
+            `<span class="tip-row"><span>30 Days Ago</span><span class="tip-dots"></span><span>${ago}</span></span>` +
+            `<span class="tip-row"><span>MoM % Change</span><span class="tip-dots"></span><span>${monthOverMonthChange}</span></span>`,
           )
         } else {
           headlineValue.textContent = formatValue(latestPoint.value, chart, "headline")
@@ -982,7 +1173,109 @@ const sections = [
         }
       }
 
-      const observers = charts.map((chart) => {
+      type ParsedStatCard = {
+        node: HTMLElement
+        data: LineChartPoint[]
+        format: LineChartFormat
+        formatScale: number
+        formatPrefix: string
+        formatSuffix: string
+        percentMode: PercentMode
+      }
+
+      const statCardNodes = Array.from(document.querySelectorAll<HTMLElement>(STAT_CARD_SELECTOR))
+      const statCards: ParsedStatCard[] = statCardNodes.map((node) => {
+        const x = node.dataset.x
+        const y = node.dataset.y
+        const chartId = node.dataset.chartId
+
+        if (!chartId || !x || !y) {
+          throw new Error("Stat card is missing required dataset attributes")
+        }
+
+        const xColumn = dataset[x]
+        const yColumn = dataset[y]
+
+        if (!xColumn || !yColumn) {
+          throw new Error(`Stat card ${chartId} references missing columns`)
+        }
+
+        const data: LineChartPoint[] = []
+
+        for (let i = 0; i < xColumn.length; i++) {
+          const rawX = xColumn[i]
+          const rawY = yColumn[i]
+          if (rawX == null || rawY == null) continue
+          const timestamp = toTimestamp(chartId, rawX)
+          const value = Number(rawY)
+          if (!Number.isFinite(value)) continue
+          data.push({ timestamp, value })
+        }
+
+        return {
+          node,
+          data,
+          format: parseFormat(node.dataset.format),
+          formatScale: parsePositiveNumber(node.dataset.formatScale, 1),
+          formatPrefix: node.dataset.formatPrefix ?? "",
+          formatSuffix: node.dataset.formatSuffix ?? "",
+          percentMode: parsePercentMode(node.dataset.percentMode),
+        }
+      })
+
+      function renderStatCard(card: ParsedStatCard): void {
+        const points = getPointsForRange(card.data, currentRange)
+        const valueEl = card.node.querySelector<HTMLElement>("[data-stat-card-value]")
+        const trendEl = card.node.querySelector<HTMLElement>("[data-stat-card-trend]")
+        const svg = card.node.querySelector<SVGElement>(".stat-card__spark")
+
+        if (!valueEl || !trendEl || !svg) return
+        if (points.length < 2) {
+          valueEl.textContent = "—"
+          trendEl.textContent = ""
+          svg.innerHTML = ""
+          return
+        }
+
+        const ma = buildMovingAverage(points.map((p) => p.value), 30)
+        const latest = ma[ma.length - 1]
+        const compareIndex = Math.max(0, ma.length - 1 - 30)
+        const prev = ma[compareIndex]
+
+        valueEl.textContent = formatValue(latest, card, "headline")
+
+        const pctChange = prev !== 0 ? ((latest - prev) / prev) * 100 : 0
+        const sign = pctChange > 0 ? "+" : ""
+        const trend = pctChange > 0 ? "▲" : pctChange < 0 ? "▼" : "■"
+        trendEl.textContent = `${trend} ${sign}${formatDecimal(pctChange, 2)}% 30d`
+
+        // Sparkline
+        const width = card.node.clientWidth
+        const height = 48
+        const pad = 2
+
+        const minX = points[0].timestamp
+        const maxX = points[points.length - 1].timestamp
+        const minY = Math.min(...ma)
+        let maxY = Math.max(...ma)
+        if (maxY === minY) maxY = minY + 1
+
+        const sx = (t: number) => pad + ((t - minX) / Math.max(maxX - minX, DAY_IN_MS)) * (width - pad * 2)
+        const sy = (v: number) => pad + ((maxY - v) / (maxY - minY)) * (height - pad * 2)
+
+        const d = ma.map((v, i) => `${i === 0 ? "M" : "L"} ${sx(points[i].timestamp)} ${sy(v)}`).join(" ")
+
+        svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
+        svg.innerHTML = `<path d="${d}" fill="none" stroke="var(--color-border-strong)" stroke-width="1.5" />`
+      }
+
+      function renderAllStatCards(): void {
+        for (const card of statCards) {
+          renderStatCard(card)
+        }
+      }
+
+      const observers: ResizeObserver[] = charts.map((chart) => {
         const observer = new ResizeObserver(() => {
           renderChart(chart)
         })
@@ -990,6 +1283,12 @@ const sections = [
         observer.observe(chart.node)
         return observer
       })
+
+      for (const card of statCards) {
+        const observer = new ResizeObserver(() => renderStatCard(card))
+        observer.observe(card.node)
+        observers.push(observer)
+      }
 
       const rangeButtons = document.querySelectorAll<HTMLButtonElement>(RANGE_BUTTON_SELECTOR)
 
@@ -1007,16 +1306,47 @@ const sections = [
 
           currentRange = range
           updateRangeButtons(currentRange)
+          updateUrlState()
           renderAllCharts()
+          renderAllStatCards()
         })
       }
 
+      for (const chart of charts) {
+        chart.toggleButton.addEventListener("click", () => {
+          setExpandedChart(expandedChartId === chart.id ? null : chart.id, {
+            scrollIntoView: expandedChartId !== chart.id,
+          })
+        })
+      }
+
+      const onKeyDown = (event: KeyboardEvent): void => {
+        if (event.key !== "Escape" || expandedChartId === null) {
+          return
+        }
+
+        setExpandedChart(null)
+      }
+
+      document.addEventListener("keydown", onKeyDown)
+
       updateRangeButtons(currentRange)
+      syncExpandedChartState()
+      updateUrlState()
       renderAllCharts()
+      renderAllStatCards()
+
+      if (expandedChartId) {
+        requestAnimationFrame(() => {
+          scrollExpandedChartIntoView()
+        })
+      }
 
       window.addEventListener(
         "pagehide",
         () => {
+          document.removeEventListener("keydown", onKeyDown)
+
           for (const observer of observers) {
             observer.disconnect()
           }
