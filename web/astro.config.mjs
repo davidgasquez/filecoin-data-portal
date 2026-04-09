@@ -3,9 +3,6 @@ import { defineConfig, fontProviders } from "astro/config";
 
 export default defineConfig({
   site: "https://filecoindataportal.xyz",
-  prefetch: {
-    prefetchAll: true,
-  },
   fonts: [
     {
       provider: fontProviders.bunny(),

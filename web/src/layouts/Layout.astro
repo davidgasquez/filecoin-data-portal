@@ -1,6 +1,5 @@
 ---
 import "../styles.css"
-import { ClientRouter } from "astro:transitions"
 import Head from "../components/Head.astro"
 
 interface Props {
@@ -35,13 +34,12 @@ const navItems = [
       image={image}
       canonicalUrl={canonicalUrl}
     />
-    <ClientRouter fallback="none" />
   </head>
 
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    <header class="site-header" transition:persist>
+    <header class="site-header">
       <a
         class="site-logo-link"
         href="/"
