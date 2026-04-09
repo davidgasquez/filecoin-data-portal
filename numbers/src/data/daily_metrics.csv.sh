@@ -96,15 +96,6 @@ COPY (
     publish_storage_deals_gas_used_millions,
     submit_windowed_post_gas_used_millions,
 
-    -- Developer Activity
-    github_repositories,
-    github_contributors,
-    github_comments,
-    github_stars,
-    github_forks,
-    github_releases,
-    github_commits,
-
     -- Transactions
     transactions,
     total_value_fil,

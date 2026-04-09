@@ -10,6 +10,5 @@ definitions = dg.Definitions(
     assets=api_assets,
     resources={
         "httpx_api": HttpClientResource(retries=5, timeout=45),
-        "oso_api": OsoResource(OSO_API_KEY=dg.EnvVar("OSO_API_KEY")),
     },
 )
