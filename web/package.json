@@ -18,10 +18,10 @@
   },
   "dependencies": {
     "@duckdb/node-api": "^1.5.0-r.1",
-    "astro": "^6.0.3"
+    "astro": "^6.1.5"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.7",
+    "@astrojs/check": "^0.9.8",
     "@types/node": "^25.4.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
