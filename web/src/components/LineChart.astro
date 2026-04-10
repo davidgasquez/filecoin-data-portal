@@ -59,8 +59,8 @@ const {
     <a href={`#${id}`} id={id} class="line-chart__title">{title}</a>
     <span class="line-chart__headline" data-line-chart-last-value hidden></span>
     <span class="line-chart__headline-tip" data-line-chart-headline-tip hidden></span>
-    <button
-      type="button"
+    <a
+      href={`#${id}`}
       class="line-chart__toggle"
       data-line-chart-toggle
       aria-expanded="false"
@@ -68,7 +68,7 @@ const {
       title={`Expand ${title}`}
     >
       +
-    </button>
+    </a>
   </figcaption>
 
   <div class="line-chart__canvas">

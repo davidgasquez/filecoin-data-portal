@@ -437,7 +437,7 @@ const serializedDailyMetrics = JSON.stringify(
     type ParsedChart = {
       id: string
       node: HTMLElement
-      toggleButton: HTMLButtonElement
+      toggleButton: HTMLAnchorElement
       title: string
       data: LineChartPoint[]
       format: LineChartFormat
@@ -453,7 +453,6 @@ const serializedDailyMetrics = JSON.stringify(
     const CHART_SELECTOR = "[data-line-chart]"
     const STAT_CARD_SELECTOR = "[data-stat-card]"
     const RANGE_BUTTON_SELECTOR = "[data-line-chart-range]"
-    const EXPANDED_CHART_PARAM = "chart"
     const RANGE_PARAM = "range"
     const CHART_MARGIN = { top: 22, right: 10, bottom: 28, left: 10 }
     const DAY_IN_MS = 86_400_000
@@ -505,7 +504,7 @@ const serializedDailyMetrics = JSON.stringify(
         const chartId = node.dataset.chartId
         const x = node.dataset.x
         const y = node.dataset.y
-        const toggleButton = node.querySelector<HTMLButtonElement>("[data-line-chart-toggle]")
+        const toggleButton = node.querySelector<HTMLAnchorElement>("[data-line-chart-toggle]")
         const titleNode = node.querySelector<HTMLElement>(".line-chart__title")
 
         if (!chartId || !x || !y) {
@@ -834,25 +833,21 @@ const serializedDailyMetrics = JSON.stringify(
       }
 
       function getExpandedChartFromUrl(): string | null {
-        const chartId = new URL(window.location.href).searchParams.get(EXPANDED_CHART_PARAM)
+        const hash = window.location.hash.slice(1)
 
-        return getChartById(chartId)?.id ?? null
+        return getChartById(hash)?.id ?? null
       }
 
       function updateUrlState(): void {
         const url = new URL(window.location.href)
-
-        if (expandedChartId) {
-          url.searchParams.set(EXPANDED_CHART_PARAM, expandedChartId)
-        } else {
-          url.searchParams.delete(EXPANDED_CHART_PARAM)
-        }
 
         if (currentRange === "1y") {
           url.searchParams.delete(RANGE_PARAM)
         } else {
           url.searchParams.set(RANGE_PARAM, currentRange)
         }
+
+        url.hash = expandedChartId ? `#${expandedChartId}` : ""
 
         history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`)
       }
@@ -1313,10 +1308,19 @@ const serializedDailyMetrics = JSON.stringify(
       }
 
       for (const chart of charts) {
-        chart.toggleButton.addEventListener("click", () => {
+        const handleToggle = (event: Event): void => {
+          event.preventDefault()
           setExpandedChart(expandedChartId === chart.id ? null : chart.id, {
             scrollIntoView: expandedChartId !== chart.id,
           })
+        }
+
+        chart.node.addEventListener("click", (event: Event) => {
+          const target = event.target as HTMLElement
+          if (target.closest(".line-chart__tooltip, .line-chart__svg")) {
+            return
+          }
+          handleToggle(event)
         })
       }
 
