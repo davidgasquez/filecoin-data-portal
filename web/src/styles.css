@@ -310,17 +310,12 @@
   }
 
   .numbers-section {
-    border: 1px solid var(--color-border);
-    padding: var(--space-4);
-  }
-
-  .numbers-section:first-of-type {
     border: 0;
     padding: 0;
   }
 
   .numbers-section + .numbers-section {
-    margin-block-start: var(--space-5);
+    margin-block-start: var(--space-6);
   }
 
   .numbers-section__legend {
@@ -373,6 +368,14 @@
     .stat-grid {
       grid-template-columns: repeat(4, 1fr);
     }
+
+    .stat-grid--2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stat-grid--3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
   .stat-card {
@@ -402,12 +405,9 @@
     color: var(--color-text-muted);
   }
 
-  .stat-card__label a,
   .stat-card .line-chart__title {
     text-decoration: none;
     color: inherit;
-    font-size: inherit;
-    font-weight: inherit;
   }
 
   .stat-card .line-chart__toggle {

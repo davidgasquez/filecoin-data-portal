@@ -45,9 +45,9 @@ const {
   data-x={x}
   data-y={y}
   data-format={format}
-  data-format-scale={formatScale}
-  data-format-prefix={formatPrefix}
-  data-format-suffix={formatSuffix}
+  data-format-scale={formatScale !== undefined ? formatScale : undefined}
+  data-format-prefix={formatPrefix ?? undefined}
+  data-format-suffix={formatSuffix ?? undefined}
   data-percent-mode={percentMode}
   data-show-moving-average="true"
   data-moving-average-window-days="30"

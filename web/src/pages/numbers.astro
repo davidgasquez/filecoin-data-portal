@@ -1,18 +1,17 @@
 ---
 import type { ComponentProps } from "astro/types"
 import dailyMetricsDataset from "../data/generated/filecoin-daily-metrics.json"
-import LineChart from "../components/LineChart.astro"
 import StatCard from "../components/StatCard.astro"
 import Layout from "../layouts/Layout.astro"
 
-type LineChartProps = ComponentProps<typeof LineChart>
+type StatCardProps = ComponentProps<typeof StatCard>
 type DatasetRowValue = string | number | null
 type DatasetRow = Record<string, DatasetRowValue>
 type DatasetColumn = DatasetRowValue[]
 type ColumnarDataset = Record<string, DatasetColumn>
 
 type NumbersChartConfig = Pick<
-  LineChartProps,
+  StatCardProps,
   | "id"
   | "title"
   | "y"
@@ -26,6 +25,7 @@ type NumbersChartConfig = Pick<
 type NumbersSectionConfig = {
   id: string
   title: string
+  columns?: 2 | 3 | 4
   charts: NumbersChartConfig[]
 }
 
@@ -67,8 +67,9 @@ const sections = [
     ],
   },
   {
-    id: "sectors",
-    title: "Sectors",
+    id: "power",
+    title: "Power",
+    columns: 4,
     charts: [
       {
         id: "sector-onboarding",
@@ -82,12 +83,12 @@ const sections = [
         y: "sector_terminated_raw_power_pibs",
         format: "pib",
       },
-    ],
-  },
-  {
-    id: "power",
-    title: "Power",
-    charts: [
+      {
+        id: "active-sectors",
+        title: "Active Sectors",
+        y: "active_sector_count",
+        format: "integer",
+      },
       {
         id: "raw-power",
         title: "Raw Power",
@@ -118,31 +119,18 @@ const sections = [
         y: "network_utilization_ratio",
         format: "percent",
       },
-      {
-        id: "active-sectors",
-        title: "Active Sectors",
-        y: "active_sector_count",
-        format: "integer",
-      },
     ],
   },
   {
     id: "activity",
     title: "Activity",
+    columns: 3,
     charts: [
       {
         id: "active-addresses",
         title: "Active Addresses",
         y: "active_address_count_daily",
         format: "integer",
-      },
-      {
-        id: "total-value-fil",
-        title: "Total Value FIL",
-        y: "total_value_fil",
-        format: "number",
-        formatScale: 1_000_000,
-        formatSuffix: " M FIL",
       },
       {
         id: "all-transactions",
@@ -152,6 +140,21 @@ const sections = [
         formatScale: 1_000_000,
         formatSuffix: " M",
       },
+      {
+        id: "total-value-fil",
+        title: "Total Value FIL",
+        y: "total_value_fil",
+        format: "number",
+        formatScale: 1_000_000,
+        formatSuffix: " M FIL",
+      },
+    ],
+  },
+  {
+    id: "gas",
+    title: "Gas",
+    columns: 2,
+    charts: [
       {
         id: "total-gas-used",
         title: "Total Gas Used",
@@ -170,8 +173,9 @@ const sections = [
     ],
   },
   {
-    id: "state-market-deals",
-    title: "State Market Deals",
+    id: "deals",
+    title: "Deals",
+    columns: 3,
     charts: [
       {
         id: "data-on-active-deals",
@@ -179,6 +183,25 @@ const sections = [
         y: "data_on_active_deals_pibs",
         format: "pib",
       },
+      {
+        id: "data-onboarding-with-payments",
+        title: "Data Onboarding with Payments",
+        y: "onboarded_data_pibs_with_payments",
+        format: "pib",
+      },
+      {
+        id: "direct-data-onboarding",
+        title: "Direct Data Onboarding",
+        y: "ddo_sector_onboarding_raw_power_tibs",
+        format: "tib",
+      },
+    ],
+  },
+  {
+    id: "participants",
+    title: "Participants",
+    columns: 2,
+    charts: [
       {
         id: "clients-with-active-deals",
         title: "Clients With Active Deals",
@@ -203,23 +226,12 @@ const sections = [
         y: "unique_deal_making_providers",
         format: "integer",
       },
-      {
-        id: "data-onboarding-with-payments",
-        title: "Data Onboarding with Payments",
-        y: "onboarded_data_pibs_with_payments",
-        format: "pib",
-      },
-      {
-        id: "direct-data-onboarding",
-        title: "Direct Data Onboarding",
-        y: "ddo_sector_onboarding_raw_power_tibs",
-        format: "tib",
-      },
     ],
   },
   {
     id: "economics",
     title: "Economics",
+    columns: 3,
     charts: [
       {
         id: "circulating-fil",
@@ -238,12 +250,6 @@ const sections = [
         formatSuffix: " M FIL",
       },
       {
-        id: "mining-yield",
-        title: "Mining Yield",
-        y: "mining_yield",
-        format: "percent",
-      },
-      {
         id: "vested-fil",
         title: "Vested FIL",
         y: "vested_fil",
@@ -260,12 +266,6 @@ const sections = [
         formatSuffix: " M FIL",
       },
       {
-        id: "storage-providers-collateral",
-        title: "Storage Providers Collateral",
-        y: "storage_providers_collateral",
-        format: "fil",
-      },
-      {
         id: "burnt-fil",
         title: "Burnt FIL",
         y: "burnt_fil",
@@ -274,15 +274,9 @@ const sections = [
         formatSuffix: " M FIL",
       },
       {
-        id: "miner-tip-fil",
-        title: "Miner Tip FIL",
-        y: "miner_tip_fil",
-        format: "fil",
-      },
-      {
-        id: "reward-per-wincount",
-        title: "Reward Per Wincount",
-        y: "reward_per_wincount",
+        id: "storage-providers-collateral",
+        title: "Storage Providers Collateral",
+        y: "storage_providers_collateral",
         format: "fil",
       },
       {
@@ -298,6 +292,31 @@ const sections = [
         format: "percent",
         percentMode: "points",
       },
+      {
+        id: "mining-yield",
+        title: "Mining Yield",
+        y: "mining_yield",
+        format: "percent",
+      },
+      {
+        id: "miner-tip-fil",
+        title: "Miner Tip FIL",
+        y: "miner_tip_fil",
+        format: "fil",
+      },
+      {
+        id: "reward-per-wincount",
+        title: "Reward Per Wincount",
+        y: "reward_per_wincount",
+        format: "fil",
+      },
+    ],
+  },
+  {
+    id: "markets",
+    title: "Markets",
+    columns: 3,
+    charts: [
       {
         id: "fil-token-price",
         title: "FIL Token Price",
@@ -320,6 +339,13 @@ const sections = [
         formatScale: 1_000_000_000,
         formatSuffix: "B",
       },
+    ],
+  },
+  {
+    id: "filecoin-plus",
+    title: "Filecoin Plus",
+    columns: 2,
+    charts: [
       {
         id: "fil-plus-bytes-share",
         title: "Filecoin Plus Bytes Share",
@@ -363,41 +389,21 @@ const serializedDailyMetrics = JSON.stringify(
       <section class="numbers-section" aria-labelledby={section.id}>
         <h2 id={section.id} class="numbers-section__legend">{section.title}</h2>
 
-        {section.id === "key-metrics" ? (
-          <div class="stat-grid">
-            {section.charts.map((chart) => (
-              <StatCard
-                id={chart.id}
-                title={chart.title}
-                x={chartX}
-                y={chart.y}
-                format={chart.format}
-                formatScale={chart.formatScale}
-                formatPrefix={chart.formatPrefix}
-                formatSuffix={chart.formatSuffix}
-                percentMode={chart.percentMode}
-              />
-            ))}
-          </div>
-        ) : (
-          <div class="card-grid card-grid--two-up">
-            {section.charts.map((chart) => (
-              <LineChart
-                id={chart.id}
-                title={chart.title}
-                x={chartX}
-                y={chart.y}
-                format={chart.format}
-                formatScale={chart.formatScale}
-                formatPrefix={chart.formatPrefix}
-                formatSuffix={chart.formatSuffix}
-                percentMode={chart.percentMode}
-                showMovingAverage={true}
-                movingAverageWindowDays={30}
-              />
-            ))}
-          </div>
-        )}
+        <div class={`stat-grid${section.columns ? ` stat-grid--${section.columns}` : ""}`}>
+          {section.charts.map((chart) => (
+            <StatCard
+              id={chart.id}
+              title={chart.title}
+              x={chartX}
+              y={chart.y}
+              format={chart.format}
+              formatScale={chart.formatScale}
+              formatPrefix={chart.formatPrefix}
+              formatSuffix={chart.formatSuffix}
+              percentMode={chart.percentMode}
+            />
+          ))}
+        </div>
       </section>
     ))
   }
