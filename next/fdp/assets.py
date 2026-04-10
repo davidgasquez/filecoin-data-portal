@@ -1,0 +1,582 @@
+import ast
+import re
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass
+from graphlib import CycleError, TopologicalSorter
+from pathlib import Path
+from typing import Literal
+
+from fdp.api import find_assets_root
+
+AssetKind = Literal["python", "sql"]
+PythonMaterialization = Literal["dataframe", "manual"]
+AssetResource = Literal["duckdb", "bigquery"]
+ValidationReporter = Callable[[str, str], None]
+
+ASSET_KIND_BY_SUFFIX: dict[str, AssetKind] = {".py": "python", ".sql": "sql"}
+COMMENT_PREFIXES: dict[AssetKind, str] = {"python": "#", "sql": "--"}
+SUPPORTED_METADATA_KEYS = {
+    "description",
+    "depends",
+    "not_null",
+    "unique",
+    "assert",
+    "resource",
+    "column",
+}
+IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+METADATA_LINE_RE = re.compile(
+    r"asset\.(?P<key>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?P<value>.*)"
+)
+
+PARSE_ASSETS_LABEL = "parse asset files and metadata"
+UNIQUE_ASSET_KEYS_LABEL = "validate unique asset keys"
+PYTHON_ENTRYPOINTS_LABEL = "validate python asset entrypoints"
+DEPENDENCIES_LABEL = "validate dependencies"
+DEPENDENCY_ORDERING_LABEL = "validate dependency ordering"
+CHECK_STATUS_WIDTH = (
+    max(
+        len(PARSE_ASSETS_LABEL),
+        len(UNIQUE_ASSET_KEYS_LABEL),
+        len(PYTHON_ENTRYPOINTS_LABEL),
+        len(DEPENDENCIES_LABEL),
+        len(DEPENDENCY_ORDERING_LABEL),
+    )
+    + 8
+)
+
+
+@dataclass(frozen=True)
+class AssetColumn:
+    name: str
+    description: str
+
+
+@dataclass(frozen=True)
+class AssetTests:
+    not_null: tuple[str, ...]
+    unique: tuple[str, ...]
+    assertions: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class Asset:
+    name: str
+    schema: str
+    key: str
+    path: Path
+    kind: AssetKind
+    resource: AssetResource
+    python_materialization: PythonMaterialization | None
+    depends: tuple[str, ...]
+    description: str | None
+    columns: tuple[AssetColumn, ...]
+    tests: AssetTests
+
+
+@dataclass(frozen=True)
+class LoadedAssets:
+    root: Path
+    assets: dict[str, Asset]
+    graph: dict[str, tuple[str, ...]]
+    ordered_keys: tuple[str, ...]
+
+
+def load_assets(
+    names: Iterable[str] | None = None,
+    *,
+    assets_root: Path | None = None,
+    reporter: ValidationReporter | None = None,
+) -> LoadedAssets:
+    requested_names = None if names is None else list(names)
+    root = assets_root or find_assets_root()
+    asset_list = run_validation_step(
+        PARSE_ASSETS_LABEL,
+        reporter,
+        lambda: collect_assets(root),
+    )
+    assets = run_validation_step(
+        UNIQUE_ASSET_KEYS_LABEL,
+        reporter,
+        lambda: index_assets(asset_list),
+    )
+    run_validation_step(
+        PYTHON_ENTRYPOINTS_LABEL,
+        reporter,
+        lambda: validate_python_asset_entrypoints(assets.values()),
+    )
+    graph = run_validation_step(
+        DEPENDENCIES_LABEL,
+        reporter,
+        lambda: dependency_graph(assets),
+    )
+    selected_keys = tuple(sorted(resolve_selection(requested_names, assets, graph)))
+    ordered_keys = tuple(
+        run_validation_step(
+            DEPENDENCY_ORDERING_LABEL,
+            reporter,
+            lambda: topological_order({key: graph[key] for key in selected_keys}),
+        )
+    )
+    return LoadedAssets(
+        root=root,
+        assets=assets,
+        graph=graph,
+        ordered_keys=ordered_keys,
+    )
+
+
+def check_assets() -> None:
+    load_assets(reporter=print_check_status)
+
+
+def discover_assets(assets_root: Path) -> dict[str, Asset]:
+    return load_assets(assets_root=assets_root).assets
+
+
+def schema_assets(
+    schema: str,
+    *,
+    assets_root: Path | None = None,
+) -> list[Asset]:
+    root = assets_root or find_assets_root()
+    assets = discover_assets(root)
+    return sorted(
+        (asset for asset in assets.values() if asset.schema == schema),
+        key=lambda asset: asset.key,
+    )
+
+
+def main_assets(*, assets_root: Path | None = None) -> list[Asset]:
+    return schema_assets("main", assets_root=assets_root)
+
+
+def ordered_assets(
+    names: Iterable[str] | None = None,
+    reporter: ValidationReporter | None = None,
+) -> list[Asset]:
+    loaded = load_assets(names, reporter=reporter)
+    return [loaded.assets[key] for key in loaded.ordered_keys]
+
+
+def collect_assets(assets_root: Path) -> list[Asset]:
+    return [asset_from_path(path, assets_root) for path in asset_files(assets_root)]
+
+
+def asset_files(assets_root: Path) -> list[Path]:
+    paths: list[Path] = []
+    for path in assets_root.rglob("*"):
+        if not path.is_file():
+            continue
+        if path.name.startswith("_"):
+            continue
+        if "__pycache__" in path.parts:
+            continue
+        if path.suffix not in ASSET_KIND_BY_SUFFIX:
+            continue
+        if path.name.endswith(".test.sql"):
+            continue
+        paths.append(path)
+    return sorted(paths)
+
+
+def asset_from_path(path: Path, assets_root: Path) -> Asset:
+    kind = asset_kind_from_path(path)
+    source = path.read_text(encoding="utf-8")
+    metadata, body_lines = metadata_from_source(path, kind, source)
+    ensure_asset_body(body_lines, path)
+    schema, name = asset_identity_from_path(path, assets_root)
+    python_materialization = (
+        python_asset_materialization(path, source) if kind == "python" else None
+    )
+
+    return Asset(
+        name=name,
+        schema=schema,
+        key=f"{schema}.{name}",
+        path=path,
+        kind=kind,
+        resource=parse_asset_resource(metadata.get("resource", []), path),
+        python_materialization=python_materialization,
+        depends=tuple(parse_dependencies(metadata.get("depends", []), path)),
+        description=optional_metadata_value(metadata, "description", path),
+        columns=tuple(parse_columns(metadata.get("column", []), path)),
+        tests=AssetTests(
+            not_null=tuple(
+                parse_column_names(metadata.get("not_null", []), path, "not_null")
+            ),
+            unique=tuple(
+                parse_column_names(metadata.get("unique", []), path, "unique")
+            ),
+            assertions=tuple(parse_assertions(metadata.get("assert", []), path)),
+        ),
+    )
+
+
+def asset_kind_from_path(path: Path) -> AssetKind:
+    try:
+        return ASSET_KIND_BY_SUFFIX[path.suffix]
+    except KeyError as exc:
+        raise ValueError(f"Unsupported asset type: {path}") from exc
+
+
+def metadata_from_source(
+    path: Path,
+    kind: AssetKind,
+    source: str,
+) -> tuple[dict[str, list[str]], list[str]]:
+    prefix = COMMENT_PREFIXES[kind]
+    metadata_lines, body_lines = extract_metadata_lines(source, prefix)
+    return parse_metadata_lines(metadata_lines, path), body_lines
+
+
+def extract_metadata_lines(source: str, prefix: str) -> tuple[list[str], list[str]]:
+    metadata_lines: list[str] = []
+    source_lines = source.splitlines()
+    body_start = len(source_lines)
+
+    for index, line in enumerate(source_lines):
+        stripped = line.lstrip()
+        if not stripped:
+            continue
+        if stripped.startswith("#!") and not metadata_lines:
+            continue
+        if stripped.startswith(prefix):
+            content = stripped.removeprefix(prefix).lstrip()
+            if content:
+                metadata_lines.append(content)
+            continue
+        body_start = index
+        break
+
+    return metadata_lines, source_lines[body_start:]
+
+
+def parse_metadata_lines(lines: list[str], path: Path) -> dict[str, list[str]]:
+    metadata: dict[str, list[str]] = {}
+    for line in lines:
+        if not line.startswith("asset."):
+            continue
+        match = METADATA_LINE_RE.fullmatch(line)
+        if match is None:
+            raise ValueError(f"Invalid asset metadata line in {path}: {line}")
+        key = match.group("key")
+        if key not in SUPPORTED_METADATA_KEYS:
+            raise ValueError(unsupported_metadata_message(key, path))
+        metadata.setdefault(key, []).append(match.group("value").strip())
+    return metadata
+
+
+def unsupported_metadata_message(key: str, path: Path) -> str:
+    if key == "schema":
+        return (
+            f"Unsupported asset.schema in {path}. "
+            "Schema comes from the first folder under assets."
+        )
+    if key == "name":
+        return (
+            f"Unsupported asset.name in {path}. Table names come from the asset path."
+        )
+    return f"Unsupported asset.{key} in {path}"
+
+
+def optional_metadata_value(
+    metadata: dict[str, list[str]],
+    key: str,
+    path: Path,
+) -> str | None:
+    values = metadata.get(key, [])
+    if not values:
+        return None
+    if len(values) != 1:
+        raise ValueError(f"asset.{key} must appear once in {path}")
+    value = values[0]
+    if not value:
+        raise ValueError(f"asset.{key} must have a value in {path}")
+    return value
+
+
+def parse_asset_resource(values: list[str], path: Path) -> AssetResource:
+    if not values:
+        return "duckdb"
+    if len(values) != 1:
+        raise ValueError(f"asset.resource must appear once in {path}")
+    resource = values[0].strip()
+    if not resource:
+        raise ValueError(f"asset.resource must have a value in {path}")
+    if resource == "duckdb":
+        return "duckdb"
+    if resource == "bigquery":
+        return "bigquery"
+    raise ValueError(
+        f"Unsupported asset.resource '{resource}' in {path}. "
+        "Expected duckdb or bigquery."
+    )
+
+
+def parse_dependencies(values: list[str], path: Path) -> list[str]:
+    dependencies: list[str] = []
+    seen: set[str] = set()
+    for raw_value in values:
+        dependency = parse_metadata_value(
+            raw_value, path, "depends", label="dependency"
+        )
+        validate_asset_reference(dependency, path)
+        if dependency in seen:
+            raise ValueError(f"Duplicate dependency '{dependency}' in {path}")
+        seen.add(dependency)
+        dependencies.append(dependency)
+    return dependencies
+
+
+def parse_column_names(values: list[str], path: Path, key: str) -> list[str]:
+    columns: list[str] = []
+    seen: set[str] = set()
+    for raw_value in values:
+        column = parse_metadata_value(raw_value, path, key, label="column")
+        validate_identifier(column, "column", path)
+        if column in seen:
+            raise ValueError(f"Duplicate asset.{key} column '{column}' in {path}")
+        seen.add(column)
+        columns.append(column)
+    return columns
+
+
+def parse_assertions(values: list[str], path: Path) -> list[str]:
+    assertions: list[str] = []
+    seen: set[str] = set()
+    for raw_value in values:
+        assertion = raw_value.strip()
+        if not assertion:
+            raise ValueError(f"asset.assert must have a value in {path}")
+        if assertion in seen:
+            raise ValueError(f"Duplicate asset.assert '{assertion}' in {path}")
+        seen.add(assertion)
+        assertions.append(assertion)
+    return assertions
+
+
+def parse_columns(values: list[str], path: Path) -> list[AssetColumn]:
+    columns: list[AssetColumn] = []
+    seen: set[str] = set()
+    for raw_value in values:
+        name, separator, description = raw_value.partition("|")
+        if not separator:
+            raise ValueError(
+                f"asset.column must use 'name | description' in {path}: {raw_value}"
+            )
+        column_name = name.strip()
+        column_description = description.strip()
+        validate_identifier(column_name, "column", path)
+        if not column_description:
+            raise ValueError(f"asset.column must include a description in {path}")
+        if column_name in seen:
+            raise ValueError(f"Duplicate asset.column '{column_name}' in {path}")
+        seen.add(column_name)
+        columns.append(AssetColumn(name=column_name, description=column_description))
+    return columns
+
+
+def parse_metadata_value(raw_value: str, path: Path, key: str, *, label: str) -> str:
+    value = raw_value.strip()
+    if not value:
+        raise ValueError(f"asset.{key} must have a value in {path}")
+    if "," in value:
+        raise ValueError(
+            f"asset.{key} must declare one {label} per line in {path}: {value}"
+        )
+    return value
+
+
+def ensure_asset_body(body_lines: list[str], path: Path) -> None:
+    if any(line.strip() for line in body_lines):
+        return
+    raise ValueError(f"Asset file has no content beyond metadata: {path}")
+
+
+def asset_identity_from_path(path: Path, assets_root: Path) -> tuple[str, str]:
+    parts = path.relative_to(assets_root).with_suffix("").parts
+    if len(parts) < 2:
+        raise ValueError(
+            f"Asset path must include a schema folder under assets: {path}"
+        )
+
+    schema, *table_parts = parts
+    validate_identifier(schema, "schema", path)
+    for part in table_parts:
+        validate_identifier(part, "table", path)
+    return schema, "_".join(table_parts)
+
+
+def validate_asset_reference(value: str, path: Path) -> None:
+    parts = value.split(".")
+    if len(parts) != 2:
+        raise ValueError(
+            f"Invalid dependency '{value}' in {path}. Expected schema.table."
+        )
+    schema, table = parts
+    validate_identifier(schema, "schema", path)
+    validate_identifier(table, "table", path)
+
+
+def validate_identifier(value: str, label: str, path: Path) -> None:
+    if IDENTIFIER_RE.fullmatch(value) is None:
+        raise ValueError(f"Invalid {label} name '{value}' from {path}")
+
+
+def validate_python_asset_entrypoints(assets: Iterable[Asset]) -> None:
+    for asset in assets:
+        if asset.kind == "python" and asset.python_materialization is None:
+            raise ValueError(f"Invalid Python asset: {asset.path}")
+
+
+def python_asset_materialization(
+    path: Path,
+    source: str | None = None,
+) -> PythonMaterialization:
+    function_node = python_asset_function_node(path, source)
+    return_annotation = function_node.returns
+    if is_none_annotation(return_annotation):
+        return "manual"
+    if is_polars_dataframe_annotation(return_annotation):
+        return "dataframe"
+    function_name = python_asset_function_name(path)
+    raise ValueError(
+        f"Python asset {path} function {function_name} must declare return type "
+        "pl.DataFrame or None"
+    )
+
+
+def python_asset_function_node(
+    path: Path,
+    source: str | None = None,
+) -> ast.FunctionDef | ast.AsyncFunctionDef:
+    function_name = python_asset_function_name(path)
+    module_source = source or path.read_text(encoding="utf-8")
+    try:
+        module = ast.parse(module_source, filename=str(path))
+    except SyntaxError as exc:
+        raise ValueError(invalid_python_asset_message(path, exc)) from exc
+
+    for node in module.body:
+        if (
+            isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef)
+            and node.name == function_name
+        ):
+            return node
+
+    raise ValueError(
+        f"Python asset {path} must define top-level function {function_name}"
+    )
+
+
+def is_none_annotation(annotation: ast.expr | None) -> bool:
+    return isinstance(annotation, ast.Constant) and annotation.value is None
+
+
+def is_polars_dataframe_annotation(annotation: ast.expr | None) -> bool:
+    return (
+        isinstance(annotation, ast.Attribute)
+        and annotation.attr == "DataFrame"
+        and isinstance(annotation.value, ast.Name)
+        and annotation.value.id == "pl"
+    )
+
+
+def invalid_python_asset_message(path: Path, error: SyntaxError) -> str:
+    location = ""
+    if error.lineno is not None:
+        location = f" at line {error.lineno}"
+        if error.offset is not None:
+            location = f"{location}, column {error.offset}"
+    return f"Invalid Python asset {path}: {error.msg}{location}"
+
+
+def python_asset_function_name(path: Path) -> str:
+    return path.stem
+
+
+def index_assets(assets: Iterable[Asset]) -> dict[str, Asset]:
+    indexed: dict[str, Asset] = {}
+    for asset in assets:
+        if asset.key in indexed:
+            raise ValueError(f"Duplicate asset key: {asset.key}")
+        indexed[asset.key] = asset
+    return indexed
+
+
+def dependency_graph(assets: dict[str, Asset]) -> dict[str, tuple[str, ...]]:
+    graph: dict[str, tuple[str, ...]] = {}
+    asset_keys = set(assets)
+    for asset in assets.values():
+        for dependency in asset.depends:
+            if dependency == asset.key:
+                raise ValueError(f"Asset {asset.key} depends on itself")
+            if dependency not in asset_keys:
+                raise ValueError(
+                    f"Unknown dependency '{dependency}' referenced in {asset.path}"
+                )
+        graph[asset.key] = tuple(sorted(asset.depends))
+    return graph
+
+
+def resolve_selection(
+    names: Iterable[str] | None,
+    assets: dict[str, Asset],
+    graph: dict[str, tuple[str, ...]],
+) -> set[str]:
+    if not names:
+        selected = set(assets)
+    else:
+        unknown = sorted(set(names) - set(assets))
+        if unknown:
+            raise ValueError(f"Unknown assets: {', '.join(unknown)}")
+        selected = set(names)
+
+    stack = list(selected)
+    while stack:
+        key = stack.pop()
+        for dependency in graph[key]:
+            if dependency in selected:
+                continue
+            selected.add(dependency)
+            stack.append(dependency)
+    return selected
+
+
+def topological_order(graph: dict[str, tuple[str, ...]]) -> list[str]:
+    try:
+        return list(TopologicalSorter(graph).static_order())
+    except CycleError as exc:
+        raise ValueError(f"Dependency cycle detected: {exc}") from exc
+
+
+def run_validation_step[T](
+    label: str,
+    reporter: ValidationReporter | None,
+    func: Callable[[], T],
+) -> T:
+    try:
+        result = func()
+    except Exception:
+        report_validation_status(reporter, label, "FAIL")
+        raise
+    report_validation_status(reporter, label, "OK")
+    return result
+
+
+def report_validation_status(
+    reporter: ValidationReporter | None,
+    label: str,
+    status: str,
+) -> None:
+    if reporter is not None:
+        reporter(label, status)
+
+
+def print_check_status(label: str, status: str) -> None:
+    print(format_check_status(label, status), flush=True)
+
+
+def format_check_status(label: str, status: str) -> str:
+    return f"{label:.<{CHECK_STATUS_WIDTH}} {status}"

@@ -1,0 +1,56 @@
+[project]
+name = "fdp"
+version = "2.0.0"
+readme = "README.md"
+authors = [{ name = "David Gasquez", email = "davidgasquez@gmail.com" }]
+requires-python = ">=3.14"
+dependencies = [
+    "duckdb>=1.5.1",
+    "eth-utils>=6.0.0",
+    "google-auth>=2.49.2",
+    "google-cloud-bigquery>=3.41.0",
+    "google-cloud-bigquery-storage>=2.37.0",
+    "gspread>=6.2.1",
+    "httpx>=0.28.1",
+    "polars>=1.39.3",
+    "pyarrow>=23.0.1",
+    "web3>=7.15.0",
+]
+
+[project.scripts]
+fdp = "fdp.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "fdp"
+module-root = ""
+
+[dependency-groups]
+dev = [
+    "prek>=0.3.8",
+    "ruff>=0.15.10",
+    "ty>=0.0.29",
+]
+
+[tool.ruff]
+preview = true
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle (error)
+    "W",      # pycodestyle (warning)
+    "F",      # pyflakes
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "I",      # isort
+    "UP",     # pyupgrade
+    "PIE",    # flake8-pie
+    "PGH",    # pygrep-hooks
+    "PYI",    # flake8-pyi
+    "RUF",    # ruff
+    "RUF067", # non-empty-init-module
+]

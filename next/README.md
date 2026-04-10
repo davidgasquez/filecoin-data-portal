@@ -1,0 +1,51 @@
+# Filecoin Data Portal
+
+Open, minimal, local-first Data Platform for the Filecoin Ecosystem.
+
+- Open source code producing open datasets in open formats using public infrastructure.
+- Runs on a laptop, server, or CI runner without any lock-ins.
+
+## 🚀 Quickstart
+
+The `fdp/` folder contains the CLI and lightweight orchestrator while the `assets/` folder hosts data assets and custom SQL data tests. FDP assumes the environment is already loaded (you can autoload it running `uv` with `--env-file .env`).
+
+- `uv run fdp list`
+- `uv run fdp check`
+- `uv run fdp materialize`
+- `uv run fdp status`
+- `uv run fdp prune`
+- `uv run fdp docs`
+- `uv run fdp test`
+- `uv run fdp publish r2`
+- `uv run fdp publish gsheet`
+- `uv run fdp show raw.daily_network_activity_by_method`
+- `uv run fdp query "select * from raw.daily_network_activity_by_method limit 10"`
+
+DuckDB lives at `fdp.duckdb` in the current working directory by default. Override it with `FDP_DB_PATH`.
+
+## ⚙️ Development
+
+You can run the Filecoin Data Portal anywhere using `uv`. You'll need the following secrets in your environment:
+
+- `ENCODED_GOOGLE_APPLICATION_CREDENTIALS` (base64-encoded Google service account JSON)
+- `FDP_BIGQUERY_PROJECT`
+- `FDP_BIGQUERY_LOCATION`
+- `FDP_R2_ACCESS_KEY_ID`
+- `FDP_R2_SECRET_ACCESS_KEY`
+- `FDP_R2_ACCOUNT_ID`
+- `FDP_R2_BUCKET`
+- `FDP_GSHEET_SPREADSHEET_ID`
+
+`uv run fdp publish r2` writes one parquet file per `main.*` table to R2.
+`uv run fdp publish gsheet` writes one worksheet per `main.*` table to a Google spreadsheet.
+Share the target spreadsheet with the Google service account from `ENCODED_GOOGLE_APPLICATION_CREDENTIALS`.
+
+For local development, load them explicitly with `uv run --env-file .env ...`.
+
+## 📃 Disclaimer
+
+The datasets provided by this service are made available "as is", without any warranties or guarantees of any kind, either expressed or implied. By using these datasets, you agree that you do so at your own risk.
+
+## 📝 Licenses
+
+The Filecoin Data Portal is licensed under the [MIT License](https://choosealicense.com/licenses/mit/).
