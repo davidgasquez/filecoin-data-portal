@@ -45,8 +45,3 @@ pulse:
 clean:
 	@rm -rf data/*.parquet data/*.duckdb
 	@rm -rf dbt/target dbt/logs dbt/dbt_packages
-
-.PHONY: qmd-update
-qmd-update:
-	qmd update
-	qmd embed
