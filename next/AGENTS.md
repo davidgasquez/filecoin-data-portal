@@ -21,6 +21,7 @@ Guidelines for `fdp`, a minimalistic and functional open data platform to help g
 - Orchestration, resources, io, and platform related code lives under `fdp`, assets under `assets`
 - You can learn more about how `fdp` wors in the documentation
 - If an asset can be generalized, ask the user (this will reduce LOC)
+- Assets are executed once a day in GitHub Actions, optimize accordingly
 
 ### Discovering Information
 
