@@ -9,7 +9,6 @@
 ## Header Format
 
 - Optional `asset.description`
-- Optional `asset.resource` (`duckdb` by default, or `bigquery` for SQL assets)
 - Optional and repeatable `asset.depends`
 - Required on Python assets: `asset.materialization` (`dataframe` or `custom`)
 - Optional and repeatable `asset.column` as `column_name | description`
@@ -33,9 +32,10 @@
 - Use `fdp.table("schema.table")` to load a dependency
 - Use `fdp.sql("...")` to run SQL against the database
 - Use `fdp.db_connection()` when the asset needs custom or incremental materialization
+- Use `fdp.bigquery.materialize_query(...)` inside a custom Python asset when the query must run in BigQuery and the result should be copied into DuckDB
 
 ## SQL assets
 
 - File content is a SQL query only
+- SQL assets always run in DuckDB
 - DuckDB runner executes `create or replace table schema.table as <sql>`
-- Use `asset.resource = bigquery` to run the query in BigQuery and copy the result into DuckDB

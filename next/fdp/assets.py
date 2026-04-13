@@ -9,7 +9,6 @@ from fdp.api import find_assets_root
 
 AssetKind = Literal["python", "sql"]
 PythonMaterialization = Literal["dataframe", "custom"]
-AssetResource = Literal["duckdb", "bigquery"]
 ValidationReporter = Callable[[str, str], None]
 
 ASSET_KIND_BY_SUFFIX: dict[str, AssetKind] = {".py": "python", ".sql": "sql"}
@@ -20,7 +19,6 @@ SUPPORTED_METADATA_KEYS = {
     "not_null",
     "unique",
     "assert",
-    "resource",
     "column",
     "materialization",
 }
@@ -75,7 +73,6 @@ class Asset:
     key: str
     path: Path
     kind: AssetKind
-    resource: AssetResource
     python_materialization: PythonMaterialization | None
     depends: tuple[str, ...]
     description: str | None
@@ -273,7 +270,6 @@ def asset_from_path(path: Path, assets_root: Path) -> Asset:
         key=f"{schema}.{name}",
         path=path,
         kind=kind,
-        resource=parse_asset_resource(metadata.get("resource", []), path),
         python_materialization=python_materialization,
         depends=tuple(parse_dependencies(metadata.get("depends", []), path)),
         description=optional_metadata_value(metadata, "description", path),
@@ -371,24 +367,6 @@ def optional_metadata_value(
     if not value:
         raise ValueError(f"asset.{key} must have a value in {path}")
     return value
-
-
-def parse_asset_resource(values: list[str], path: Path) -> AssetResource:
-    if not values:
-        return "duckdb"
-    if len(values) != 1:
-        raise ValueError(f"asset.resource must appear once in {path}")
-    resource = values[0].strip()
-    if not resource:
-        raise ValueError(f"asset.resource must have a value in {path}")
-    if resource == "duckdb":
-        return "duckdb"
-    if resource == "bigquery":
-        return "bigquery"
-    raise ValueError(
-        f"Unsupported asset.resource '{resource}' in {path}. "
-        "Expected duckdb or bigquery."
-    )
 
 
 def parse_dependencies(values: list[str], path: Path) -> list[str]:

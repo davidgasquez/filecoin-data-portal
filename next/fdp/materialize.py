@@ -8,7 +8,6 @@ import polars as pl
 
 from fdp.api import db_connection
 from fdp.assets import Asset, ordered_assets, python_asset_function_name
-from fdp.bigquery import materialize_query
 from fdp.inspect import validate_materialized_asset
 
 
@@ -80,13 +79,6 @@ def materialize_sql(asset: Asset) -> None:
     query = asset.path.read_text(encoding="utf-8").strip()
     if not query:
         raise ValueError(f"SQL asset is empty: {asset.path}")
-
-    if asset.resource == "bigquery":
-        materialize_query(asset.key, query, schema=asset.schema)
-        with db_connection() as conn:
-            validate_materialized_asset(conn, asset)
-            apply_asset_comments(conn, asset)
-        return
 
     with db_connection() as conn:
         conn.execute(f"create schema if not exists {asset.schema}")

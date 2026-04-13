@@ -26,7 +26,6 @@ def print_asset_view(asset_view: AssetView, project_root: Path) -> None:
     print("metadata:")
     print(f"  path: {asset.path.relative_to(project_root).as_posix()}")
     print(f"  kind: {asset.kind}")
-    print(f"  resource: {asset.resource}")
     print(f"  description: {asset.description or 'none'}")
     print("  depends:")
     if asset.depends:

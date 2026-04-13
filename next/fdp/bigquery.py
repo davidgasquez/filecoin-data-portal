@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 
 import pyarrow as pa
 from google.cloud import bigquery
@@ -42,13 +41,6 @@ def materialize_query(
             f"create or replace table {asset_key} as select * from bigquery_result"
         )
     return arrow_table.num_rows
-
-
-def read_sql(path: Path | str) -> str:
-    query = Path(path).read_text(encoding="utf-8").strip()
-    if not query:
-        raise ValueError(f"BigQuery SQL file is empty: {path}")
-    return query
 
 
 def bigquery_client(
