@@ -34,40 +34,25 @@ DEFAULT_LOCATION = "us-east4"
 QUERY = """
 with verified_registry_claims as (
     select
-        v.height,
-        timestamp_seconds((v.height * 30) + 1598306400) as ts,
         date(timestamp_seconds((v.height * 30) + 1598306400)) as date,
-        v.source as source_cid,
         v.`from` as provider,
         cast(json_extract_scalar(claim, '$.Client') as int64) as client_id,
-        concat('f0', json_extract_scalar(claim, '$.Client')) as client,
-        cast(json_extract_scalar(sector, '$.Sector') as int64) as sector,
-        cast(json_extract_scalar(claim, '$.AllocationId') as int64) as allocation_id,
-        json_extract_scalar(json_extract(claim, '$.Data'), '$["/"]') as piece_cid,
-        cast(json_extract_scalar(claim, '$.Size') as int64) as piece_size_bytes,
-        cast(json_extract_scalar(sector, '$.SectorExpiry') as int64) as sector_expiry
+        cast(json_extract_scalar(claim, '$.Size') as int64) as piece_size_bytes
     from `lily-data.lily.vm_messages` as v
     cross join unnest(coalesce(json_extract_array(v.params, '$.Sectors'), array<string>[])) as sector
     cross join unnest(coalesce(json_extract_array(sector, '$.Claims'), array<string>[])) as claim
     where v.`to` = 'f06'
       and v.method = 9
       and v.exit_code = 0
+      and json_extract_scalar(claim, '$.Client') is not null
 
     union all
 
     select
-        v.height,
-        timestamp_seconds((v.height * 30) + 1598306400) as ts,
         date(timestamp_seconds((v.height * 30) + 1598306400)) as date,
-        v.source as source_cid,
         v.`from` as provider,
         cast(json_extract_scalar(sector, '$.Client') as int64) as client_id,
-        concat('f0', json_extract_scalar(sector, '$.Client')) as client,
-        cast(json_extract_scalar(sector, '$.Sector') as int64) as sector,
-        cast(json_extract_scalar(sector, '$.AllocationId') as int64) as allocation_id,
-        json_extract_scalar(json_extract(sector, '$.Data'), '$["/"]') as piece_cid,
-        cast(json_extract_scalar(sector, '$.Size') as int64) as piece_size_bytes,
-        cast(json_extract_scalar(sector, '$.SectorExpiry') as int64) as sector_expiry
+        cast(json_extract_scalar(sector, '$.Size') as int64) as piece_size_bytes
     from `lily-data.lily.vm_messages` as v
     cross join unnest(coalesce(json_extract_array(v.params, '$.Sectors'), array<string>[])) as sector
     where v.`to` = 'f06'
