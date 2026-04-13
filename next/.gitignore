@@ -203,7 +203,12 @@ cython_debug/
 
 # Local planning and search indexes
 *.local.md
-.qmd/
+.qmd/*
+!.qmd/.gitignore
+!.qmd/index.yml
+!.qmd/external/
+.qmd/external/*
+!.qmd/external/.gitkeep
 todo.local/
 .ropeproject/
 
