@@ -9,6 +9,8 @@ from fdp.google import credentials_from_env
 DEFAULT_PROJECT = "protocol-labs-data-nexus"
 DEFAULT_LOCATION = "us-east4"
 
+__all__ = ["bigquery_client", "materialize_query", "query_arrow"]
+
 
 def query_arrow(
     query: str,
