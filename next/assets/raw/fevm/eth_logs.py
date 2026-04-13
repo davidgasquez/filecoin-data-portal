@@ -1,4 +1,5 @@
 # asset.description = Raw eth logs from Rib RPC archive.
+# asset.materialization = custom
 
 # asset.column = address | Contract address that emitted the log.
 # asset.column = blockHash | Hash of the block containing the log.

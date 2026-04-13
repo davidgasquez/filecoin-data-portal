@@ -105,9 +105,12 @@ def materialize_python(asset: Asset) -> None:
         )
 
     result = func()
-    if asset.python_materialization == "manual":
+    if asset.python_materialization == "custom":
         if result is not None:
-            raise TypeError("Self-materialized Python assets must return None")
+            raise TypeError(
+                f"Python asset {asset.path} declares asset.materialization = custom "
+                "and must return None"
+            )
         with db_connection() as conn:
             validate_materialized_asset(conn, asset)
             apply_asset_comments(conn, asset)
@@ -117,7 +120,8 @@ def materialize_python(asset: Asset) -> None:
         raise TypeError(f"Invalid Python materialization mode for {asset.path}")
     if not isinstance(result, pl.DataFrame):
         raise TypeError(
-            "Python assets with -> pl.DataFrame must return polars.DataFrame"
+            f"Python asset {asset.path} declares asset.materialization = "
+            "dataframe and must return polars.DataFrame"
         )
     materialize_polars_frame(asset, result)
 

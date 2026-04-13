@@ -3,7 +3,7 @@
 - Write assets (`.py` and `.sql`) inside `assets/`
 - The first folder under `assets/` is the schema
   - Remaining folders plus the file stem are joined with `_` to form the table name
-- Prefer SQL first, then Python returning `pl.DataFrame`, then Python with custom materialization
+- Prefer SQL first, then Python with `asset.materialization = dataframe`, then Python with `asset.materialization = custom`
 - Asset header metadata is the only source of truth for asset semantics.
 
 ## Header Format
@@ -11,6 +11,7 @@
 - Optional `asset.description`
 - Optional `asset.resource` (`duckdb` by default, or `bigquery` for SQL assets)
 - Optional and repeatable `asset.depends`
+- Required on Python assets: `asset.materialization` (`dataframe` or `custom`)
 - Optional and repeatable `asset.column` as `column_name | description`
 - Optional and repeatable `asset.not_null`
 - Optional and repeatable `asset.unique`
@@ -26,10 +27,12 @@
 ## Python assets
 
 - Define a top-level function whose name matches the file name
-- Return `-> pl.DataFrame` for FDP-managed materialization or `-> None` for self-materialization
+- Declare `asset.materialization = dataframe` when FDP should materialize the returned `pl.DataFrame`
+- Declare `asset.materialization = custom` when the asset materializes itself and returns `None`
+- Return annotations are optional developer ergonomics, not framework behavior
 - Use `fdp.table("schema.table")` to load a dependency
 - Use `fdp.sql("...")` to run SQL against the database
-- Use `fdp.db_connection()` when the asset needs manual or incremental materialization
+- Use `fdp.db_connection()` when the asset needs custom or incremental materialization
 
 ## SQL assets
 

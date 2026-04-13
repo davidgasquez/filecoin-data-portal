@@ -1,4 +1,5 @@
 # asset.description = Raw allocator records from the DatacapStats getVerifiers API.
+# asset.materialization = dataframe
 
 # asset.column = id | DatacapStats allocator row id.
 # asset.column = address_id | Filecoin actor id address.

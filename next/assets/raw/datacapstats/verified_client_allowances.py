@@ -1,5 +1,6 @@
 # asset.description = Flattened DatacapStats verified client allowance history
 # records from raw.datacapstats_verified_clients.allowance_array.
+# asset.materialization = dataframe
 # asset.depends = raw.datacapstats_verified_clients
 
 # asset.column = verified_client_row_id | DatacapStats verified client row id

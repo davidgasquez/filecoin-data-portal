@@ -1,4 +1,3 @@
-import ast
 import re
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
@@ -9,7 +8,7 @@ from typing import Literal
 from fdp.api import find_assets_root
 
 AssetKind = Literal["python", "sql"]
-PythonMaterialization = Literal["dataframe", "manual"]
+PythonMaterialization = Literal["dataframe", "custom"]
 AssetResource = Literal["duckdb", "bigquery"]
 ValidationReporter = Callable[[str, str], None]
 
@@ -23,6 +22,7 @@ SUPPORTED_METADATA_KEYS = {
     "assert",
     "resource",
     "column",
+    "materialization",
 }
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 METADATA_LINE_RE = re.compile(
@@ -32,7 +32,6 @@ METADATA_LINE_RE = re.compile(
 PARSE_ASSETS_LABEL = "parse asset files and metadata"
 UNIQUE_ASSET_KEYS_LABEL = "validate unique asset keys"
 METADATA_MODEL_LABEL = "validate metadata model"
-PYTHON_ENTRYPOINTS_LABEL = "validate python asset entrypoints"
 DEPENDENCIES_LABEL = "validate dependencies"
 CUSTOM_SQL_TESTS_LABEL = "parse custom sql tests"
 DEPENDENCY_ORDERING_LABEL = "validate dependency ordering"
@@ -41,7 +40,6 @@ CHECK_STATUS_WIDTH = (
         len(PARSE_ASSETS_LABEL),
         len(UNIQUE_ASSET_KEYS_LABEL),
         len(METADATA_MODEL_LABEL),
-        len(PYTHON_ENTRYPOINTS_LABEL),
         len(DEPENDENCIES_LABEL),
         len(CUSTOM_SQL_TESTS_LABEL),
         len(DEPENDENCY_ORDERING_LABEL),
@@ -116,11 +114,6 @@ def load_assets(
         METADATA_MODEL_LABEL,
         reporter,
         lambda: validate_metadata_model(asset_list),
-    )
-    run_validation_step(
-        PYTHON_ENTRYPOINTS_LABEL,
-        reporter,
-        lambda: validate_python_asset_entrypoints(assets.values()),
     )
     graph = run_validation_step(
         DEPENDENCIES_LABEL,
@@ -272,9 +265,7 @@ def asset_from_path(path: Path, assets_root: Path) -> Asset:
     metadata, body_lines = metadata_from_source(path, kind, source)
     ensure_asset_body(body_lines, path)
     schema, name = asset_identity_from_path(path, assets_root)
-    python_materialization = (
-        python_asset_materialization(path, source) if kind == "python" else None
-    )
+    python_materialization = parse_python_materialization(kind, metadata, path)
 
     return Asset(
         name=name,
@@ -510,72 +501,35 @@ def validate_identifier(value: str, label: str, path: Path) -> None:
         raise ValueError(f"Invalid {label} name '{value}' from {path}")
 
 
-def validate_python_asset_entrypoints(assets: Iterable[Asset]) -> None:
-    for asset in assets:
-        if asset.kind == "python" and asset.python_materialization is None:
-            raise ValueError(f"Invalid Python asset: {asset.path}")
-
-
-def python_asset_materialization(
+def parse_python_materialization(
+    kind: AssetKind,
+    metadata: dict[str, list[str]],
     path: Path,
-    source: str | None = None,
-) -> PythonMaterialization:
-    function_node = python_asset_function_node(path, source)
-    return_annotation = function_node.returns
-    if is_none_annotation(return_annotation):
-        return "manual"
-    if is_polars_dataframe_annotation(return_annotation):
+) -> PythonMaterialization | None:
+    values = metadata.get("materialization", [])
+    if kind != "python":
+        if values:
+            raise ValueError(
+                f"asset.materialization is only supported on Python assets: {path}"
+            )
+        return None
+
+    if not values:
+        raise ValueError(f"Python asset {path} must declare asset.materialization")
+    if len(values) != 1:
+        raise ValueError(f"asset.materialization must appear once in {path}")
+
+    materialization = values[0].strip()
+    if not materialization:
+        raise ValueError(f"asset.materialization must have a value in {path}")
+    if materialization == "dataframe":
         return "dataframe"
-    function_name = python_asset_function_name(path)
+    if materialization == "custom":
+        return "custom"
     raise ValueError(
-        f"Python asset {path} function {function_name} must declare return type "
-        "pl.DataFrame or None"
+        f"Unsupported asset.materialization '{materialization}' in {path}. "
+        "Expected dataframe or custom."
     )
-
-
-def python_asset_function_node(
-    path: Path,
-    source: str | None = None,
-) -> ast.FunctionDef | ast.AsyncFunctionDef:
-    function_name = python_asset_function_name(path)
-    module_source = source or path.read_text(encoding="utf-8")
-    try:
-        module = ast.parse(module_source, filename=str(path))
-    except SyntaxError as exc:
-        raise ValueError(invalid_python_asset_message(path, exc)) from exc
-
-    for node in module.body:
-        if (
-            isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef)
-            and node.name == function_name
-        ):
-            return node
-
-    raise ValueError(
-        f"Python asset {path} must define top-level function {function_name}"
-    )
-
-
-def is_none_annotation(annotation: ast.expr | None) -> bool:
-    return isinstance(annotation, ast.Constant) and annotation.value is None
-
-
-def is_polars_dataframe_annotation(annotation: ast.expr | None) -> bool:
-    return (
-        isinstance(annotation, ast.Attribute)
-        and annotation.attr == "DataFrame"
-        and isinstance(annotation.value, ast.Name)
-        and annotation.value.id == "pl"
-    )
-
-
-def invalid_python_asset_message(path: Path, error: SyntaxError) -> str:
-    location = ""
-    if error.lineno is not None:
-        location = f" at line {error.lineno}"
-        if error.offset is not None:
-            location = f"{location}, column {error.offset}"
-    return f"Invalid Python asset {path}: {error.msg}{location}"
 
 
 def python_asset_function_name(path: Path) -> str:

@@ -1,4 +1,5 @@
 # asset.description = Raw verified client records from the getVerifiedClients API.
+# asset.materialization = dataframe
 
 # asset.column = id | DatacapStats verified client row id.
 # asset.column = address_id | Filecoin actor id address.

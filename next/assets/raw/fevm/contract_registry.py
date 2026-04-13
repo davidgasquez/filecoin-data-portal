@@ -1,5 +1,6 @@
 # asset.description = Runtime registry of FEVM mainnet contracts and their ABI
 # JSONs from GitHub or Blockscout.
+# asset.materialization = dataframe
 
 # asset.column = chain_id | Filecoin EVM chain id.
 # asset.column = network | Human-readable network name.
