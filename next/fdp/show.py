@@ -1,48 +1,80 @@
-from fdp.api import db_connection, find_assets_root, table_exists
-from fdp.assets import discover_assets
-from fdp.test import asset_test_lines, render_text_table
+from pathlib import Path
+
+from fdp.assets import load_assets
+from fdp.inspect import AssetView, inspect_assets
+from fdp.tabular import render_text_table
 
 
 def show_asset(name: str, sample_rows: int = 5) -> None:
     if sample_rows < 1:
         raise ValueError("sample_rows must be at least 1")
 
-    assets_root = find_assets_root()
-    assets = discover_assets(assets_root)
-    try:
-        asset = assets[name]
-    except KeyError as exc:
-        raise ValueError(f"Unknown asset: {name}") from exc
+    loaded = load_assets([name])
+    asset_view = inspect_assets(
+        loaded,
+        asset_keys=[name],
+        include_row_count=True,
+        sample_rows=sample_rows,
+    )[0]
+    print_asset_view(asset_view, loaded.root.parent)
 
-    project_root = assets_root.parent
+
+def print_asset_view(asset_view: AssetView, project_root: Path) -> None:
+    asset = asset_view.asset
     print(f"asset: {asset.key}")
-    print(f"path: {asset.path.relative_to(project_root).as_posix()}")
-    print(f"kind: {asset.kind}")
-    print(f"resource: {asset.resource}")
-    print(f"resolved key: {asset.key}")
     print()
-    print("depends:")
+    print("metadata:")
+    print(f"  path: {asset.path.relative_to(project_root).as_posix()}")
+    print(f"  kind: {asset.kind}")
+    print(f"  resource: {asset.resource}")
+    print(f"  description: {asset.description or 'none'}")
+    print("  depends:")
     if asset.depends:
         for dependency in asset.depends:
-            print(f"  - {dependency}")
+            print(f"    - {dependency}")
     else:
-        print("  - none")
-    print()
-    print("tests:")
-    test_lines = asset_test_lines(asset, assets_root, project_root)
+        print("    - none")
+    print("  columns:")
+    if asset.columns:
+        for column in asset.columns:
+            print(f"    - {column.name}: {column.description}")
+    else:
+        print("    - none")
+    print("  tests:")
+    test_lines = asset_test_lines(asset_view, project_root)
     if test_lines:
         for line in test_lines:
-            print(f"  - {line}")
+            print(f"    - {line}")
     else:
-        print("  - none")
+        print("    - none")
+    print()
+    print("materialized:")
+    print(f"  exists: {'yes' if asset_view.exists else 'no'}")
+    if not asset_view.exists:
+        return
+    print(f"  rows: {asset_view.row_count}")
+    print("  columns:")
+    for column in asset_view.columns:
+        print(f"    - {column.name}: {column.data_type}")
     print()
     print("sample:")
-    with db_connection(read_only=True) as conn:
-        if not table_exists(conn, asset.schema, asset.name):
-            print("  not materialized")
-            return
-        cursor = conn.execute(f"select * from {asset.key} limit {sample_rows}")
-        rows = cursor.fetchall()
-        columns = [description[0] for description in cursor.description]
-    for line in render_text_table(columns, rows, lowercase_bools=True):
+    for line in render_text_table(
+        list(asset_view.sample_columns),
+        list(asset_view.sample_rows),
+        lowercase_bools=True,
+    ):
         print(f"  {line}")
+
+
+def asset_test_lines(asset_view: AssetView, project_root: Path) -> list[str]:
+    asset = asset_view.asset
+    lines = [
+        *(f"not_null: {column}" for column in asset.tests.not_null),
+        *(f"unique: {column}" for column in asset.tests.unique),
+        *(f"assert: {assertion}" for assertion in asset.tests.assertions),
+        *(
+            f"custom: {custom_test.path.relative_to(project_root).as_posix()}"
+            for custom_test in asset_view.custom_tests
+        ),
+    ]
+    return lines

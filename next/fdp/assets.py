@@ -31,15 +31,19 @@ METADATA_LINE_RE = re.compile(
 
 PARSE_ASSETS_LABEL = "parse asset files and metadata"
 UNIQUE_ASSET_KEYS_LABEL = "validate unique asset keys"
+METADATA_MODEL_LABEL = "validate metadata model"
 PYTHON_ENTRYPOINTS_LABEL = "validate python asset entrypoints"
 DEPENDENCIES_LABEL = "validate dependencies"
+CUSTOM_SQL_TESTS_LABEL = "parse custom sql tests"
 DEPENDENCY_ORDERING_LABEL = "validate dependency ordering"
 CHECK_STATUS_WIDTH = (
     max(
         len(PARSE_ASSETS_LABEL),
         len(UNIQUE_ASSET_KEYS_LABEL),
+        len(METADATA_MODEL_LABEL),
         len(PYTHON_ENTRYPOINTS_LABEL),
         len(DEPENDENCIES_LABEL),
+        len(CUSTOM_SQL_TESTS_LABEL),
         len(DEPENDENCY_ORDERING_LABEL),
     )
     + 8
@@ -57,6 +61,13 @@ class AssetTests:
     not_null: tuple[str, ...]
     unique: tuple[str, ...]
     assertions: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class CustomSqlTest:
+    asset_key: str
+    name: str
+    path: Path
 
 
 @dataclass(frozen=True)
@@ -80,6 +91,7 @@ class LoadedAssets:
     assets: dict[str, Asset]
     graph: dict[str, tuple[str, ...]]
     ordered_keys: tuple[str, ...]
+    custom_tests_by_asset: dict[str, tuple[CustomSqlTest, ...]]
 
 
 def load_assets(
@@ -101,6 +113,11 @@ def load_assets(
         lambda: index_assets(asset_list),
     )
     run_validation_step(
+        METADATA_MODEL_LABEL,
+        reporter,
+        lambda: validate_metadata_model(asset_list),
+    )
+    run_validation_step(
         PYTHON_ENTRYPOINTS_LABEL,
         reporter,
         lambda: validate_python_asset_entrypoints(assets.values()),
@@ -109,6 +126,11 @@ def load_assets(
         DEPENDENCIES_LABEL,
         reporter,
         lambda: dependency_graph(assets),
+    )
+    custom_tests_by_asset = run_validation_step(
+        CUSTOM_SQL_TESTS_LABEL,
+        reporter,
+        lambda: collect_custom_sql_tests(root, assets),
     )
     selected_keys = tuple(sorted(resolve_selection(requested_names, assets, graph)))
     ordered_keys = tuple(
@@ -123,6 +145,7 @@ def load_assets(
         assets=assets,
         graph=graph,
         ordered_keys=ordered_keys,
+        custom_tests_by_asset=custom_tests_by_asset,
     )
 
 
@@ -178,6 +201,69 @@ def asset_files(assets_root: Path) -> list[Path]:
             continue
         paths.append(path)
     return sorted(paths)
+
+
+def custom_sql_test_files(assets_root: Path) -> list[Path]:
+    return sorted(assets_root.rglob("*.test.sql"))
+
+
+def validate_metadata_model(assets: Iterable[Asset]) -> None:
+    for asset in assets:
+        if asset.schema != "main":
+            continue
+        if asset.columns:
+            continue
+        raise ValueError(
+            f"Main asset {asset.key} must define asset.column metadata in {asset.path}"
+        )
+
+
+def collect_custom_sql_tests(
+    assets_root: Path,
+    assets: dict[str, Asset],
+) -> dict[str, tuple[CustomSqlTest, ...]]:
+    tests_by_asset = {asset_key: [] for asset_key in assets}
+    for path in custom_sql_test_files(assets_root):
+        asset_key, test_name = custom_sql_test_identity(path, assets_root)
+        if asset_key not in assets:
+            raise ValueError(f"Unknown asset '{asset_key}' referenced in {path}")
+        tests_by_asset[asset_key].append(
+            CustomSqlTest(asset_key=asset_key, name=test_name, path=path)
+        )
+    return {asset_key: tuple(tests) for asset_key, tests in tests_by_asset.items()}
+
+
+def custom_sql_test_identity(path: Path, assets_root: Path) -> tuple[str, str]:
+    relative_path = path.relative_to(assets_root)
+    if len(relative_path.parts) < 2:
+        raise ValueError(
+            f"Data test path must include a schema folder under assets: {path}"
+        )
+
+    schema = relative_path.parts[0]
+    validate_identifier(schema, "schema", path)
+    asset_name, separator, test_name = path.name.removesuffix(".test.sql").partition(
+        "__"
+    )
+    if not separator or not test_name:
+        raise ValueError(
+            f"Invalid data test file name '{path}'. Expected asset__name.test.sql"
+        )
+
+    validate_identifier(asset_name, "table", path)
+    validate_identifier(test_name, "test", path)
+    asset_key = f"{schema}.{asset_name}"
+    validate_asset_reference(asset_key, path)
+    return asset_key, test_name
+
+
+def read_custom_sql_test_query(path: Path) -> str:
+    query = path.read_text(encoding="utf-8").strip()
+    if not query:
+        raise ValueError(f"Data test file is empty: {path}")
+    if query.endswith(";"):
+        return query[:-1].rstrip()
+    return query
 
 
 def asset_from_path(path: Path, assets_root: Path) -> Asset:
