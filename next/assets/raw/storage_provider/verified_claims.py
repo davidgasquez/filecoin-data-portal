@@ -1,6 +1,7 @@
 # ruff: noqa: E501
-# asset.description = Daily verified claim metrics by Filecoin storage provider, derived from verified registry ClaimAllocations execution traces in Lily BigQuery.
+# asset.description = Daily verified claim metrics by Filecoin storage provider.
 # asset.materialization = custom
+# asset.depends = raw.verified_registry_claims
 # asset.column = date | UTC day when verified data was successfully claimed/onboarded.
 # asset.column = provider_id | Filecoin storage provider miner actor id address.
 # asset.column = verified_data_onboarded_tibs | Sum of verified piece sizes claimed by the provider on the day, in tebibytes.
@@ -15,51 +16,24 @@
 # asset.assert = verified_claims >= 0
 # asset.assert = unique_verified_clients >= 0
 
-from fdp.bigquery import materialize_query
+from fdp.api import db_connection
 
 ASSET_KEY = "raw.storage_provider_verified_claims"
 SCHEMA = "raw"
 QUERY = """
-with verified_registry_claims as (
-    select
-        date(timestamp_seconds((v.height * 30) + 1598306400)) as date,
-        v.`from` as provider_id,
-        concat('f0', json_extract_scalar(claim, '$.Client')) as client_id,
-        cast(json_extract_scalar(claim, '$.Size') as int64) as piece_size_bytes
-    from `lily-data.lily.vm_messages` as v
-    cross join unnest(coalesce(json_extract_array(v.params, '$.Sectors'), array<string>[])) as sector
-    cross join unnest(coalesce(json_extract_array(sector, '$.Claims'), array<string>[])) as claim
-    where v.`to` = 'f06'
-      and v.method = 9
-      and v.exit_code = 0
-      and json_extract_scalar(claim, '$.Client') is not null
-
-    union all
-
-    select
-        date(timestamp_seconds((v.height * 30) + 1598306400)) as date,
-        v.`from` as provider_id,
-        concat('f0', json_extract_scalar(sector, '$.Client')) as client_id,
-        cast(json_extract_scalar(sector, '$.Size') as int64) as piece_size_bytes
-    from `lily-data.lily.vm_messages` as v
-    cross join unnest(coalesce(json_extract_array(v.params, '$.Sectors'), array<string>[])) as sector
-    where v.`to` = 'f06'
-      and v.method = 9
-      and v.exit_code = 0
-      and json_extract_scalar(sector, '$.Client') is not null
-      and array_length(coalesce(json_extract_array(sector, '$.Claims'), array<string>[])) = 0
-)
 select
-    date,
-    provider_id,
-    cast(sum(piece_size_bytes) as float64) / pow(1024, 4) as verified_data_onboarded_tibs,
+    date(to_timestamp((claim_epoch * 30) + 1598306400)) as date,
+    'f0' || cast(provider_id as varchar) as provider_id,
+    cast(sum(piece_size_bytes) as double) / power(1024, 4) as verified_data_onboarded_tibs,
     count(*) as verified_claims,
     count(distinct client_id) as unique_verified_clients
-from verified_registry_claims
+from raw.verified_registry_claims
 group by 1, 2
 order by 1, 2
 """.strip()
 
 
 def verified_claims() -> None:
-    materialize_query(ASSET_KEY, QUERY, schema=SCHEMA)
+    with db_connection() as conn:
+        conn.execute(f"create schema if not exists {SCHEMA}")
+        conn.execute(f"create or replace table {ASSET_KEY} as {QUERY}")
