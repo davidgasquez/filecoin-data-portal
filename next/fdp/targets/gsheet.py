@@ -4,12 +4,15 @@ from typing import Any
 
 import duckdb
 import gspread
+from gspread.utils import rowcol_to_a1
 
 from fdp.assets import Asset
 from fdp.google import credentials_from_env
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SPREADSHEET_ID_ENV_VAR = "FDP_GSHEET_SPREADSHEET_ID"
+MAX_EXPORT_ROWS = 100_000
+UPDATE_CHUNK_ROWS = 10_000
 
 
 def publish(assets: list[Asset], conn: duckdb.DuckDBPyConnection) -> None:
@@ -65,7 +68,7 @@ def publish_asset(
     )
     worksheet.clear()
     worksheet.resize(rows=sheet_rows, cols=sheet_cols)
-    worksheet.update(values=[columns, *rows], range_name="A1", raw=True)
+    update_worksheet(worksheet, columns, rows)
     return len(rows)
 
 
@@ -86,12 +89,30 @@ def asset_rows(
     conn: duckdb.DuckDBPyConnection,
     asset: Asset,
 ) -> tuple[list[str], list[list[Any]]]:
-    cursor = conn.execute(f"select * from {asset.key}")
+    cursor = conn.execute(f"select * from {asset.key} limit 0")
     columns = [description[0] for description in cursor.description]
     if not columns:
         raise ValueError(f"Asset has no columns: {asset.key}")
+
+    # Main assets are materialized in the intended presentation order, so a
+    # simple LIMIT keeps the most relevant rows when a worksheet must be capped.
+    cursor = conn.execute(f"select * from {asset.key} limit {MAX_EXPORT_ROWS}")
     rows = [[serialize_cell(value) for value in row] for row in cursor.fetchall()]
     return columns, rows
+
+
+def update_worksheet(
+    worksheet: gspread.Worksheet,
+    columns: list[str],
+    rows: list[list[Any]],
+) -> None:
+    worksheet.update(values=[columns], range_name="A1", raw=True)
+    for offset in range(0, len(rows), UPDATE_CHUNK_ROWS):
+        chunk = rows[offset : offset + UPDATE_CHUNK_ROWS]
+        start_row = offset + 2
+        end_row = start_row + len(chunk) - 1
+        range_name = f"A{start_row}:{rowcol_to_a1(end_row, len(columns))}"
+        worksheet.update(values=chunk, range_name=range_name, raw=True)
 
 
 def serialize_cell(value: Any) -> Any:
