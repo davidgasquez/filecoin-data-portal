@@ -6,21 +6,93 @@ from types import ModuleType
 
 import polars as pl
 
-from fdp.api import db_connection, table_exists
+from fdp.api import (
+    db_connection,
+    quote_identifier,
+    quote_table_key,
+    replace_table_arrow,
+    replace_table_frame,
+    table_exists,
+)
 from fdp.assets import Asset, LoadedAssets, load_assets, python_asset_function_name
 from fdp.inspect import validate_materialized_asset
+from fdp.resources.bigquery import lily as lily_bigquery
 
 
 def materialize(
-    names: Iterable[str] | None = None,
+    selectors: Iterable[str] | None = None,
     *,
     include_dependencies: bool = False,
 ) -> None:
-    loaded = load_assets(names, include_dependencies=include_dependencies)
+    resolved_selectors = expand_materialize_selectors(
+        None if selectors is None else list(selectors)
+    )
+    loaded = load_assets(
+        resolved_selectors,
+        include_dependencies=include_dependencies,
+    )
     if not include_dependencies:
         validate_materialized_dependencies(loaded)
     assets = [loaded.assets[key] for key in loaded.ordered_keys]
     materialize_assets(assets)
+
+
+def expand_materialize_selectors(
+    selectors: list[str] | None,
+) -> list[str] | None:
+    if not selectors:
+        return selectors
+
+    loaded = load_assets()
+    folder_index = materialize_folder_index(loaded)
+    selected_keys: list[str] = []
+    seen: set[str] = set()
+    unknown_selectors: list[str] = []
+
+    for selector in selectors:
+        exact_match = selector in loaded.assets
+        folder_matches = folder_index.get(selector, ())
+
+        if exact_match and folder_matches:
+            raise ValueError(
+                f"Ambiguous materialize selector '{selector}': matches both an "
+                "asset key and an asset folder"
+            )
+
+        if exact_match:
+            matched_keys = (selector,)
+        elif folder_matches:
+            matched_keys = folder_matches
+        else:
+            unknown_selectors.append(selector)
+            continue
+
+        for key in matched_keys:
+            if key in seen:
+                continue
+            seen.add(key)
+            selected_keys.append(key)
+
+    if unknown_selectors:
+        raise ValueError(
+            f"Unknown asset or folder selectors: {', '.join(sorted(unknown_selectors))}"
+        )
+
+    return selected_keys
+
+
+def materialize_folder_index(loaded: LoadedAssets) -> dict[str, tuple[str, ...]]:
+    folder_index: dict[str, list[str]] = {}
+    for asset in loaded.assets.values():
+        relative_path = asset.path.relative_to(loaded.assets_root)
+        folder_parts = relative_path.parent.parts
+        for index in range(1, len(folder_parts) + 1):
+            selector = ".".join(folder_parts[:index])
+            folder_index.setdefault(selector, []).append(asset.key)
+    return {
+        selector: tuple(sorted(asset_keys))
+        for selector, asset_keys in folder_index.items()
+    }
 
 
 def validate_materialized_dependencies(loaded: LoadedAssets) -> None:
@@ -114,9 +186,27 @@ def materialize_sql(asset: Asset) -> None:
     if not query:
         raise ValueError(f"SQL asset is empty: {asset.path}")
 
+    if asset.resource is None:
+        materialize_local_sql(asset, query)
+        return
+    if asset.resource == "bigquery.lily":
+        materialize_remote_sql(asset, query)
+        return
+    raise ValueError(f"Unsupported SQL resource: {asset.resource}")
+
+
+def materialize_local_sql(asset: Asset, query: str) -> None:
+    quoted_asset_key = quote_table_key(asset.schema, asset.name)
     with db_connection() as conn:
-        conn.execute(f"create schema if not exists {asset.schema}")
-        conn.execute(f"create or replace table {asset.key} as {query}")
+        conn.execute(f"create schema if not exists {quote_identifier(asset.schema)}")
+        conn.execute(f"create or replace table {quoted_asset_key} as {query}")
+        validate_materialized_asset(conn, asset)
+        apply_asset_comments(conn, asset)
+
+
+def materialize_remote_sql(asset: Asset, query: str) -> None:
+    replace_table_arrow(asset.key, lily_bigquery.query_arrow(query))
+    with db_connection() as conn:
         validate_materialized_asset(conn, asset)
         apply_asset_comments(conn, asset)
 
@@ -153,22 +243,25 @@ def materialize_python(asset: Asset) -> None:
 
 
 def materialize_polars_frame(asset: Asset, frame: pl.DataFrame) -> None:
+    replace_table_frame(asset.key, frame)
     with db_connection() as conn:
-        conn.execute(f"create schema if not exists {asset.schema}")
-        conn.register("frame", frame)
-        conn.execute(f"create or replace table {asset.key} as select * from frame")
         validate_materialized_asset(conn, asset)
         apply_asset_comments(conn, asset)
 
 
 def apply_asset_comments(conn, asset: Asset) -> None:
+    quoted_asset_key = quote_table_key(asset.schema, asset.name)
     if asset.description:
         escaped = asset.description.replace("'", "''")
-        conn.execute(f"comment on table {asset.key} is '{escaped}'")
+        conn.execute(f"comment on table {quoted_asset_key} is '{escaped}'")
 
     for column in asset.columns:
         escaped = column.description.replace("'", "''")
-        conn.execute(f"comment on column {asset.key}.{column.name} is '{escaped}'")
+        conn.execute(
+            "comment on column "
+            f"{quoted_asset_key}.{quote_identifier(column.name)} "
+            f"is '{escaped}'"
+        )
 
 
 def load_module(module_path: Path) -> ModuleType:

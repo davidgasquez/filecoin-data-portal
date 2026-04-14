@@ -1,15 +1,9 @@
-# asset.description = Daily Filecoin onchain activity by method from Lily BigQuery.
+-- asset.description = Daily Filecoin onchain activity by method from Lily BigQuery.
+-- asset.resource = bigquery.lily
 
-# asset.materialization = custom
+-- asset.not_null = date
+-- asset.not_null = method
 
-# asset.not_null = date
-# asset.not_null = method
-
-from fdp.bigquery import materialize_query
-
-ASSET_KEY = "raw.daily_network_activity_by_method"
-SCHEMA = "raw"
-QUERY = """
 select
     date(timestamp_seconds((height * 30) + 1598306400)) as date,
     concat(
@@ -29,14 +23,9 @@ select
             + cast(miner_tip as numeric)
         ) / 1e18
     ) as total_gas_fee_fil
-from `lily-data.lily.derived_gas_outputs` as g
-left join `lily-data.lily.actor_methods` as m
+from `derived_gas_outputs` as g
+left join `actor_methods` as m
     on g.method = m.method
    and regexp_extract(g.actor_name, r'[^/]+$') = m.family
 group by 1, 2
 order by 1 desc, 4 desc
-""".strip()
-
-
-def network_activity_by_method() -> None:
-    materialize_query(ASSET_KEY, QUERY, schema=SCHEMA)

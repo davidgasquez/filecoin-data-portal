@@ -9,14 +9,14 @@ def show_asset(name: str, sample_rows: int = 5) -> None:
     if sample_rows < 1:
         raise ValueError("sample_rows must be at least 1")
 
-    loaded = load_assets([name])
+    loaded = load_assets([name], include_dependencies=False)
     asset_view = inspect_assets(
         loaded,
         asset_keys=[name],
         include_row_count=True,
         sample_rows=sample_rows,
     )[0]
-    print_asset_view(asset_view, loaded.root.parent)
+    print_asset_view(asset_view, loaded.project_root)
 
 
 def print_asset_view(asset_view: AssetView, project_root: Path) -> None:

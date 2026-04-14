@@ -1,20 +1,14 @@
-# asset.description = Daily Filecoin sector lifecycle bytes from sector events.
+-- asset.description = Daily Filecoin sector lifecycle bytes from sector events.
+-- asset.resource = bigquery.lily
 
-# asset.materialization = custom
+-- asset.not_null = date
+-- asset.unique = date
 
-# asset.not_null = date
-# asset.unique = date
-
-from fdp.bigquery import materialize_query
-
-ASSET_KEY = "raw.daily_sector_lifecycle"
-SCHEMA = "raw"
-QUERY = """
 with miner_sizes as (
     select
         miner_id,
         max(cast(sector_size as int64)) as sector_size
-    from `lily-data.lily.miner_infos`
+    from `miner_infos`
     where cast(sector_size as int64) > 0
     group by 1
 )
@@ -52,7 +46,7 @@ select
     ) as removed_bytes,
     countif(e.event in ('SECTOR_TERMINATED', 'SECTOR_EXPIRED'))
         as removed_sectors
-from `lily-data.lily.miner_sector_events` as e
+from `miner_sector_events` as e
 join miner_sizes as ms
     using (miner_id)
 where e.event in (
@@ -63,8 +57,3 @@ where e.event in (
 )
 group by 1
 order by 1
-""".strip()
-
-
-def sector_lifecycle() -> None:
-    materialize_query(ASSET_KEY, QUERY, schema=SCHEMA)

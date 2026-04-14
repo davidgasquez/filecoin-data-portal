@@ -5,7 +5,7 @@ from graphlib import CycleError, TopologicalSorter
 from pathlib import Path
 from typing import Literal
 
-from fdp.api import find_assets_root
+from fdp.api import find_project_root
 
 AssetKind = Literal["python", "sql"]
 PythonMaterialization = Literal["dataframe", "custom"]
@@ -21,7 +21,9 @@ SUPPORTED_METADATA_KEYS = {
     "assert",
     "column",
     "materialization",
+    "resource",
 }
+VALID_SQL_RESOURCES = {"bigquery.lily"}
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 METADATA_LINE_RE = re.compile(
     r"asset\.(?P<key>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?P<value>.*)"
@@ -74,6 +76,7 @@ class Asset:
     path: Path
     kind: AssetKind
     python_materialization: PythonMaterialization | None
+    resource: str | None
     depends: tuple[str, ...]
     description: str | None
     columns: tuple[AssetColumn, ...]
@@ -82,26 +85,30 @@ class Asset:
 
 @dataclass(frozen=True)
 class LoadedAssets:
-    root: Path
+    project_root: Path
     assets: dict[str, Asset]
     graph: dict[str, tuple[str, ...]]
     ordered_keys: tuple[str, ...]
     custom_tests_by_asset: dict[str, tuple[CustomSqlTest, ...]]
 
+    @property
+    def assets_root(self) -> Path:
+        return self.project_root / "assets"
+
 
 def load_assets(
     names: Iterable[str] | None = None,
     *,
-    assets_root: Path | None = None,
     reporter: ValidationReporter | None = None,
     include_dependencies: bool = True,
 ) -> LoadedAssets:
     requested_names = None if names is None else list(names)
-    root = assets_root or find_assets_root()
+    project_root = find_project_root()
+    assets_root = project_root / "assets"
     asset_list = run_validation_step(
         PARSE_ASSETS_LABEL,
         reporter,
-        lambda: collect_assets(root),
+        lambda: collect_assets(assets_root),
     )
     assets = run_validation_step(
         UNIQUE_ASSET_KEYS_LABEL,
@@ -121,7 +128,7 @@ def load_assets(
     custom_tests_by_asset = run_validation_step(
         CUSTOM_SQL_TESTS_LABEL,
         reporter,
-        lambda: collect_custom_sql_tests(root, assets),
+        lambda: collect_custom_sql_tests(assets_root, assets),
     )
     selected_keys = tuple(
         sorted(
@@ -141,7 +148,7 @@ def load_assets(
         )
     )
     return LoadedAssets(
-        root=root,
+        project_root=project_root,
         assets=assets,
         graph=graph,
         ordered_keys=ordered_keys,
@@ -153,39 +160,20 @@ def check_assets() -> None:
     load_assets(reporter=print_check_status)
 
 
-def discover_assets(assets_root: Path) -> dict[str, Asset]:
-    return load_assets(assets_root=assets_root).assets
+def discover_assets() -> dict[str, Asset]:
+    return load_assets().assets
 
 
-def schema_assets(
-    schema: str,
-    *,
-    assets_root: Path | None = None,
-) -> list[Asset]:
-    root = assets_root or find_assets_root()
-    assets = discover_assets(root)
+def schema_assets(schema: str) -> list[Asset]:
+    assets = discover_assets()
     return sorted(
         (asset for asset in assets.values() if asset.schema == schema),
         key=lambda asset: asset.key,
     )
 
 
-def main_assets(*, assets_root: Path | None = None) -> list[Asset]:
-    return schema_assets("main", assets_root=assets_root)
-
-
-def ordered_assets(
-    names: Iterable[str] | None = None,
-    reporter: ValidationReporter | None = None,
-    *,
-    include_dependencies: bool = True,
-) -> list[Asset]:
-    loaded = load_assets(
-        names,
-        reporter=reporter,
-        include_dependencies=include_dependencies,
-    )
-    return [loaded.assets[key] for key in loaded.ordered_keys]
+def main_assets() -> list[Asset]:
+    return schema_assets("main")
 
 
 def collect_assets(assets_root: Path) -> list[Asset]:
@@ -279,6 +267,7 @@ def asset_from_path(path: Path, assets_root: Path) -> Asset:
     ensure_asset_body(body_lines, path)
     schema, name = asset_identity_from_path(path, assets_root)
     python_materialization = parse_python_materialization(kind, metadata, path)
+    resource = parse_asset_resource(kind, metadata, path)
 
     return Asset(
         name=name,
@@ -287,6 +276,7 @@ def asset_from_path(path: Path, assets_root: Path) -> Asset:
         path=path,
         kind=kind,
         python_materialization=python_materialization,
+        resource=resource,
         depends=tuple(parse_dependencies(metadata.get("depends", []), path)),
         description=optional_metadata_value(metadata, "description", path),
         columns=tuple(parse_columns(metadata.get("column", []), path)),
@@ -543,6 +533,31 @@ def parse_python_materialization(
         f"Unsupported asset.materialization '{materialization}' in {path}. "
         "Expected dataframe or custom."
     )
+
+
+def parse_asset_resource(
+    kind: AssetKind,
+    metadata: dict[str, list[str]],
+    path: Path,
+) -> str | None:
+    values = metadata.get("resource", [])
+    if not values:
+        return None
+    if kind != "sql":
+        raise ValueError(f"asset.resource is only supported on SQL assets: {path}")
+    if len(values) != 1:
+        raise ValueError(f"asset.resource must appear once in {path}")
+
+    resource = values[0].strip()
+    if not resource:
+        raise ValueError(f"asset.resource must have a value in {path}")
+    if resource not in VALID_SQL_RESOURCES:
+        known_resources = ", ".join(sorted(VALID_SQL_RESOURCES))
+        raise ValueError(
+            f"Unsupported asset.resource '{resource}' in {path}. "
+            f"Expected one of: {known_resources}."
+        )
+    return resource
 
 
 def python_asset_function_name(path: Path) -> str:

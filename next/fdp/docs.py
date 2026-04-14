@@ -2,6 +2,7 @@ import csv
 import io
 from pathlib import Path
 
+from fdp.api import default_docs_path
 from fdp.assets import load_assets
 from fdp.inspect import AssetView, inspect_assets
 from fdp.tabular import format_cell
@@ -9,7 +10,10 @@ from fdp.tabular import format_cell
 PUBLIC_DATASETS_BASE_URL = "https://data.filecoindataportal.xyz"
 
 
-def generate_docs(out_path: Path | str, sample_rows: int = 10) -> None:
+def generate_docs(
+    out_path: Path | str | None = None,
+    sample_rows: int = 10,
+) -> None:
     if sample_rows < 1:
         raise ValueError("sample_rows must be at least 1")
 
@@ -27,7 +31,8 @@ def generate_docs(out_path: Path | str, sample_rows: int = 10) -> None:
         include_row_count=True,
         sample_rows=sample_rows,
     )
-    write_docs(Path(out_path), loaded.root.parent, asset_views)
+    destination = default_docs_path() if out_path is None else Path(out_path)
+    write_docs(destination, loaded.project_root, asset_views)
 
 
 def write_docs(

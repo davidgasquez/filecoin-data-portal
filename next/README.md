@@ -12,7 +12,10 @@ The `fdp/` folder contains the CLI and lightweight orchestrator while the `asset
 - `uv run fdp list`
 - `uv run fdp check`
 - `uv run fdp materialize`
+- `uv run fdp materialize main`
+- `uv run fdp materialize main.beta`
 - `uv run fdp materialize raw.some_asset`
+- `uv run fdp materialize --with-deps main.beta`
 - `uv run fdp materialize --with-deps raw.some_asset`
 - `uv run fdp status`
 - `uv run fdp prune`
@@ -23,16 +26,14 @@ The `fdp/` folder contains the CLI and lightweight orchestrator while the `asset
 - `uv run fdp show raw.daily_network_activity_by_method`
 - `uv run fdp query "select * from raw.daily_network_activity_by_method limit 10"`
 
-DuckDB lives at `fdp.duckdb` in the current working directory by default. Override it with `FDP_DB_PATH`.
-When you pass explicit asset names to `fdp materialize`, FDP refreshes only those assets by default and expects their dependencies to already be materialized. Use `--with-deps` to refresh the full dependency closure.
+FDP detects the project root from the nearest parent containing `assets/`. By default, DuckDB lives at `<project>/fdp.duckdb` and `fdp docs` writes to `<project>/build/docs`.
+When you pass explicit asset keys or folder selectors to `fdp materialize`, FDP refreshes only the matched assets by default and expects their dependencies to already be materialized. Use `--with-deps` to refresh the full dependency closure. Folder selectors map to folders under `assets/`, so `main` selects `assets/main/**` and `main.beta` selects `assets/main/beta/**`.
 
 ## ⚙️ Development
 
 You can run the Filecoin Data Portal anywhere using `uv`. You'll need the following secrets in your environment:
 
 - `ENCODED_GOOGLE_APPLICATION_CREDENTIALS` (base64-encoded Google service account JSON)
-- `FDP_BIGQUERY_PROJECT`
-- `FDP_BIGQUERY_LOCATION`
 - `FDP_R2_ACCESS_KEY_ID`
 - `FDP_R2_SECRET_ACCESS_KEY`
 - `FDP_R2_ACCOUNT_ID`

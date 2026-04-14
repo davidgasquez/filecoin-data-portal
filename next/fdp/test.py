@@ -22,7 +22,7 @@ def test_assets(sample_rows: int = 10) -> None:
 
     loaded = load_assets()
     asset_views = inspect_assets(loaded, require_materialized=True)
-    tests = collect_data_tests(asset_views, loaded.root.parent)
+    tests = collect_data_tests(asset_views, loaded.project_root)
     if not tests:
         print("No data tests found.", flush=True)
         return

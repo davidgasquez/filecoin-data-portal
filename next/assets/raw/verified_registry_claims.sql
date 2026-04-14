@@ -1,39 +1,33 @@
-# asset.description = Successful verified registry claims extracted from
-# parseable ClaimAllocations messages in Lily BigQuery.
+-- asset.description = Successful verified registry claims extracted from
+-- parseable ClaimAllocations messages in Lily BigQuery.
+-- asset.resource = bigquery.lily
 
-# asset.materialization = custom
+-- asset.column = claim_epoch | Chain epoch when the verified claim was
+-- executed.
+-- asset.column = provider_id | Storage provider actor ID as an integer.
+-- asset.column = sector_number | Sector number containing the claimed verified
+-- data.
+-- asset.column = sector_expiry | Sector expiration epoch recorded on the claim
+-- message.
+-- asset.column = client_id | Verified client actor ID as an integer.
+-- asset.column = allocation_id | Verified allocation ID claimed by the
+-- provider.
+-- asset.column = piece_size_bytes | Verified piece size claimed in bytes.
 
-# asset.column = claim_epoch | Chain epoch when the verified claim was
-# executed.
-# asset.column = provider_id | Storage provider actor ID as an integer.
-# asset.column = sector_number | Sector number containing the claimed verified
-# data.
-# asset.column = sector_expiry | Sector expiration epoch recorded on the claim
-# message.
-# asset.column = client_id | Verified client actor ID as an integer.
-# asset.column = allocation_id | Verified allocation ID claimed by the
-# provider.
-# asset.column = piece_size_bytes | Verified piece size claimed in bytes.
+-- asset.not_null = claim_epoch
+-- asset.not_null = provider_id
+-- asset.not_null = sector_number
+-- asset.not_null = sector_expiry
+-- asset.not_null = client_id
+-- asset.not_null = allocation_id
+-- asset.not_null = piece_size_bytes
 
-# asset.not_null = claim_epoch
-# asset.not_null = provider_id
-# asset.not_null = sector_number
-# asset.not_null = sector_expiry
-# asset.not_null = client_id
-# asset.not_null = allocation_id
-# asset.not_null = piece_size_bytes
-
-from fdp.bigquery import materialize_query
-
-ASSET_KEY = "raw.verified_registry_claims"
-SCHEMA = "raw"
-QUERY = """
 with claim_messages as (
     select
         v.height as claim_epoch,
         cast(substr(v.`from`, 3) as int64) as provider_id,
         json_extract_array(v.params, '$.Sectors') as sectors
-    from `lily-data.lily.vm_messages` as v
+    from `vm_messages` as v
     where v.`to` = 'f06'
       and v.method = 9
       and v.exit_code = 0
@@ -108,8 +102,3 @@ select
     allocation_id,
     piece_size_bytes
 from claims_flat
-""".strip()
-
-
-def verified_registry_claims() -> None:
-    materialize_query(ASSET_KEY, QUERY, schema=SCHEMA)

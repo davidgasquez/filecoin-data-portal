@@ -1,7 +1,6 @@
 import argparse
-from pathlib import Path
 
-from fdp.api import db_connection, find_assets_root
+from fdp.api import db_connection, find_project_root
 from fdp.assets import check_assets, discover_assets
 from fdp.docs import generate_docs
 from fdp.materialize import materialize
@@ -12,7 +11,7 @@ from fdp.test import test_assets
 
 
 def _materialize(args: argparse.Namespace) -> None:
-    materialize(args.assets, include_dependencies=args.with_deps)
+    materialize(args.selectors, include_dependencies=args.with_deps)
 
 
 def _check(_: argparse.Namespace) -> None:
@@ -20,14 +19,14 @@ def _check(_: argparse.Namespace) -> None:
 
 
 def _list_assets(_: argparse.Namespace) -> None:
-    assets_root = find_assets_root()
-    assets = discover_assets(assets_root)
+    project_root = find_project_root()
+    assets = discover_assets()
     if not assets:
         print("No assets found.")
         return
     for key in sorted(assets):
         asset = assets[key]
-        rel_path = asset.path.relative_to(assets_root)
+        rel_path = asset.path.relative_to(project_root)
         print(f"- {asset.key} [{asset.kind}] ({rel_path})")
         if asset.description:
             print(f"  description: {asset.description}")
@@ -37,7 +36,7 @@ def _list_assets(_: argparse.Namespace) -> None:
 
 
 def _docs(args: argparse.Namespace) -> None:
-    generate_docs(Path(args.out), sample_rows=args.sample_rows)
+    generate_docs(args.out, sample_rows=args.sample_rows)
 
 
 def _status(_: argparse.Namespace) -> None:
@@ -80,23 +79,28 @@ def main() -> None:
         "materialize",
         help="Refresh assets in DuckDB.",
         description=(
-            "Refresh assets in DuckDB. With explicit asset names, refreshes only "
-            "those assets by default. Use --with-deps to refresh transitive "
-            "dependencies too. With no assets, refreshes everything."
+            "Refresh assets in DuckDB. Selectors can be exact asset keys like "
+            "'raw.some_asset' or asset folders like 'main' and 'main.beta'. "
+            "With explicit selectors, refreshes only those assets by default. "
+            "Use --with-deps to refresh transitive dependencies too. With no "
+            "selectors, refreshes everything."
         ),
     )
     materialize_parser.add_argument(
-        "assets",
+        "selectors",
         nargs="*",
-        metavar="ASSET",
-        help="Asset keys to refresh. Defaults to all assets.",
+        metavar="ASSET_OR_FOLDER",
+        help=(
+            "Asset keys or asset folders to refresh. Examples: 'main', "
+            "'main.beta', 'raw.some_asset'. Defaults to all assets."
+        ),
     )
     materialize_parser.add_argument(
         "--with-deps",
         action="store_true",
         help=(
             "Refresh selected assets and their transitive dependencies. By "
-            "default, explicit asset names refresh only those assets."
+            "default, explicit selectors refresh only the matched assets."
         ),
     )
     materialize_parser.set_defaults(func=_materialize)
@@ -131,8 +135,7 @@ def main() -> None:
     )
     docs_parser.add_argument(
         "--out",
-        default="build/docs",
-        help="Output directory. Defaults to build/docs.",
+        help="Output directory. Defaults to <project>/build/docs.",
     )
     docs_parser.add_argument(
         "--sample-rows",

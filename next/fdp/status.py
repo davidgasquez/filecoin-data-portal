@@ -1,15 +1,15 @@
 from fdp.api import (
     db_connection,
-    find_assets_root,
+    find_project_root,
     materialized_tables,
-    quote_identifier,
+    quote_table_key,
 )
 from fdp.assets import discover_assets
 
 
 def show_status() -> None:
-    assets_root = find_assets_root()
-    assets = discover_assets(assets_root)
+    project_root = find_project_root()
+    assets = discover_assets()
     asset_keys = set(assets)
 
     with db_connection(read_only=True) as conn:
@@ -26,7 +26,6 @@ def show_status() -> None:
     if not missing_keys and not orphaned_tables:
         return
 
-    project_root = assets_root.parent
     print(f"assets: {len(assets)}")
     print(f"materialized tables: {len(tables)}")
 
@@ -48,8 +47,7 @@ def show_status() -> None:
 
 
 def prune_tables() -> None:
-    assets_root = find_assets_root()
-    assets = discover_assets(assets_root)
+    assets = discover_assets()
     asset_keys = set(assets)
 
     with db_connection(read_only=True) as conn:
@@ -75,4 +73,4 @@ def table_key(schema: str, name: str) -> str:
 
 
 def quoted_table_key(schema: str, name: str) -> str:
-    return f"{quote_identifier(schema)}.{quote_identifier(name)}"
+    return quote_table_key(schema, name)

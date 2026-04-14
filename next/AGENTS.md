@@ -13,6 +13,7 @@ Guidelines for `fdp`, a minimalistic and functional open data platform to help g
 - Quick feedback cycles (run assets locally, immediately results, easy to debug)
 - No backward compatibility constraints, don't care about regressions, old schemas, ...
 - Clean and concise [documentation](./docs)
+- This is a POC, breaking changes are ok. Goal is the simplest possible code
 
 ## Code
 
