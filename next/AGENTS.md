@@ -11,7 +11,7 @@ Guidelines for `fdp`, a minimalistic and functional open data platform to help g
 - Everything as text/code, everything versioned
 - Colocated assets, metadata, tests, and documentation
 - Quick feedback cycles (run assets locally, immediately results, easy to debug)
-- No backward compatibility constraints
+- No backward compatibility constraints, don't care about regressions, old schemas, ...
 - Clean and concise [documentation](./docs)
 
 ## Code
