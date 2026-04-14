@@ -22,6 +22,7 @@ def query_arrow(
     job_config = bigquery.QueryJobConfig(
         priority=bigquery.QueryPriority.BATCH,
         allow_large_results=True,
+        use_query_cache=True,
     )
     query_job = client.query(query, job_config=job_config)
     return query_job.to_arrow(create_bqstorage_client=True)
