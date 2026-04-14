@@ -4,10 +4,10 @@ version = "1.0.0"
 authors = [{ name = "David Gasquez" }]
 dependencies = [
     "altair>=6.0.0",
-    "dagster>=1.13.0",
-    "dagster-dbt>=0.29.0",
-    "dagster-duckdb-pandas>=0.29.0",
-    "dagster-gcp>=0.29.0",
+    "dagster==1.12.18",
+    "dagster-dbt==0.28.18",
+    "dagster-duckdb-pandas==0.28.18",
+    "dagster-gcp==0.28.18",
     "dbt-core>=1.11.8",
     "dbt-duckdb>=1.10.1",
     "duckdb>=1.5.1",
@@ -27,7 +27,7 @@ license = { text = "MIT" }
 
 [dependency-groups]
 dev = [
-    "dagster-webserver>=1.13.0",
+    "dagster-webserver==1.12.18",
     "ipykernel>=7.2.0",
     "prek>=0.3.8",
     "pyarrow-stubs>=20.0.0.20251215",

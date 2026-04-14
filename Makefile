@@ -1,9 +1,23 @@
 .DEFAULT_GOAL := run
 
+DAGSTER_JOB := uv run dagster job execute -j __ASSET_JOB -m fdp.definitions
+
 .PHONY: run
 run:
 	@uv run dagster-dbt project prepare-and-package --file fdp/dbt/resources.py
-	@uv run dagster job execute -j __ASSET_JOB -m fdp.definitions
+	@$(DAGSTER_JOB)
+
+.PHONY: run-ci
+run-ci:
+	@uv run dagster-dbt project prepare-and-package --file fdp/dbt/resources.py
+	@tmp=$$(mktemp); \
+	printf '%s\n' \
+	  'execution:' \
+	  '  config:' \
+	  '    multiprocess:' \
+	  '      max_concurrent: 2' > $$tmp; \
+	$(DAGSTER_JOB) --config $$tmp; \
+	rm -f $$tmp
 
 .PHONY: dev
 dev:

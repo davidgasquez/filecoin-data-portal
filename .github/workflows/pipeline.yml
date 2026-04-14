@@ -36,4 +36,4 @@ jobs:
         run: uv run python -V
 
       - name: Run
-        run: make run
+        run: make run-ci
