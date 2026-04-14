@@ -46,10 +46,6 @@ def write_docs(
     for path in assets_dir.glob("*.md"):
         path.unlink()
 
-    (out_dir / "index.md").write_text(
-        render_index_markdown(asset_views),
-        encoding="utf-8",
-    )
     (out_dir / "SKILL.md").write_text(
         render_skill_markdown(asset_views, asset_docs_path="assets"),
         encoding="utf-8",
@@ -65,18 +61,6 @@ def write_docs(
         )
 
 
-def render_index_markdown(asset_views: list[AssetView]) -> str:
-    lines = [
-        "# FDP catalog",
-        "",
-        "Generated from `assets/main/` metadata and materialized DuckDB tables.",
-        "",
-        *render_dataset_links(asset_views, asset_docs_path="assets"),
-        "",
-    ]
-    return "\n".join(lines)
-
-
 def render_skill_markdown(asset_views: list[AssetView], *, asset_docs_path: str) -> str:
     lines = [
         "---",
@@ -90,8 +74,6 @@ def render_skill_markdown(asset_views: list[AssetView], *, asset_docs_path: str)
             "Guidelines on how to help users explore and use Filecoin Data Portal "
             "(fdp) datasets."
         ),
-        "",
-        "Generated from `assets/main/` metadata and materialized DuckDB tables.",
         "",
         "## Datasets",
         "",
@@ -121,6 +103,14 @@ def render_skill_markdown(asset_views: list[AssetView], *, asset_docs_path: str)
         "- Mention the used datasets explicitly.",
         "- Inspect columns, types, and sample rows first.",
         "- Offer to plot charts if it makes sense.",
+        "- Clone the repo for deeper exploration if needed.",
+        "",
+        "## Charts & Dashboards",
+        "",
+        "When the user asks for a chart, dashboard, or visualization:",
+        "",
+        "1. Write a self-contained `index.html` using vanilla HTML, CSS, and JS.",
+        "2. Serve it locally and share the URL.",
         "",
     ]
     return "\n".join(lines)
