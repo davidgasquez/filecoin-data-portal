@@ -22,6 +22,8 @@
 - If `asset.column` is present, documented columns must exactly match the materialized columns by name
 - Inline tests (`asset.not_null`, `asset.unique`, `asset.assert`) are declared in the asset header and run against the materialized table
 - Custom SQL tests live under `assets/` as `*.test.sql` files and are attached to assets by path
+- `uv run fdp materialize schema.table` refreshes only the selected assets by default
+- Use `uv run fdp materialize --with-deps schema.table` to refresh their transitive dependency closure too
 
 ## Python assets
 

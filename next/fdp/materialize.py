@@ -6,14 +6,48 @@ from types import ModuleType
 
 import polars as pl
 
-from fdp.api import db_connection
-from fdp.assets import Asset, ordered_assets, python_asset_function_name
+from fdp.api import db_connection, table_exists
+from fdp.assets import Asset, LoadedAssets, load_assets, python_asset_function_name
 from fdp.inspect import validate_materialized_asset
 
 
-def materialize(names: Iterable[str] | None = None) -> None:
-    assets = ordered_assets(names)
+def materialize(
+    names: Iterable[str] | None = None,
+    *,
+    include_dependencies: bool = False,
+) -> None:
+    loaded = load_assets(names, include_dependencies=include_dependencies)
+    if not include_dependencies:
+        validate_materialized_dependencies(loaded)
+    assets = [loaded.assets[key] for key in loaded.ordered_keys]
     materialize_assets(assets)
+
+
+def validate_materialized_dependencies(loaded: LoadedAssets) -> None:
+    selected_keys = set(loaded.ordered_keys)
+    missing_dependencies = sorted({
+        dependency
+        for asset in (loaded.assets[key] for key in loaded.ordered_keys)
+        for dependency in asset.depends
+        if dependency not in selected_keys
+    })
+    if not missing_dependencies:
+        return
+
+    missing_tables: list[str] = []
+    with db_connection() as conn:
+        for dependency_key in missing_dependencies:
+            dependency_asset = loaded.assets[dependency_key]
+            if table_exists(conn, dependency_asset.schema, dependency_asset.name):
+                continue
+            missing_tables.append(dependency_key)
+
+    if missing_tables:
+        raise ValueError(
+            "Cannot materialize selected assets because these dependencies are "
+            f"not materialized: {', '.join(missing_tables)}. Materialize them "
+            "first or rerun with --with-deps."
+        )
 
 
 def materialize_assets(assets: list[Asset]) -> None:

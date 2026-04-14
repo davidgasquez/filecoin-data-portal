@@ -12,7 +12,7 @@ from fdp.test import test_assets
 
 
 def _materialize(args: argparse.Namespace) -> None:
-    materialize(args.assets)
+    materialize(args.assets, include_dependencies=args.with_deps)
 
 
 def _check(_: argparse.Namespace) -> None:
@@ -80,8 +80,9 @@ def main() -> None:
         "materialize",
         help="Refresh assets in DuckDB.",
         description=(
-            "Refresh assets in DuckDB. Defaults to all assets and reruns "
-            "existing assets."
+            "Refresh assets in DuckDB. With explicit asset names, refreshes only "
+            "those assets by default. Use --with-deps to refresh transitive "
+            "dependencies too. With no assets, refreshes everything."
         ),
     )
     materialize_parser.add_argument(
@@ -89,6 +90,14 @@ def main() -> None:
         nargs="*",
         metavar="ASSET",
         help="Asset keys to refresh. Defaults to all assets.",
+    )
+    materialize_parser.add_argument(
+        "--with-deps",
+        action="store_true",
+        help=(
+            "Refresh selected assets and their transitive dependencies. By "
+            "default, explicit asset names refresh only those assets."
+        ),
     )
     materialize_parser.set_defaults(func=_materialize)
 

@@ -94,6 +94,7 @@ def load_assets(
     *,
     assets_root: Path | None = None,
     reporter: ValidationReporter | None = None,
+    include_dependencies: bool = True,
 ) -> LoadedAssets:
     requested_names = None if names is None else list(names)
     root = assets_root or find_assets_root()
@@ -122,12 +123,21 @@ def load_assets(
         reporter,
         lambda: collect_custom_sql_tests(root, assets),
     )
-    selected_keys = tuple(sorted(resolve_selection(requested_names, assets, graph)))
+    selected_keys = tuple(
+        sorted(
+            resolve_selection(
+                requested_names,
+                assets,
+                graph,
+                include_dependencies=include_dependencies,
+            )
+        )
+    )
     ordered_keys = tuple(
         run_validation_step(
             DEPENDENCY_ORDERING_LABEL,
             reporter,
-            lambda: topological_order({key: graph[key] for key in selected_keys}),
+            lambda: topological_order(selected_graph(graph, selected_keys)),
         )
     )
     return LoadedAssets(
@@ -167,8 +177,14 @@ def main_assets(*, assets_root: Path | None = None) -> list[Asset]:
 def ordered_assets(
     names: Iterable[str] | None = None,
     reporter: ValidationReporter | None = None,
+    *,
+    include_dependencies: bool = True,
 ) -> list[Asset]:
-    loaded = load_assets(names, reporter=reporter)
+    loaded = load_assets(
+        names,
+        reporter=reporter,
+        include_dependencies=include_dependencies,
+    )
     return [loaded.assets[key] for key in loaded.ordered_keys]
 
 
@@ -542,6 +558,8 @@ def resolve_selection(
     names: Iterable[str] | None,
     assets: dict[str, Asset],
     graph: dict[str, tuple[str, ...]],
+    *,
+    include_dependencies: bool = True,
 ) -> set[str]:
     if not names:
         selected = set(assets)
@@ -550,6 +568,9 @@ def resolve_selection(
         if unknown:
             raise ValueError(f"Unknown assets: {', '.join(unknown)}")
         selected = set(names)
+
+    if not include_dependencies:
+        return selected
 
     stack = list(selected)
     while stack:
@@ -560,6 +581,18 @@ def resolve_selection(
             selected.add(dependency)
             stack.append(dependency)
     return selected
+
+
+def selected_graph(
+    graph: dict[str, tuple[str, ...]],
+    selected_keys: Iterable[str],
+) -> dict[str, tuple[str, ...]]:
+    ordered_selected = tuple(selected_keys)
+    selected = set(ordered_selected)
+    return {
+        key: tuple(dependency for dependency in graph[key] if dependency in selected)
+        for key in ordered_selected
+    }
 
 
 def topological_order(graph: dict[str, tuple[str, ...]]) -> list[str]:
