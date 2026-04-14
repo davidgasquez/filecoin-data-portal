@@ -30,6 +30,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Restore DuckDB cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            next/fdp.duckdb
+          key: next-duckdb-${{ github.run_id }}
+          restore-keys: |
+            next-duckdb-
+
       - name: Setup uv
         uses: astral-sh/setup-uv@v8
         with:
@@ -49,3 +58,11 @@ jobs:
 
       - name: Publish to R2
         run: uv run fdp publish r2
+
+      - name: Save DuckDB cache
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            next/fdp.duckdb
+          key: next-duckdb-${{ github.run_id }}
