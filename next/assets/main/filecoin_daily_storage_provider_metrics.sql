@@ -6,8 +6,8 @@
 
 -- asset.column = date | UTC day for the provider metrics snapshot.
 -- asset.column = provider_id | Filecoin storage provider miner actor id address.
--- asset.column = raw_power_pibs | End-of-day raw byte power for the provider, in pebibytes.
--- asset.column = quality_adj_power_pibs | End-of-day quality adjusted power for the provider, in pebibytes.
+-- asset.column = raw_power_tibs | End-of-day raw byte power for the provider, in tebibytes.
+-- asset.column = quality_adjusted_power_tibs | End-of-day quality adjusted power for the provider, in tebibytes.
 -- asset.column = has_power | Whether the provider had positive raw or quality adjusted power at end of day.
 -- asset.column = onboarded_tibs | Total raw sector data onboarded by the provider on the day, in tebibytes.
 -- asset.column = onboarded_sectors | Total sectors onboarded by the provider on the day.
@@ -23,8 +23,8 @@
 
 -- asset.not_null = date
 -- asset.not_null = provider_id
--- asset.not_null = raw_power_pibs
--- asset.not_null = quality_adj_power_pibs
+-- asset.not_null = raw_power_tibs
+-- asset.not_null = quality_adjusted_power_tibs
 -- asset.not_null = has_power
 -- asset.not_null = onboarded_tibs
 -- asset.not_null = onboarded_sectors
@@ -48,8 +48,8 @@ with provider_days as (
 select
     provider_days.date,
     provider_days.provider_id,
-    coalesce(power.raw_power_pibs, 0) as raw_power_pibs,
-    coalesce(power.quality_adj_power_pibs, 0) as quality_adj_power_pibs,
+    coalesce(power.raw_power_tibs, 0) as raw_power_tibs,
+    coalesce(power.quality_adjusted_power_tibs, 0) as quality_adjusted_power_tibs,
     coalesce(power.has_power, false) as has_power,
     coalesce(sector_lifecycle.onboarded_tibs, 0) as onboarded_tibs,
     coalesce(sector_lifecycle.onboarded_sectors, 0) as onboarded_sectors,
