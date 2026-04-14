@@ -31,8 +31,8 @@ This repository and [relevant external Filecoin resources](.qmd/index.yml) are i
 Use QMD before `rg` when:
 
 - Starting work related with Filecoin business logic or looking for specific patterns/business logic.
-  - `qmd query -c agents "how does lily handle Y"` before writing some new logic
-  - `qmd query -c agents "how does X work"` before reading random files
+  - `qmd query "how does lily handle Y"` before writing some new logic
+  - `qmd query "how does X work"` before reading random files
 - Searching for concepts. when you know *what* you need but not *where* it lives or what it's called
 
 Additionally, use `rg`/`grep` to explore the actual repository! Check and validate assumptions.
