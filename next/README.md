@@ -34,10 +34,10 @@ When you pass explicit asset keys or folder selectors to `fdp materialize`, FDP 
 You can run the Filecoin Data Portal anywhere using `uv`. You'll need the following secrets in your environment:
 
 - `ENCODED_GOOGLE_APPLICATION_CREDENTIALS` (base64-encoded Google service account JSON)
-- `FDP_R2_ACCESS_KEY_ID`
-- `FDP_R2_SECRET_ACCESS_KEY`
-- `FDP_R2_ACCOUNT_ID`
-- `FDP_R2_BUCKET`
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+- `R2_ACCOUNT_ID`
+- `R2_BUCKET`
 - `FDP_GSHEET_SPREADSHEET_ID`
 
 `uv run fdp publish r2` writes one parquet file per `main.*` table to R2.

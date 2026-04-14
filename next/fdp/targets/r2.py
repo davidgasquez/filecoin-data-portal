@@ -5,6 +5,11 @@ import duckdb
 
 from fdp.assets import Asset
 
+R2_ACCESS_KEY_ID_ENV_VAR = "R2_ACCESS_KEY_ID"
+R2_SECRET_ACCESS_KEY_ENV_VAR = "R2_SECRET_ACCESS_KEY"
+R2_ACCOUNT_ID_ENV_VAR = "R2_ACCOUNT_ID"
+R2_BUCKET_ENV_VAR = "R2_BUCKET"
+
 
 @dataclass(frozen=True)
 class R2Config:
@@ -23,10 +28,13 @@ def publish(assets: list[Asset], conn: duckdb.DuckDBPyConnection) -> None:
 
 def r2_config_from_env() -> R2Config:
     values = {
-        "FDP_R2_ACCESS_KEY_ID": os.environ.get("FDP_R2_ACCESS_KEY_ID", ""),
-        "FDP_R2_SECRET_ACCESS_KEY": os.environ.get("FDP_R2_SECRET_ACCESS_KEY", ""),
-        "FDP_R2_ACCOUNT_ID": os.environ.get("FDP_R2_ACCOUNT_ID", ""),
-        "FDP_R2_BUCKET": os.environ.get("FDP_R2_BUCKET", ""),
+        R2_ACCESS_KEY_ID_ENV_VAR: os.environ.get(R2_ACCESS_KEY_ID_ENV_VAR, ""),
+        R2_SECRET_ACCESS_KEY_ENV_VAR: os.environ.get(
+            R2_SECRET_ACCESS_KEY_ENV_VAR,
+            "",
+        ),
+        R2_ACCOUNT_ID_ENV_VAR: os.environ.get(R2_ACCOUNT_ID_ENV_VAR, ""),
+        R2_BUCKET_ENV_VAR: os.environ.get(R2_BUCKET_ENV_VAR, ""),
     }
     missing = [name for name, value in values.items() if not value]
     if missing:
@@ -34,10 +42,10 @@ def r2_config_from_env() -> R2Config:
         raise ValueError(f"Missing R2 environment variables: {names}")
 
     return R2Config(
-        access_key_id=values["FDP_R2_ACCESS_KEY_ID"],
-        secret_access_key=values["FDP_R2_SECRET_ACCESS_KEY"],
-        account_id=values["FDP_R2_ACCOUNT_ID"],
-        bucket=values["FDP_R2_BUCKET"],
+        access_key_id=values[R2_ACCESS_KEY_ID_ENV_VAR],
+        secret_access_key=values[R2_SECRET_ACCESS_KEY_ENV_VAR],
+        account_id=values[R2_ACCOUNT_ID_ENV_VAR],
+        bucket=values[R2_BUCKET_ENV_VAR],
     )
 
 
