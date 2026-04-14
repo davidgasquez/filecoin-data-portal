@@ -5,7 +5,7 @@ readme = "README.md"
 authors = [{ name = "David Gasquez", email = "davidgasquez@gmail.com" }]
 requires-python = ">=3.14"
 dependencies = [
-    "duckdb>=1.5.1",
+    "duckdb>=1.5.2",
     "eth-utils>=6.0.0",
     "google-auth>=2.49.2",
     "google-cloud-bigquery>=3.41.0",
@@ -30,7 +30,7 @@ module-root = ""
 
 [dependency-groups]
 dev = [
-    "prek>=0.3.8",
+    "prek>=0.3.9",
     "ruff>=0.15.10",
     "ty>=0.0.29",
 ]
