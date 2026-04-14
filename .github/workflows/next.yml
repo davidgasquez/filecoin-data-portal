@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Restore DuckDB cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |
             next/fdp.duckdb
@@ -61,7 +61,7 @@ jobs:
 
       - name: Save DuckDB cache
         if: success()
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: |
             next/fdp.duckdb
