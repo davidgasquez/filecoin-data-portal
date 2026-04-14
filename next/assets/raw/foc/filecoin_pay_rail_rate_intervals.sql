@@ -1,6 +1,8 @@
 -- asset.description = Mainnet Filecoin Pay rail rate intervals reconstructed from onchain events. Each row is a half-open interval [start_ordinal, end_ordinal) where a rail's recurring payment rate is constant.
+
 -- asset.depends = raw.foc_filecoin_pay_rails
 -- asset.depends = raw.fevm_eth_logs_decoded
+
 -- asset.column = rail_id | Filecoin Pay rail identifier.
 -- asset.column = service | Service classification copied from raw.foc_filecoin_pay_rails.
 -- asset.column = payer | Payer address funding the rail.
@@ -19,20 +21,8 @@
 -- asset.column = end_date | UTC date derived from the end block, if any.
 -- asset.column = rate_wei_per_epoch | Constant recurring payment rate during the interval, in token wei per epoch.
 -- asset.column = rate_token_per_epoch | Constant recurring payment rate during the interval, scaled to whole-token units.
+
 -- asset.not_null = rail_id
--- asset.not_null = service
--- asset.not_null = payer
--- asset.not_null = payee
--- asset.not_null = token
--- asset.not_null = operator
--- asset.not_null = validator
--- asset.not_null = is_arr_eligible
--- asset.not_null = start_block
--- asset.not_null = start_log_index
--- asset.not_null = start_ordinal
--- asset.not_null = start_date
--- asset.not_null = rate_wei_per_epoch
--- asset.not_null = rate_token_per_epoch
 
 with params as (
     select 1598306400 as genesis_timestamp

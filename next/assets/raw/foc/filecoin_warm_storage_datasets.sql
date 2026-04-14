@@ -1,5 +1,7 @@
 -- asset.description = Mainnet Filecoin Warm Storage Service datasets created onchain. Includes dataset parties, payment rail identifiers, and billing lifecycle derived from FWSS events.
+
 -- asset.depends = raw.fevm_eth_logs_decoded
+
 -- asset.column = data_set_id | FWSS data set identifier.
 -- asset.column = payer | Payer address funding the dataset on mainnet.
 -- asset.column = provider_id | Service provider registry identifier selected for the dataset.
@@ -17,15 +19,8 @@
 -- asset.column = billing_terminated_date | UTC date when the PDP billing rail was terminated, if any.
 -- asset.column = settlement_end_epoch | Final settlement epoch emitted with PDPPaymentTerminated, if any.
 -- asset.column = settlement_end_date | UTC date derived from settlement_end_epoch, if any.
+
 -- asset.not_null = data_set_id
--- asset.not_null = payer
--- asset.not_null = provider_id
--- asset.not_null = service_provider
--- asset.not_null = payee
--- asset.not_null = pdp_rail_id
--- asset.not_null = has_cdn
--- asset.not_null = created_block
--- asset.not_null = created_date
 -- asset.unique = data_set_id
 
 with params as (

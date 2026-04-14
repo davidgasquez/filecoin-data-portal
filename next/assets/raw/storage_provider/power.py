@@ -1,11 +1,19 @@
-# ruff: noqa: E501
-# asset.description = Daily end-of-day Filecoin storage provider power snapshots derived from Lily power actor claims, with sparse rows only for provider-days with positive power.
+# asset.description = Daily end-of-day Filecoin storage provider power
+# snapshots derived from Lily power actor claims, with sparse rows only for
+# provider-days with positive power.
+
 # asset.materialization = custom
+
 # asset.column = date | UTC day for the end-of-day power snapshot.
-# asset.column = provider_id | Filecoin storage provider miner actor id address.
-# asset.column = raw_power_tibs | End-of-day raw byte power for the provider, in tebibytes.
-# asset.column = quality_adjusted_power_tibs | End-of-day quality adjusted power for the provider, in tebibytes.
-# asset.column = has_power | Whether the provider had positive raw or quality adjusted power at end of day.
+# asset.column = provider_id | Filecoin storage provider miner actor id
+# address.
+# asset.column = raw_power_tibs | End-of-day raw byte power for the provider,
+# in tebibytes.
+# asset.column = quality_adjusted_power_tibs | End-of-day quality adjusted
+# power for the provider, in tebibytes.
+# asset.column = has_power | Whether the provider had positive raw or quality
+# adjusted power at end of day.
+
 # asset.not_null = date
 # asset.not_null = provider_id
 # asset.not_null = raw_power_tibs
@@ -26,7 +34,8 @@ with provider_daily_power_changes as (
         cast(raw_byte_power as int64) as raw_power_bytes,
         cast(raw_byte_power as float64) / pow(1024, 4) as raw_power_tibs,
         cast(quality_adj_power as int64) as quality_adj_power_bytes,
-        cast(quality_adj_power as float64) / pow(1024, 4) as quality_adjusted_power_tibs
+        cast(quality_adj_power as float64) / pow(1024, 4)
+            as quality_adjusted_power_tibs
     from `lily-data.lily.power_actor_claims`
     qualify row_number() over (
         partition by date(timestamp_seconds((height * 30) + 1598306400)), miner_id
@@ -58,7 +67,9 @@ select
     quality_adjusted_power_tibs,
     true as has_power
 from power_intervals,
-unnest(generate_date_array(start_date, date_sub(end_date_exclusive, interval 1 day))) as day
+unnest(
+    generate_date_array(start_date, date_sub(end_date_exclusive, interval 1 day))
+) as day
 where raw_power_bytes > 0
    or quality_adj_power_bytes > 0
 order by 1, 2

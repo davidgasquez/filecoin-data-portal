@@ -343,17 +343,36 @@ def extract_metadata_lines(source: str, prefix: str) -> tuple[list[str], list[st
 
 def parse_metadata_lines(lines: list[str], path: Path) -> dict[str, list[str]]:
     metadata: dict[str, list[str]] = {}
+    current_key: str | None = None
+
     for line in lines:
-        if not line.startswith("asset."):
+        if line.startswith("asset."):
+            match = METADATA_LINE_RE.fullmatch(line)
+            if match is None:
+                raise ValueError(f"Invalid asset metadata line in {path}: {line}")
+            key = match.group("key")
+            if key not in SUPPORTED_METADATA_KEYS:
+                raise ValueError(unsupported_metadata_message(key, path))
+            metadata.setdefault(key, []).append(match.group("value").strip())
+            current_key = key
             continue
-        match = METADATA_LINE_RE.fullmatch(line)
-        if match is None:
-            raise ValueError(f"Invalid asset metadata line in {path}: {line}")
-        key = match.group("key")
-        if key not in SUPPORTED_METADATA_KEYS:
-            raise ValueError(unsupported_metadata_message(key, path))
-        metadata.setdefault(key, []).append(match.group("value").strip())
+
+        if current_key is None:
+            continue
+
+        current_values = metadata[current_key]
+        current_values[-1] = append_metadata_continuation(current_values[-1], line)
+
     return metadata
+
+
+def append_metadata_continuation(value: str, continuation: str) -> str:
+    continuation = continuation.strip()
+    if not continuation:
+        return value
+    if not value:
+        return continuation
+    return f"{value} {continuation}"
 
 
 def unsupported_metadata_message(key: str, path: Path) -> str:

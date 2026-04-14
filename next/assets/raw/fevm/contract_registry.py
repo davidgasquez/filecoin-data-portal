@@ -1,19 +1,15 @@
-# asset.description = Runtime registry of FEVM mainnet contracts and their ABI
-# JSONs from GitHub or Blockscout.
+# asset.description = Runtime registry of FEVM mainnet contracts and their ABI JSONs
+
 # asset.materialization = dataframe
 
 # asset.column = chain_id | Filecoin EVM chain id.
 # asset.column = network | Human-readable network name.
 # asset.column = contract_name | Logical decoder name used downstream.
 # asset.column = abi_name | Human-readable ABI identifier.
-# asset.column = deployment_key | Upstream deployment key or null for manual
-# entries.
-# asset.column = deployment_role | Address role: proxy, implementation, view,
-# or address.
-# asset.column = address | Contract address that emitted logs, normalized to
-# lowercase.
-# asset.column = implementation_address | Implementation address when the ABI
-# was resolved through a proxy.
+# asset.column = deployment_key | Upstream deployment key or null for manual entries.
+# asset.column = deployment_role | Address (proxy, implementation, view, or address)
+# asset.column = address | Contract address that emitted logs, normalized to lowercase.
+# asset.column = implementation_address | Implementation address resolved through proxy.
 # asset.column = source_kind | ABI/address resolution strategy.
 # asset.column = source_name | Upstream host or repository label.
 # asset.column = address_source_url | Upstream URL used to resolve the address, if any.

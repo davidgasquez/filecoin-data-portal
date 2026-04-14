@@ -1,13 +1,15 @@
-# ruff: noqa: E501
-# asset.description = Current Filecoin storage provider miner info from the latest Lily miner info snapshot.
+# asset.description = Storage provider miner info from the latest miner info snapshot.
+
 # asset.materialization = custom
+
 # asset.column = provider_id | Filecoin storage provider miner actor id address.
-# asset.column = owner_id | Current owner id address from the latest Lily miner info snapshot, if available.
-# asset.column = worker_id | Current worker id address from the latest Lily miner info snapshot, if available.
-# asset.column = peer_id | Current libp2p peer id from the latest Lily miner info snapshot, if available.
-# asset.column = control_addresses | Current JSON array of control addresses from the latest Lily miner info snapshot, if available.
-# asset.column = multi_addresses | Current JSON array of multiaddrs from the latest Lily miner info snapshot, if available.
-# asset.column = sector_size | Current sector size in bytes from the latest Lily miner info snapshot.
+# asset.column = owner_id | Current owner id address from the snapshot.
+# asset.column = worker_id | Current worker id address from the latest snapshot.
+# asset.column = peer_id | Current libp2p peer id from the latest snapshot.
+# asset.column = control_addresses | Current JSON array of control addresses.
+# asset.column = multi_addresses | Current JSON array of multiaddrs.
+# asset.column = sector_size | Current sector size in bytes.
+
 # asset.not_null = provider_id
 # asset.not_null = sector_size
 # asset.unique = provider_id

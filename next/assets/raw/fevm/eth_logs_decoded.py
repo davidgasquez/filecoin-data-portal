@@ -1,4 +1,5 @@
 # asset.description = Decoded events for selected FEVM contracts from raw eth logs.
+
 # asset.materialization = custom
 
 # asset.depends = raw.fevm_contract_registry

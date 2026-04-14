@@ -1,13 +1,20 @@
-# ruff: noqa: E501
-# asset.description = Successful verified registry claims extracted from parseable ClaimAllocations messages in Lily BigQuery.
+# asset.description = Successful verified registry claims extracted from
+# parseable ClaimAllocations messages in Lily BigQuery.
+
 # asset.materialization = custom
-# asset.column = claim_epoch | Chain epoch when the verified claim was executed.
+
+# asset.column = claim_epoch | Chain epoch when the verified claim was
+# executed.
 # asset.column = provider_id | Storage provider actor ID as an integer.
-# asset.column = sector_number | Sector number containing the claimed verified data.
-# asset.column = sector_expiry | Sector expiration epoch recorded on the claim message.
+# asset.column = sector_number | Sector number containing the claimed verified
+# data.
+# asset.column = sector_expiry | Sector expiration epoch recorded on the claim
+# message.
 # asset.column = client_id | Verified client actor ID as an integer.
-# asset.column = allocation_id | Verified allocation ID claimed by the provider.
+# asset.column = allocation_id | Verified allocation ID claimed by the
+# provider.
 # asset.column = piece_size_bytes | Verified piece size claimed in bytes.
+
 # asset.not_null = claim_epoch
 # asset.not_null = provider_id
 # asset.not_null = sector_number
@@ -37,13 +44,19 @@ claims_nested as (
         claim_epoch,
         provider_id,
         cast(json_extract_scalar(sector, '$.Sector') as int64) as sector_number,
-        cast(json_extract_scalar(sector, '$.SectorExpiry') as int64) as sector_expiry,
+        cast(
+            json_extract_scalar(sector, '$.SectorExpiry') as int64
+        ) as sector_expiry,
         cast(json_extract_scalar(claim, '$.Client') as int64) as client_id,
-        cast(json_extract_scalar(claim, '$.AllocationId') as int64) as allocation_id,
+        cast(
+            json_extract_scalar(claim, '$.AllocationId') as int64
+        ) as allocation_id,
         cast(json_extract_scalar(claim, '$.Size') as int64) as piece_size_bytes
     from claim_messages
     cross join unnest(coalesce(sectors, array<string>[])) as sector
-    cross join unnest(coalesce(json_extract_array(sector, '$.Claims'), array<string>[])) as claim
+    cross join unnest(
+        coalesce(json_extract_array(sector, '$.Claims'), array<string>[])
+    ) as claim
     where json_extract_scalar(sector, '$.Sector') is not null
       and json_extract_scalar(sector, '$.SectorExpiry') is not null
       and json_extract_scalar(claim, '$.Client') is not null
@@ -55,9 +68,13 @@ claims_flat as (
         claim_epoch,
         provider_id,
         cast(json_extract_scalar(sector, '$.Sector') as int64) as sector_number,
-        cast(json_extract_scalar(sector, '$.SectorExpiry') as int64) as sector_expiry,
+        cast(
+            json_extract_scalar(sector, '$.SectorExpiry') as int64
+        ) as sector_expiry,
         cast(json_extract_scalar(sector, '$.Client') as int64) as client_id,
-        cast(json_extract_scalar(sector, '$.AllocationId') as int64) as allocation_id,
+        cast(
+            json_extract_scalar(sector, '$.AllocationId') as int64
+        ) as allocation_id,
         cast(json_extract_scalar(sector, '$.Size') as int64) as piece_size_bytes
     from claim_messages
     cross join unnest(coalesce(sectors, array<string>[])) as sector
@@ -66,7 +83,9 @@ claims_flat as (
       and json_extract_scalar(sector, '$.Client') is not null
       and json_extract_scalar(sector, '$.AllocationId') is not null
       and json_extract_scalar(sector, '$.Size') is not null
-      and array_length(coalesce(json_extract_array(sector, '$.Claims'), array<string>[])) = 0
+      and array_length(
+          coalesce(json_extract_array(sector, '$.Claims'), array<string>[])
+      ) = 0
 )
 select
     claim_epoch,

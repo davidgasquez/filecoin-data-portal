@@ -1,4 +1,5 @@
 # asset.description = Raw verified client records from the getVerifiedClients API.
+
 # asset.materialization = dataframe
 
 # asset.column = id | DatacapStats verified client row id.
@@ -10,8 +11,7 @@
 # asset.column = org_name | Verified client organization name.
 # asset.column = initial_allowance | Initial datacap allowance in bytes as text.
 # asset.column = allowance | Current datacap allowance in bytes as text.
-# asset.column = verifier_address_id | Filecoin actor id address of the
-# allocator that issued datacap.
+# asset.column = verifier_address_id | Filecoin actor id address of the allocator.
 # asset.column = created_at_height | Chain height when the verified client was created.
 # asset.column = issue_create_timestamp | Issue creation Unix timestamp.
 # asset.column = create_message_timestamp | Creation message Unix timestamp.
@@ -25,8 +25,7 @@
 # asset.column = region | Region attributed upstream.
 # asset.column = website | Website attributed upstream.
 # asset.column = industry | Industry attributed upstream.
-# asset.column = received_datacap_change_90_days | 90-day datacap
-# received change in bytes.
+# asset.column = received_datacap_change_90_days | 90-day datacap received change.
 # asset.column = used_datacap_change_90_days | 90-day datacap used change in bytes.
 # asset.column = used_datacap | Used datacap in bytes as text.
 # asset.column = remaining_datacap | Remaining datacap in bytes as text.

@@ -1,5 +1,7 @@
 -- asset.description = Mainnet Filecoin Pay rails reconstructed from onchain events. Includes creation and termination lifecycle, ARR eligibility, and service classification.
+
 -- asset.depends = raw.fevm_eth_logs_decoded
+
 -- asset.column = rail_id | Filecoin Pay rail identifier.
 -- asset.column = payer | Payer address funding the rail.
 -- asset.column = payee | Payee address receiving the rail payments.
@@ -22,21 +24,8 @@
 -- asset.column = terminated_date | UTC date derived from the termination block, if any.
 -- asset.column = terminated_end_date | UTC date derived from the termination end epoch, if any.
 -- asset.column = is_terminated | Whether the rail has a termination event.
+
 -- asset.not_null = rail_id
--- asset.not_null = payer
--- asset.not_null = payee
--- asset.not_null = token
--- asset.not_null = operator
--- asset.not_null = service
--- asset.not_null = validator
--- asset.not_null = service_fee_recipient
--- asset.not_null = commission_rate_bps
--- asset.not_null = is_arr_eligible
--- asset.not_null = created_block
--- asset.not_null = created_log_index
--- asset.not_null = created_transaction_hash
--- asset.not_null = created_date
--- asset.not_null = is_terminated
 -- asset.unique = rail_id
 
 with params as (

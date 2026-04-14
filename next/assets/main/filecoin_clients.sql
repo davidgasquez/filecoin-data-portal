@@ -29,6 +29,7 @@
 -- asset.column = datacap_issue_created_at | Issue creation timestamp from the latest DatacapStats snapshot, if available.
 -- asset.column = datacap_message_created_at | Datacap message creation timestamp from the latest DatacapStats snapshot, if available.
 -- asset.column = datacap_retries | Retry counter from the latest DatacapStats snapshot.
+
 -- asset.not_null = client_id
 -- asset.not_null = first_claim_at
 -- asset.not_null = last_claim_at
