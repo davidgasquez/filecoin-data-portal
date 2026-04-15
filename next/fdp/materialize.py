@@ -17,6 +17,7 @@ from fdp.api import (
 from fdp.assets import Asset, LoadedAssets, load_assets, python_asset_function_name
 from fdp.inspect import validate_materialized_asset
 from fdp.resources.bigquery import lily as lily_bigquery
+from fdp.selectors import expand_asset_selectors
 
 
 def materialize(
@@ -24,7 +25,7 @@ def materialize(
     *,
     include_dependencies: bool = False,
 ) -> None:
-    resolved_selectors = expand_materialize_selectors(
+    resolved_selectors = expand_asset_selectors(
         None if selectors is None else list(selectors)
     )
     loaded = load_assets(
@@ -35,64 +36,6 @@ def materialize(
         validate_materialized_dependencies(loaded)
     assets = [loaded.assets[key] for key in loaded.ordered_keys]
     materialize_assets(assets)
-
-
-def expand_materialize_selectors(
-    selectors: list[str] | None,
-) -> list[str] | None:
-    if not selectors:
-        return selectors
-
-    loaded = load_assets()
-    folder_index = materialize_folder_index(loaded)
-    selected_keys: list[str] = []
-    seen: set[str] = set()
-    unknown_selectors: list[str] = []
-
-    for selector in selectors:
-        exact_match = selector in loaded.assets
-        folder_matches = folder_index.get(selector, ())
-
-        if exact_match and folder_matches:
-            raise ValueError(
-                f"Ambiguous materialize selector '{selector}': matches both an "
-                "asset key and an asset folder"
-            )
-
-        if exact_match:
-            matched_keys = (selector,)
-        elif folder_matches:
-            matched_keys = folder_matches
-        else:
-            unknown_selectors.append(selector)
-            continue
-
-        for key in matched_keys:
-            if key in seen:
-                continue
-            seen.add(key)
-            selected_keys.append(key)
-
-    if unknown_selectors:
-        raise ValueError(
-            f"Unknown asset or folder selectors: {', '.join(sorted(unknown_selectors))}"
-        )
-
-    return selected_keys
-
-
-def materialize_folder_index(loaded: LoadedAssets) -> dict[str, tuple[str, ...]]:
-    folder_index: dict[str, list[str]] = {}
-    for asset in loaded.assets.values():
-        relative_path = asset.path.relative_to(loaded.assets_root)
-        folder_parts = relative_path.parent.parts
-        for index in range(1, len(folder_parts) + 1):
-            selector = ".".join(folder_parts[:index])
-            folder_index.setdefault(selector, []).append(asset.key)
-    return {
-        selector: tuple(sorted(asset_keys))
-        for selector, asset_keys in folder_index.items()
-    }
 
 
 def validate_materialized_dependencies(loaded: LoadedAssets) -> None:

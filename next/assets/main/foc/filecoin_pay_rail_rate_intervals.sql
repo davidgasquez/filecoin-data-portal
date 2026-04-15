@@ -1,10 +1,10 @@
 -- asset.description = Mainnet Filecoin Pay rail rate intervals reconstructed from onchain events. Each row is a half-open interval [start_ordinal, end_ordinal) where a rail's recurring payment rate is constant.
 
--- asset.depends = raw.foc_filecoin_pay_rails
+-- asset.depends = main.foc_filecoin_pay_rails
 -- asset.depends = raw.fevm_eth_logs_decoded
 
 -- asset.column = rail_id | Filecoin Pay rail identifier.
--- asset.column = service | Service classification copied from raw.foc_filecoin_pay_rails.
+-- asset.column = service | Service classification copied from main.foc_filecoin_pay_rails.
 -- asset.column = payer | Payer address funding the rail.
 -- asset.column = payee | Payee address receiving the rail payments.
 -- asset.column = token | ERC20 token address used by the rail.
@@ -34,7 +34,7 @@ rate_change_points as (
         rails.created_log_index as log_index,
         rails.created_block * 1000000 + rails.created_log_index as ordinal,
         cast(0 as bigint) as rate_wei_per_epoch
-    from raw.foc_filecoin_pay_rails as rails
+    from main.foc_filecoin_pay_rails as rails
 
     union all
 
@@ -67,7 +67,7 @@ valid_change_points as (
             else rails.terminated_block * 1000000 + rails.terminated_log_index
         end as terminated_ordinal
     from rate_change_points as change_points
-    join raw.foc_filecoin_pay_rails as rails using (rail_id)
+    join main.foc_filecoin_pay_rails as rails using (rail_id)
     where rails.terminated_block is null
        or change_points.ordinal < rails.terminated_block * 1000000 + rails.terminated_log_index
 ),

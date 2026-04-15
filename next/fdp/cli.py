@@ -52,7 +52,7 @@ def _test(args: argparse.Namespace) -> None:
 
 
 def _publish(args: argparse.Namespace) -> None:
-    publish(args.target)
+    publish(args.target, args.selectors)
 
 
 def _show(args: argparse.Namespace) -> None:
@@ -80,19 +80,22 @@ def main() -> None:
         help="Refresh assets in DuckDB.",
         description=(
             "Refresh assets in DuckDB. Selectors can be exact asset keys like "
-            "'raw.some_asset' or asset folders like 'main' and 'main.beta'. "
-            "With explicit selectors, refreshes only those assets by default. "
-            "Use --with-deps to refresh transitive dependencies too. With no "
-            "selectors, refreshes everything."
+            "'raw.some_asset', asset folders like 'main' and 'main.beta', "
+            "or asset file/folder paths like "
+            "'assets/main/beta/some_asset.sql'. With explicit selectors, "
+            "refreshes only those assets by default. Use --with-deps to "
+            "refresh transitive dependencies too. With no selectors, "
+            "refreshes everything."
         ),
     )
     materialize_parser.add_argument(
         "selectors",
         nargs="*",
-        metavar="ASSET_OR_FOLDER",
+        metavar="SELECTOR",
         help=(
-            "Asset keys or asset folders to refresh. Examples: 'main', "
-            "'main.beta', 'raw.some_asset'. Defaults to all assets."
+            "Asset keys, asset folders, or asset file/folder paths to "
+            "refresh. Examples: 'main', 'main.beta', 'raw.some_asset', "
+            "'assets/main/beta/some_asset.sql'. Defaults to all assets."
         ),
     )
     materialize_parser.add_argument(
@@ -163,11 +166,28 @@ def main() -> None:
     publish_parser = subparsers.add_parser(
         "publish",
         help="Publish materialized main tables to a target.",
+        description=(
+            "Publish materialized main tables to a target. Selectors can be "
+            "exact asset keys like 'main.some_asset', asset folders like "
+            "'main' and 'main.beta', or asset file/folder paths like "
+            "'assets/main/beta/some_asset.sql'. With no selectors, publishes "
+            "all main assets."
+        ),
     )
     publish_parser.add_argument(
         "target",
         choices=available_targets(),
         help="Publish target.",
+    )
+    publish_parser.add_argument(
+        "selectors",
+        nargs="*",
+        metavar="SELECTOR",
+        help=(
+            "Main asset keys, asset folders, or asset file/folder paths to "
+            "publish. Examples: 'main', 'main.beta', 'main.some_asset', "
+            "'assets/main/beta/some_asset.sql'. Defaults to all main assets."
+        ),
     )
     publish_parser.set_defaults(func=_publish)
 
@@ -177,8 +197,8 @@ def main() -> None:
     )
     show_parser.add_argument(
         "asset",
-        metavar="ASSET",
-        help="Asset key to inspect.",
+        metavar="SELECTOR",
+        help="Asset key, folder, or file path to inspect.",
     )
     show_parser.add_argument(
         "--sample-rows",

@@ -1,8 +1,8 @@
 -- asset.description = Daily mainnet Filecoin core metrics.
 
 -- asset.depends = raw.fevm_eth_logs_decoded
--- asset.depends = raw.foc_filecoin_warm_storage_datasets
--- asset.depends = raw.foc_filecoin_pay_rail_rate_intervals
+-- asset.depends = main.foc_filecoin_warm_storage_datasets
+-- asset.depends = main.foc_filecoin_pay_rail_rate_intervals
 -- asset.depends = raw.daily_network_activity_by_method
 -- asset.depends = raw.daily_sector_lifecycle
 
@@ -51,7 +51,7 @@ days as (
     from generate_series(
         (
             select min(billing_started_date)
-            from raw.foc_filecoin_warm_storage_datasets
+            from main.foc_filecoin_warm_storage_datasets
             where billing_started_date is not null
         ),
         (select latest_observed_date from latest_chain_day),
@@ -64,7 +64,7 @@ warm_storage_datasets_active_daily_metrics as (
         count(distinct datasets.payer) as total_active_payers,
         count(distinct datasets.data_set_id) as total_active_datasets
     from days
-    left join raw.foc_filecoin_warm_storage_datasets as datasets
+    left join main.foc_filecoin_warm_storage_datasets as datasets
         on datasets.billing_started_date <= days.day
        and coalesce(datasets.billing_terminated_date, date '9999-12-31') > days.day
     group by 1
@@ -73,7 +73,7 @@ payer_first_billing_dates as (
     select
         payer,
         min(billing_started_date) as first_billing_date
-    from raw.foc_filecoin_warm_storage_datasets
+    from main.foc_filecoin_warm_storage_datasets
     where billing_started_date is not null
     group by 1
 ),
@@ -88,7 +88,7 @@ warm_storage_datasets_new_datasets_daily_metrics as (
     select
         billing_started_date as date,
         count(*) as new_active_datasets
-    from raw.foc_filecoin_warm_storage_datasets
+    from main.foc_filecoin_warm_storage_datasets
     where billing_started_date is not null
     group by 1
 ),
@@ -115,7 +115,7 @@ arr_daily_metrics as (
         checkpoints.date,
         coalesce(sum(intervals.rate_token_per_epoch), 0) * 2880 * 365 as total_arr_usdfc
     from daily_chain_checkpoints as checkpoints
-    left join raw.foc_filecoin_pay_rail_rate_intervals as intervals
+    left join main.foc_filecoin_pay_rail_rate_intervals as intervals
         on intervals.is_arr_eligible
        and intervals.rate_wei_per_epoch > 0
        and intervals.start_ordinal <= checkpoints.checkpoint_ordinal

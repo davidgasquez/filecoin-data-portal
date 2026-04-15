@@ -56,6 +56,9 @@ jobs:
       - name: Run data tests
         run: uv run fdp test
 
+      - name: Prune tables
+        run: uv run fdp prune
+
       - name: Publish to R2
         run: uv run fdp publish r2
 

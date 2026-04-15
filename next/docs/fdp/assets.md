@@ -27,7 +27,9 @@
 - `uv run fdp materialize schema.table` refreshes only the selected assets by default
 - `uv run fdp materialize schema` refreshes all assets under `assets/schema/**`
 - `uv run fdp materialize schema.folder` refreshes all assets under `assets/schema/folder/**`
-- Use `uv run fdp materialize --with-deps schema.table` or `uv run fdp materialize --with-deps schema.folder` to refresh their transitive dependency closure too
+- `uv run fdp materialize assets/schema/folder/asset.sql` refreshes exactly that asset
+- You can also pass asset folder paths like `assets/schema/folder`
+- Use `uv run fdp materialize --with-deps schema.table`, `uv run fdp materialize --with-deps schema.folder`, or `uv run fdp materialize --with-deps assets/schema/folder/asset.sql` to refresh their transitive dependency closure too
 
 ## Python assets
 

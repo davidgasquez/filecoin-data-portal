@@ -15,6 +15,7 @@ The `fdp/` folder contains the CLI and lightweight orchestrator while the `asset
 - `uv run fdp materialize main`
 - `uv run fdp materialize main.beta`
 - `uv run fdp materialize raw.some_asset`
+- `uv run fdp materialize assets/main/beta/daily/filecoin_pay_operator_metrics.sql`
 - `uv run fdp materialize --with-deps main.beta`
 - `uv run fdp materialize --with-deps raw.some_asset`
 - `uv run fdp status`
@@ -22,12 +23,15 @@ The `fdp/` folder contains the CLI and lightweight orchestrator while the `asset
 - `uv run fdp docs`
 - `uv run fdp test`
 - `uv run fdp publish r2`
+- `uv run fdp publish r2 assets/main/beta/daily/filecoin_pay_operator_metrics.sql`
 - `uv run fdp publish gsheet`
 - `uv run fdp show raw.daily_network_activity_by_method`
 - `uv run fdp query "select * from raw.daily_network_activity_by_method limit 10"`
 
 FDP detects the project root from the nearest parent containing `assets/`. By default, DuckDB lives at `<project>/fdp.duckdb` and `fdp docs` writes to `<project>/build/docs`.
-When you pass explicit asset keys or folder selectors to `fdp materialize`, FDP refreshes only the matched assets by default and expects their dependencies to already be materialized. Use `--with-deps` to refresh the full dependency closure. Folder selectors map to folders under `assets/`, so `main` selects `assets/main/**` and `main.beta` selects `assets/main/beta/**`.
+
+When you pass explicit selectors to `fdp materialize`, FDP refreshes only the matched assets by default and expects their dependencies to already be materialized.
+Selectors can be asset keys, folder selectors, or asset file/folder paths under `assets/`. Use `--with-deps` to refresh the full dependency closure.
 
 ## ⚙️ Development
 

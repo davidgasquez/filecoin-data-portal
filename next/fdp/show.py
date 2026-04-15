@@ -2,17 +2,28 @@ from pathlib import Path
 
 from fdp.assets import load_assets
 from fdp.inspect import AssetView, inspect_assets
+from fdp.selectors import expand_asset_selectors
 from fdp.tabular import render_text_table
 
 
-def show_asset(name: str, sample_rows: int = 5) -> None:
+def show_asset(selector: str, sample_rows: int = 5) -> None:
     if sample_rows < 1:
         raise ValueError("sample_rows must be at least 1")
 
-    loaded = load_assets([name], include_dependencies=False)
+    resolved_selectors = expand_asset_selectors([selector])
+    if not resolved_selectors:
+        raise ValueError(f"Unknown selector: {selector}")
+    if len(resolved_selectors) != 1:
+        count = len(resolved_selectors)
+        raise ValueError(
+            f"show expects exactly one asset, got {count} from '{selector}'"
+        )
+
+    asset_key = resolved_selectors[0]
+    loaded = load_assets([asset_key], include_dependencies=False)
     asset_view = inspect_assets(
         loaded,
-        asset_keys=[name],
+        asset_keys=[asset_key],
         include_row_count=True,
         sample_rows=sample_rows,
     )[0]
