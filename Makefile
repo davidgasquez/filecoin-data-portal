@@ -10,14 +10,15 @@ run:
 .PHONY: run-ci
 run-ci:
 	@uv run dagster-dbt project prepare-and-package --file fdp/dbt/resources.py
-	@tmp=$$(mktemp); \
+	@set -e; \
+	tmp=$$(mktemp); \
+	trap 'rm -f "$$tmp"' EXIT; \
 	printf '%s\n' \
 	  'execution:' \
 	  '  config:' \
 	  '    multiprocess:' \
-	  '      max_concurrent: 2' > $$tmp; \
-	$(DAGSTER_JOB) --config $$tmp; \
-	rm -f $$tmp
+	  '      max_concurrent: 2' > "$$tmp"; \
+	$(DAGSTER_JOB) --config "$$tmp"
 
 .PHONY: dev
 dev:
