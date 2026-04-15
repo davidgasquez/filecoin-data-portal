@@ -15,14 +15,14 @@
 -- asset.column = created_block | Creation block number.
 -- asset.column = created_log_index | Creation log index.
 -- asset.column = created_transaction_hash | Creation transaction hash.
--- asset.column = created_date | UTC creation date.
+-- asset.column = created_at | UTC creation timestamp.
 -- asset.column = terminated_block | Termination block number, if any.
 -- asset.column = terminated_log_index | Termination log index, if any.
 -- asset.column = terminated_transaction_hash | Termination transaction hash, if any.
 -- asset.column = terminated_by | Address that terminated the rail, if any.
 -- asset.column = terminated_end_epoch | End epoch emitted on termination, if any.
--- asset.column = terminated_date | UTC termination date, if any.
--- asset.column = terminated_end_date | UTC termination end date, if any.
+-- asset.column = terminated_at | UTC termination timestamp, if any.
+-- asset.column = terminated_end_at | UTC termination end timestamp, if any.
 -- asset.column = is_terminated | Whether the rail has a termination event.
 
 -- asset.not_null = rail_id
@@ -48,7 +48,7 @@ rail_created as (
         block_number as created_block,
         log_index as created_log_index,
         transaction_hash as created_transaction_hash,
-        date(to_timestamp(block_number * 30 + (select genesis_timestamp from params))) as created_date,
+        to_timestamp(block_number * 30 + (select genesis_timestamp from params)) as created_at,
         row_number() over (
             partition by cast(json_extract_string(args, '$.railId') as bigint)
             order by block_number, log_index
@@ -65,8 +65,8 @@ rail_terminated as (
         transaction_hash as terminated_transaction_hash,
         lower(json_extract_string(args, '$.by')) as terminated_by,
         cast(json_extract_string(args, '$.endEpoch') as bigint) as terminated_end_epoch,
-        date(to_timestamp(block_number * 30 + (select genesis_timestamp from params))) as terminated_date,
-        date(to_timestamp(cast(json_extract_string(args, '$.endEpoch') as bigint) * 30 + (select genesis_timestamp from params))) as terminated_end_date,
+        to_timestamp(block_number * 30 + (select genesis_timestamp from params)) as terminated_at,
+        to_timestamp(cast(json_extract_string(args, '$.endEpoch') as bigint) * 30 + (select genesis_timestamp from params)) as terminated_end_at,
         row_number() over (
             partition by cast(json_extract_string(args, '$.railId') as bigint)
             order by block_number, log_index
@@ -93,18 +93,18 @@ select
     created.created_block,
     created.created_log_index,
     created.created_transaction_hash,
-    created.created_date,
+    created.created_at,
     terminated.terminated_block,
     terminated.terminated_log_index,
     terminated.terminated_transaction_hash,
     terminated.terminated_by,
     terminated.terminated_end_epoch,
-    terminated.terminated_date,
-    terminated.terminated_end_date,
+    terminated.terminated_at,
+    terminated.terminated_end_at,
     terminated.terminated_block is not null as is_terminated
 from rail_created as created
 left join rail_terminated as terminated
     on created.rail_id = terminated.rail_id
    and terminated.row_num = 1
 where created.row_num = 1
-order by created_date desc
+order by created_at desc

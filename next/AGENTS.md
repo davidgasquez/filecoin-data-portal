@@ -28,6 +28,7 @@ Guidelines for `fdp`, a minimalistic and functional open data platform to help g
 - Use consistent naming on columns (`_at` for timestamps)
 - Keep descriptions short and concise (no need to mention mainnet, ...)
 - If an asset can be generalized or modularized, ask the user (this will reduce asset LOC)
+- When possible, order by date (or the timestamp that represent the assets) in descending order
 
 #### Modeling
 

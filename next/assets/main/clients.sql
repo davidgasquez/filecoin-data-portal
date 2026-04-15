@@ -106,3 +106,4 @@ select
 from claims_by_client as c
 left join datacap_clients as d
     on c.client_id = d.numeric_client_id
+order by last_claim_at desc

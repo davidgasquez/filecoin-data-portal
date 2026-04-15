@@ -15,14 +15,14 @@
 -- asset.column = created_block | Creation block number.
 -- asset.column = created_log_index | Creation log index.
 -- asset.column = created_transaction_hash | Creation transaction hash.
--- asset.column = created_date | UTC creation date.
+-- asset.column = created_at | UTC creation timestamp.
 -- asset.column = terminated_block | Termination block number, if any.
 -- asset.column = terminated_log_index | Termination log index, if any.
 -- asset.column = terminated_transaction_hash | Termination transaction hash, if any.
 -- asset.column = terminated_by | Address that terminated the rail, if any.
 -- asset.column = terminated_end_epoch | End epoch emitted on termination, if any.
--- asset.column = terminated_date | UTC termination date, if any.
--- asset.column = terminated_end_date | UTC termination end date, if any.
+-- asset.column = terminated_at | UTC termination timestamp, if any.
+-- asset.column = terminated_end_at | UTC termination end timestamp, if any.
 -- asset.column = is_terminated | Whether the rail has a termination event.
 
 select
@@ -39,13 +39,13 @@ select
     created_block,
     created_log_index,
     created_transaction_hash,
-    created_date,
+    created_at,
     terminated_block,
     terminated_log_index,
     terminated_transaction_hash,
     terminated_by,
     terminated_end_epoch,
-    terminated_date,
-    terminated_end_date,
+    terminated_at,
+    terminated_end_at,
     is_terminated
 from model.filecoin_pay_rails

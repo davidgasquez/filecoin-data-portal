@@ -12,13 +12,13 @@
 -- asset.column = cdn_rail_id | Filecoin Pay CDN rail identifier, if any.
 -- asset.column = has_cdn | Whether CDN payment rails were configured.
 -- asset.column = created_block | Creation block number.
--- asset.column = created_date | UTC creation date.
+-- asset.column = created_at | UTC creation timestamp.
 -- asset.column = billing_started_block | First block with a positive billing rate, if any.
--- asset.column = billing_started_date | UTC billing start date, if any.
+-- asset.column = billing_started_at | UTC billing start timestamp, if any.
 -- asset.column = billing_terminated_block | Billing termination block, if any.
--- asset.column = billing_terminated_date | UTC billing termination date, if any.
+-- asset.column = billing_terminated_at | UTC billing termination timestamp, if any.
 -- asset.column = settlement_end_epoch | Settlement end epoch, if any.
--- asset.column = settlement_end_date | UTC settlement end date, if any.
+-- asset.column = settlement_end_at | UTC settlement end timestamp, if any.
 
 select
     dataset_id,
@@ -31,11 +31,12 @@ select
     cdn_rail_id,
     has_cdn,
     created_block,
-    created_date,
+    created_at,
     billing_started_block,
-    billing_started_date,
+    billing_started_at,
     billing_terminated_block,
-    billing_terminated_date,
+    billing_terminated_at,
     settlement_end_epoch,
-    settlement_end_date
+    settlement_end_at
 from model.warm_storage_datasets
+order by billing_started_at

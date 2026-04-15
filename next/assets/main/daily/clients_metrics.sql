@@ -22,3 +22,4 @@ select
     count(distinct provider_id) as verified_providers
 from model.daily_verified_claims
 group by 1, 2
+order by date desc

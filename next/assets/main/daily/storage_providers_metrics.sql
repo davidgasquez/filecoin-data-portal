@@ -79,3 +79,4 @@ left join model.storage_provider_sector_lifecycle_daily as sector_lifecycle
     using (date, provider_id)
 left join verified_claims
     using (date, provider_id)
+order by date desc

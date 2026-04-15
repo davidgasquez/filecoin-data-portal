@@ -14,11 +14,11 @@
 -- asset.column = start_block | Inclusive start block.
 -- asset.column = start_log_index | Inclusive start log index.
 -- asset.column = start_ordinal | Inclusive event ordinal.
--- asset.column = start_date | UTC start date.
+-- asset.column = start_at | UTC start timestamp.
 -- asset.column = end_block | Exclusive end block, if any.
 -- asset.column = end_log_index | Exclusive end log index, if any.
 -- asset.column = end_ordinal | Exclusive end ordinal, if any.
--- asset.column = end_date | UTC end date, if any.
+-- asset.column = end_at | UTC end timestamp, if any.
 -- asset.column = rate_wei_per_epoch | Recurring payment rate, in token wei per epoch.
 -- asset.column = rate_token_per_epoch | Recurring payment rate, in whole-token units per epoch.
 
@@ -124,7 +124,7 @@ select
     start_block,
     start_log_index,
     start_ordinal,
-    date(to_timestamp(start_block * 30 + (select genesis_timestamp from params))) as start_date,
+    to_timestamp(start_block * 30 + (select genesis_timestamp from params)) as start_at,
     case
         when end_ordinal is null then null
         else cast(end_ordinal / 1000000 as bigint)
@@ -136,9 +136,9 @@ select
     end_ordinal,
     case
         when end_ordinal is null then null
-        else date(to_timestamp(cast(end_ordinal / 1000000 as bigint) * 30 + (select genesis_timestamp from params)))
-    end as end_date,
+        else to_timestamp(cast(end_ordinal / 1000000 as bigint) * 30 + (select genesis_timestamp from params))
+    end as end_at,
     rate_wei_per_epoch,
     cast(rate_wei_per_epoch as decimal(38, 0)) / cast(1000000000000000000 as decimal(38, 0)) as rate_token_per_epoch
 from intervals
-order by start_date desc
+order by start_at desc

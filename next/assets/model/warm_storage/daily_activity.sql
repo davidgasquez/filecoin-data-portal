@@ -20,17 +20,17 @@ with days as (
     select date
     from model.fevm_daily_checkpoints
     where date >= (
-        select min(billing_started_date)
+        select min(date(billing_started_at))
         from model.warm_storage_datasets
-        where billing_started_date is not null
+        where billing_started_at is not null
     )
 ),
 payer_first_billing_dates as (
     select
         payer,
-        min(billing_started_date) as first_billing_date
+        min(date(billing_started_at)) as first_billing_date
     from model.warm_storage_datasets
-    where billing_started_date is not null
+    where billing_started_at is not null
     group by 1
 ),
 new_payers as (
@@ -42,10 +42,10 @@ new_payers as (
 ),
 new_datasets as (
     select
-        billing_started_date as date,
+        date(billing_started_at) as date,
         count(*) as new_datasets
     from model.warm_storage_datasets
-    where billing_started_date is not null
+    where billing_started_at is not null
     group by 1
 )
 select
@@ -56,8 +56,8 @@ select
     coalesce(new_datasets.new_datasets, 0) as new_datasets
 from days
 left join model.warm_storage_datasets as datasets
-    on datasets.billing_started_date <= days.date
-   and coalesce(datasets.billing_terminated_date, date '9999-12-31') > days.date
+    on date(datasets.billing_started_at) <= days.date
+   and coalesce(date(datasets.billing_terminated_at), date '9999-12-31') > days.date
 left join new_payers
     using (date)
 left join new_datasets

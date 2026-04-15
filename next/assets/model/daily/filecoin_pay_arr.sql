@@ -14,7 +14,7 @@ with days as (
     select date, checkpoint_ordinal
     from model.fevm_daily_checkpoints
     where date >= (
-        select coalesce(min(start_date), min(date))
+        select coalesce(min(date(start_at)), min(date))
         from model.fevm_daily_checkpoints, model.filecoin_pay_rail_rate_intervals
     )
 )

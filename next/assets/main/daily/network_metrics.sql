@@ -113,3 +113,4 @@ left join model.daily_sector_lifecycle as sector_lifecycle
     using (date)
 left join model.daily_network_activity as network_activity
     using (date)
+order by date desc

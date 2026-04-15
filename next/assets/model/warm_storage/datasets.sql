@@ -12,13 +12,13 @@
 -- asset.column = cdn_rail_id | Filecoin Pay CDN rail identifier, if any.
 -- asset.column = has_cdn | Whether CDN payment rails were configured.
 -- asset.column = created_block | Creation block number.
--- asset.column = created_date | UTC creation date.
+-- asset.column = created_at | UTC creation timestamp.
 -- asset.column = billing_started_block | First block with a positive billing rate, if any.
--- asset.column = billing_started_date | UTC billing start date, if any.
+-- asset.column = billing_started_at | UTC billing start timestamp, if any.
 -- asset.column = billing_terminated_block | Billing termination block, if any.
--- asset.column = billing_terminated_date | UTC billing termination date, if any.
+-- asset.column = billing_terminated_at | UTC billing termination timestamp, if any.
 -- asset.column = settlement_end_epoch | Settlement end epoch, if any.
--- asset.column = settlement_end_date | UTC settlement end date, if any.
+-- asset.column = settlement_end_at | UTC settlement end timestamp, if any.
 
 -- asset.not_null = dataset_id
 -- asset.unique = dataset_id
@@ -37,7 +37,7 @@ dataset_created as (
         nullif(cast(json_extract_string(args, '$.cacheMissRailId') as bigint), 0) as cache_miss_rail_id,
         nullif(cast(json_extract_string(args, '$.cdnRailId') as bigint), 0) as cdn_rail_id,
         block_number as created_block,
-        date(to_timestamp(block_number * 30 + (select genesis_timestamp from params))) as created_date,
+        to_timestamp(block_number * 30 + (select genesis_timestamp from params)) as created_at,
         row_number() over (
             partition by cast(json_extract_string(args, '$.dataSetId') as bigint)
             order by block_number, log_index
@@ -87,22 +87,22 @@ select
     created.cdn_rail_id,
     created.cache_miss_rail_id is not null or created.cdn_rail_id is not null as has_cdn,
     created.created_block,
-    created.created_date,
+    created.created_at,
     started.billing_started_block,
     case
         when started.billing_started_block is null then null
-        else date(to_timestamp(started.billing_started_block * 30 + (select genesis_timestamp from params)))
-    end as billing_started_date,
+        else to_timestamp(started.billing_started_block * 30 + (select genesis_timestamp from params))
+    end as billing_started_at,
     terminated.billing_terminated_block,
     case
         when terminated.billing_terminated_block is null then null
-        else date(to_timestamp(terminated.billing_terminated_block * 30 + (select genesis_timestamp from params)))
-    end as billing_terminated_date,
+        else to_timestamp(terminated.billing_terminated_block * 30 + (select genesis_timestamp from params))
+    end as billing_terminated_at,
     terminated.settlement_end_epoch,
     case
         when terminated.settlement_end_epoch is null then null
-        else date(to_timestamp(terminated.settlement_end_epoch * 30 + (select genesis_timestamp from params)))
-    end as settlement_end_date
+        else to_timestamp(terminated.settlement_end_epoch * 30 + (select genesis_timestamp from params))
+    end as settlement_end_at
 from dataset_created as created
 left join dataset_billing_started as started using (dataset_id)
 left join dataset_billing_terminated as terminated using (dataset_id)

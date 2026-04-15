@@ -29,16 +29,16 @@
 -- asset.column = capabilities_json | Latest active PDP capability key-value pairs.
 -- asset.column = registered_block | Registration block number.
 -- asset.column = registered_transaction_hash | Registration transaction hash.
--- asset.column = registered_date | UTC registration date.
+-- asset.column = registered_at | UTC registration timestamp.
 -- asset.column = product_updated_block | Latest PDP product lifecycle block.
 -- asset.column = product_updated_transaction_hash | Latest PDP product lifecycle transaction hash.
--- asset.column = product_updated_date | UTC latest PDP product lifecycle date.
+-- asset.column = product_updated_at | UTC latest PDP product lifecycle timestamp.
 -- asset.column = is_fwss_approved | Whether the latest FWSS approval event is approved.
 -- asset.column = fwss_first_approved_block | First FWSS approval block, if any.
--- asset.column = fwss_first_approved_date | UTC first FWSS approval date, if any.
+-- asset.column = fwss_first_approved_at | UTC first FWSS approval timestamp, if any.
 -- asset.column = fwss_last_approval_block | Latest FWSS approval block, if any.
 -- asset.column = fwss_last_approval_transaction_hash | Latest FWSS approval transaction hash, if any.
--- asset.column = fwss_last_approval_date | UTC latest FWSS approval date, if any.
+-- asset.column = fwss_last_approval_at | UTC latest FWSS approval timestamp, if any.
 
 -- asset.not_null = provider_id
 -- asset.unique = provider_id
@@ -54,7 +54,7 @@ provider_registered as (
         block_number as registered_block,
         log_index as registered_log_index,
         transaction_hash as registered_transaction_hash,
-        date(to_timestamp(block_number * 30 + (select genesis_timestamp from params))) as registered_date,
+        to_timestamp(block_number * 30 + (select genesis_timestamp from params)) as registered_at,
         row_number() over (
             partition by cast(json_extract_string(args, '$.providerId') as bigint)
             order by block_number, log_index
@@ -69,7 +69,7 @@ provider_removed as (
         block_number as removed_block,
         log_index as removed_log_index,
         transaction_hash as removed_transaction_hash,
-        date(to_timestamp(block_number * 30 + (select genesis_timestamp from params))) as removed_date,
+        to_timestamp(block_number * 30 + (select genesis_timestamp from params)) as removed_at,
         row_number() over (
             partition by cast(json_extract_string(args, '$.providerId') as bigint)
             order by block_number, log_index
@@ -87,7 +87,7 @@ product_events as (
         log_index,
         transaction_hash,
         args,
-        date(to_timestamp(block_number * 30 + (select genesis_timestamp from params))) as event_date,
+        to_timestamp(block_number * 30 + (select genesis_timestamp from params)) as event_at,
         row_number() over (
             partition by cast(json_extract_string(args, '$.providerId') as bigint), cast(json_extract_string(args, '$.productType') as integer)
             order by block_number desc, log_index desc
@@ -104,7 +104,7 @@ latest_pdp_product as (
         block_number as product_updated_block,
         log_index as product_updated_log_index,
         transaction_hash as product_updated_transaction_hash,
-        event_date as product_updated_date,
+        event_at as product_updated_at,
         args
     from product_events
     where row_num = 1
@@ -193,7 +193,7 @@ fwss_approval_events as (
         block_number,
         log_index,
         transaction_hash,
-        date(to_timestamp(block_number * 30 + (select genesis_timestamp from params))) as event_date,
+        to_timestamp(block_number * 30 + (select genesis_timestamp from params)) as event_at,
         row_number() over (
             partition by cast(json_extract_string(args, '$.providerId') as bigint)
             order by block_number desc, log_index desc
@@ -208,7 +208,7 @@ fwss_latest_approval as (
         event_name = 'ProviderApproved' as is_fwss_approved,
         block_number as fwss_last_approval_block,
         transaction_hash as fwss_last_approval_transaction_hash,
-        event_date as fwss_last_approval_date
+        event_at as fwss_last_approval_at
     from fwss_approval_events
     where latest_row_num = 1
 ),
@@ -216,13 +216,13 @@ fwss_first_approval as (
     select
         provider_id,
         block_number as fwss_first_approved_block,
-        event_date as fwss_first_approved_date
+        event_at as fwss_first_approved_at
     from (
         select
             cast(json_extract_string(args, '$.providerId') as bigint) as provider_id,
             block_number,
             log_index,
-            date(to_timestamp(block_number * 30 + (select genesis_timestamp from params))) as event_date,
+            to_timestamp(block_number * 30 + (select genesis_timestamp from params)) as event_at,
             row_number() over (
                 partition by cast(json_extract_string(args, '$.providerId') as bigint)
                 order by block_number, log_index
@@ -265,16 +265,16 @@ select
     capabilities.capabilities_json,
     registered.registered_block,
     registered.registered_transaction_hash,
-    registered.registered_date,
+    registered.registered_at,
     products.product_updated_block,
     products.product_updated_transaction_hash,
-    products.product_updated_date,
+    products.product_updated_at,
     coalesce(fwss_latest.is_fwss_approved, false) as is_fwss_approved,
     fwss_first.fwss_first_approved_block,
-    fwss_first.fwss_first_approved_date,
+    fwss_first.fwss_first_approved_at,
     fwss_latest.fwss_last_approval_block,
     fwss_latest.fwss_last_approval_transaction_hash,
-    fwss_latest.fwss_last_approval_date
+    fwss_latest.fwss_last_approval_at
 from provider_registered as registered
 left join provider_removed as removed
     on registered.provider_id = removed.provider_id
