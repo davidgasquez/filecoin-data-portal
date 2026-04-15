@@ -1,12 +1,12 @@
-import { DuckDBInstance } from "@duckdb/node-api"
+import { DuckDBInstance } from "@duckdb/node-api";
 
 const DAILY_METRICS_PARQUET_URL =
-  "https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet"
+  "https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet";
 const BETA_FILECOIN_DAILY_CORE_METRICS_PARQUET_URL =
-  "https://data.filecoindataportal.xyz/beta_filecoin_daily_core_metrics.parquet"
+  "https://data.filecoindataportal.xyz/beta_daily_filecoin_core_metrics.parquet";
 
-type DatasetValue = boolean | number | string | null
-type DatasetRow = Record<string, DatasetValue>
+type DatasetValue = boolean | number | string | null;
+type DatasetRow = Record<string, DatasetValue>;
 
 const SQL = `
   WITH core_metrics AS (
@@ -107,76 +107,85 @@ const SQL = `
     ) AS mining_yield
   FROM daily_metrics
   ORDER BY date
-`
+`;
 
 function normalizeNumber(value: number): number {
   if (!Number.isFinite(value)) {
-    throw new Error(`Invalid numeric value: ${value}`)
+    throw new Error(`Invalid numeric value: ${value}`);
   }
 
   if (Number.isInteger(value)) {
-    return value
+    return value;
   }
 
-  return Math.round(value * 1_000_000) / 1_000_000
+  return Math.round(value * 1_000_000) / 1_000_000;
 }
 
 function normalizeDate(value: Date): string {
   if (Number.isNaN(value.getTime())) {
-    throw new Error(`Invalid date value: ${value}`)
+    throw new Error(`Invalid date value: ${value}`);
   }
 
-  const isoValue = value.toISOString()
-  return isoValue.endsWith("T00:00:00.000Z") ? isoValue.slice(0, 10) : isoValue
+  const isoValue = value.toISOString();
+  return isoValue.endsWith("T00:00:00.000Z") ? isoValue.slice(0, 10) : isoValue;
 }
 
 function normalizeValue(value: unknown): DatasetValue {
   if (value == null) {
-    return null
+    return null;
   }
 
   if (typeof value === "boolean" || typeof value === "string") {
-    return value
+    return value;
   }
 
   if (typeof value === "number") {
-    return normalizeNumber(value)
+    return normalizeNumber(value);
   }
 
   if (typeof value === "bigint") {
-    const numberValue = Number(value)
+    const numberValue = Number(value);
 
     if (!Number.isSafeInteger(numberValue)) {
-      throw new Error(`BigInt value is outside the safe integer range: ${value}`)
+      throw new Error(
+        `BigInt value is outside the safe integer range: ${value}`,
+      );
     }
 
-    return numberValue
+    return numberValue;
   }
 
   if (value instanceof Date) {
-    return normalizeDate(value)
+    return normalizeDate(value);
   }
 
-  throw new Error(`Unsupported dataset value type: ${String(value)}`)
+  throw new Error(`Unsupported dataset value type: ${String(value)}`);
 }
 
 function normalizeRow(row: Record<string, unknown>): DatasetRow {
   return Object.fromEntries(
-    Object.entries(row).map(([column, value]) => [column, normalizeValue(value)]),
-  )
+    Object.entries(row).map(([column, value]) => [
+      column,
+      normalizeValue(value),
+    ]),
+  );
 }
 
-export default async function generateFilecoinDailyMetricsDataset(): Promise<DatasetRow[]> {
-  const instance = await DuckDBInstance.create(":memory:")
-  const connection = await instance.connect()
-  const result = await connection.run(SQL)
-  const rawRows = (await result.getRowObjectsJson()) as Array<Record<string, unknown>>
+export default async function generateFilecoinDailyMetricsDataset(): Promise<
+  DatasetRow[]
+> {
+  const instance = await DuckDBInstance.create(":memory:");
+  const connection = await instance.connect();
+  const result = await connection.run(SQL);
+  const rawRows = (await result.getRowObjectsJson()) as Array<
+    Record<string, unknown>
+  >;
 
   if (rawRows.length === 0) {
-    throw new Error("No rows returned from daily metrics dataset query")
+    throw new Error("No rows returned from daily metrics dataset query");
   }
 
-  connection.closeSync()
+  connection.closeSync();
 
-  return rawRows.map(normalizeRow)
+  return rawRows.map(normalizeRow);
 }
