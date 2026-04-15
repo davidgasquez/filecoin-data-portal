@@ -47,6 +47,9 @@ jobs:
       - name: Check assets
         run: uv run fdp check
 
+      - name: Prune tables
+        run: uv run fdp prune
+
       - name: Materialize
         run: uv run fdp materialize
 
@@ -55,9 +58,6 @@ jobs:
 
       - name: Run data tests
         run: uv run fdp test
-
-      - name: Prune tables
-        run: uv run fdp prune
 
       - name: Publish to R2
         run: uv run fdp publish r2
