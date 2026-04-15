@@ -32,7 +32,6 @@ lint:
 
 .PHONY: setup
 setup:
-	@command -v uv >/dev/null 2>&1 || pip install -U uv
 	@uv sync
 	@echo "source .venv/bin/activate"
 
@@ -43,20 +42,6 @@ tables:
 	@ls -lh data/tables/
 	@rm data/tables/raw_*.parquet
 
-.PHONY: web
-web:
-	@npm run dev --prefix web
-
-.PHONY: numbers
-numbers:
-	@npm run dev --prefix numbers
-
-.PHONY: pulse
-pulse:
-	@npm run sources --prefix pulse
-	@npm run dev --prefix pulse
-
 .PHONY: clean
 clean:
-	@rm -rf data/*.parquet data/*.duckdb
 	@rm -rf dbt/target dbt/logs dbt/dbt_packages
