@@ -185,13 +185,6 @@ def raw_filecoin_state_market_deals(
     order by d.height desc
     """
 
-    with lily_bigquery.get_client() as client:
-        job = client.query(query)
-        job_result = job.result()
-
-    sc = job_result.client._ensure_bqstorage_client()
-    i = job_result.to_arrow_iterable(sc, max_queue_size=500000)
-
     schema = pa.schema(
         [
             pa.field("height", pa.int64()),
@@ -213,14 +206,13 @@ def raw_filecoin_state_market_deals(
             pa.field("slash_epoch", pa.int64()),
         ]
     )
-
-    reader = pa.RecordBatchReader.from_batches(schema, i)  # noqa: F841
+    scanner = lily_bigquery.query_to_scanner(query, schema)  # noqa: F841
 
     with duckdb.get_connection() as duckdb_con:
         _ = duckdb_con.execute(
             """
             create or replace table raw.raw_filecoin_state_market_deals as (
-                select * from reader
+                select * from scanner
             )
             """
         )
