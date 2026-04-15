@@ -1,28 +1,28 @@
--- asset.description = Mainnet Filecoin Pay rails reconstructed from onchain events. Includes creation and termination lifecycle, ARR eligibility, and service classification.
+-- asset.description = Filecoin Pay rails reconstructed from onchain events.
 
 -- asset.depends = raw.fevm_eth_logs_decoded
 
 -- asset.column = rail_id | Filecoin Pay rail identifier.
--- asset.column = payer | Payer address funding the rail.
--- asset.column = payee | Payee address receiving the rail payments.
--- asset.column = token | ERC20 token address used by the rail.
--- asset.column = operator | Operator address recorded on rail creation.
--- asset.column = service | Service classification derived from operator: Storacha for the Storacha operator address, otherwise FWSS.
--- asset.column = validator | Validator address recorded on rail creation.
--- asset.column = service_fee_recipient | Service fee recipient address recorded on rail creation.
--- asset.column = commission_rate_bps | Commission rate in basis points recorded on rail creation.
--- asset.column = is_arr_eligible | Whether the rail should count toward USDFC ARR (USDFC token and non-DealBot payer).
--- asset.column = created_block | Block where the rail was created.
--- asset.column = created_log_index | Log index of the RailCreated event.
--- asset.column = created_transaction_hash | Transaction hash of the RailCreated event.
--- asset.column = created_date | UTC date derived from the creation block.
--- asset.column = terminated_block | Block where the rail was terminated, if any.
--- asset.column = terminated_log_index | Log index of the RailTerminated event, if any.
--- asset.column = terminated_transaction_hash | Transaction hash of the RailTerminated event, if any.
+-- asset.column = payer | Payer address.
+-- asset.column = payee | Payee address.
+-- asset.column = token | ERC20 token address.
+-- asset.column = operator | Operator address.
+-- asset.column = service | Service classification.
+-- asset.column = validator | Validator address.
+-- asset.column = service_fee_recipient | Service fee recipient address.
+-- asset.column = commission_rate_bps | Commission rate in basis points.
+-- asset.column = is_arr_eligible | Whether the rail counts toward ARR.
+-- asset.column = created_block | Creation block number.
+-- asset.column = created_log_index | Creation log index.
+-- asset.column = created_transaction_hash | Creation transaction hash.
+-- asset.column = created_date | UTC creation date.
+-- asset.column = terminated_block | Termination block number, if any.
+-- asset.column = terminated_log_index | Termination log index, if any.
+-- asset.column = terminated_transaction_hash | Termination transaction hash, if any.
 -- asset.column = terminated_by | Address that terminated the rail, if any.
--- asset.column = terminated_end_epoch | End epoch emitted by RailTerminated, if any.
--- asset.column = terminated_date | UTC date derived from the termination block, if any.
--- asset.column = terminated_end_date | UTC date derived from the termination end epoch, if any.
+-- asset.column = terminated_end_epoch | End epoch emitted on termination, if any.
+-- asset.column = terminated_date | UTC termination date, if any.
+-- asset.column = terminated_end_date | UTC termination end date, if any.
 -- asset.column = is_terminated | Whether the rail has a termination event.
 
 -- asset.not_null = rail_id
@@ -107,4 +107,4 @@ left join rail_terminated as terminated
     on created.rail_id = terminated.rail_id
    and terminated.row_num = 1
 where created.row_num = 1
-order by created.created_block, created.created_log_index
+order by created_date desc

@@ -1,29 +1,17 @@
--- asset.description = Daily Filecoin sector lifecycle metrics by storage
--- provider from Lily miner sector events. Before 2026-01-16, terminated
--- metrics include expirations because Lily did not emit SECTOR_EXPIRED yet.
+-- asset.description = Daily storage provider sector lifecycle totals.
+
 -- asset.resource = bigquery.lily
 
--- asset.column = date | UTC day for the sector lifecycle metrics.
--- asset.column = provider_id | Filecoin storage provider miner actor id
--- address.
--- asset.column = onboarded_tibs | Total raw sector data onboarded by the
--- provider on the day from SECTOR_ADDED and COMMIT_CAPACITY_ADDED, in
--- tebibytes.
--- asset.column = onboarded_sectors | Total sectors onboarded by the provider on
--- the day.
--- asset.column = terminated_tibs | Total raw sector data terminated by the
--- provider on the day from SECTOR_TERMINATED, in tebibytes. Before 2026-01-16
--- this also includes expirations.
--- asset.column = terminated_sectors | Total sectors terminated by the provider
--- on the day. Before 2026-01-16 this also includes expirations.
--- asset.column = expired_tibs | Total raw sector data expired by the provider
--- on the day from SECTOR_EXPIRED, in tebibytes.
--- asset.column = expired_sectors | Total sectors expired by the provider on the
--- day from SECTOR_EXPIRED.
--- asset.column = removed_tibs | Total raw sector data removed by the provider
--- on the day from termination or expiration, in tebibytes.
--- asset.column = removed_sectors | Total sectors removed by the provider on the
--- day from termination or expiration.
+-- asset.column = date | UTC date.
+-- asset.column = provider_id | Filecoin storage provider actor id address.
+-- asset.column = onboarded_tibs | Raw data onboarded on the date, in tebibytes.
+-- asset.column = onboarded_sectors | Sectors onboarded on the date.
+-- asset.column = terminated_tibs | Raw data terminated on the date, in tebibytes.
+-- asset.column = terminated_sectors | Sectors terminated on the date.
+-- asset.column = expired_tibs | Raw data expired on the date, in tebibytes.
+-- asset.column = expired_sectors | Sectors expired on the date.
+-- asset.column = removed_tibs | Raw data removed on the date, in tebibytes.
+-- asset.column = removed_sectors | Sectors removed on the date.
 
 -- asset.not_null = date
 -- asset.not_null = provider_id
@@ -105,4 +93,3 @@ where e.event in (
     'SECTOR_EXPIRED'
 )
 group by 1, 2
-order by 1, 2

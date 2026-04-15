@@ -1,26 +1,26 @@
--- asset.description = Mainnet Filecoin Pay rail rate intervals reconstructed from onchain events. Each row is a half-open interval [start_ordinal, end_ordinal) where a rail's recurring payment rate is constant.
+-- asset.description = Filecoin Pay rail rate intervals.
 
--- asset.depends = main.foc_filecoin_pay_rails
+-- asset.depends = model.filecoin_pay_rails
 -- asset.depends = raw.fevm_eth_logs_decoded
 
 -- asset.column = rail_id | Filecoin Pay rail identifier.
--- asset.column = service | Service classification copied from main.foc_filecoin_pay_rails.
--- asset.column = payer | Payer address funding the rail.
--- asset.column = payee | Payee address receiving the rail payments.
--- asset.column = token | ERC20 token address used by the rail.
--- asset.column = operator | Operator address recorded on rail creation.
--- asset.column = validator | Validator address recorded on rail creation.
--- asset.column = is_arr_eligible | Whether the rail should count toward USDFC ARR.
--- asset.column = start_block | Inclusive block where the interval starts.
--- asset.column = start_log_index | Inclusive log index where the interval starts.
--- asset.column = start_ordinal | Inclusive event ordinal computed as block_number * 1000000 + log_index.
--- asset.column = start_date | UTC date derived from the start block.
--- asset.column = end_block | Exclusive block where the interval ends, if any.
--- asset.column = end_log_index | Exclusive log index where the interval ends, if any.
--- asset.column = end_ordinal | Exclusive event ordinal where the interval ends, if any.
--- asset.column = end_date | UTC date derived from the end block, if any.
--- asset.column = rate_wei_per_epoch | Constant recurring payment rate during the interval, in token wei per epoch.
--- asset.column = rate_token_per_epoch | Constant recurring payment rate during the interval, scaled to whole-token units.
+-- asset.column = service | Service classification.
+-- asset.column = payer | Payer address.
+-- asset.column = payee | Payee address.
+-- asset.column = token | ERC20 token address.
+-- asset.column = operator | Operator address.
+-- asset.column = validator | Validator address.
+-- asset.column = is_arr_eligible | Whether the rail counts toward ARR.
+-- asset.column = start_block | Inclusive start block.
+-- asset.column = start_log_index | Inclusive start log index.
+-- asset.column = start_ordinal | Inclusive event ordinal.
+-- asset.column = start_date | UTC start date.
+-- asset.column = end_block | Exclusive end block, if any.
+-- asset.column = end_log_index | Exclusive end log index, if any.
+-- asset.column = end_ordinal | Exclusive end ordinal, if any.
+-- asset.column = end_date | UTC end date, if any.
+-- asset.column = rate_wei_per_epoch | Recurring payment rate, in token wei per epoch.
+-- asset.column = rate_token_per_epoch | Recurring payment rate, in whole-token units per epoch.
 
 -- asset.not_null = rail_id
 
@@ -34,7 +34,7 @@ rate_change_points as (
         rails.created_log_index as log_index,
         rails.created_block * 1000000 + rails.created_log_index as ordinal,
         cast(0 as bigint) as rate_wei_per_epoch
-    from main.foc_filecoin_pay_rails as rails
+    from model.filecoin_pay_rails as rails
 
     union all
 
@@ -67,7 +67,7 @@ valid_change_points as (
             else rails.terminated_block * 1000000 + rails.terminated_log_index
         end as terminated_ordinal
     from rate_change_points as change_points
-    join main.foc_filecoin_pay_rails as rails using (rail_id)
+    join model.filecoin_pay_rails as rails using (rail_id)
     where rails.terminated_block is null
        or change_points.ordinal < rails.terminated_block * 1000000 + rails.terminated_log_index
 ),
@@ -141,4 +141,4 @@ select
     rate_wei_per_epoch,
     cast(rate_wei_per_epoch as decimal(38, 0)) / cast(1000000000000000000 as decimal(38, 0)) as rate_token_per_epoch
 from intervals
-order by rail_id, start_ordinal
+order by start_date desc

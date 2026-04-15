@@ -1,44 +1,44 @@
--- asset.description = Mainnet Filecoin service providers reconstructed from ServiceProviderRegistry and FWSS events. Includes registry identity, event-derived PDP offering state, parsed capability fields, and FWSS approval status.
+-- asset.description = Published PDP service providers.
 
 -- asset.depends = raw.fevm_eth_logs_decoded
 
 -- asset.column = provider_id | Service provider registry identifier.
--- asset.column = service_provider | Provider control address recorded at registration.
--- asset.column = payee | Payee address recorded at registration.
--- asset.column = is_registered | Whether the provider has a ProviderRegistered event.
--- asset.column = is_removed | Whether the provider has a ProviderRemoved event.
--- asset.column = is_active | Event-derived registry activity flag based on registration, removal, and PDP product removal state.
--- asset.column = product_type | Latest PDP product type label from registry product lifecycle events.
--- asset.column = offers_pdp_storage | Whether the latest PDP product lifecycle event indicates an active PDP offering.
--- asset.column = service_url | PDP service endpoint URL decoded from capability bytes.
--- asset.column = location | PDP provider location in DN format decoded from capability bytes.
--- asset.column = location_country_code | Country code parsed from the decoded location DN.
--- asset.column = location_region | State or region parsed from the decoded location DN.
--- asset.column = location_city | City parsed from the decoded location DN.
--- asset.column = payment_token_address | Payment token address declared in PDP capabilities.
--- asset.column = min_piece_size_bytes | Minimum supported piece size in bytes declared in PDP capabilities.
--- asset.column = max_piece_size_bytes | Maximum supported piece size in bytes declared in PDP capabilities.
--- asset.column = storage_price_per_tib_per_day | Storage price per TiB per day in token base units declared in PDP capabilities.
--- asset.column = min_proving_period_epochs | Minimum proving period in epochs declared in PDP capabilities.
--- asset.column = supports_ipni_piece | Whether PDP capabilities declare IPNI piece support.
--- asset.column = supports_ipni_ipfs | Whether PDP capabilities declare IPNI IPFS support.
--- asset.column = ipni_peer_id_hex | Raw hex-encoded IPNI peer id bytes from PDP capabilities.
--- asset.column = capacity_tib_text | Optional capacity text declared in extra PDP capabilities.
--- asset.column = capacity_tib | Numeric capacity parsed from capacity_tib_text when possible.
--- asset.column = service_status | Optional service status decoded from extra PDP capabilities.
--- asset.column = capabilities_json | JSON object of the latest active PDP capability key-value pairs with raw hex values.
--- asset.column = registered_block | Block where the provider was registered.
--- asset.column = registered_transaction_hash | Transaction hash of the registration event.
--- asset.column = registered_date | UTC date derived from the registration block.
--- asset.column = product_last_updated_block | Block of the latest PDP product lifecycle event.
--- asset.column = product_last_updated_transaction_hash | Transaction hash of the latest PDP product lifecycle event.
--- asset.column = product_last_updated_date | UTC date derived from the latest PDP product lifecycle event block.
--- asset.column = is_fwss_approved | Whether the latest FWSS provider approval lifecycle event indicates the provider is approved.
--- asset.column = fwss_first_approved_block | First block where FWSS approved the provider, if any.
--- asset.column = fwss_first_approved_date | UTC date derived from the first FWSS approval block, if any.
--- asset.column = fwss_last_approval_block | Block of the latest FWSS provider approval lifecycle event, if any.
--- asset.column = fwss_last_approval_transaction_hash | Transaction hash of the latest FWSS provider approval lifecycle event, if any.
--- asset.column = fwss_last_approval_date | UTC date derived from the latest FWSS provider approval lifecycle event block, if any.
+-- asset.column = service_provider | Provider control address.
+-- asset.column = payee | Payee address.
+-- asset.column = is_registered | Whether the provider has a registration event.
+-- asset.column = is_removed | Whether the provider has a removal event.
+-- asset.column = is_active | Whether the provider is active based on registry and PDP product state.
+-- asset.column = product_type | Latest PDP product type label.
+-- asset.column = offers_pdp_storage | Whether the latest PDP product event indicates an active PDP offering.
+-- asset.column = service_url | Service endpoint URL decoded from capabilities.
+-- asset.column = location | Provider location decoded from capabilities.
+-- asset.column = location_country_code | Country code parsed from the location DN.
+-- asset.column = location_region | State or region parsed from the location DN.
+-- asset.column = location_city | City parsed from the location DN.
+-- asset.column = payment_token_address | Payment token address from capabilities.
+-- asset.column = min_piece_size_bytes | Minimum supported piece size, in bytes.
+-- asset.column = max_piece_size_bytes | Maximum supported piece size, in bytes.
+-- asset.column = storage_price_per_tib_per_day | Storage price per TiB per day in token base units.
+-- asset.column = min_proving_period_epochs | Minimum proving period, in epochs.
+-- asset.column = supports_ipni_piece | Whether IPNI piece support is declared.
+-- asset.column = supports_ipni_ipfs | Whether IPNI IPFS support is declared.
+-- asset.column = ipni_peer_id_hex | Raw hex-encoded IPNI peer id.
+-- asset.column = capacity_tib_text | Capacity text from extra capabilities, if any.
+-- asset.column = capacity_tib | Parsed numeric capacity, in TiB, if any.
+-- asset.column = service_status | Service status from extra capabilities, if any.
+-- asset.column = capabilities_json | Latest active PDP capability key-value pairs.
+-- asset.column = registered_block | Registration block number.
+-- asset.column = registered_transaction_hash | Registration transaction hash.
+-- asset.column = registered_date | UTC registration date.
+-- asset.column = product_updated_block | Latest PDP product lifecycle block.
+-- asset.column = product_updated_transaction_hash | Latest PDP product lifecycle transaction hash.
+-- asset.column = product_updated_date | UTC latest PDP product lifecycle date.
+-- asset.column = is_fwss_approved | Whether the latest FWSS approval event is approved.
+-- asset.column = fwss_first_approved_block | First FWSS approval block, if any.
+-- asset.column = fwss_first_approved_date | UTC first FWSS approval date, if any.
+-- asset.column = fwss_last_approval_block | Latest FWSS approval block, if any.
+-- asset.column = fwss_last_approval_transaction_hash | Latest FWSS approval transaction hash, if any.
+-- asset.column = fwss_last_approval_date | UTC latest FWSS approval date, if any.
 
 -- asset.not_null = provider_id
 -- asset.unique = provider_id
@@ -101,10 +101,10 @@ latest_pdp_product as (
         provider_id,
         product_type,
         event_name,
-        block_number as product_last_updated_block,
-        log_index as product_last_updated_log_index,
-        transaction_hash as product_last_updated_transaction_hash,
-        event_date as product_last_updated_date,
+        block_number as product_updated_block,
+        log_index as product_updated_log_index,
+        transaction_hash as product_updated_transaction_hash,
+        event_date as product_updated_date,
         args
     from product_events
     where row_num = 1
@@ -197,11 +197,7 @@ fwss_approval_events as (
         row_number() over (
             partition by cast(json_extract_string(args, '$.providerId') as bigint)
             order by block_number desc, log_index desc
-        ) as latest_row_num,
-        row_number() over (
-            partition by cast(json_extract_string(args, '$.providerId') as bigint)
-            order by case when event_name = 'ProviderApproved' then block_number end, case when event_name = 'ProviderApproved' then log_index end
-        ) as first_approved_row_num
+        ) as latest_row_num
     from raw.fevm_eth_logs_decoded
     where abi_name = 'filecoin_warm_storage_service'
       and event_name in ('ProviderApproved', 'ProviderUnapproved')
@@ -223,15 +219,17 @@ fwss_first_approval as (
         event_date as fwss_first_approved_date
     from (
         select
-            provider_id,
+            cast(json_extract_string(args, '$.providerId') as bigint) as provider_id,
             block_number,
-            event_date,
+            log_index,
+            date(to_timestamp(block_number * 30 + (select genesis_timestamp from params))) as event_date,
             row_number() over (
-                partition by provider_id
+                partition by cast(json_extract_string(args, '$.providerId') as bigint)
                 order by block_number, log_index
             ) as row_num
-        from fwss_approval_events
-        where event_name = 'ProviderApproved'
+        from raw.fevm_eth_logs_decoded
+        where abi_name = 'filecoin_warm_storage_service'
+          and event_name = 'ProviderApproved'
     )
     where row_num = 1
 )
@@ -268,9 +266,9 @@ select
     registered.registered_block,
     registered.registered_transaction_hash,
     registered.registered_date,
-    products.product_last_updated_block,
-    products.product_last_updated_transaction_hash,
-    products.product_last_updated_date,
+    products.product_updated_block,
+    products.product_updated_transaction_hash,
+    products.product_updated_date,
     coalesce(fwss_latest.is_fwss_approved, false) as is_fwss_approved,
     fwss_first.fwss_first_approved_block,
     fwss_first.fwss_first_approved_date,
@@ -290,4 +288,3 @@ left join fwss_latest_approval as fwss_latest
 left join fwss_first_approval as fwss_first
     on registered.provider_id = fwss_first.provider_id
 where registered.row_num = 1
-order by registered.provider_id

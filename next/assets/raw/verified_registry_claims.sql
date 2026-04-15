@@ -1,5 +1,6 @@
 -- asset.description = Successful verified registry claims extracted from
 -- parseable ClaimAllocations messages in Lily BigQuery.
+
 -- asset.resource = bigquery.lily
 
 -- asset.column = claim_epoch | Chain epoch when the verified claim was

@@ -21,8 +21,21 @@ Guidelines for `fdp`, a minimalistic and functional open data platform to help g
 - Run `make check` after writing assets, if it pass, materialize the asset, then query it
 - Orchestration, resources, io, and platform related code lives under `fdp`, assets under `assets`
 - You can learn more about how `fdp` wors in the documentation
-- If an asset can be generalized, ask the user (this will reduce LOC)
 - Assets are executed once a day in GitHub Actions, optimize accordingly
+
+### Assets
+
+- Use consistent naming on columns (`_at` for timestamps)
+- Keep descriptions short and concise (no need to mention mainnet, ...)
+- If an asset can be generalized or modularized, ask the user (this will reduce asset LOC)
+
+#### Modeling
+
+Produce simple and clean models under the right schema:
+
+- `raw`. Source-ish shaped tables. External extracts, source-level aggregations, ...
+- `model`. Reusable semantic layer. Entity modeling, derived daily facts, shared spines/calendars. Depend on raw and other `model` assets
+- `main`. Public contract with the final wide `entities` (mostly `select ... from model....`) and daily tables (mostly `left join of model.daily_*`) without cure business logic
 
 ### Discovering Information
 

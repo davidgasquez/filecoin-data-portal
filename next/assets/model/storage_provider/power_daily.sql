@@ -1,17 +1,12 @@
--- asset.description = Daily end-of-day Filecoin storage provider power
--- snapshots derived from Lily power actor claims, with sparse rows only for
--- provider-days with positive power.
+-- asset.description = Daily storage provider power snapshots.
+
 -- asset.resource = bigquery.lily
 
--- asset.column = date | UTC day for the end-of-day power snapshot.
--- asset.column = provider_id | Filecoin storage provider miner actor id
--- address.
--- asset.column = raw_power_tibs | End-of-day raw byte power for the provider,
--- in tebibytes.
--- asset.column = quality_adjusted_power_tibs | End-of-day quality adjusted
--- power for the provider, in tebibytes.
--- asset.column = has_power | Whether the provider had positive raw or quality
--- adjusted power at end of day.
+-- asset.column = date | UTC date.
+-- asset.column = provider_id | Filecoin storage provider actor id address.
+-- asset.column = raw_power_tibs | End-of-day raw byte power, in tebibytes.
+-- asset.column = quality_adjusted_power_tibs | End-of-day quality adjusted power, in tebibytes.
+-- asset.column = has_power | Whether the provider had positive power at end of day.
 
 -- asset.not_null = date
 -- asset.not_null = provider_id
@@ -66,4 +61,3 @@ unnest(
 ) as day
 where raw_power_bytes > 0
    or quality_adjusted_power_bytes > 0
-order by 1, 2
