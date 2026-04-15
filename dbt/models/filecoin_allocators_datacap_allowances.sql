@@ -16,26 +16,47 @@ with source as (
         aa ->> '$.unnest.issueCreateTimestamp' as issue_created_at,
         aa ->> '$.unnest.createMessageTimestamp' as messaged_created_at
     from {{ source("raw_assets", "raw_datacapstats_verifiers") }}, unnest(allowanceArray) as aa
+),
+
+parsed as (
+    select
+        try_cast(allowance_id as numeric) as allowance_id,
+        allocator_id,
+        allowance_error,
+        try_cast(height as numeric) as height,
+        message_cid,
+        retries,
+        try_cast(allowance as bigint) as allowance_bytes,
+        audit_trail,
+        allowance_address_id,
+        dc_source,
+        audit_status,
+        is_virtual,
+        try_cast(verifier_id as numeric) as verifier_id,
+        to_timestamp(try_cast(issue_created_at as numeric)) as issue_created_at,
+        to_timestamp(try_cast(messaged_created_at as numeric)) as messaged_created_at
+    from source
 )
 
 select
-    allowance_id::numeric as allowance_id,
+    allowance_id,
     allocator_id,
     allowance_error,
-    height::numeric as height,
-    to_timestamp(try_cast(height as numeric) * 30 + 1598306400)::timestamp as height_at,
+    height,
+    to_timestamp(height * 30 + 1598306400)::timestamp as height_at,
     message_cid,
     retries,
-    allowance::bigint as allowance_bytes,
-    allowance::bigint / power(1024, 4) as allowance_tibs,
+    allowance_bytes,
+    allowance_bytes / power(1024, 4) as allowance_tibs,
     audit_trail,
     allowance_address_id,
     dc_source,
     audit_status,
     is_virtual,
-    try_cast(verifier_id as numeric) as verifier_id,
-    to_timestamp(try_cast(issue_created_at as numeric)) as issue_created_at,
-    to_timestamp(messaged_created_at::numeric) as messaged_created_at
-from source
+    verifier_id,
+    issue_created_at,
+    messaged_created_at
+from parsed
+where height is not null
 qualify row_number() over (partition by message_cid, height order by height desc) = 1
 order by height desc
