@@ -2,7 +2,7 @@
 
 Published PDP service providers.
 
-- asset code: `https://github.com/davidgasquez/filecoin-data-portal/tree/main/next/assets/main/pdp/service_providers.sql`
+- asset code: `https://github.com/davidgasquez/filecoin-data-portal/blob/main/assets/main/pdp/service_providers.sql`
 - rows: `27`
 
 ## Depends

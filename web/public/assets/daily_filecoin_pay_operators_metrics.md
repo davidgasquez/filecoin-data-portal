@@ -2,7 +2,7 @@
 
 Published daily Filecoin Pay operators metrics.
 
-- asset code: `https://github.com/davidgasquez/filecoin-data-portal/tree/main/next/assets/main/daily/filecoin_pay_operators_metrics.sql`
+- asset code: `https://github.com/davidgasquez/filecoin-data-portal/blob/main/assets/main/daily/filecoin_pay_operators_metrics.sql`
 - rows: `344`
 
 ## Depends

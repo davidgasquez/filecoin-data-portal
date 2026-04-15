@@ -2,7 +2,7 @@
 
 Published storage providers.
 
-- asset code: `https://github.com/davidgasquez/filecoin-data-portal/tree/main/next/assets/main/storage_providers.sql`
+- asset code: `https://github.com/davidgasquez/filecoin-data-portal/blob/main/assets/main/storage_providers.sql`
 - rows: `8870`
 
 ## Depends

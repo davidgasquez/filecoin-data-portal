@@ -2,7 +2,7 @@
 
 Published warm storage datasets.
 
-- asset code: `https://github.com/davidgasquez/filecoin-data-portal/tree/main/next/assets/main/warm_storage/datasets.sql`
+- asset code: `https://github.com/davidgasquez/filecoin-data-portal/blob/main/assets/main/warm_storage/datasets.sql`
 - rows: `834`
 
 ## Depends

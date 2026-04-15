@@ -2,7 +2,7 @@
 
 Published daily network metrics.
 
-- asset code: `https://github.com/davidgasquez/filecoin-data-portal/tree/main/next/assets/main/daily/network_metrics.sql`
+- asset code: `https://github.com/davidgasquez/filecoin-data-portal/blob/main/assets/main/daily/network_metrics.sql`
 - rows: `2061`
 
 ## Depends

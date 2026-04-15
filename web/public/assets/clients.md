@@ -2,7 +2,7 @@
 
 Published clients.
 
-- asset code: `https://github.com/davidgasquez/filecoin-data-portal/tree/main/next/assets/main/clients.sql`
+- asset code: `https://github.com/davidgasquez/filecoin-data-portal/blob/main/assets/main/clients.sql`
 - rows: `1500`
 
 ## Depends

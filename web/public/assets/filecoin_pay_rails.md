@@ -2,7 +2,7 @@
 
 Published Filecoin Pay rails.
 
-- asset code: `https://github.com/davidgasquez/filecoin-data-portal/tree/main/next/assets/main/filecoin_pay/rails.sql`
+- asset code: `https://github.com/davidgasquez/filecoin-data-portal/blob/main/assets/main/filecoin_pay/rails.sql`
 - rows: `1307`
 
 ## Depends

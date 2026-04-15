@@ -2,7 +2,7 @@
 
 Published daily storage providers metrics.
 
-- asset code: `https://github.com/davidgasquez/filecoin-data-portal/tree/main/next/assets/main/daily/storage_providers_metrics.sql`
+- asset code: `https://github.com/davidgasquez/filecoin-data-portal/blob/main/assets/main/daily/storage_providers_metrics.sql`
 - rows: `5319729`
 
 ## Depends

@@ -2,7 +2,7 @@
 
 Published daily clients metrics.
 
-- asset code: `https://github.com/davidgasquez/filecoin-data-portal/tree/main/next/assets/main/daily/clients_metrics.sql`
+- asset code: `https://github.com/davidgasquez/filecoin-data-portal/blob/main/assets/main/daily/clients_metrics.sql`
 - rows: `66266`
 
 ## Depends
