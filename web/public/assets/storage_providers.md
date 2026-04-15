@@ -8,7 +8,7 @@ Published storage providers.
 ## Depends
 
 - `raw.storage_provider_current_info`
-- `model.storage_provider_current_power`
+- `model.storage_provider_power_daily`
 - `model.storage_provider_market_deal_activity`
 - `model.storage_provider_sector_lifecycle_daily`
 - `model.daily_verified_claims`
