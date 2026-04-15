@@ -80,12 +80,12 @@ def main() -> None:
         help="Refresh assets in DuckDB.",
         description=(
             "Refresh assets in DuckDB. Selectors can be exact asset keys like "
-            "'raw.some_asset', asset folders like 'main' and 'main.beta', "
+            "'raw.some_asset', asset folders like 'main' and 'main.daily', "
             "or asset file/folder paths like "
-            "'assets/main/beta/some_asset.sql'. With explicit selectors, "
-            "refreshes only those assets by default. Use --with-deps to "
-            "refresh transitive dependencies too. With no selectors, "
-            "refreshes everything."
+            "'assets/main/daily/storage_providers_metrics.sql'. With explicit "
+            "selectors, refreshes only those assets by default. Use "
+            "--with-deps to refresh transitive dependencies too. With no "
+            "selectors, refreshes everything."
         ),
     )
     materialize_parser.add_argument(
@@ -94,8 +94,9 @@ def main() -> None:
         metavar="SELECTOR",
         help=(
             "Asset keys, asset folders, or asset file/folder paths to "
-            "refresh. Examples: 'main', 'main.beta', 'raw.some_asset', "
-            "'assets/main/beta/some_asset.sql'. Defaults to all assets."
+            "refresh. Examples: 'main', 'main.daily', 'raw.some_asset', "
+            "'assets/main/daily/storage_providers_metrics.sql'. Defaults to "
+            "all assets."
         ),
     )
     materialize_parser.add_argument(
@@ -169,9 +170,9 @@ def main() -> None:
         description=(
             "Publish materialized main tables to a target. Selectors can be "
             "exact asset keys like 'main.some_asset', asset folders like "
-            "'main' and 'main.beta', or asset file/folder paths like "
-            "'assets/main/beta/some_asset.sql'. With no selectors, publishes "
-            "all main assets."
+            "'main' and 'main.daily', or asset file/folder paths like "
+            "'assets/main/daily/storage_providers_metrics.sql'. With no "
+            "selectors, publishes all main assets."
         ),
     )
     publish_parser.add_argument(
@@ -185,8 +186,10 @@ def main() -> None:
         metavar="SELECTOR",
         help=(
             "Main asset keys, asset folders, or asset file/folder paths to "
-            "publish. Examples: 'main', 'main.beta', 'main.some_asset', "
-            "'assets/main/beta/some_asset.sql'. Defaults to all main assets."
+            "publish. Examples: 'main', 'main.daily', "
+            "'main.daily_storage_providers_metrics', "
+            "'assets/main/daily/storage_providers_metrics.sql'. Defaults to "
+            "all main assets."
         ),
     )
     publish_parser.set_defaults(func=_publish)

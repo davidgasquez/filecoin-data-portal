@@ -22,10 +22,6 @@ jobs:
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
 
-    defaults:
-      run:
-        working-directory: next
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -34,10 +30,10 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: |
-            next/fdp.duckdb
-          key: next-duckdb-${{ github.run_id }}
+            fdp.duckdb
+          key: duckdb-${{ github.run_id }}
           restore-keys: |
-            next-duckdb-
+            duckdb-
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v7
@@ -67,5 +63,5 @@ jobs:
         uses: actions/cache/save@v5
         with:
           path: |
-            next/fdp.duckdb
-          key: next-duckdb-${{ github.run_id }}
+            fdp.duckdb
+          key: duckdb-${{ github.run_id }}

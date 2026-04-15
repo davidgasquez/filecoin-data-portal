@@ -2,10 +2,11 @@
 
 ENV_FILE ?= .env
 FDP := uv run --env-file $(ENV_FILE) fdp
+PYTHON_DIRS := fdp assets
 
 lint:
-	uv run ruff check
-	uv run ty check
+	uv run ruff check $(PYTHON_DIRS)
+	uv run ty check $(PYTHON_DIRS)
 
 test:
 	$(FDP) test
@@ -16,6 +17,6 @@ check: lint
 run:
 	$(FDP) materialize
 
-qmd-update:
+qmd:
 	qmd update
 	qmd embed

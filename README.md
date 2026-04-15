@@ -1,24 +1,59 @@
 # Filecoin Data Portal
 
-This repository now has two data platform implementations:
+Open, minimal, local-first Data Platform for the Filecoin Ecosystem.
 
-- `next/`: current local-first FDP implementation and primary Python project
-- `legacy/`: old Dagster/dbt pipeline, kept for reference and existing scheduled jobs
+- Open source code producing open datasets in open formats using public infrastructure.
+- Runs on a laptop, server, or CI runner without any lock-ins.
 
-## Repository structure
+## 🚀 Quickstart
 
-- `next/`: current FDP CLI, assets, docs, and Python tooling
-- `legacy/`: legacy Dagster/dbt stack, exported tables, helper scripts, and old docs
-- `web/`: Astro website
-- `numbers/`: Observable dashboard
-- `pulse/`: Evidence dashboard
+The `fdp/` folder contains the CLI and lightweight orchestrator while the `assets/` folder hosts data assets and custom SQL data tests. The environment is assumed to be already loaded (you can autoload it running `uv` with `--env-file .env`).
 
-## CI
+- `uv run fdp list`
+- `uv run fdp check`
+- `uv run fdp materialize`
+- `uv run fdp materialize main`
+- `uv run fdp materialize main.daily`
+- `uv run fdp materialize raw.some_asset`
+- `uv run fdp materialize assets/main/daily/filecoin_pay_operators_metrics.sql`
+- `uv run fdp materialize --with-deps main.daily`
+- `uv run fdp materialize --with-deps raw.some_asset`
+- `uv run fdp status`
+- `uv run fdp prune`
+- `uv run fdp docs`
+- `uv run fdp test`
+- `uv run fdp publish r2`
+- `uv run fdp publish r2 assets/main/daily/filecoin_pay_operators_metrics.sql`
+- `uv run fdp publish gsheet`
+- `uv run fdp show raw.daily_network_activity_by_method`
+- `uv run fdp query "select * from raw.daily_network_activity_by_method limit 10"`
 
-- `next.yml`: current FDP pipeline under `next/`
-- `pipeline.yml` and `tables.yml`: legacy Dagster/dbt jobs under `legacy/`
+FDP detects the project root from the nearest parent containing `assets/`. By default, DuckDB lives at `<project>/fdp.duckdb` and `fdp docs` writes to `<project>/build/docs`.
 
-## Start here
+When you pass explicit selectors to `fdp materialize`, FDP refreshes only the matched assets by default and expects their dependencies to already be materialized.
+Selectors can be asset keys, folder selectors, or asset file/folder paths under `assets/`. Use `--with-deps` to refresh the full dependency closure.
 
-- Current platform: `next/README.md`
-- Legacy Dagster/dbt stack: `legacy/README.md`
+## ⚙️ Development
+
+You can run the Filecoin Data Portal anywhere using `uv`. You'll need the following secrets in your environment:
+
+- `ENCODED_GOOGLE_APPLICATION_CREDENTIALS` (base64-encoded Google service account JSON)
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+- `R2_ACCOUNT_ID`
+- `R2_BUCKET`
+- `FDP_GSHEET_SPREADSHEET_ID`
+
+`uv run fdp publish r2` writes one parquet file per `main.*` table to R2.
+`uv run fdp publish gsheet` writes one worksheet per `main.*` table to a Google spreadsheet.
+Share the target spreadsheet with the Google service account from `ENCODED_GOOGLE_APPLICATION_CREDENTIALS`.
+
+For local development, load them explicitly with `uv run --env-file .env ...`.
+
+## 📃 Disclaimer
+
+The datasets provided by this service are made available "as is", without any warranties or guarantees of any kind, either expressed or implied. By using these datasets, you agree that you do so at your own risk.
+
+## 📝 Licenses
+
+The Filecoin Data Portal is licensed under the [MIT License](https://choosealicense.com/licenses/mit/).

@@ -8,9 +8,7 @@ from fdp.inspect import AssetView, inspect_assets
 from fdp.tabular import format_cell
 
 PUBLIC_DATASETS_BASE_URL = "https://data.filecoindataportal.xyz"
-GITHUB_TREE_BASE_URL = (
-    "https://github.com/davidgasquez/filecoin-data-portal/tree/main/next"
-)
+GITHUB_BLOB_BASE_URL = "https://github.com/davidgasquez/filecoin-data-portal/blob/main"
 
 
 def generate_docs(
@@ -146,7 +144,7 @@ def render_asset_markdown(
     asset = asset_view.asset
     description = asset.description or "_No description._"
     asset_path = asset.path.relative_to(project_root).as_posix()
-    asset_code_url = f"{GITHUB_TREE_BASE_URL}/{asset_path}"
+    asset_code_url = f"{GITHUB_BLOB_BASE_URL}/{asset_path}"
     lines = [
         f"# {asset.key}",
         "",

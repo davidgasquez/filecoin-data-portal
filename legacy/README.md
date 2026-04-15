@@ -16,7 +16,7 @@
 
 <br>
 
-> Legacy Dagster/dbt implementation. The current platform lives in [`../next/`](../next/README.md).
+> Legacy Dagster/dbt implementation.
 
 ## 📖 Overview
 
