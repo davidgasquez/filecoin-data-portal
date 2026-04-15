@@ -15,7 +15,9 @@
 - Runs on a laptop, server, or CI runner without any lock-ins.
 
 <div align="center">
-[![Support on drips.network](https://filecoin.drips.network/api/embed/project/https%3A%2F%2Fgithub.com%2Fdavidgasquez%2Ffilecoin-data-portal/support.png?background=light&style=drips&text=project&stat=none)](https://drips.network/app/projects/github/davidgasquez/filecoin-data-portal)
+  <a href="https://drips.network/app/projects/github/davidgasquez/filecoin-data-portal">
+    <img src="https://filecoin.drips.network/api/embed/project/https%3A%2F%2Fgithub.com%2Fdavidgasquez%2Ffilecoin-data-portal/support.png?background=light&style=drips&text=project&stat=none" alt="Support filecoin-data-portal on drips.network" height="21">
+  </a>
 </div>
 
 ## 🚀 Quickstart
