@@ -1,4 +1,4 @@
--- asset.description = Published daily storage providers metrics.
+-- asset.description = Published daily metrics for storage providers with power.
 
 -- asset.depends = model.storage_provider_power_daily
 -- asset.depends = model.storage_provider_sector_lifecycle_daily
@@ -8,7 +8,6 @@
 -- asset.column = provider_id | Filecoin storage provider actor id address.
 -- asset.column = raw_power_tibs | End-of-day raw byte power, in tebibytes.
 -- asset.column = quality_adjusted_power_tibs | End-of-day quality adjusted power, in tebibytes.
--- asset.column = has_power | Whether the provider had positive power at end of day.
 -- asset.column = onboarded_tibs | Raw data onboarded on the date, in tebibytes.
 -- asset.column = onboarded_sectors | Sectors onboarded on the date.
 -- asset.column = terminated_tibs | Raw data terminated on the date, in tebibytes.
@@ -25,7 +24,6 @@
 -- asset.not_null = provider_id
 -- asset.not_null = raw_power_tibs
 -- asset.not_null = quality_adjusted_power_tibs
--- asset.not_null = has_power
 -- asset.not_null = onboarded_tibs
 -- asset.not_null = onboarded_sectors
 -- asset.not_null = terminated_tibs
@@ -47,20 +45,12 @@ with verified_claims as (
         count(distinct client_id) as verified_clients
     from model.daily_verified_claims
     group by 1, 2
-),
-provider_days as (
-    select date, provider_id from model.storage_provider_power_daily
-    union
-    select date, provider_id from model.storage_provider_sector_lifecycle_daily
-    union
-    select date, provider_id from verified_claims
 )
 select
-    provider_days.date,
-    provider_days.provider_id,
-    coalesce(power.raw_power_tibs, 0) as raw_power_tibs,
-    coalesce(power.quality_adjusted_power_tibs, 0) as quality_adjusted_power_tibs,
-    coalesce(power.has_power, false) as has_power,
+    power.date,
+    power.provider_id,
+    power.raw_power_tibs,
+    power.quality_adjusted_power_tibs,
     coalesce(sector_lifecycle.onboarded_tibs, 0) as onboarded_tibs,
     coalesce(sector_lifecycle.onboarded_sectors, 0) as onboarded_sectors,
     coalesce(sector_lifecycle.terminated_tibs, 0) as terminated_tibs,
@@ -72,9 +62,7 @@ select
     coalesce(verified_claims.verified_data_onboarded_tibs, 0) as verified_data_onboarded_tibs,
     coalesce(verified_claims.verified_claims, 0) as verified_claims,
     coalesce(verified_claims.verified_clients, 0) as verified_clients
-from provider_days
-left join model.storage_provider_power_daily as power
-    using (date, provider_id)
+from model.storage_provider_power_daily as power
 left join model.storage_provider_sector_lifecycle_daily as sector_lifecycle
     using (date, provider_id)
 left join verified_claims

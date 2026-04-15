@@ -71,7 +71,7 @@ source_dates as (
 date_bounds as (
     select
         min(date) as min_date,
-        max(date) as max_date
+        least(max(date), current_date - 1) as max_date
     from source_dates
 ),
 dates as (
