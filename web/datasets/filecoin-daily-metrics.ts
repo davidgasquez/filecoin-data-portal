@@ -2,8 +2,8 @@ import { DuckDBInstance } from "@duckdb/node-api";
 
 const DAILY_METRICS_PARQUET_URL =
   "https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet";
-const BETA_FILECOIN_DAILY_CORE_METRICS_PARQUET_URL =
-  "https://data.filecoindataportal.xyz/beta_daily_filecoin_core_metrics.parquet";
+const DAILY_NETWORK_METRICS_PARQUET_URL =
+  "https://data.filecoindataportal.xyz/daily_network_metrics.parquet";
 
 type DatasetValue = boolean | number | string | null;
 type DatasetRow = Record<string, DatasetValue>;
@@ -12,8 +12,8 @@ const SQL = `
   WITH core_metrics AS (
     SELECT
       date,
-      total_arr_usdfc
-    FROM read_parquet('${BETA_FILECOIN_DAILY_CORE_METRICS_PARQUET_URL}')
+      arr_usdfc
+    FROM read_parquet('${DAILY_NETWORK_METRICS_PARQUET_URL}')
     WHERE date IS NOT NULL
   ),
   daily_metrics AS (
@@ -55,7 +55,7 @@ const SQL = `
       dm.fil_token_market_cap_usd,
       dm.fil_plus_bytes_share,
       dm.fil_plus_rewards_share,
-      coalesce(cm.total_arr_usdfc, 0) AS total_arr_usdfc
+      coalesce(cm.arr_usdfc, 0) AS arr_usdfc
     FROM read_parquet('${DAILY_METRICS_PARQUET_URL}') AS dm
     LEFT JOIN core_metrics AS cm ON dm.date = cm.date
     WHERE dm.date IS NOT NULL
@@ -65,7 +65,7 @@ const SQL = `
     sector_onboarding_raw_power_pibs,
     clients_with_active_data_gt_1_tibs,
     deal_storage_cost_fil,
-    total_arr_usdfc,
+    arr_usdfc,
     total_value_fil,
     total_gas_used_millions,
     sector_terminated_raw_power_pibs,
