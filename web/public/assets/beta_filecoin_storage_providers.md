@@ -1,4 +1,4 @@
-# beta_filecoin_storage_providers
+# main.beta_filecoin_storage_providers
 
 Historically active Filecoin storage providers enriched with current miner info, current power, market deal activity, and verified claim activity.
 

@@ -3,11 +3,14 @@ import io
 from pathlib import Path
 
 from fdp.api import default_docs_path
-from fdp.assets import load_assets
+from fdp.assets import Asset, load_assets
 from fdp.inspect import AssetView, inspect_assets
 from fdp.tabular import format_cell
 
 PUBLIC_DATASETS_BASE_URL = "https://data.filecoindataportal.xyz"
+GITHUB_TREE_BASE_URL = (
+    "https://github.com/davidgasquez/filecoin-data-portal/tree/main/next"
+)
 
 
 def generate_docs(
@@ -40,7 +43,10 @@ def write_docs(
     project_root: Path,
     asset_views: list[AssetView],
 ) -> None:
-    documented_asset_keys = {asset_view.asset.key for asset_view in asset_views}
+    documented_asset_filenames = {
+        asset_view.asset.key: asset_doc_filename(asset_view.asset)
+        for asset_view in asset_views
+    }
     assets_dir = out_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
     for path in assets_dir.glob("*.md"):
@@ -51,11 +57,11 @@ def write_docs(
         encoding="utf-8",
     )
     for asset_view in asset_views:
-        (assets_dir / f"{asset_view.asset.key}.md").write_text(
+        (assets_dir / documented_asset_filenames[asset_view.asset.key]).write_text(
             render_asset_markdown(
                 asset_view,
                 project_root,
-                documented_asset_keys,
+                documented_asset_filenames,
             ),
             encoding="utf-8",
         )
@@ -126,7 +132,7 @@ def render_dataset_links(
         description = asset_view.asset.description or "No description."
         lines.append(
             f"- [`{asset_view.asset.name}`]"
-            f"({asset_docs_path}/{asset_view.asset.key}.md)"
+            f"({asset_docs_path}/{asset_doc_filename(asset_view.asset)})"
             f" — {description}"
         )
     return lines
@@ -135,16 +141,18 @@ def render_dataset_links(
 def render_asset_markdown(
     asset_view: AssetView,
     project_root: Path,
-    documented_asset_keys: set[str],
+    documented_asset_filenames: dict[str, str],
 ) -> str:
     asset = asset_view.asset
     description = asset.description or "_No description._"
+    asset_path = asset.path.relative_to(project_root).as_posix()
+    asset_code_url = f"{GITHUB_TREE_BASE_URL}/{asset_path}"
     lines = [
         f"# {asset.key}",
         "",
         description,
         "",
-        f"- path: `{asset.path.relative_to(project_root).as_posix()}`",
+        f"- asset code: `{asset_code_url}`",
         f"- rows: `{asset_view.row_count}`",
     ]
     if asset.depends:
@@ -152,7 +160,7 @@ def render_asset_markdown(
             "",
             "## Depends",
             "",
-            *render_dependencies(asset_view, documented_asset_keys),
+            *render_dependencies(asset_view, documented_asset_filenames),
         ])
     lines.extend([
         "",
@@ -174,16 +182,20 @@ def render_asset_markdown(
 
 def render_dependencies(
     asset_view: AssetView,
-    documented_asset_keys: set[str],
+    documented_asset_filenames: dict[str, str],
 ) -> list[str]:
     return [
         (
-            f"- [`{dependency}`]({dependency}.md)"
-            if dependency in documented_asset_keys
+            f"- [`{dependency}`]({documented_asset_filenames[dependency]})"
+            if dependency in documented_asset_filenames
             else f"- `{dependency}`"
         )
         for dependency in asset_view.asset.depends
     ]
+
+
+def asset_doc_filename(asset: Asset) -> str:
+    return f"{asset.name}.md"
 
 
 def render_tests(asset_view: AssetView, project_root: Path) -> list[str]:

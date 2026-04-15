@@ -1,9 +1,9 @@
-# beta_filecoin_daily_client_metrics
+# main.beta_daily_filecoin_clients_metrics
 
 Daily Filecoin client metrics from verified claims, with sparse client-day rows.
 
-- asset code: `https://github.com/davidgasquez/filecoin-data-portal/tree/main/next/assets/main/beta/filecoin_daily_client_metrics.sql`
-- rows: `66259`
+- asset code: `https://github.com/davidgasquez/filecoin-data-portal/tree/main/next/assets/main/beta/daily/filecoin_clients_metrics.sql`
+- rows: `66266`
 
 ## Depends
 
@@ -34,14 +34,14 @@ Daily Filecoin client metrics from verified claims, with sparse client-day rows.
 
 ```csv
 date,client_id,verified_data_onboarded_tibs,verified_claims,unique_verified_providers
-2026-04-14,f03136439,1.09375,35,3
-2026-04-14,f03253574,0.5,16,1
-2026-04-14,f03644104,6.6875,214,2
-2026-04-14,f03759102,15.125,242,4
-2026-04-14,f03768208,0.75,24,2
-2026-04-13,f03136439,10.5,336,3
-2026-04-13,f03253574,3.5625,114,1
-2026-04-13,f03542902,0.34375,11,2
-2026-04-13,f03644104,69.71875,2231,2
-2026-04-13,f03644598,0.1875,6,4
+2026-04-15,f03136439,0.75,24,2
+2026-04-15,f03535091,2.3125,74,1
+2026-04-15,f03644104,10.8125,346,2
+2026-04-15,f03759102,14.125,226,4
+2026-04-14,f03136439,12.59375,403,3
+2026-04-14,f03253574,7.28125,233,2
+2026-04-14,f03542902,0.0625,2,1
+2026-04-14,f03644104,101.40625,3245,2
+2026-04-14,f03644598,0.15625,5,3
+2026-04-14,f03759102,170.1875,2723,4
 ```
