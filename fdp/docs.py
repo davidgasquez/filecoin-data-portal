@@ -145,12 +145,14 @@ def render_asset_markdown(
     description = asset.description or "_No description._"
     asset_path = asset.path.relative_to(project_root).as_posix()
     asset_code_url = f"{GITHUB_BLOB_BASE_URL}/{asset_path}"
+    dataset_url = public_dataset_url(asset)
     lines = [
         f"# {asset.key}",
         "",
         description,
         "",
         f"- asset code: `{asset_code_url}`",
+        f"- dataset url: `{dataset_url}`",
         f"- rows: `{asset_view.row_count}`",
     ]
     if asset.depends:
@@ -176,6 +178,10 @@ def render_asset_markdown(
         "",
     ])
     return "\n".join(lines)
+
+
+def public_dataset_url(asset: Asset) -> str:
+    return f"{PUBLIC_DATASETS_BASE_URL}/{asset.name}.parquet"
 
 
 def render_dependencies(
