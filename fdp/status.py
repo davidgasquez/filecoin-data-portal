@@ -1,5 +1,6 @@
 from fdp.api import (
     db_connection,
+    default_db_path,
     find_project_root,
     materialized_tables,
     quote_table_key,
@@ -47,6 +48,12 @@ def show_status() -> None:
 
 
 def prune_tables() -> None:
+    db_path = default_db_path()
+    if not db_path.exists():
+        print(f"Database not found: {db_path}")
+        print("Nothing to prune.")
+        return
+
     assets = discover_assets()
     asset_keys = set(assets)
 
