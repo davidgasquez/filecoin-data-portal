@@ -19,4 +19,4 @@ run:
 
 qmd:
 	qmd update
-	qmd embed
+	qmd embed --chunk-strategy auto
