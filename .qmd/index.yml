@@ -33,6 +33,13 @@ collections:
     context:
       "": Official Filecoin documentation covering concepts, protocol details, tooling, and user/developer guides.
 
+  fips:
+    path: .qmd/external
+    pattern: "{fips/**/*.{md,json,toml,yml,yaml},fips/**/Makefile}"
+    update: "[ -d fips/.git ] && git -C fips pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/FIPs.git fips"
+    context:
+      "": Filecoin Improvement Proposals and Filecoin Runtime Component specs, including accepted and draft protocol changes, standards, rationale, and proposal process docs.
+
   filecoin-services:
     path: .qmd/external
     pattern: "{filecoin-services/**/*.{md,sol,sh,js,toml,yml,yaml,json},filecoin-services/**/Makefile}"
