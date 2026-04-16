@@ -5,6 +5,7 @@
 -- asset.depends = model.daily_verified_claims
 -- asset.depends = model.daily_filecoin_pay_arr
 -- asset.depends = model.warm_storage_daily_activity
+-- asset.depends = raw.coincodex_filecoin_market_data
 
 -- asset.column = date | UTC date.
 -- asset.column = transactions | Onchain transactions.
@@ -21,30 +22,15 @@
 -- asset.column = new_payers | Payers whose first chargeable warm storage dataset started billing on the date.
 -- asset.column = new_datasets | Warm storage datasets whose billing started on the date.
 -- asset.column = arr_usdfc | End-of-day ARR run-rate from active ARR-eligible rails.
+-- asset.column = fil_token_price_avg_usd | Average FIL price in USD.
+-- asset.column = fil_token_volume_usd | FIL trading volume in USD.
+-- asset.column = fil_token_market_cap_usd | FIL market capitalization in USD.
 -- asset.column = verified_data_onboarded_pibs | Verified data claimed on the date, in pebibytes.
 -- asset.column = verified_claims | Successful verified claims on the date.
 -- asset.column = verified_clients | Clients with at least one successful verified claim on the date.
 -- asset.column = verified_providers | Providers with at least one successful verified claim on the date.
 
 -- asset.not_null = date
--- asset.not_null = transactions
--- asset.not_null = onboarded_pibs
--- asset.not_null = terminated_pibs
--- asset.not_null = expired_pibs
--- asset.not_null = removed_pibs
--- asset.not_null = gas_used_millions
--- asset.not_null = total_value_fil
--- asset.not_null = total_gas_fee_fil
--- asset.not_null = total_value_flow_fil
--- asset.not_null = active_payers
--- asset.not_null = active_datasets
--- asset.not_null = new_payers
--- asset.not_null = new_datasets
--- asset.not_null = arr_usdfc
--- asset.not_null = verified_data_onboarded_pibs
--- asset.not_null = verified_claims
--- asset.not_null = verified_clients
--- asset.not_null = verified_providers
 -- asset.unique = date
 
 with verified_claims as (
@@ -57,12 +43,22 @@ with verified_claims as (
     from model.daily_verified_claims
     group by 1
 ),
+market_data as (
+    select
+        cast(time_start as date) as date,
+        price_avg_usd as fil_token_price_avg_usd,
+        volume_usd as fil_token_volume_usd,
+        market_cap_usd as fil_token_market_cap_usd
+    from raw.coincodex_filecoin_market_data
+),
 source_dates as (
     select date from model.warm_storage_daily_activity
     union
     select date from model.daily_filecoin_pay_arr
     union
     select date from verified_claims
+    union
+    select date from market_data
     union
     select date from model.daily_sector_lifecycle
     union
@@ -98,6 +94,9 @@ select
     coalesce(warm_storage.new_payers, 0) as new_payers,
     coalesce(warm_storage.new_datasets, 0) as new_datasets,
     coalesce(pay_arr.arr_usdfc, 0) as arr_usdfc,
+    market_data.fil_token_price_avg_usd,
+    market_data.fil_token_volume_usd,
+    market_data.fil_token_market_cap_usd,
     coalesce(verified_claims.verified_data_onboarded_pibs, 0) as verified_data_onboarded_pibs,
     coalesce(verified_claims.verified_claims, 0) as verified_claims,
     coalesce(verified_claims.verified_clients, 0) as verified_clients,
@@ -106,6 +105,8 @@ from dates
 left join model.warm_storage_daily_activity as warm_storage
     using (date)
 left join model.daily_filecoin_pay_arr as pay_arr
+    using (date)
+left join market_data
     using (date)
 left join verified_claims
     using (date)
