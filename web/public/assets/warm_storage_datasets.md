@@ -3,6 +3,7 @@
 Published warm storage datasets.
 
 - asset code: `https://github.com/davidgasquez/filecoin-data-portal/blob/main/assets/main/warm_storage/datasets.sql`
+- dataset url: `https://data.filecoindataportal.xyz/warm_storage_datasets.parquet`
 - rows: `834`
 
 ## Depends
@@ -27,26 +28,26 @@ Published warm storage datasets.
 | `cdn_rail_id` | `BIGINT` | Filecoin Pay CDN rail identifier, if any. |  |
 | `has_cdn` | `BOOLEAN` | Whether CDN payment rails were configured. |  |
 | `created_block` | `BIGINT` | Creation block number. |  |
-| `created_date` | `DATE` | UTC creation date. |  |
+| `created_at` | `TIMESTAMP WITH TIME ZONE` | UTC creation timestamp. |  |
 | `billing_started_block` | `BIGINT` | First block with a positive billing rate, if any. |  |
-| `billing_started_date` | `DATE` | UTC billing start date, if any. |  |
+| `billing_started_at` | `TIMESTAMP WITH TIME ZONE` | UTC billing start timestamp, if any. |  |
 | `billing_terminated_block` | `BIGINT` | Billing termination block, if any. |  |
-| `billing_terminated_date` | `DATE` | UTC billing termination date, if any. |  |
+| `billing_terminated_at` | `TIMESTAMP WITH TIME ZONE` | UTC billing termination timestamp, if any. |  |
 | `settlement_end_epoch` | `BIGINT` | Settlement end epoch, if any. |  |
-| `settlement_end_date` | `DATE` | UTC settlement end date, if any. |  |
+| `settlement_end_at` | `TIMESTAMP WITH TIME ZONE` | UTC settlement end timestamp, if any. |  |
 
 ## Sample (10 rows)
 
 ```csv
-dataset_id,payer,provider_id,service_provider,payee,pdp_rail_id,cache_miss_rail_id,cdn_rail_id,has_cdn,created_block,created_date,billing_started_block,billing_started_date,billing_terminated_block,billing_terminated_date,settlement_end_epoch,settlement_end_date
-50,0x2c67808c7a22639bfecff9d098e72a6b205f4809,7,0x89b5899619d93a180d38011b8aec849deea3f573,0x89b5899619d93a180d38011b8aec849deea3f573,62,null,null,False,5491219,2025-11-13,5491915,2025-11-13,5812274,2026-03-05,5898674,2026-04-04
-130,0x3e4e5f067cfda2f16aade21912b8324c3d9624f8,5,0x010ecc2436e0c5ea4741cd25a27a5476fe7a252c,0x010ecc2436e0c5ea4741cd25a27a5476fe7a252c,168,169,170,True,5589783,2025-12-17,5589785,2025-12-17,5676212,2026-01-16,5762612,2026-02-15
-200,0xa5f90bc2aa73a2e0bad4d7092a932644d5dd5d71,1,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,280,281,282,True,5671323,2026-01-15,5671325,2026-01-15,5919382,2026-04-11,5995118,2026-05-07
-246,0xa5f90bc2aa73a2e0bad4d7092a932644d5dd5d71,3,0xafd1f948e8aef14c0b39058aa2fcff4ecb7c585d,0xafd1f948e8aef14c0b39058aa2fcff4ecb7c585d,346,null,null,False,5721961,2026-02-01,5721961,2026-02-01,5730759,2026-02-04,5817159,2026-03-06
-319,0xa5f90bc2aa73a2e0bad4d7092a932644d5dd5d71,16,0x1674f650feb5b696f30e1bb920626c15bc62af30,0x1674f650feb5b696f30e1bb920626c15bc62af30,425,null,null,False,5808968,2026-03-03,5809075,2026-03-03,5926116,2026-04-13,5999583,2026-05-09
-336,0xa5f90bc2aa73a2e0bad4d7092a932644d5dd5d71,1,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,442,null,null,False,5809083,2026-03-04,5809180,2026-03-04,5920124,2026-04-11,5995118,2026-05-07
-357,0xa5f90bc2aa73a2e0bad4d7092a932644d5dd5d71,3,0xafd1f948e8aef14c0b39058aa2fcff4ecb7c585d,0xafd1f948e8aef14c0b39058aa2fcff4ecb7c585d,463,null,null,False,5809087,2026-03-04,5809125,2026-03-04,5926131,2026-04-13,5999584,2026-05-09
-375,0xa5f90bc2aa73a2e0bad4d7092a932644d5dd5d71,2,0x86d026029052c6582d277d9b28700edc9670b150,0x86d026029052c6582d277d9b28700edc9670b150,481,null,null,False,5809203,2026-03-04,5809458,2026-03-04,5926135,2026-04-13,5999584,2026-05-09
-391,0xa5f90bc2aa73a2e0bad4d7092a932644d5dd5d71,16,0x1674f650feb5b696f30e1bb920626c15bc62af30,0x1674f650feb5b696f30e1bb920626c15bc62af30,497,null,null,False,5809207,2026-03-04,5809875,2026-03-04,5926137,2026-04-13,5999584,2026-05-09
-410,0xa5f90bc2aa73a2e0bad4d7092a932644d5dd5d71,1,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,516,null,null,False,5809327,2026-03-04,5810891,2026-03-04,5926141,2026-04-13,5999584,2026-05-09
+dataset_id,payer,provider_id,service_provider,payee,pdp_rail_id,cache_miss_rail_id,cdn_rail_id,has_cdn,created_block,created_at,billing_started_block,billing_started_at,billing_terminated_block,billing_terminated_at,settlement_end_epoch,settlement_end_at
+1,0x2127c3a31f54b81b5e9ad1e29c36c420d3d6ecc5,1,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,1,null,null,False,5465826,2025-11-04 19:33:00+01:00,5465828,2025-11-04 19:34:00+01:00,null,null,null,null
+2,0xaf992fbc0c22bc941a232c63dc1b0c0cd572d145,1,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,2,3,4,True,5467575,2025-11-05 10:07:30+01:00,5467577,2025-11-05 10:08:30+01:00,null,null,null,null
+3,0xaf992fbc0c22bc941a232c63dc1b0c0cd572d145,1,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,5,null,null,False,5467591,2025-11-05 10:15:30+01:00,5467593,2025-11-05 10:16:30+01:00,null,null,null,null
+4,0xaf992fbc0c22bc941a232c63dc1b0c0cd572d145,1,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,6,7,8,True,5467605,2025-11-05 10:22:30+01:00,5467607,2025-11-05 10:23:30+01:00,null,null,null,null
+5,0x741c0a74b858396c966fb139db17e4ad484cc446,1,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,9,10,11,True,5471214,2025-11-06 16:27:00+01:00,5471217,2025-11-06 16:28:30+01:00,null,null,null,null
+6,0x741c0a74b858396c966fb139db17e4ad484cc446,1,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,12,13,14,True,5471219,2025-11-06 16:29:30+01:00,5471221,2025-11-06 16:30:30+01:00,null,null,null,null
+7,0x838294adde22f9dcc62a0e6ed99aaad4d037ca3a,1,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,15,null,null,False,5472377,2025-11-07 02:08:30+01:00,5472386,2025-11-07 02:13:00+01:00,5813543,2026-03-05 13:11:30+01:00,5567426,2025-12-10 02:13:00+01:00
+8,0x2127c3a31f54b81b5e9ad1e29c36c420d3d6ecc5,1,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,16,null,null,False,5473782,2025-11-07 13:51:00+01:00,5473784,2025-11-07 13:52:00+01:00,null,null,null,null
+9,0x7d3f0ca48194490d7c8b60fea6225e817ec52aa9,1,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,0x32c90c26bca6ed3945de9b29ba4e19d38314d618,17,null,null,False,5474343,2025-11-07 18:31:30+01:00,5474360,2025-11-07 18:40:00+01:00,5813543,2026-03-05 13:11:30+01:00,5583800,2025-12-15 18:40:00+01:00
+10,0x2127c3a31f54b81b5e9ad1e29c36c420d3d6ecc5,5,0x010ecc2436e0c5ea4741cd25a27a5476fe7a252c,0x010ecc2436e0c5ea4741cd25a27a5476fe7a252c,18,null,null,False,5485045,2025-11-11 11:42:30+01:00,5485047,2025-11-11 11:43:30+01:00,null,null,null,null
 ```
