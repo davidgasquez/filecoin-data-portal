@@ -1,16 +1,18 @@
 # main.daily_storage_providers_metrics
 
-Published daily metrics for storage providers with power.
+Published daily metrics for storage providers.
 
 - asset code: `https://github.com/davidgasquez/filecoin-data-portal/blob/main/assets/main/daily/storage_providers_metrics.sql`
 - dataset url: `https://data.filecoindataportal.xyz/daily_storage_providers_metrics.parquet`
-- rows: `5289036`
+- rows: `5322213`
 
 ## Depends
 
 - `model.storage_provider_power_daily`
 - `model.storage_provider_sector_lifecycle_daily`
+- `model.storage_provider_block_rewards_daily`
 - `model.daily_verified_claims`
+- `raw.coincodex_filecoin_market_data`
 
 ## Tests
 
@@ -29,6 +31,9 @@ Published daily metrics for storage providers with power.
 - `not_null(verified_data_onboarded_tibs)`
 - `not_null(verified_claims)`
 - `not_null(verified_clients)`
+- `not_null(blocks_mined)`
+- `not_null(win_count)`
+- `not_null(block_rewards_fil)`
 
 ## Columns
 
@@ -49,19 +54,23 @@ Published daily metrics for storage providers with power.
 | `verified_data_onboarded_tibs` | `DOUBLE` | Verified data claimed on the date, in tebibytes. | `not_null` |
 | `verified_claims` | `HUGEINT` | Successful verified claims on the date. | `not_null` |
 | `verified_clients` | `BIGINT` | Clients with at least one successful verified claim on the date. | `not_null` |
+| `blocks_mined` | `BIGINT` | Block headers mined by the provider on the date. | `not_null` |
+| `win_count` | `BIGINT` | Winning proofs recorded by the provider on the date. | `not_null` |
+| `block_rewards_fil` | `DOUBLE` | Exact block rewards allocated to the provider on the date, in FIL. | `not_null` |
+| `block_rewards_usd` | `DOUBLE` | Exact block rewards allocated to the provider on the date, valued with the daily average FIL price, in USD. |  |
 
 ## Sample (10 rows)
 
 ```csv
-date,provider_id,raw_power_tibs,quality_adjusted_power_tibs,onboarded_tibs,onboarded_sectors,terminated_tibs,terminated_sectors,expired_tibs,expired_sectors,removed_tibs,removed_sectors,verified_data_onboarded_tibs,verified_claims,verified_clients
-2026-04-14,f02063327,3539.46875,35369.85675048828,3.25,104,0.0,0,0.0,0,0.0,0,3.625,116,1
-2026-04-14,f02057486,1915.0625,19134.3125,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0
-2026-04-14,f02088691,545.5,5359.796875,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0
-2026-04-14,f02370792,3551.5,35403.0625,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0
-2026-04-14,f02825675,3250.3125,32227.5,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0
-2026-04-14,f03134685,125.6875,1234.708984375,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0
-2026-04-14,f03315260,6877.21875,68763.46875,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0
-2026-04-14,f03378888,2059.625,20596.25,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0
-2026-04-14,f03528938,2323.46875,23234.6875,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0
-2026-04-14,f01083688,2490.0625,24900.34375,50.34375,1611,0.0,0,0.0,0,0.0,0,48.75,1560,2
+date,provider_id,raw_power_tibs,quality_adjusted_power_tibs,onboarded_tibs,onboarded_sectors,terminated_tibs,terminated_sectors,expired_tibs,expired_sectors,removed_tibs,removed_sectors,verified_data_onboarded_tibs,verified_claims,verified_clients,blocks_mined,win_count,block_rewards_fil,block_rewards_usd
+2026-04-16,f01002224,386.75,386.75,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0,1,1,6.116483107257005,5.963363228605602
+2026-04-16,f0101020,430.90625,4250.213134765625,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0,2,2,10.08586841772857,9.833379050696019
+2026-04-16,f0101021,437.59375,4320.603759765625,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0,7,7,28.508978247282265,27.79528522906399
+2026-04-16,f0101087,2167.53125,2167.5312883257866,0.0,0,0.0,0,6.59375,211,6.59375,211,0.0,0,0,0,0,0.0,0.0
+2026-04-16,f01016847,578.4375,5775.09375,0.0,0,0.0,0,0.03125,1,0.03125,1,0.0,0,0,6,6,27.192056856108767,26.511331613665213
+2026-04-16,f01019009,602.0,5993.31640625,0.0,0,0.0,0,0.09375,3,0.09375,3,0.0,0,0,10,10,49.054258748585966,47.82623571391
+2026-04-16,f01021773,1010.75,7388.9375,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0,6,6,20.843261790379632,20.32147211809954
+2026-04-16,f01045957,1588.1875,1588.1875,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0,1,1,3.667261933298576,3.575455793665271
+2026-04-16,f010479,47.375,356.99609375,0.0,0,0.0,0,0.15625,5,0.15625,5,0.0,0,0,0,0,0.0,0.0
+2026-04-16,f01051151,64.90625,64.90625,0.0,0,0.0,0,0.0,0,0.0,0,0.0,0,0,0,0,0.0,0.0
 ```
