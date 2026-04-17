@@ -21,9 +21,10 @@ select
     date,
     sum(gas_used_millions) as gas_used_millions,
     sum(transactions) as transactions,
-    sum(total_value_fil) as total_value_fil,
-    sum(total_gas_fee_fil) as total_gas_fee_fil,
-    sum(total_value_fil) + sum(total_gas_fee_fil) as total_value_flow_fil
+    cast(sum(total_value_fil) as double) as total_value_fil,
+    cast(sum(total_gas_fee_fil) as double) as total_gas_fee_fil,
+    cast(sum(total_value_fil) + sum(total_gas_fee_fil) as double)
+        as total_value_flow_fil
 from raw.daily_network_activity_by_method
 group by 1
 order by date desc

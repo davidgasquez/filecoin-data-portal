@@ -11,13 +11,15 @@
 with by_height as (
     select
         date(timestamp_seconds((height * 30) + 1598306400)) as date,
-        cast(burnt_fil as numeric) as burnt_fil,
-        lag(cast(burnt_fil as numeric)) over (order by height) as previous_burnt_fil
+        cast(burnt_fil as bignumeric) as burnt_fil,
+        lag(cast(burnt_fil as bignumeric)) over (order by height)
+            as previous_burnt_fil
     from `chain_economics`
 )
 select
     date,
-    sum(burnt_fil - previous_burnt_fil) / 1e18 as protocol_revenue_fil
+    cast(sum(burnt_fil - previous_burnt_fil) / 1e18 as float64)
+        as protocol_revenue_fil
 from by_height
 where previous_burnt_fil is not null
 group by 1

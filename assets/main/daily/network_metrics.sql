@@ -8,6 +8,7 @@
 -- asset.depends = model.network_block_rewards_by_height
 -- asset.depends = raw.coincodex_filecoin_market_data
 -- asset.depends = raw.daily_network_power
+-- asset.depends = raw.daily_network_economics
 -- asset.depends = raw.daily_protocol_revenue
 
 -- asset.column = date | UTC date.
@@ -24,6 +25,12 @@
 -- asset.column = total_value_flow_fil | FIL value transferred plus gas fees.
 -- asset.column = protocol_revenue_fil | Daily protocol revenue from burned FIL, in FIL.
 -- asset.column = protocol_revenue_usd | Daily protocol revenue from burned FIL, in USD.
+-- asset.column = circulating_fil | End-of-day VM circulating supply, in FIL.
+-- asset.column = mined_fil | End-of-day cumulative mined FIL, in FIL.
+-- asset.column = vested_fil | End-of-day cumulative vested FIL, in FIL.
+-- asset.column = locked_fil | End-of-day VM locked FIL, in FIL.
+-- asset.column = burnt_fil | End-of-day cumulative burnt FIL, in FIL.
+-- asset.column = pledge_collateral_fil | End-of-day total pledge collateral locked by storage providers, in FIL.
 -- asset.column = active_payers | Payers with at least one active chargeable warm storage dataset.
 -- asset.column = active_datasets | Active chargeable warm storage datasets.
 -- asset.column = new_payers | Payers whose first chargeable warm storage dataset started billing on the date.
@@ -86,6 +93,8 @@ with verified_claims as (
     union
     select date from raw.daily_protocol_revenue
     union
+    select date from raw.daily_network_economics
+    union
     select date from model.daily_sector_lifecycle
     union
     select date from model.daily_network_activity
@@ -120,6 +129,13 @@ select
     coalesce(protocol_revenue.protocol_revenue_fil, 0) as protocol_revenue_fil,
     coalesce(protocol_revenue.protocol_revenue_fil, 0)
         * market_data.fil_token_price_avg_usd as protocol_revenue_usd,
+    coalesce(network_economics.circulating_fil, 0) as circulating_fil,
+    coalesce(network_economics.mined_fil, 0) as mined_fil,
+    coalesce(network_economics.vested_fil, 0) as vested_fil,
+    coalesce(network_economics.locked_fil, 0) as locked_fil,
+    coalesce(network_economics.burnt_fil, 0) as burnt_fil,
+    coalesce(network_economics.pledge_collateral_fil, 0)
+        as pledge_collateral_fil,
     coalesce(warm_storage.active_payers, 0) as active_payers,
     coalesce(warm_storage.active_datasets, 0) as active_datasets,
     coalesce(warm_storage.new_payers, 0) as new_payers,
@@ -153,6 +169,8 @@ left join model.daily_filecoin_pay_arr as pay_arr
 left join market_data
     using (date)
 left join raw.daily_protocol_revenue as protocol_revenue
+    using (date)
+left join raw.daily_network_economics as network_economics
     using (date)
 left join verified_claims
     using (date)

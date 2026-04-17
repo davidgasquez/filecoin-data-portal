@@ -15,13 +15,15 @@ select
     ) as method,
     sum(gas_used) / 1e6 as gas_used_millions,
     count(*) as transactions,
-    sum(cast(value as numeric) / 1e18) as total_value_fil,
-    sum(
-        (
-            cast(base_fee_burn as numeric)
-            + cast(over_estimation_burn as numeric)
-            + cast(miner_tip as numeric)
-        ) / 1e18
+    cast(sum(cast(value as bignumeric) / 1e18) as float64) as total_value_fil,
+    cast(
+        sum(
+            (
+                cast(base_fee_burn as bignumeric)
+                + cast(over_estimation_burn as bignumeric)
+                + cast(miner_tip as bignumeric)
+            ) / 1e18
+        ) as float64
     ) as total_gas_fee_fil
 from `derived_gas_outputs` as g
 left join `actor_methods` as m
