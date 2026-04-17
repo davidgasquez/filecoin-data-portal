@@ -1,54 +1,136 @@
 ---
 import Layout from "../layouts/Layout.astro"
-import Card from "../components/Card.astro"
 ---
 
 <Layout
   title="Filecoin Data Portal"
-  description="Open source, serverless, local first data platform for the Filecoin ecosystem."
+  description="Open data platform for the Filecoin ecosystem. Ask AI agents to explore datasets for you."
 >
   <section class="page-header" aria-labelledby="home-title">
     <h1 id="home-title">Filecoin Data Portal</h1>
     <p>
-      Open source, serverless, and local first data platform for the Filecoin
-      ecosystem.
+      Open data platform for the Filecoin ecosystem.
     </p>
   </section>
 
-  <section aria-label="Portal highlights">
-    <div class="card-grid card-grid--two-up">
-      <Card
-        title="Open Data"
-        description="Download Filecoin datasets with key metrics and entities."
-        buttons={[{ text: "Get datasets", link: "/data" }]}
-      />
-      <Card
-        title="Dashboards"
-        description="Explore dashboards with key metrics from the Filecoin ecosystem."
-        buttons={[{ text: "Explore", link: "/dashboards" }]}
-      />
-      <Card
-        title="Data Requests"
-        description="Need specific data or metrics reflected. Let us know."
-        buttons={[
-          {
-            text: "Request dataset",
-            link: "https://github.com/davidgasquez/filecoin-data-portal/issues/new",
-            target: "_blank",
-          },
-        ]}
-      />
-      <Card
-        title="Support on Drips"
-        description="Support platform development via Drips."
-        buttons={[
-          {
-            text: "Support",
-            link: "https://www.drips.network/app/projects/github/davidgasquez/filecoin-data-portal",
-            target: "_blank",
-          },
-        ]}
-      />
+  <section class="content-flow" aria-label="Available data">
+    <h2 class="section-title">Data</h2>
+    <p>
+      Open Parquet datasets updated daily covering network metrics, storage
+      providers, clients, allocators, deals, and more.
+    </p>
+    <a href="/data" class="section-link">Browse datasets →</a>
+  </section>
+
+  <section class="hero-prompt" aria-label="Quickstart">
+    <h2 class="section-title">Quickstart</h2>
+    <p>
+      Read the <a href="/docs">documentation</a> to learn how to query and
+      use the datasets. Or ask your agent
+      (<a href="https://ampcode.com" target="_blank" rel="noopener noreferrer">Amp</a>,
+      <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer">ChatGPT</a>,
+      <a href="https://claude.ai" target="_blank" rel="noopener noreferrer">Claude</a>, ...)
+      to use it:
+    </p>
+    <div class="prompt-block">
+      <pre><code id="prompt-text">Read https://filecoindataportal.xyz/SKILL.md and tell me which providers onboarded more data last week</code></pre>
+      <button
+        class="prompt-copy"
+        aria-label="Copy prompt to clipboard"
+        data-copy-target="prompt-text"
+      >Copy</button>
     </div>
+    <p class="prompt-hint">
+      The <a href="/SKILL.md">SKILL.md</a> file teaches agents how to find,
+      query, and visualize all available datasets.
+    </p>
+  </section>
+
+  <section class="content-flow" aria-label="Source code">
+    <h2 class="section-title">Source</h2>
+    <p>
+      Everything is open source. Assets, pipelines, and this website live in a
+      single repository.
+    </p>
+    <a
+      href="https://github.com/davidgasquez/filecoin-data-portal"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="section-link"
+    >View on GitHub →</a>
   </section>
 </Layout>
+
+<style>
+  .hero-prompt,
+  .content-flow,
+  .page-header {
+    max-inline-size: 40rem;
+    margin-inline: auto;
+    margin-block-end: var(--space-7);
+  }
+
+  .prompt-block {
+    position: relative;
+    border: 2px solid var(--color-border-strong);
+    padding: var(--space-4);
+    padding-inline-end: 5rem;
+    background: var(--color-bg-muted);
+    margin-block: var(--space-4);
+  }
+
+  .prompt-block pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .prompt-block code {
+    background: none;
+    padding: 0;
+  }
+
+  .prompt-copy {
+    position: absolute;
+    inset-block-start: var(--space-2);
+    inset-inline-end: var(--space-2);
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-text);
+    color: var(--color-bg);
+    padding: var(--space-1) var(--space-3);
+    font: inherit;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+
+  .prompt-copy:hover {
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  .prompt-hint {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  .section-link {
+    font-weight: 700;
+  }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>(".prompt-copy")
+  if (btn) {
+    btn.addEventListener("click", async () => {
+      const target = document.getElementById(btn.dataset.copyTarget!)
+      if (!target) return
+      await navigator.clipboard.writeText(target.textContent!.trim())
+      btn.textContent = "Copied!"
+      setTimeout(() => (btn.textContent = "Copy"), 1500)
+    })
+  }
+</script>
