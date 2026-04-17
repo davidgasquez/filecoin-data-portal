@@ -32,8 +32,6 @@ Published daily clients metrics.
 
 ```csv
 date,client_id,verified_data_onboarded_tibs,verified_claims,verified_providers
-2026-04-16,f03253574,8.96875,287,2
-2026-04-16,f03136439,13.4375,430,3
 2026-04-16,f03535091,19.5625,626,1
 2026-04-16,f03644598,0.1875,6,3
 2026-04-16,f03644104,44.28125,1417,2
@@ -42,4 +40,6 @@ date,client_id,verified_data_onboarded_tibs,verified_claims,verified_providers
 2026-04-16,f03759102,78.0625,1249,2
 2026-04-16,f03200311,0.03125,1,1
 2026-04-16,f03542902,0.15625,5,1
+2026-04-16,f03136439,13.4375,430,3
+2026-04-16,f03253574,8.96875,287,2
 ```
