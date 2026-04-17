@@ -3,6 +3,7 @@
 -- asset.depends = raw.storage_provider_current_info
 -- asset.depends = model.storage_provider_power_daily
 -- asset.depends = model.storage_provider_sector_lifecycle_daily
+-- asset.depends = model.storage_provider_block_rewards_daily
 -- asset.depends = raw.verified_registry_claims
 
 -- asset.column = provider_id | Filecoin storage provider actor id address.
@@ -24,6 +25,7 @@
 -- asset.column = verified_claims | Total successful verified claims.
 -- asset.column = verified_clients | Clients with at least one successful verified claim.
 -- asset.column = verified_data_onboarded_tibs | Verified data successfully claimed, in tebibytes.
+-- asset.column = total_block_rewards_fil | Total block rewards allocated to the provider, in FIL.
 
 -- asset.not_null = provider_id
 -- asset.not_null = has_power
@@ -62,6 +64,13 @@ verified_claim_activity as (
     from raw.verified_registry_claims
     group by 1
 ),
+reward_activity as (
+    select
+        provider_id,
+        sum(block_rewards_fil) as total_block_rewards_fil
+    from model.storage_provider_block_rewards_daily
+    group by 1
+),
 providers as (
     select distinct provider_id from model.storage_provider_sector_lifecycle_daily
     union
@@ -69,6 +78,8 @@ providers as (
     from raw.verified_registry_claims
     union
     select provider_id from current_power
+    union
+    select provider_id from reward_activity
 )
 select
     providers.provider_id,
@@ -89,7 +100,9 @@ select
     verified_claim_activity.last_verified_claim_at,
     verified_claim_activity.verified_claims,
     verified_claim_activity.verified_clients,
-    verified_claim_activity.verified_data_onboarded_tibs
+    verified_claim_activity.verified_data_onboarded_tibs,
+    coalesce(reward_activity.total_block_rewards_fil, 0)
+        as total_block_rewards_fil
 from providers
 left join raw.storage_provider_current_info as info
     using (provider_id)
@@ -98,5 +111,7 @@ left join current_power
 left join sector_activity
     using (provider_id)
 left join verified_claim_activity
+    using (provider_id)
+left join reward_activity
     using (provider_id)
 order by last_verified_claim_at desc
