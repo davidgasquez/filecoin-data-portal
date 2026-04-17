@@ -6,6 +6,7 @@
 -- asset.depends = model.daily_filecoin_pay_arr
 -- asset.depends = model.warm_storage_daily_activity
 -- asset.depends = raw.coincodex_filecoin_market_data
+-- asset.depends = raw.daily_network_power
 
 -- asset.column = date | UTC date.
 -- asset.column = transactions | Onchain transactions.
@@ -13,6 +14,8 @@
 -- asset.column = terminated_pibs | Raw sector data terminated on the date, in pebibytes.
 -- asset.column = expired_pibs | Raw sector data expired on the date, in pebibytes.
 -- asset.column = removed_pibs | Raw sector data removed on the date, in pebibytes.
+-- asset.column = raw_power_pibs | End-of-day raw byte power, in pebibytes.
+-- asset.column = quality_adjusted_power_pibs | End-of-day quality adjusted power, in pebibytes.
 -- asset.column = gas_used_millions | Total gas used, in millions.
 -- asset.column = total_value_fil | FIL transferred by top-level messages.
 -- asset.column = total_gas_fee_fil | FIL paid in gas fees.
@@ -63,6 +66,8 @@ source_dates as (
     select date from model.daily_sector_lifecycle
     union
     select date from model.daily_network_activity
+    union
+    select date from raw.daily_network_power
 ),
 date_bounds as (
     select
@@ -85,6 +90,8 @@ select
     coalesce(sector_lifecycle.terminated_pibs, 0) as terminated_pibs,
     coalesce(sector_lifecycle.expired_pibs, 0) as expired_pibs,
     coalesce(sector_lifecycle.removed_pibs, 0) as removed_pibs,
+    network_power.raw_power_pibs,
+    network_power.quality_adjusted_power_pibs,
     coalesce(network_activity.gas_used_millions, 0) as gas_used_millions,
     coalesce(network_activity.total_value_fil, 0) as total_value_fil,
     coalesce(network_activity.total_gas_fee_fil, 0) as total_gas_fee_fil,
@@ -111,6 +118,8 @@ left join market_data
 left join verified_claims
     using (date)
 left join model.daily_sector_lifecycle as sector_lifecycle
+    using (date)
+left join raw.daily_network_power as network_power
     using (date)
 left join model.daily_network_activity as network_activity
     using (date)
