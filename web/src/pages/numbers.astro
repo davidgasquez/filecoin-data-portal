@@ -43,8 +43,8 @@ const sections = [
     charts: [
       {
         id: "daily-data-onboarding",
-        title: "Daily Data Onboarding",
-        y: "sector_onboarding_raw_power_pibs",
+        title: "Onboarded PiBs",
+        y: "onboarded_pibs",
         format: "pib",
       },
       {
@@ -74,14 +74,14 @@ const sections = [
     charts: [
       {
         id: "sector-onboarding",
-        title: "Sector Onboarding",
-        y: "sector_onboarding_raw_power_pibs",
+        title: "Onboarded PiBs",
+        y: "onboarded_pibs",
         format: "pib",
       },
       {
         id: "sector-termination",
-        title: "Sector Termination",
-        y: "sector_terminated_raw_power_pibs",
+        title: "Terminated PiBs",
+        y: "terminated_pibs",
         format: "pib",
       },
       {
@@ -159,7 +159,7 @@ const sections = [
       {
         id: "total-gas-used",
         title: "Total Gas Used",
-        y: "total_gas_used_millions",
+        y: "gas_used_millions",
         format: "number",
         formatScale: 1_000_000,
         formatSuffix: " T Gas",
@@ -308,7 +308,26 @@ const sections = [
       {
         id: "reward-per-wincount",
         title: "Reward Per Wincount",
-        y: "reward_per_wincount",
+        y: "reward_per_wincount_fil",
+        format: "fil",
+      },
+    ],
+  },
+  {
+    id: "protocol",
+    title: "Protocol",
+    columns: 2,
+    charts: [
+      {
+        id: "protocol-revenue-fil",
+        title: "Protocol Revenue FIL",
+        y: "protocol_revenue_fil",
+        format: "fil",
+      },
+      {
+        id: "block-rewards-fil",
+        title: "Block Rewards FIL",
+        y: "block_rewards_fil",
         format: "fil",
       },
     ],
