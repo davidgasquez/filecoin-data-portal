@@ -15,8 +15,13 @@ jobs:
       run:
         working-directory: legacy
     env:
+      SPACESCOPE_TOKEN: ${{ secrets.SPACESCOPE_TOKEN }}
       DATABASE_PATH: ${{ secrets.DATABASE_PATH }}
       motherduck_token: ${{ secrets.motherduck_token }}
+      DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ENCODED_GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.ENCODED_GOOGLE_APPLICATION_CREDENTIALS }}
+      OSO_API_KEY: ${{ secrets.OSO_API_KEY }}
       EXCLUDED_ASSET_PATTERN: '^(raw_filecoin_state_market_deals|filecoin_state_market_deals)$'
 
     steps:
