@@ -242,23 +242,6 @@
     font-size: 1.1rem;
   }
 
-  .card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-    gap: var(--space-4);
-    margin-block: var(--space-5);
-  }
-
-  .card-grid--two-up {
-    grid-template-columns: 1fr;
-  }
-
-  @media (min-width: 52rem) {
-    .card-grid--two-up {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
   .content-flow > * + * {
     margin-block-start: var(--space-4);
   }
