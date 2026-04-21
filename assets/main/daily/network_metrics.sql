@@ -1,4 +1,4 @@
--- asset.description = Published daily network metrics.
+-- asset.description = Daily network core metrics.
 
 -- asset.depends = model.daily_network_activity
 -- asset.depends = model.daily_sector_lifecycle

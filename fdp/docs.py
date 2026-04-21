@@ -164,15 +164,11 @@ def render_asset_markdown(
         ])
     lines.extend([
         "",
-        "## Tests",
-        "",
-        *render_tests(asset_view, project_root),
-        "",
         "## Columns",
         "",
         render_columns_table(asset_view),
         "",
-        f"## Sample ({len(asset_view.sample_rows)} rows)",
+        "## Sample",
         "",
         render_sample_csv(asset_view.sample_columns, asset_view.sample_rows),
         "",
@@ -200,22 +196,6 @@ def render_dependencies(
 
 def asset_doc_filename(asset: Asset) -> str:
     return f"{asset.name}.md"
-
-
-def render_tests(asset_view: AssetView, project_root: Path) -> list[str]:
-    asset = asset_view.asset
-    lines = [
-        *(f"- `not_null({column})`" for column in asset.tests.not_null),
-        *(f"- `unique({column})`" for column in asset.tests.unique),
-        *(f"- `assert({assertion})`" for assertion in asset.tests.assertions),
-    ]
-    for custom_test in asset_view.custom_tests:
-        lines.append(
-            f"- `custom({custom_test.path.relative_to(project_root).as_posix()})`"
-        )
-    if not lines:
-        return ["- none"]
-    return lines
 
 
 def render_columns_table(asset_view: AssetView) -> str:

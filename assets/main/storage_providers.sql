@@ -1,4 +1,4 @@
--- asset.description = Published storage providers.
+-- asset.description = Filecoin storage providers metrics and latest details.
 
 -- asset.depends = raw.storage_provider_current_info
 -- asset.depends = model.storage_provider_power_daily

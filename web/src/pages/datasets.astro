@@ -1,0 +1,72 @@
+---
+import { getCollection, render } from "astro:content"
+
+import Layout from "../layouts/Layout.astro"
+
+const datasets = await Promise.all(
+  (await getCollection("dataset-docs"))
+    .sort((left, right) => left.data.title.localeCompare(right.data.title))
+    .map(async (entry) => ({
+      id: entry.id,
+      title: entry.data.title,
+      description: entry.data.description ?? "No description.",
+      downloadUrl: `https://data.filecoindataportal.xyz/${entry.id}.parquet`,
+      queryUrl: `https://sql-workbench.com/#queries=v0,select-*-from-'${encodeURIComponent(`https://data.filecoindataportal.xyz/${entry.id}.parquet`)}'-limit-10~`,
+      codeUrl: entry.data.codeUrl ?? null,
+      ...(await render(entry)),
+    })),
+)
+---
+
+<Layout
+  title="Datasets | Filecoin Data Portal"
+  description="The Filecoin Data Portal datasets, one click away."
+>
+  <section class="page-header" aria-labelledby="datasets-title">
+    <h1 id="datasets-title">Datasets</h1>
+    <p>The Filecoin Data Portal datasets, one click away.</p>
+  </section>
+
+  {
+    datasets.length === 0 ? (
+      <p>
+        No dataset docs found. Run <code>npm run generate:fdp-docs</code> from{" "}
+        <code>web/</code>.
+      </p>
+    ) : (
+      <div class="datasets-layout">
+        <nav class="datasets-nav" aria-label="Dataset navigation">
+          <h2>Datasets</h2>
+          <ul>
+            {datasets.map((d) => (
+              <li>
+                <a href={`#${d.id}`}>{d.title}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div class="datasets-content">
+          {datasets.map(({ id, title, description, downloadUrl, queryUrl, codeUrl, Content }) => (
+            <section class="dataset-entry" id={id}>
+              <header>
+                <div>
+                  <h2 id={`${id}-title`}><a href={`#${id}`}>{title}</a></h2>
+                  <p>{description}</p>
+                </div>
+                <div class="dataset-entry__actions">
+                  <a href={downloadUrl} class="btn btn--primary">Download</a>
+                  <a href={queryUrl} class="btn" target="_blank">Query</a>
+                  {codeUrl && <a href={codeUrl} class="btn" target="_blank">Code</a>}
+                </div>
+              </header>
+              <div class="dataset-markdown">
+                <Content />
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
+    )
+  }
+</Layout>
