@@ -1,0 +1,34 @@
+name: Allocator Allowances Debug
+
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  allocator-allowances-debug:
+    name: Allocator Allowances Debug
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: legacy
+    env:
+      DATABASE_PATH: ${{ secrets.DATABASE_PATH }}
+      motherduck_token: ${{ secrets.motherduck_token }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Show Python version
+        run: uv run python -V
+
+      - name: Run offending model
+        run: uv run dbt build --project-dir dbt --profiles-dir dbt --select filecoin_allocators_datacap_allowances
