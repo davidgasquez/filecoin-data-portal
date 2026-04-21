@@ -30,6 +30,9 @@ jobs:
       - name: Show Python version
         run: uv run python -V
 
+      - name: Prepare dbt manifest
+        run: uv run dagster-dbt project prepare-and-package --file fdp/dbt/resources.py
+
       - name: Show focused asset selection
         run: uv run dagster asset list -m fdp.definitions --select '+filecoin_allocators,+filecoin_allocators_datacap_allowances+'
 
