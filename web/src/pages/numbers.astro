@@ -39,19 +39,13 @@ const sections = [
   {
     id: "key-metrics",
     title: "Key Metrics",
-    columns: 2,
+    columns: 3,
     charts: [
       {
         id: "daily-data-onboarding",
         title: "Onboarded PiBs",
         y: "onboarded_pibs",
         format: "pib",
-      },
-      {
-        id: "clients-with-1tib",
-        title: "Clients with 1 TiB or more active data",
-        y: "clients_with_active_data_gt_1_tibs",
-        format: "integer",
       },
       {
         id: "total-arr-usdfc",
@@ -85,12 +79,6 @@ const sections = [
         format: "pib",
       },
       {
-        id: "active-sectors",
-        title: "Active Sectors",
-        y: "active_sector_count",
-        format: "integer",
-      },
-      {
         id: "raw-power",
         title: "Raw Power",
         y: "raw_power_pibs",
@@ -102,24 +90,6 @@ const sections = [
         y: "quality_adjusted_power_pibs",
         format: "pib",
       },
-      {
-        id: "verified-data-power",
-        title: "Verified Data Power",
-        y: "verified_data_power_pibs",
-        format: "pib",
-      },
-      {
-        id: "providers-with-power",
-        title: "Providers With Power",
-        y: "providers_with_power",
-        format: "integer",
-      },
-      {
-        id: "network-utilization-ratio",
-        title: "Network Utilization Ratio",
-        y: "network_utilization_ratio",
-        format: "percent",
-      },
     ],
   },
   {
@@ -127,12 +97,6 @@ const sections = [
     title: "Activity",
     columns: 3,
     charts: [
-      {
-        id: "active-addresses",
-        title: "Active Addresses",
-        y: "active_address_count_daily",
-        format: "integer",
-      },
       {
         id: "all-transactions",
         title: "All Transactions",
@@ -149,13 +113,6 @@ const sections = [
         formatScale: 1_000_000,
         formatSuffix: " M FIL",
       },
-    ],
-  },
-  {
-    id: "gas",
-    title: "Gas",
-    columns: 2,
-    charts: [
       {
         id: "total-gas-used",
         title: "Total Gas Used",
@@ -164,159 +121,12 @@ const sections = [
         formatScale: 1_000_000,
         formatSuffix: " T Gas",
       },
-      {
-        id: "unit-base-fee",
-        title: "Unit Base Fee",
-        y: "unit_base_fee",
-        format: "number",
-        formatSuffix: " nanoFIL",
-      },
-    ],
-  },
-  {
-    id: "deals",
-    title: "Deals",
-    columns: 3,
-    charts: [
-      {
-        id: "data-on-active-deals",
-        title: "Data On Active Deals",
-        y: "data_on_active_deals_pibs",
-        format: "pib",
-      },
-      {
-        id: "data-onboarding-with-payments",
-        title: "Data Onboarding with Payments",
-        y: "onboarded_data_pibs_with_payments",
-        format: "pib",
-      },
-      {
-        id: "direct-data-onboarding",
-        title: "Direct Data Onboarding",
-        y: "ddo_sector_onboarding_raw_power_tibs",
-        format: "tib",
-      },
-    ],
-  },
-  {
-    id: "participants",
-    title: "Participants",
-    columns: 2,
-    charts: [
-      {
-        id: "clients-with-active-deals",
-        title: "Clients With Active Deals",
-        y: "clients_with_active_deals",
-        format: "integer",
-      },
-      {
-        id: "providers-with-active-deals",
-        title: "Providers With Active Deals",
-        y: "providers_with_active_deals",
-        format: "integer",
-      },
-      {
-        id: "dealmaking-clients",
-        title: "Dealmaking Clients",
-        y: "unique_deal_making_clients",
-        format: "integer",
-      },
-      {
-        id: "dealmaking-providers",
-        title: "Dealmaking Providers",
-        y: "unique_deal_making_providers",
-        format: "integer",
-      },
-    ],
-  },
-  {
-    id: "economics",
-    title: "Economics",
-    columns: 3,
-    charts: [
-      {
-        id: "circulating-fil",
-        title: "Circulating FIL",
-        y: "circulating_fil",
-        format: "number",
-        formatScale: 1_000_000,
-        formatSuffix: " M FIL",
-      },
-      {
-        id: "mined-fil",
-        title: "Mined FIL",
-        y: "mined_fil",
-        format: "number",
-        formatScale: 1_000_000,
-        formatSuffix: " M FIL",
-      },
-      {
-        id: "vested-fil",
-        title: "Vested FIL",
-        y: "vested_fil",
-        format: "number",
-        formatScale: 1_000_000,
-        formatSuffix: " M FIL",
-      },
-      {
-        id: "locked-fil",
-        title: "Locked FIL",
-        y: "locked_fil",
-        format: "number",
-        formatScale: 1_000_000,
-        formatSuffix: " M FIL",
-      },
-      {
-        id: "burnt-fil",
-        title: "Burnt FIL",
-        y: "burnt_fil",
-        format: "number",
-        formatScale: 1_000_000,
-        formatSuffix: " M FIL",
-      },
-      {
-        id: "storage-providers-collateral",
-        title: "Storage Providers Collateral",
-        y: "storage_providers_collateral",
-        format: "fil",
-      },
-      {
-        id: "locked-to-circulating-ratio",
-        title: "Locked to Circulating Ratio",
-        y: "locked_to_circulating_ratio",
-        format: "percent",
-      },
-      {
-        id: "yearly-inflation-rate",
-        title: "Yearly Inflation Rate",
-        y: "yearly_inflation_rate",
-        format: "percent",
-        percentMode: "points",
-      },
-      {
-        id: "mining-yield",
-        title: "Mining Yield",
-        y: "mining_yield",
-        format: "percent",
-      },
-      {
-        id: "miner-tip-fil",
-        title: "Miner Tip FIL",
-        y: "miner_tip_fil",
-        format: "fil",
-      },
-      {
-        id: "reward-per-wincount",
-        title: "Reward Per Wincount",
-        y: "reward_per_wincount_fil",
-        format: "fil",
-      },
     ],
   },
   {
     id: "protocol",
     title: "Protocol",
-    columns: 2,
+    columns: 3,
     charts: [
       {
         id: "protocol-revenue-fil",
@@ -328,6 +138,12 @@ const sections = [
         id: "block-rewards-fil",
         title: "Block Rewards FIL",
         y: "block_rewards_fil",
+        format: "fil",
+      },
+      {
+        id: "reward-per-wincount",
+        title: "Reward Per Wincount",
+        y: "reward_per_wincount_fil",
         format: "fil",
       },
     ],
@@ -358,25 +174,6 @@ const sections = [
         format: "usd",
         formatScale: 1_000_000_000,
         formatSuffix: "B",
-      },
-    ],
-  },
-  {
-    id: "filecoin-plus",
-    title: "Filecoin Plus",
-    columns: 2,
-    charts: [
-      {
-        id: "fil-plus-bytes-share",
-        title: "Filecoin Plus Bytes Share",
-        y: "fil_plus_bytes_share",
-        format: "percent",
-      },
-      {
-        id: "fil-plus-rewards-share",
-        title: "Filecoin Plus Rewards Share",
-        y: "fil_plus_rewards_share",
-        format: "percent",
       },
     ],
   },

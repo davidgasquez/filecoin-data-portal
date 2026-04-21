@@ -1,7 +1,5 @@
 import { DuckDBInstance } from "@duckdb/node-api";
 
-const DAILY_METRICS_PARQUET_URL =
-  "https://data.filecoindataportal.xyz/filecoin_daily_metrics.parquet";
 const DAILY_NETWORK_METRICS_PARQUET_URL =
   "https://data.filecoindataportal.xyz/daily_network_metrics.parquet";
 
@@ -9,108 +7,26 @@ type DatasetValue = boolean | number | string | null;
 type DatasetRow = Record<string, DatasetValue>;
 
 const SQL = `
-  WITH core_metrics AS (
-    SELECT
-      date,
-      transactions,
-      onboarded_pibs,
-      terminated_pibs,
-      raw_power_pibs,
-      quality_adjusted_power_pibs,
-      gas_used_millions,
-      total_value_fil,
-      total_value_flow_fil,
-      protocol_revenue_fil,
-      block_rewards_fil,
-      reward_per_wincount_fil,
-      arr_usdfc,
-      fil_token_price_avg_usd,
-      fil_token_volume_usd,
-      fil_token_market_cap_usd
-    FROM read_parquet('${DAILY_NETWORK_METRICS_PARQUET_URL}')
-    WHERE date IS NOT NULL
-  ),
-  daily_metrics AS (
-    SELECT
-      date,
-      clients_with_active_data_gt_1_tibs,
-      deal_storage_cost_fil,
-      verified_data_power_pibs,
-      providers_with_power,
-      network_utilization_ratio,
-      active_sector_count,
-      active_address_count_daily,
-      unit_base_fee,
-      data_on_active_deals_pibs,
-      clients_with_active_deals,
-      providers_with_active_deals,
-      unique_deal_making_clients,
-      unique_deal_making_providers,
-      coalesce(onboarded_data_pibs_with_payments, 0) AS onboarded_data_pibs_with_payments,
-      ddo_sector_onboarding_raw_power_tibs,
-      circulating_fil,
-      mined_fil,
-      vested_fil,
-      locked_fil,
-      storage_providers_collateral,
-      burnt_fil,
-      miner_tip_fil,
-      yearly_inflation_rate,
-      fil_plus_bytes_share,
-      fil_plus_rewards_share
-    FROM read_parquet('${DAILY_METRICS_PARQUET_URL}')
-    WHERE date IS NOT NULL
-  )
   SELECT
-    cm.date,
-    cm.onboarded_pibs,
-    dm.clients_with_active_data_gt_1_tibs,
-    dm.deal_storage_cost_fil,
-    coalesce(cm.arr_usdfc, 0) AS arr_usdfc,
-    cm.total_value_fil,
-    cm.gas_used_millions,
-    cm.terminated_pibs,
-    cm.raw_power_pibs,
-    cm.quality_adjusted_power_pibs,
-    dm.verified_data_power_pibs,
-    dm.providers_with_power,
-    dm.network_utilization_ratio,
-    dm.active_sector_count,
-    dm.active_address_count_daily,
-    cm.transactions,
-    dm.unit_base_fee,
-    dm.data_on_active_deals_pibs,
-    dm.clients_with_active_deals,
-    dm.providers_with_active_deals,
-    dm.unique_deal_making_clients,
-    dm.unique_deal_making_providers,
-    dm.onboarded_data_pibs_with_payments,
-    dm.ddo_sector_onboarding_raw_power_tibs,
-    dm.circulating_fil,
-    dm.mined_fil,
-    dm.vested_fil,
-    dm.locked_fil,
-    dm.storage_providers_collateral,
-    dm.burnt_fil,
-    dm.miner_tip_fil,
-    cm.reward_per_wincount_fil,
-    dm.yearly_inflation_rate,
-    cm.fil_token_price_avg_usd,
-    cm.fil_token_volume_usd,
-    cm.fil_token_market_cap_usd,
-    dm.fil_plus_bytes_share,
-    dm.fil_plus_rewards_share,
-    cm.total_value_flow_fil,
-    cm.protocol_revenue_fil,
-    cm.block_rewards_fil,
-    coalesce(dm.locked_fil / nullif(dm.circulating_fil, 0), 0) AS locked_to_circulating_ratio,
-    coalesce(
-      ((dm.mined_fil - lag(dm.mined_fil) OVER (ORDER BY cm.date)) / nullif(dm.locked_fil, 0)) * 365,
-      0
-    ) AS mining_yield
-  FROM core_metrics AS cm
-  LEFT JOIN daily_metrics AS dm ON dm.date = cm.date
-  ORDER BY cm.date
+    date,
+    transactions,
+    onboarded_pibs,
+    terminated_pibs,
+    raw_power_pibs,
+    quality_adjusted_power_pibs,
+    gas_used_millions,
+    total_value_fil,
+    total_value_flow_fil,
+    protocol_revenue_fil,
+    block_rewards_fil,
+    reward_per_wincount_fil,
+    coalesce(arr_usdfc, 0) AS arr_usdfc,
+    fil_token_price_avg_usd,
+    fil_token_volume_usd,
+    fil_token_market_cap_usd
+  FROM read_parquet('${DAILY_NETWORK_METRICS_PARQUET_URL}')
+  WHERE date IS NOT NULL
+  ORDER BY date
 `;
 
 function normalizeNumber(value: number): number {
