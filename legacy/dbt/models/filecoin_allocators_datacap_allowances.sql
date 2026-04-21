@@ -1,5 +1,3 @@
-{{ config(materialized='create_or_replace_table') }}
-
 with source as (
     select
         addressId as allocator_id,

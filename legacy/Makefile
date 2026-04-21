@@ -17,7 +17,7 @@ run-ci:
 	  'execution:' \
 	  '  config:' \
 	  '    multiprocess:' \
-	  '      max_concurrent: 2' > "$$tmp"; \
+	  '      max_concurrent: 1' > "$$tmp"; \
 	$(DAGSTER_JOB) --config "$$tmp"
 
 .PHONY: dev

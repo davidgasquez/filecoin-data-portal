@@ -7,9 +7,17 @@ from dagster_duckdb_pandas import DuckDBPandasIOManager
 from pydantic import PrivateAttr
 
 DATABASE_PATH = os.getenv("DATABASE_PATH", "./data/database.duckdb")
+CONNECTION_CONFIG = {"preserve_insertion_order": False}
 
-duckdb_resource = DuckDBResource(database=DATABASE_PATH)
-duckdb_io_manager = DuckDBPandasIOManager(database=DATABASE_PATH, schema="raw")
+duckdb_resource = DuckDBResource(
+    database=DATABASE_PATH,
+    connection_config=CONNECTION_CONFIG,
+)
+duckdb_io_manager = DuckDBPandasIOManager(
+    database=DATABASE_PATH,
+    connection_config=CONNECTION_CONFIG,
+    schema="raw",
+)
 
 
 class HttpClientResource(dg.ConfigurableResource):

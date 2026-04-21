@@ -6,6 +6,4 @@ default:
       threads: 1
       settings:
         preserve_insertion_order: false
-        enable_object_cache: true
-        enable_http_metadata_cache: true
   target: dev

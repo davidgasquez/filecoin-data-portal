@@ -1,5 +1,3 @@
-{{ config(materialized='create_or_replace_table') }}
-
 with datacapstats_allocators as (
     select
         addressId as allocator_id,
