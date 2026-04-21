@@ -30,5 +30,20 @@ jobs:
       - name: Show Python version
         run: uv run python -V
 
-      - name: Run offending model
-        run: uv run dbt build --project-dir dbt --profiles-dir dbt --select filecoin_allocators_datacap_allowances
+      - name: Show focused asset selection
+        run: uv run dagster asset list -m fdp.definitions --select '+filecoin_allocators,+filecoin_allocators_datacap_allowances+'
+
+      - name: Materialize focused asset selection
+        run: |
+          set -e
+          tmp=$(mktemp)
+          trap 'rm -f "$tmp"' EXIT
+          printf '%s\n' \
+            'execution:' \
+            '  config:' \
+            '    multiprocess:' \
+            '      max_concurrent: 1' > "$tmp"
+          uv run dagster asset materialize \
+            --select '+filecoin_allocators,+filecoin_allocators_datacap_allowances+' \
+            --config "$tmp" \
+            -m fdp.definitions
