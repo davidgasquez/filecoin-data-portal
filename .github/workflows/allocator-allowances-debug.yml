@@ -17,7 +17,7 @@ jobs:
     env:
       DATABASE_PATH: ${{ secrets.DATABASE_PATH }}
       motherduck_token: ${{ secrets.motherduck_token }}
-      ASSET_SELECTION: "*,-raw_filecoin_state_market_deals,-filecoin_state_market_deals"
+      EXCLUDED_ASSET_PATTERN: '^(raw_filecoin_state_market_deals|filecoin_state_market_deals)$'
 
     steps:
       - name: Checkout
@@ -34,12 +34,17 @@ jobs:
       - name: Prepare dbt manifest
         run: uv run dagster-dbt project prepare-and-package --file fdp/dbt/resources.py
 
-      - name: Show selected assets
-        run: uv run dagster asset list -m fdp.definitions --select "$ASSET_SELECTION"
+      - name: Build selected asset list
+        run: |
+          set -euo pipefail
+          uv run dagster asset list -m fdp.definitions \
+            | grep -vxE "$EXCLUDED_ASSET_PATTERN" \
+            | tee "$RUNNER_TEMP/selected-assets.txt"
+          paste -sd, "$RUNNER_TEMP/selected-assets.txt" > "$RUNNER_TEMP/selected-assets.csv"
 
       - name: Materialize selected assets
         run: |
-          set -e
+          set -euo pipefail
           tmp=$(mktemp)
           trap 'rm -f "$tmp"' EXIT
           printf '%s\n' \
@@ -48,6 +53,6 @@ jobs:
             '    multiprocess:' \
             '      max_concurrent: 1' > "$tmp"
           uv run dagster asset materialize \
-            --select "$ASSET_SELECTION" \
+            --select "$(cat "$RUNNER_TEMP/selected-assets.csv")" \
             --config "$tmp" \
             -m fdp.definitions
