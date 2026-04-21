@@ -1,4 +1,4 @@
--- asset.description = Published Filecoin Pay rails.
+-- asset.description = Filecoin Pay rails.
 
 -- asset.depends = model.filecoin_pay_rails
 

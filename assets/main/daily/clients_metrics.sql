@@ -1,4 +1,4 @@
--- asset.description = Published daily clients metrics.
+-- asset.description = Daily metrics for clients.
 
 -- asset.depends = model.daily_verified_claims
 

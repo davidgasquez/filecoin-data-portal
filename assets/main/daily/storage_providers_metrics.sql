@@ -1,4 +1,4 @@
--- asset.description = Published daily metrics for storage providers.
+-- asset.description = Daily metrics for storage providers.
 
 -- asset.depends = model.storage_provider_power_daily
 -- asset.depends = model.storage_provider_sector_lifecycle_daily

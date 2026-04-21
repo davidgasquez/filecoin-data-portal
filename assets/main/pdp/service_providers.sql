@@ -1,4 +1,4 @@
--- asset.description = Published PDP service providers.
+-- asset.description = PDP service providers.
 
 -- asset.depends = raw.fevm_eth_logs_decoded
 

@@ -13,8 +13,6 @@ jobs:
   next:
     name: Next
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     env:
       ENCODED_GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.ENCODED_GOOGLE_APPLICATION_CREDENTIALS }}
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
@@ -59,20 +57,14 @@ jobs:
         run: uv run fdp publish r2
 
       - name: Build docs
-        run: uv run fdp docs --out web/public
+        run: uv run fdp docs --out build/docs/fdp
 
-      - name: Commit docs
-        run: |
-          if git diff --quiet -- web/public; then
-            echo "No docs changes."
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add web/public
-          git commit -m "📝 Update agent docs"
-          git push origin HEAD:${{ github.ref_name }}
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fdp-docs
+          path: build/docs/fdp
+          if-no-files-found: error
 
       - name: Save DuckDB cache
         if: success()

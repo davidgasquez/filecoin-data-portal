@@ -35,7 +35,7 @@ function assertDatasetRows(dataset: unknown, datasetFile: string): asserts datas
   }
 }
 
-const datasetsDir = path.resolve(process.cwd(), "datasets")
+const datasetsDir = path.resolve(process.cwd(), "scripts/datasets")
 const generatedDir = path.resolve(process.cwd(), "src/data/generated")
 
 await mkdir(generatedDir, { recursive: true })

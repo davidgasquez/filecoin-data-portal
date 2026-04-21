@@ -1,4 +1,4 @@
--- asset.description = Published daily Filecoin Pay operators metrics.
+-- asset.description = Daily Filecoin Pay operators metrics.
 
 -- asset.depends = model.fevm_daily_checkpoints
 -- asset.depends = model.filecoin_pay_rail_rate_intervals

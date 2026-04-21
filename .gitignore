@@ -229,6 +229,10 @@ __marimo__/
 # Node / Observable
 node_modules/
 .observablehq/
+web/.generated/
+web/public/SKILL.md
+web/public/assets/*.md
+web/src/content/dataset-docs/*.md
 
 # DuckDB
 *.duckdb

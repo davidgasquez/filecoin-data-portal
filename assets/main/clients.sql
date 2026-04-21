@@ -1,4 +1,4 @@
--- asset.description = Published clients.
+-- asset.description = Filecoin clients metrics and latest details.
 
 -- asset.depends = raw.datacapstats_verified_clients
 -- asset.depends = raw.verified_registry_claims

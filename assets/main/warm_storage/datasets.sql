@@ -1,4 +1,4 @@
--- asset.description = Published warm storage datasets.
+-- asset.description = Warm storage datasets.
 
 -- asset.depends = model.warm_storage_datasets
 

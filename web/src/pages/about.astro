@@ -15,81 +15,130 @@ import Layout from "../layouts/Layout.astro"
     </p>
   </section>
 
-  <section class="content-flow" aria-labelledby="faq-title">
+  <section class="about-faq" aria-labelledby="faq-title">
     <h2 id="faq-title" class="section-title">FAQ</h2>
 
-    <h3>How much do these datasets cost</h3>
-    <p>
-      All datasets are free to use. They are available to anyone at no cost
-      without warranties or guarantees of any kind, either expressed or
-      implied. By using these datasets, you agree that you do so at your own
-      risk.
-    </p>
+    <div class="faq-item">
+      <h3>How much do these datasets cost</h3>
+      <p>
+        All datasets are free to use. They are available to anyone at no cost
+        without warranties or guarantees of any kind, either expressed or
+        implied. By using these datasets, you agree that you do so at your own
+        risk.
+      </p>
+    </div>
 
-    <h3>Are there restrictions on how these datasets can be used</h3>
-    <p>
-      Datasets can be used without restriction. They are released under a
-      <a href="https://creativecommons.org/public-domain/cc0/"
-        >CC0 license into the public domain</a
-      >.
-    </p>
-
-    <h3>Who is using these datasets</h3>
-    <p>
-      Datasets produced by the Filecoin Data Portal are used by a wide range of
-      organizations and individuals. Example use cases include the following.
-    </p>
-    <ul>
-      <li><a href="https://pulse.filecoindataportal.xyz/">Filecoin Pulse</a>.</li>
-      <li>
-        <a href="https://numbers.filecoindataportal.xyz/">Filecoin In Numbers</a>.
-      </li>
-      <li>
-        <a href="https://dune.com/kalen/filecoin-daily-metrics">Dune Dashboard</a>.
-      </li>
-      <li>
-        <a href="https://www.reppo.ai/models"
-          >Reppo Storage Provider reputation models</a
+    <div class="faq-item">
+      <h3>Are there restrictions on how these datasets can be used</h3>
+      <p>
+        Datasets can be used without restriction. They are released under a
+        <a href="https://creativecommons.org/public-domain/cc0/"
+          >CC0 license into the public domain</a
         >.
-      </li>
-      <li>
-        <a href="https://fidl.tech">FIDL</a>'s
-        <a
-          href="https://compliance.allocator.tech/report/f03014641/1723421684/report.md"
-          >Allocator compliance reports</a
+      </p>
+    </div>
+
+    <div class="faq-item">
+      <h3>Who is using these datasets</h3>
+      <p>
+        Datasets produced by the Filecoin Data Portal are used by a wide range of
+        organizations and individuals. Example use cases include the following.
+      </p>
+      <ul>
+        <li><a href="https://pulse.filecoindataportal.xyz/">Filecoin Pulse</a>.</li>
+        <li>
+          <a href="https://numbers.filecoindataportal.xyz/">Filecoin In Numbers</a>.
+        </li>
+        <li>
+          <a href="https://dune.com/kalen/filecoin-daily-metrics">Dune Dashboard</a>.
+        </li>
+        <li>
+          <a href="https://www.reppo.ai/models"
+            >Reppo Storage Provider reputation models</a
+          >.
+        </li>
+        <li>
+          <a href="https://fidl.tech">FIDL</a>'s
+          <a
+            href="https://compliance.allocator.tech/report/f03014641/1723421684/report.md"
+            >Allocator compliance reports</a
+          >.
+        </li>
+      </ul>
+    </div>
+
+    <div class="faq-item">
+      <h3>How does the data get updated</h3>
+      <p>
+        Data updates daily via GitHub Actions. You can review
+        <a href="https://github.com/davidgasquez/filecoin-data-portal/actions"
+          >all runs and logs in the repository</a
         >.
-      </li>
-    </ul>
+      </p>
+    </div>
 
-    <h3>How does the data get updated</h3>
-    <p>
-      Data updates daily via GitHub Actions. You can review
-      <a href="https://github.com/davidgasquez/filecoin-data-portal/actions"
-        >all runs and logs in the repository</a
-      >.
-    </p>
+    <div class="faq-item">
+      <h3>How can I get the data</h3>
+      <p>
+        Data is available in multiple formats. Go to the <a href="/datasets"
+          >datasets page</a
+        > and select the format that suits your needs. If you need more,
+        <a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new"
+          >open an issue</a
+        > and we can help.
+      </p>
+    </div>
 
-    <h3>How can I get the data</h3>
-    <p>
-      Data is available in multiple formats. Go to the <a href="/data"
-        >datasets page</a
-      > and select the format that suits your needs. If you need more,
-      <a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new"
-        >open an issue</a
-      > and we can help.
-    </p>
-
-    <h3>Who is behind this project</h3>
-    <p>
-      This project is maintained by <a href="https://davidgasquez.com/"
-        >David Gasquez</a
-      > thanks to
-      <a href="https://protocol.ai/blog/pl-past-present-future/"
-        >Protocol Labs blue funds</a
-      > and
-      <a href="https://www.fil-retropgf.io/"
-        >Filecoin Retroactive Public Goods Funding</a
-      > programs.
-    </p>
+    <div class="faq-item">
+      <h3>Who is behind this project</h3>
+      <p>
+        This project is maintained by <a href="https://davidgasquez.com/"
+          >David Gasquez</a
+        > thanks to
+        <a href="https://protocol.ai/blog/pl-past-present-future/"
+          >Protocol Labs blue funds</a
+        > and
+        <a href="https://www.fil-retropgf.io/"
+          >Filecoin Retroactive Public Goods Funding</a
+        > programs.
+      </p>
+    </div>
   </section>
 </Layout>
+
+<style>
+  .page-header {
+    max-inline-size: 40rem;
+    margin-inline: auto;
+  }
+
+  .about-faq {
+    max-inline-size: 40rem;
+    margin-inline: auto;
+  }
+
+  .faq-item {
+    border-block-end: 1px solid var(--color-border);
+    padding-block: var(--space-4);
+  }
+
+  .faq-item:last-child {
+    border-block-end: none;
+  }
+
+  .faq-item h3 {
+    margin-block: 0 var(--space-2);
+  }
+
+  .faq-item p {
+    margin-block: 0;
+  }
+
+  .faq-item ul {
+    margin-block: var(--space-2) 0;
+  }
+
+  .faq-item li + li {
+    margin-block-start: var(--space-1);
+  }
+</style>

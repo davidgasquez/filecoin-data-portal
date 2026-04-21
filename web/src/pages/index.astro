@@ -19,21 +19,20 @@ import Layout from "../layouts/Layout.astro"
       Open Parquet datasets updated daily covering network metrics, storage
       providers, clients, allocators, deals, and more.
     </p>
-    <a href="/data" class="section-link">Browse datasets →</a>
+    <a href="/datasets" class="section-link">Browse datasets →</a>
   </section>
 
   <section class="hero-prompt" aria-label="Quickstart">
     <h2 class="section-title">Quickstart</h2>
     <p>
-      Read the <a href="/docs">documentation</a> to learn how to query and
-      use the datasets. Or ask your agent
+      Check the <a href="/datasets">datasets</a> page or ask your agent
       (<a href="https://ampcode.com" target="_blank" rel="noopener noreferrer">Amp</a>,
       <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer">ChatGPT</a>,
       <a href="https://claude.ai" target="_blank" rel="noopener noreferrer">Claude</a>, ...)
       to use it:
     </p>
     <div class="prompt-block">
-      <pre><code id="prompt-text">Read https://filecoindataportal.xyz/SKILL.md and tell me which providers onboarded more data last week</code></pre>
+      <pre><code id="prompt-text">Read <a href="https://filecoindataportal.xyz/SKILL.md" target="_blank" rel="noopener noreferrer" class="prompt-url">https://filecoindataportal.xyz/SKILL.md</a> and tell me which providers onboarded more data last week</code></pre>
       <button
         class="prompt-copy"
         aria-label="Copy prompt to clipboard"
@@ -44,6 +43,19 @@ import Layout from "../layouts/Layout.astro"
       The <a href="/SKILL.md">SKILL.md</a> file teaches agents how to find,
       query, and visualize all available datasets.
     </p>
+  </section>
+
+  <section class="content-flow" aria-label="Dashboards">
+    <h2 class="section-title">Dashboards</h2>
+    <p>
+      Multiple public dashboards powered by the same open datasets.
+    </p>
+    <ul>
+      <li><a href="https://numbers.filecoindataportal.xyz/" target="_blank" rel="noopener noreferrer">Filecoin In Numbers</a> — core network metrics with a rich chart set.</li>
+      <li><a href="https://pulse.filecoindataportal.xyz/" target="_blank" rel="noopener noreferrer">Filecoin Pulse</a> — Storage Provider, Client, and Allocator level metrics.</li>
+      <li><a href="https://dune.com/kalen/filecoin-daily-metrics" target="_blank" rel="noopener noreferrer">Dune Filecoin Metrics</a> — SQL based exploration in Dune Analytics.</li>
+      <li><a href="https://filecoin-project.github.io/filecoin-storage-providers-market/" target="_blank" rel="noopener noreferrer">Storage Providers Market</a> — market between Clients and Providers.</li>
+    </ul>
   </section>
 
   <section class="content-flow" aria-label="Source code">
@@ -90,6 +102,17 @@ import Layout from "../layouts/Layout.astro"
   .prompt-block code {
     background: none;
     padding: 0;
+  }
+
+  .prompt-url {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    font-weight: 700;
+  }
+
+  .prompt-url:hover {
+    text-decoration-thickness: 2px;
   }
 
   .prompt-copy {
