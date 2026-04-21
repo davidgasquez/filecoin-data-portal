@@ -10,9 +10,9 @@ Guidelines on how to help users explore and use Filecoin Data Portal (fdp) datas
 ## Datasets
 
 - [`clients`](assets/clients.md) — Published clients.
-- [`storage_providers`](assets/storage_providers.md) — Published storage providers.
 - [`daily_clients_metrics`](assets/daily_clients_metrics.md) — Published daily clients metrics.
 - [`daily_storage_providers_metrics`](assets/daily_storage_providers_metrics.md) — Published daily metrics for storage providers.
+- [`storage_providers`](assets/storage_providers.md) — Published storage providers.
 - [`pdp_service_providers`](assets/pdp_service_providers.md) — Published PDP service providers.
 - [`filecoin_pay_rails`](assets/filecoin_pay_rails.md) — Published Filecoin Pay rails.
 - [`warm_storage_datasets`](assets/warm_storage_datasets.md) — Published warm storage datasets.

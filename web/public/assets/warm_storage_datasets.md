@@ -4,7 +4,7 @@ Published warm storage datasets.
 
 - asset code: `https://github.com/davidgasquez/filecoin-data-portal/blob/main/assets/main/warm_storage/datasets.sql`
 - dataset url: `https://data.filecoindataportal.xyz/warm_storage_datasets.parquet`
-- rows: `846`
+- rows: `849`
 
 ## Depends
 
