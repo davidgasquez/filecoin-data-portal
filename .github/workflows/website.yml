@@ -45,6 +45,12 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Prune stale DuckDB tables
+        run: uv run fdp prune
+
+      - name: Refresh main assets
+        run: uv run fdp materialize main
+
       - name: Install Node.js
         uses: actions/setup-node@v6
         with:
