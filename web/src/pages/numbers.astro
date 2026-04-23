@@ -130,8 +130,15 @@ const sections = [
   {
     id: "protocol",
     title: "Protocol",
-    columns: 2,
+    columns: 3,
     charts: [
+      {
+        id: "burnt-fil",
+        title: "Burnt FIL",
+        description: "Amount of FIL burned as part of on-chain computations and penalties.",
+        y: "protocol_revenue_fil",
+        format: "fil",
+      },
       {
         id: "block-rewards-fil",
         title: "Block Rewards FIL",
@@ -142,43 +149,6 @@ const sections = [
         id: "reward-per-wincount",
         title: "Reward Per Wincount",
         y: "reward_per_wincount_fil",
-        format: "fil",
-      },
-    ],
-  },
-  {
-    id: "burn",
-    title: "Burn",
-    columns: 4,
-    charts: [
-      {
-        id: "total-burn-fil",
-        title: "Total Burn FIL",
-        y: "protocol_revenue_fil",
-        format: "fil",
-      },
-      {
-        id: "base-fee-burn-fil",
-        title: "Base Fee Burn FIL",
-        y: "base_fee_burn_fil",
-        format: "fil",
-      },
-      {
-        id: "over-estimation-burn-fil",
-        title: "Overestimation Burn FIL",
-        y: "over_estimation_burn_fil",
-        format: "fil",
-      },
-      {
-        id: "message-burn-fil",
-        title: "Message Burn FIL",
-        y: "message_burn_fil",
-        format: "fil",
-      },
-      {
-        id: "other-burn-fil",
-        title: "Other Burn FIL",
-        y: "other_burn_fil",
         format: "fil",
       },
     ],
