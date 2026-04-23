@@ -6,7 +6,7 @@ import duckdb
 import gspread
 from gspread.utils import rowcol_to_a1
 
-from fdp.assets import Asset
+from fdp.assets import Asset, main_assets
 from fdp.google import credentials_from_env
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -38,6 +38,11 @@ def publish(assets: list[Asset], conn: duckdb.DuckDBPyConnection) -> None:
             f"rows={row_count} worksheet={asset.name}",
             flush=True,
         )
+
+    prune_stale_worksheets(
+        spreadsheet,
+        valid_titles={asset.name for asset in main_assets()},
+    )
 
 
 def spreadsheet_id_from_env() -> str:
@@ -83,6 +88,18 @@ def ensure_worksheet(
         return spreadsheet.worksheet(title)
     except gspread.WorksheetNotFound:
         return spreadsheet.add_worksheet(title=title, rows=rows, cols=cols)
+
+
+def prune_stale_worksheets(
+    spreadsheet: gspread.Spreadsheet,
+    *,
+    valid_titles: set[str],
+) -> None:
+    for worksheet in spreadsheet.worksheets():
+        if worksheet.title in valid_titles:
+            continue
+        spreadsheet.del_worksheet(worksheet)
+        print(f"DELETED worksheet={worksheet.title}", flush=True)
 
 
 def asset_rows(

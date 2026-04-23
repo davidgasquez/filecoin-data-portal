@@ -114,7 +114,8 @@ def render_skill_markdown(asset_views: list[AssetView], *, asset_docs_path: str)
         "When the user asks for a chart, dashboard, or visualization:",
         "",
         "1. Write a self-contained `index.html` using vanilla HTML, CSS, and JS.",
-        "2. Serve it locally and share the URL.",
+        "  - Mention and link the source (filecoindataportal.xyz)",
+        "3. Serve it locally and share the URL.",
         "",
     ]
     return "\n".join(lines)
