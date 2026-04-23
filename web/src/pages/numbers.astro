@@ -38,15 +38,9 @@ if (dailyMetrics.length === 0) {
 const sections = [
   {
     id: "key-metrics",
-    title: "Key Metrics",
+    title: "Ecosystem KPIs",
     columns: 3,
     charts: [
-      {
-        id: "daily-data-onboarding",
-        title: "Onboarded PiBs",
-        y: "onboarded_pibs",
-        format: "pib",
-      },
       {
         id: "total-arr-usdfc",
         title: "USDFC ARR Run-Rate",
@@ -54,10 +48,16 @@ const sections = [
         format: "usdfc",
       },
       {
-        id: "total-value-flow",
-        title: "Total Value Flow",
-        y: "total_value_flow_fil",
-        format: "mfil",
+        id: "revenue-coverage-ratio",
+        title: "Revenue Coverage Ratio",
+        y: "revenue_coverage_ratio",
+        format: "number",
+      },
+      {
+        id: "high-profile-paying-clients",
+        title: "High Profile Paying Clients",
+        y: "high_profile_paying_clients",
+        format: "number",
       },
     ],
   },
