@@ -21,6 +21,8 @@ const SQL = `
     block_rewards_fil,
     reward_per_wincount_fil,
     coalesce(arr_usdfc, 0) AS arr_usdfc,
+    0 AS revenue_coverage_ratio,
+    0 AS high_profile_paying_clients,
     fil_token_price_avg_usd,
     fil_token_volume_usd,
     fil_token_market_cap_usd
