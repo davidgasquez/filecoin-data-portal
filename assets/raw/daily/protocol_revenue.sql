@@ -1,8 +1,8 @@
--- asset.description = Daily Filecoin protocol revenue from Lily chain economics.
+-- asset.description = Daily total FIL burned on-chain from Lily chain economics.
 -- asset.resource = bigquery.lily
 
 -- asset.column = date | UTC date.
--- asset.column = protocol_revenue_fil | Daily protocol revenue from burned FIL, in FIL.
+-- asset.column = protocol_revenue_fil | Daily total FIL burned on-chain, in FIL.
 
 -- asset.not_null = date
 -- asset.not_null = protocol_revenue_fil

@@ -9,7 +9,7 @@
 -- asset.depends = raw.coincodex_filecoin_market_data
 -- asset.depends = raw.daily_network_power
 -- asset.depends = raw.daily_network_economics
--- asset.depends = raw.daily_protocol_revenue
+-- asset.depends = model.daily_network_burn
 
 -- asset.column = date | UTC date.
 -- asset.column = transactions | Onchain transactions.
@@ -23,8 +23,12 @@
 -- asset.column = total_value_fil | FIL transferred by top-level messages.
 -- asset.column = total_gas_fee_fil | FIL paid in gas fees.
 -- asset.column = total_value_flow_fil | FIL value transferred plus gas fees.
--- asset.column = protocol_revenue_fil | Daily protocol revenue from burned FIL, in FIL.
--- asset.column = protocol_revenue_usd | Daily protocol revenue from burned FIL, in USD.
+-- asset.column = protocol_revenue_fil | Daily total FIL burned on-chain, in FIL.
+-- asset.column = protocol_revenue_usd | Daily total FIL burned on-chain, valued with the daily average FIL price, in USD.
+-- asset.column = base_fee_burn_fil | Daily FIL burned by base fees, in FIL.
+-- asset.column = over_estimation_burn_fil | Daily FIL burned by gas overestimation, in FIL.
+-- asset.column = message_burn_fil | Daily FIL burned by exact message gas burn, in FIL.
+-- asset.column = other_burn_fil | Residual daily FIL burned outside exact message gas burn, in FIL.
 -- asset.column = circulating_fil | End-of-day VM circulating supply, in FIL.
 -- asset.column = mined_fil | End-of-day cumulative mined FIL, in FIL.
 -- asset.column = vested_fil | End-of-day cumulative vested FIL, in FIL.
@@ -91,7 +95,7 @@ with verified_claims as (
     union
     select date from market_data
     union
-    select date from raw.daily_protocol_revenue
+    select date from model.daily_network_burn
     union
     select date from raw.daily_network_economics
     union
@@ -126,9 +130,14 @@ select
     coalesce(network_activity.total_value_fil, 0) as total_value_fil,
     coalesce(network_activity.total_gas_fee_fil, 0) as total_gas_fee_fil,
     coalesce(network_activity.total_value_flow_fil, 0) as total_value_flow_fil,
-    coalesce(protocol_revenue.protocol_revenue_fil, 0) as protocol_revenue_fil,
-    coalesce(protocol_revenue.protocol_revenue_fil, 0)
+    coalesce(network_burn.total_burn_fil, 0) as protocol_revenue_fil,
+    coalesce(network_burn.total_burn_fil, 0)
         * market_data.fil_token_price_avg_usd as protocol_revenue_usd,
+    coalesce(network_burn.base_fee_burn_fil, 0) as base_fee_burn_fil,
+    coalesce(network_burn.over_estimation_burn_fil, 0)
+        as over_estimation_burn_fil,
+    coalesce(network_burn.message_burn_fil, 0) as message_burn_fil,
+    coalesce(network_burn.other_burn_fil, 0) as other_burn_fil,
     coalesce(network_economics.circulating_fil, 0) as circulating_fil,
     coalesce(network_economics.mined_fil, 0) as mined_fil,
     coalesce(network_economics.vested_fil, 0) as vested_fil,
@@ -168,7 +177,7 @@ left join model.daily_filecoin_pay_arr as pay_arr
     using (date)
 left join market_data
     using (date)
-left join raw.daily_protocol_revenue as protocol_revenue
+left join model.daily_network_burn as network_burn
     using (date)
 left join raw.daily_network_economics as network_economics
     using (date)
