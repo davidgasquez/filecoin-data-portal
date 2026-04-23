@@ -14,6 +14,7 @@ type NumbersChartConfig = Pick<
   StatCardProps,
   | "id"
   | "title"
+  | "description"
   | "y"
   | "format"
   | "formatScale"
@@ -44,18 +45,21 @@ const sections = [
       {
         id: "total-arr-usdfc",
         title: "USDFC ARR Run-Rate",
+        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         y: "arr_usdfc",
         format: "usdfc",
       },
       {
         id: "revenue-coverage-ratio",
         title: "Revenue Coverage Ratio",
+        description: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
         y: "revenue_coverage_ratio",
         format: "number",
       },
       {
         id: "high-profile-paying-clients",
         title: "High Profile Paying Clients",
+        description: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
         y: "high_profile_paying_clients",
         format: "number",
       },
@@ -211,6 +215,7 @@ const serializedDailyMetrics = JSON.stringify(
             <StatCard
               id={chart.id}
               title={chart.title}
+              description={chart.description}
               x={chartX}
               y={chart.y}
               format={chart.format}
@@ -675,20 +680,20 @@ const serializedDailyMetrics = JSON.stringify(
         history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`)
       }
 
-      function scrollExpandedChartIntoView(): void {
-        const expandedChart = getChartById(expandedChartId)
+      function scrollChartIntoView(chartId: string | null, behavior: ScrollBehavior = "smooth"): void {
+        const chart = getChartById(chartId)
         const toolbar = document.querySelector<HTMLElement>(".numbers-toolbar")
 
-        if (!expandedChart) {
+        if (!chart) {
           return
         }
 
         const toolbarOffset = toolbar ? toolbar.getBoundingClientRect().height + 16 : 16
-        const chartTop = window.scrollY + expandedChart.node.getBoundingClientRect().top
+        const chartTop = window.scrollY + chart.node.getBoundingClientRect().top
 
         window.scrollTo({
           top: Math.max(0, chartTop - toolbarOffset),
-          behavior: "smooth",
+          behavior,
         })
       }
 
@@ -722,7 +727,7 @@ const serializedDailyMetrics = JSON.stringify(
 
         if (options.scrollIntoView && nextChartId) {
           requestAnimationFrame(() => {
-            scrollExpandedChartIntoView()
+            scrollChartIntoView(nextChartId)
           })
         }
 
@@ -733,6 +738,9 @@ const serializedDailyMetrics = JSON.stringify(
 
         if (previousExpandedChartId) {
           getChartById(previousExpandedChartId)?.toggleButton.focus()
+          requestAnimationFrame(() => {
+            scrollChartIntoView(previousExpandedChartId, "instant")
+          })
         }
       }
 
@@ -1165,7 +1173,7 @@ const serializedDailyMetrics = JSON.stringify(
 
       if (expandedChartId) {
         requestAnimationFrame(() => {
-          scrollExpandedChartIntoView()
+          scrollChartIntoView(expandedChartId)
         })
       }
 

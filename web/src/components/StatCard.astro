@@ -15,6 +15,7 @@ type PercentMode = "fraction" | "points"
 interface Props {
   id: string
   title: string
+  description?: string
   x: string
   y: string
   format?: LineChartFormat
@@ -27,6 +28,7 @@ interface Props {
 const {
   id,
   title,
+  description,
   x,
   y,
   format = "number",
@@ -56,6 +58,12 @@ const {
     <a href={`#${id}`} id={id} class="stat-card__label line-chart__title">{title}</a>
     <span class="line-chart__headline" data-line-chart-last-value hidden></span>
     <span class="line-chart__headline-tip" data-line-chart-headline-tip hidden></span>
+    {description && (
+      <span class="stat-card__info" aria-label="Info" tabindex="0">
+        i
+        <span class="stat-card__info-tooltip">{description}</span>
+      </span>
+    )}
     <a
       href={`#${id}`}
       class="line-chart__toggle"
@@ -71,6 +79,8 @@ const {
   <span class="stat-card__value" data-stat-card-value></span>
   <span class="stat-card__trend" data-stat-card-trend></span>
   <svg class="stat-card__spark" aria-hidden="true"></svg>
+
+  {description && <p class="stat-card__description">{description}</p>}
 
   <div class="line-chart__canvas">
     <svg class="line-chart__svg" aria-hidden="true"></svg>
