@@ -31,26 +31,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Restore DuckDB cache
-        uses: actions/cache/restore@v5
-        with:
-          path: |
-            fdp.duckdb
-          key: duckdb-${{ github.run_id }}
-          restore-keys: |
-            duckdb-
-
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          enable-cache: true
-
-      - name: Prune stale DuckDB tables
-        run: uv run fdp prune
-
-      - name: Refresh main assets
-        run: uv run fdp materialize main
-
       - name: Install Node.js
         uses: actions/setup-node@v6
         with:
@@ -59,13 +39,14 @@ jobs:
           cache-dependency-path: web/package-lock.json
 
       - name: Download generated docs
-        if: github.event_name == 'workflow_run'
-        uses: actions/download-artifact@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id }}
-          name: fdp-docs
-          path: web/.generated/fdp-docs/raw
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          rm -rf web/.generated/fdp-docs/raw
+          mkdir -p web/.generated/fdp-docs/raw
+          gh run download --name fdp-docs --dir web/.generated/fdp-docs/raw
+          test -f web/.generated/fdp-docs/raw/SKILL.md
+          test -d web/.generated/fdp-docs/raw/assets
 
       - name: Install Dependencies
         run: npm ci --prefix web
