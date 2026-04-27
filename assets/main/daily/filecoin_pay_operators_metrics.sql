@@ -2,6 +2,7 @@
 
 -- asset.depends = model.fevm_daily_checkpoints
 -- asset.depends = model.filecoin_pay_rail_rate_intervals
+-- asset.depends = model.daily_filecoin_pay_activity
 
 -- asset.column = date | UTC date.
 -- asset.column = operator | Filecoin Pay operator address.
