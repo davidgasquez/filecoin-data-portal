@@ -3,6 +3,7 @@
 -- asset.depends = model.daily_network_activity
 -- asset.depends = model.daily_sector_lifecycle
 -- asset.depends = model.daily_verified_claims
+-- asset.depends = model.daily_filecoin_pay_activity
 -- asset.depends = model.daily_filecoin_pay_arr
 -- asset.depends = model.warm_storage_daily_activity
 -- asset.depends = model.network_block_rewards_by_height
@@ -31,6 +32,9 @@
 -- asset.column = locked_fil | End-of-day VM locked FIL, in FIL.
 -- asset.column = burnt_fil | End-of-day cumulative burnt FIL, in FIL.
 -- asset.column = pledge_collateral_fil | End-of-day total pledge collateral locked by storage providers, in FIL.
+-- asset.column = filecoin_pay_active_payers | Payers with at least one active Filecoin Pay rail at end of day.
+-- asset.column = filecoin_pay_active_rails | Active Filecoin Pay rails at end of day.
+-- asset.column = usdfc_paid | Gross USDFC paid through Filecoin Pay rails on the date.
 -- asset.column = active_payers | Payers with at least one active chargeable warm storage dataset.
 -- asset.column = active_datasets | Active chargeable warm storage datasets.
 -- asset.column = new_payers | Payers whose first chargeable warm storage dataset started billing on the date.
@@ -82,6 +86,8 @@ with verified_claims as (
     from raw.coincodex_filecoin_market_data
 ), source_dates as (
     select date from model.warm_storage_daily_activity
+    union
+    select date from model.daily_filecoin_pay_activity
     union
     select date from model.daily_filecoin_pay_arr
     union
@@ -136,6 +142,9 @@ select
     coalesce(network_economics.burnt_fil, 0) as burnt_fil,
     coalesce(network_economics.pledge_collateral_fil, 0)
         as pledge_collateral_fil,
+    coalesce(pay_activity.active_payers, 0) as filecoin_pay_active_payers,
+    coalesce(pay_activity.active_rails, 0) as filecoin_pay_active_rails,
+    coalesce(pay_activity.usdfc_paid, 0) as usdfc_paid,
     coalesce(warm_storage.active_payers, 0) as active_payers,
     coalesce(warm_storage.active_datasets, 0) as active_datasets,
     coalesce(warm_storage.new_payers, 0) as new_payers,
@@ -163,6 +172,8 @@ select
     coalesce(block_rewards.reward_per_wincount_fil, 0) as reward_per_wincount_fil
 from dates
 left join model.warm_storage_daily_activity as warm_storage
+    using (date)
+left join model.daily_filecoin_pay_activity as pay_activity
     using (date)
 left join model.daily_filecoin_pay_arr as pay_arr
     using (date)
