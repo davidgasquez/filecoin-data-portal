@@ -56,16 +56,6 @@ jobs:
       - name: Publish to R2
         run: uv run fdp publish r2
 
-      - name: Build docs
-        run: uv run fdp docs --out build/docs/fdp
-
-      - name: Upload docs artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: fdp-docs
-          path: build/docs/fdp
-          if-no-files-found: error
-
       - name: Save DuckDB cache
         if: success()
         uses: actions/cache/save@v5

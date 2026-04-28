@@ -69,32 +69,24 @@ async function run(command: string, args: string[], cwd: string): Promise<void> 
 }
 
 async function ensureRawDocs(): Promise<string | null> {
-  if (process.env.FDP_DOCS_DIR) {
-    const overrideDir = path.resolve(webRoot, process.env.FDP_DOCS_DIR)
-    if (!(await hasGeneratedDocs(overrideDir))) {
-      throw new Error(`Generated docs not found in ${overrideDir}`)
-    }
-    return overrideDir
-  }
-
-  const dbPath = path.join(repoRoot, "fdp.duckdb")
-  if (await pathExists(dbPath)) {
-    await rm(rawDocsDir, { recursive: true, force: true })
-    await mkdir(rawDocsDir, { recursive: true })
-    await run("uv", ["run", "fdp", "docs", "--out", "web/.generated/fdp-docs/raw"], repoRoot)
-
-    if (!(await hasGeneratedDocs(rawDocsDir))) {
-      throw new Error(`Generated docs not found in ${rawDocsDir} after running fdp docs`)
-    }
-
-    return rawDocsDir
-  }
-
   if (await hasGeneratedDocs(rawDocsDir)) {
     return rawDocsDir
   }
 
-  return null
+  const dbPath = path.join(repoRoot, "fdp.duckdb")
+  if (!(await pathExists(dbPath))) {
+    return null
+  }
+
+  await rm(rawDocsDir, { recursive: true, force: true })
+  await mkdir(rawDocsDir, { recursive: true })
+  await run("uv", ["run", "fdp", "docs", "--out", "web/.generated/fdp-docs/raw"], repoRoot)
+
+  if (!(await hasGeneratedDocs(rawDocsDir))) {
+    throw new Error(`Generated docs not found in ${rawDocsDir} after running fdp docs`)
+  }
+
+  return rawDocsDir
 }
 
 async function clearManagedMarkdownFiles(targetDir: string): Promise<void> {
