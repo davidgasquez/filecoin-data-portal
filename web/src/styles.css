@@ -444,6 +444,7 @@
     margin-inline-start: auto;
   }
 
+  .stat-card.is-expanded .stat-card__info,
   .stat-card.is-expanded .line-chart__toggle {
     margin-inline-start: 0;
   }
