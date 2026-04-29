@@ -6,11 +6,6 @@ on:
     workflows: ["Next"]
     types:
       - completed
-  push:
-    branches:
-      - main
-    paths:
-      - "web/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
