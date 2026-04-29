@@ -16,6 +16,16 @@ select
     sum(gas_used) / 1e6 as gas_used_millions,
     count(*) as transactions,
     cast(sum(cast(value as bignumeric) / 1e18) as float64) as total_value_fil,
+    cast(sum(cast(base_fee_burn as bignumeric) / 1e18) as float64)
+        as base_fee_burn_fil,
+    cast(
+        sum(
+            (
+                cast(base_fee_burn as bignumeric)
+                + cast(over_estimation_burn as bignumeric)
+            ) / 1e18
+        ) as float64
+    ) as message_burn_fil,
     cast(
         sum(
             (

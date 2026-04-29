@@ -23,6 +23,10 @@
 -- asset.column = gas_used_millions | Total gas used, in millions.
 -- asset.column = total_value_fil | FIL transferred by top-level messages.
 -- asset.column = total_gas_fee_fil | FIL paid in gas fees.
+-- asset.column = base_fee_burn_fil | FIL burned by message base fees.
+-- asset.column = base_fee_burn_usd | FIL burned by message base fees, valued with the daily average FIL price, in USD.
+-- asset.column = message_burn_fil | FIL burned by message execution.
+-- asset.column = message_burn_usd | FIL burned by message execution, valued with the daily average FIL price, in USD.
 -- asset.column = total_value_flow_fil | FIL value transferred plus gas fees.
 -- asset.column = protocol_revenue_fil | Daily total FIL burned on-chain, in FIL.
 -- asset.column = protocol_revenue_usd | Daily total FIL burned on-chain, valued with the daily average FIL price, in USD.
@@ -131,6 +135,12 @@ select
     coalesce(network_activity.gas_used_millions, 0) as gas_used_millions,
     coalesce(network_activity.total_value_fil, 0) as total_value_fil,
     coalesce(network_activity.total_gas_fee_fil, 0) as total_gas_fee_fil,
+    coalesce(network_activity.base_fee_burn_fil, 0) as base_fee_burn_fil,
+    coalesce(network_activity.base_fee_burn_fil, 0)
+        * market_data.fil_token_price_avg_usd as base_fee_burn_usd,
+    coalesce(network_activity.message_burn_fil, 0) as message_burn_fil,
+    coalesce(network_activity.message_burn_fil, 0)
+        * market_data.fil_token_price_avg_usd as message_burn_usd,
     coalesce(network_activity.total_value_flow_fil, 0) as total_value_flow_fil,
     coalesce(protocol_revenue.protocol_revenue_fil, 0) as protocol_revenue_fil,
     coalesce(protocol_revenue.protocol_revenue_fil, 0)
