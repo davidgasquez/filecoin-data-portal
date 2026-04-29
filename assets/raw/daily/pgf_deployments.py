@@ -1,4 +1,5 @@
 # asset.description = Daily public goods funding deployments from OSO.
+# https://raw.githubusercontent.com/opensource-observer/insights/refs/heads/main/community/filecoin/skills.md
 
 # asset.materialization = dataframe
 
