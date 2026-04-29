@@ -1,6 +1,5 @@
 import { access, copyFile, mkdir, readdir, readFile, rm, unlink, writeFile } from "node:fs/promises"
 import { constants } from "node:fs"
-import { spawn } from "node:child_process"
 import path from "node:path"
 
 type ParsedAssetDoc = {
@@ -11,7 +10,6 @@ type ParsedAssetDoc = {
 }
 
 const webRoot = process.cwd()
-const repoRoot = path.resolve(webRoot, "..")
 const rawDocsDir = path.resolve(webRoot, ".generated/fdp-docs/raw")
 const publicSkillPath = path.resolve(webRoot, "public/SKILL.md")
 const publicAssetsDir = path.resolve(webRoot, "public/assets")
@@ -48,45 +46,14 @@ async function hasGeneratedDocs(targetDir: string): Promise<boolean> {
   return assetFiles.length > 0
 }
 
-async function run(command: string, args: string[], cwd: string): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    const child = spawn(command, args, {
-      cwd,
-      stdio: "inherit",
-      env: process.env,
-    })
-
-    child.on("error", reject)
-    child.on("exit", (code) => {
-      if (code === 0) {
-        resolve()
-        return
-      }
-
-      reject(new Error(`${command} ${args.join(" ")} exited with code ${code}`))
-    })
-  })
-}
-
-async function ensureRawDocs(): Promise<string | null> {
+async function requireRawDocs(): Promise<string> {
   if (await hasGeneratedDocs(rawDocsDir)) {
     return rawDocsDir
   }
 
-  const dbPath = path.join(repoRoot, "fdp.duckdb")
-  if (!(await pathExists(dbPath))) {
-    return null
-  }
-
-  await rm(rawDocsDir, { recursive: true, force: true })
-  await mkdir(rawDocsDir, { recursive: true })
-  await run("uv", ["run", "fdp", "docs", "--out", "web/.generated/fdp-docs/raw"], repoRoot)
-
-  if (!(await hasGeneratedDocs(rawDocsDir))) {
-    throw new Error(`Generated docs not found in ${rawDocsDir} after running fdp docs`)
-  }
-
-  return rawDocsDir
+  throw new Error(
+    `FDP docs not found in ${rawDocsDir}. Run "uv run fdp docs --out web/.generated/fdp-docs/raw" first.`,
+  )
 }
 
 async function clearManagedMarkdownFiles(targetDir: string): Promise<void> {
@@ -171,15 +138,10 @@ function renderCollectionDoc(parsed: ParsedAssetDoc): string {
   return `${frontmatter}${parsed.body.trim()}\n`
 }
 
-async function syncDocs(sourceDir: string | null): Promise<void> {
+async function syncDocs(sourceDir: string): Promise<void> {
   await clearManagedMarkdownFiles(publicAssetsDir)
   await clearManagedMarkdownFiles(contentDir)
   await rm(publicSkillPath, { force: true })
-
-  if (sourceDir == null) {
-    console.warn("No generated FDP docs found. Skipping dataset docs staging.")
-    return
-  }
 
   await copyFile(path.join(sourceDir, "SKILL.md"), publicSkillPath)
 
@@ -196,5 +158,5 @@ async function syncDocs(sourceDir: string | null): Promise<void> {
   }
 }
 
-const sourceDir = await ensureRawDocs()
+const sourceDir = await requireRawDocs()
 await syncDocs(sourceDir)

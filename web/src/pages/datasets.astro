@@ -30,8 +30,7 @@ const datasets = await Promise.all(
   {
     datasets.length === 0 ? (
       <p>
-        No dataset docs found. Run <code>npm run generate:fdp-docs</code> from{" "}
-        <code>web/</code>.
+        No dataset docs found. Run <code>npm run generate:fdp-docs --prefix web</code>.
       </p>
     ) : (
       <div class="datasets-layout">

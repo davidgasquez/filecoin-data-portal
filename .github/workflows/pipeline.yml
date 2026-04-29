@@ -29,11 +29,11 @@ jobs:
       - name: Restore DuckDB cache
         uses: actions/cache/restore@v5
         with:
-          path: |
-            fdp.duckdb
-          key: duckdb-${{ github.run_id }}
+          path: fdp.duckdb
+          key: duckdb-${{ github.ref_name }}-${{ github.run_id }}
           restore-keys: |
-            duckdb-
+            duckdb-${{ github.ref_name }}-
+            duckdb-main-
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v7
@@ -55,6 +55,16 @@ jobs:
       - name: Run data tests
         run: uv run fdp test
 
+      - name: Generate FDP docs
+        run: uv run fdp docs --out build/fdp-docs
+
+      - name: Upload FDP docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: fdp-docs
+          path: build/fdp-docs
+          retention-days: 30
+
       - name: Publish to R2
         run: uv run fdp publish r2
 
@@ -65,6 +75,5 @@ jobs:
         if: success()
         uses: actions/cache/save@v5
         with:
-          path: |
-            fdp.duckdb
-          key: duckdb-${{ github.run_id }}
+          path: fdp.duckdb
+          key: duckdb-${{ github.ref_name }}-${{ github.run_id }}
