@@ -21,6 +21,7 @@ type NumbersChartConfig = Pick<
   | "formatPrefix"
   | "formatSuffix"
   | "percentMode"
+  | "showMovingAverage"
 >
 
 type NumbersSectionConfig = {
@@ -48,6 +49,7 @@ const sections = [
         description: "Annualized value of active recurring Filecoin Pay rails at each UTC day-end.",
         y: "arr_usdfc",
         format: "usdfc",
+        showMovingAverage: false,
       },
       {
         id: "revenue-coverage-ratio",
@@ -69,6 +71,7 @@ const sections = [
         description: "Cumulative public goods funding deployments disbursed by each UTC day-end.",
         y: "total_pgf_deployments_usd",
         format: "usd",
+        showMovingAverage: false,
       },
     ],
   },
@@ -83,6 +86,7 @@ const sections = [
         description: "Unique Filecoin Pay payer addresses with at least one active rail at each UTC day-end.",
         y: "filecoin_pay_active_payers",
         format: "integer",
+        showMovingAverage: false,
       },
       {
         id: "foc-active-rails",
@@ -90,6 +94,7 @@ const sections = [
         description: "Filecoin Pay rails active at each UTC day-end.",
         y: "filecoin_pay_active_rails",
         format: "integer",
+        showMovingAverage: false,
       },
       {
         id: "foc-usdfc-paid",
@@ -104,6 +109,7 @@ const sections = [
         description: "Annualized value of active recurring Filecoin Pay rails at each UTC day-end.",
         y: "arr_usdfc",
         format: "usdfc",
+        showMovingAverage: false,
       },
     ],
   },
@@ -266,6 +272,7 @@ const serializedDailyMetrics = JSON.stringify(
               formatPrefix={chart.formatPrefix}
               formatSuffix={chart.formatSuffix}
               percentMode={chart.percentMode}
+              showMovingAverage={chart.showMovingAverage}
             />
           ))}
         </div>
@@ -1050,6 +1057,7 @@ const serializedDailyMetrics = JSON.stringify(
         formatPrefix: string
         formatSuffix: string
         percentMode: PercentMode
+        showMovingAverage: boolean
       }
 
       const statCardNodes = Array.from(document.querySelectorAll<HTMLElement>(STAT_CARD_SELECTOR))
@@ -1089,6 +1097,7 @@ const serializedDailyMetrics = JSON.stringify(
           formatPrefix: node.dataset.formatPrefix ?? "",
           formatSuffix: node.dataset.formatSuffix ?? "",
           percentMode: parsePercentMode(node.dataset.percentMode),
+          showMovingAverage: node.dataset.showMovingAverage === "true",
         }
       })
 
@@ -1106,10 +1115,11 @@ const serializedDailyMetrics = JSON.stringify(
           return
         }
 
-        const ma = buildMovingAverage(points.map((p) => p.value), 30)
-        const latest = ma[ma.length - 1]
-        const compareIndex = Math.max(0, ma.length - 1 - 30)
-        const prev = ma[compareIndex]
+        const rawValues = points.map((p) => p.value)
+        const series = card.showMovingAverage ? buildMovingAverage(rawValues, 30) : rawValues
+        const latest = series[series.length - 1]
+        const compareIndex = Math.max(0, series.length - 1 - 30)
+        const prev = series[compareIndex]
 
         valueEl.textContent = formatValue(latest, card, "headline")
 
@@ -1125,14 +1135,14 @@ const serializedDailyMetrics = JSON.stringify(
 
         const minX = points[0].timestamp
         const maxX = points[points.length - 1].timestamp
-        const minY = Math.min(...ma)
-        let maxY = Math.max(...ma)
+        const minY = Math.min(...series)
+        let maxY = Math.max(...series)
         if (maxY === minY) maxY = minY + 1
 
         const sx = (t: number) => pad + ((t - minX) / Math.max(maxX - minX, DAY_IN_MS)) * (width - pad * 2)
         const sy = (v: number) => pad + ((maxY - v) / (maxY - minY)) * (height - pad * 2)
 
-        const d = ma.map((v, i) => `${i === 0 ? "M" : "L"} ${sx(points[i].timestamp)} ${sy(v)}`).join(" ")
+        const d = series.map((v, i) => `${i === 0 ? "M" : "L"} ${sx(points[i].timestamp)} ${sy(v)}`).join(" ")
 
         svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
         svg.innerHTML = `<path d="${d}" fill="none" stroke="var(--color-border-strong)" stroke-width="1.5" />`

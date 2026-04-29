@@ -23,6 +23,7 @@ interface Props {
   formatPrefix?: string
   formatSuffix?: string
   percentMode?: PercentMode
+  showMovingAverage?: boolean
 }
 
 const {
@@ -36,6 +37,7 @@ const {
   formatPrefix,
   formatSuffix,
   percentMode = "fraction",
+  showMovingAverage = true,
 } = Astro.props
 ---
 
@@ -51,7 +53,7 @@ const {
   data-format-prefix={formatPrefix ?? undefined}
   data-format-suffix={formatSuffix ?? undefined}
   data-percent-mode={percentMode}
-  data-show-moving-average="true"
+  data-show-moving-average={String(showMovingAverage)}
   data-moving-average-window-days="30"
 >
   <figcaption class="stat-card__header">
