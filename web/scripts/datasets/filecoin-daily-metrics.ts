@@ -28,7 +28,8 @@ const SQL = `
     0 AS high_profile_paying_clients,
     fil_token_price_avg_usd,
     fil_token_volume_usd,
-    fil_token_market_cap_usd
+    fil_token_market_cap_usd,
+    total_pgf_deployments_usd
   FROM read_parquet('${DAILY_NETWORK_METRICS_PARQUET_URL}')
   WHERE date IS NOT NULL
   ORDER BY date

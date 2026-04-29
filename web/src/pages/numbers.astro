@@ -40,7 +40,7 @@ const sections = [
   {
     id: "key-metrics",
     title: "Ecosystem KPIs",
-    columns: 3,
+    columns: 4,
     charts: [
       {
         id: "total-arr-usdfc",
@@ -62,6 +62,13 @@ const sections = [
         description: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
         y: "high_profile_paying_clients",
         format: "number",
+      },
+      {
+        id: "total-pgf-deployments-usd",
+        title: "PGF Deployments",
+        description: "Cumulative public goods funding deployments disbursed by each UTC day-end.",
+        y: "total_pgf_deployments_usd",
+        format: "usd",
       },
     ],
   },
