@@ -6,11 +6,13 @@
 -- asset.depends = model.daily_filecoin_pay_activity
 -- asset.depends = model.daily_filecoin_pay_arr
 -- asset.depends = model.warm_storage_daily_activity
+-- asset.depends = model.storage_provider_power_daily
 -- asset.depends = model.network_block_rewards_by_height
 -- asset.depends = raw.coincodex_filecoin_market_data
 -- asset.depends = raw.daily_network_power
 -- asset.depends = raw.daily_network_economics
 -- asset.depends = raw.daily_protocol_revenue
+-- asset.depends = raw.daily_pgf_deployments
 
 -- asset.column = date | UTC date.
 -- asset.column = transactions | Onchain transactions.
@@ -20,6 +22,7 @@
 -- asset.column = removed_pibs | Raw sector data removed on the date, in pebibytes.
 -- asset.column = raw_power_pibs | End-of-day raw byte power, in pebibytes.
 -- asset.column = quality_adjusted_power_pibs | End-of-day quality adjusted power, in pebibytes.
+-- asset.column = providers_with_power | Storage providers with positive end-of-day power.
 -- asset.column = gas_used_millions | Total gas used, in millions.
 -- asset.column = total_value_fil | FIL transferred by top-level messages.
 -- asset.column = total_gas_fee_fil | FIL paid in gas fees.
@@ -58,6 +61,7 @@
 -- asset.column = block_rewards_fil_per_qap_tib_day | Exact block rewards minted on the date per 1 TiB of network quality adjusted power, in FIL.
 -- asset.column = block_rewards_usd_per_qap_tib_day | Exact block rewards minted on the date per 1 TiB of network quality adjusted power, in USD.
 -- asset.column = reward_per_wincount_fil | Exact reward allocated per win count on the date, in FIL.
+-- asset.column = total_pgf_deployments_usd | Cumulative public goods funding deployments disbursed by the date, in USD.
 
 -- asset.not_null = date
 -- asset.unique = date
@@ -88,6 +92,13 @@ with verified_claims as (
         volume_usd as fil_token_volume_usd,
         market_cap_usd as fil_token_market_cap_usd
     from raw.coincodex_filecoin_market_data
+), providers_with_power as (
+    select
+        date,
+        count(distinct provider_id) as providers_with_power
+    from model.storage_provider_power_daily
+    where has_power
+    group by 1
 ), source_dates as (
     select date from model.warm_storage_daily_activity
     union
@@ -98,6 +109,8 @@ with verified_claims as (
     select date from verified_claims
     union
     select date from block_rewards
+    union
+    select date from providers_with_power
     union
     select date from market_data
     union
@@ -122,6 +135,15 @@ with verified_claims as (
         (select max_date from date_bounds),
         interval 1 day
     )
+), pgf_deployments_by_date as (
+    select
+        dates.date,
+        coalesce(sum(pgf_deployments.disbursed_usd), 0)
+            as total_pgf_deployments_usd
+    from dates
+    left join raw.daily_pgf_deployments as pgf_deployments
+        on pgf_deployments.date <= dates.date
+    group by 1
 )
 select
     dates.date,
@@ -132,6 +154,7 @@ select
     coalesce(sector_lifecycle.removed_pibs, 0) as removed_pibs,
     network_power.raw_power_pibs,
     network_power.quality_adjusted_power_pibs,
+    coalesce(providers_with_power.providers_with_power, 0) as providers_with_power,
     coalesce(network_activity.gas_used_millions, 0) as gas_used_millions,
     coalesce(network_activity.total_value_fil, 0) as total_value_fil,
     coalesce(network_activity.total_gas_fee_fil, 0) as total_gas_fee_fil,
@@ -179,13 +202,16 @@ select
     coalesce(block_rewards.block_rewards_fil, 0) * market_data.fil_token_price_avg_usd
         / nullif(network_power.quality_adjusted_power_pibs * 1024, 0)
         as block_rewards_usd_per_qap_tib_day,
-    coalesce(block_rewards.reward_per_wincount_fil, 0) as reward_per_wincount_fil
+    coalesce(block_rewards.reward_per_wincount_fil, 0) as reward_per_wincount_fil,
+    pgf_deployments.total_pgf_deployments_usd
 from dates
 left join model.warm_storage_daily_activity as warm_storage
     using (date)
 left join model.daily_filecoin_pay_activity as pay_activity
     using (date)
 left join model.daily_filecoin_pay_arr as pay_arr
+    using (date)
+left join pgf_deployments_by_date as pgf_deployments
     using (date)
 left join market_data
     using (date)
@@ -200,6 +226,8 @@ left join block_rewards
 left join model.daily_sector_lifecycle as sector_lifecycle
     using (date)
 left join raw.daily_network_power as network_power
+    using (date)
+left join providers_with_power
     using (date)
 left join model.daily_network_activity as network_activity
     using (date)
