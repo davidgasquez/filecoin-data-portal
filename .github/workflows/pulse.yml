@@ -2,8 +2,6 @@ name: Filecoin Pulse
 
 on:
   workflow_dispatch: {}
-  schedule:
-    - cron: "0 20 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -2,10 +2,6 @@ name: Generate Tables
 
 on:
   workflow_dispatch: {}
-  workflow_run:
-    workflows: ["Pipeline"]
-    types:
-      - completed
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
