@@ -1,10 +1,11 @@
 -- asset.description = Filecoin storage providers metrics and latest details.
 
--- asset.depends = raw.storage_provider_current_info
+-- asset.depends = model.storage_provider_current_info
 -- asset.depends = model.storage_provider_power_daily
 -- asset.depends = model.storage_provider_sector_lifecycle_daily
 -- asset.depends = model.storage_provider_block_rewards_daily
--- asset.depends = raw.verified_registry_claims
+-- asset.depends = model.storage_provider_market_deal_activity
+-- asset.depends = model.verified_claims
 
 -- asset.column = provider_id | Filecoin storage provider actor id address.
 -- asset.column = owner_id | Current owner actor id address.
@@ -31,10 +32,13 @@
 -- asset.column = has_power | Whether the provider currently has positive power.
 -- asset.column = has_sector_activity | Whether the provider has sector lifecycle activity.
 -- asset.column = has_verified_claims | Whether the provider has successful verified claims.
+-- asset.column = has_market_deals | Whether the provider has market deal activity.
 -- asset.column = first_sector_activity_date | First date with sector lifecycle activity.
 -- asset.column = last_sector_activity_date | Most recent date with sector lifecycle activity.
 -- asset.column = first_verified_claim_at | First successful verified claim timestamp.
 -- asset.column = last_verified_claim_at | Most recent successful verified claim timestamp.
+-- asset.column = first_market_deal_start_at | First observed market deal start timestamp.
+-- asset.column = last_market_deal_start_at | Most recent market deal start timestamp.
 -- asset.column = verified_claims | Total successful verified claims.
 -- asset.column = verified_clients | Clients with at least one successful verified claim.
 -- asset.column = verified_data_onboarded_tibs | Verified data successfully claimed, in tebibytes.
@@ -44,6 +48,7 @@
 -- asset.not_null = has_power
 -- asset.not_null = has_sector_activity
 -- asset.not_null = has_verified_claims
+-- asset.not_null = has_market_deals
 -- asset.unique = provider_id
 
 with current_power as (
@@ -66,15 +71,14 @@ sector_activity as (
 ),
 verified_claim_activity as (
     select
-        'f0' || cast(provider_id as varchar) as provider_id,
-        min(to_timestamp((claim_epoch * 30) + 1598306400)) as first_verified_claim_at,
-        max(to_timestamp((claim_epoch * 30) + 1598306400)) as last_verified_claim_at,
+        provider_id,
+        min(claim_at) as first_verified_claim_at,
+        max(claim_at) as last_verified_claim_at,
         count(*) as verified_claims,
         count(distinct client_id) as verified_clients,
-        cast(sum(piece_size_bytes) as double) / power(1024, 4)
-            as verified_data_onboarded_tibs,
+        sum(piece_size_tibs) as verified_data_onboarded_tibs,
         true as has_verified_claims
-    from raw.verified_registry_claims
+    from model.verified_claims
     group by 1
 ),
 reward_activity as (
@@ -84,15 +88,25 @@ reward_activity as (
     from model.storage_provider_block_rewards_daily
     group by 1
 ),
+market_deal_activity as (
+    select
+        provider_id,
+        first_market_deal_start_at,
+        last_market_deal_start_at,
+        true as has_market_deals
+    from model.storage_provider_market_deal_activity
+),
 providers as (
     select distinct provider_id from model.storage_provider_sector_lifecycle_daily
     union
-    select distinct 'f0' || cast(provider_id as varchar) as provider_id
-    from raw.verified_registry_claims
+    select distinct provider_id
+    from model.verified_claims
     union
     select provider_id from current_power
     union
     select provider_id from reward_activity
+    union
+    select provider_id from market_deal_activity
 )
 select
     providers.provider_id,
@@ -120,23 +134,28 @@ select
     coalesce(current_power.has_power, false) as has_power,
     coalesce(sector_activity.has_sector_activity, false) as has_sector_activity,
     coalesce(verified_claim_activity.has_verified_claims, false) as has_verified_claims,
+    coalesce(market_deal_activity.has_market_deals, false) as has_market_deals,
     sector_activity.first_sector_activity_date,
     sector_activity.last_sector_activity_date,
     verified_claim_activity.first_verified_claim_at,
     verified_claim_activity.last_verified_claim_at,
+    market_deal_activity.first_market_deal_start_at,
+    market_deal_activity.last_market_deal_start_at,
     verified_claim_activity.verified_claims,
     verified_claim_activity.verified_clients,
     verified_claim_activity.verified_data_onboarded_tibs,
     coalesce(reward_activity.total_block_rewards_fil, 0)
         as total_block_rewards_fil
 from providers
-left join raw.storage_provider_current_info as info
+left join model.storage_provider_current_info as info
     using (provider_id)
 left join current_power
     using (provider_id)
 left join sector_activity
     using (provider_id)
 left join verified_claim_activity
+    using (provider_id)
+left join market_deal_activity
     using (provider_id)
 left join reward_activity
     using (provider_id)

@@ -1,6 +1,6 @@
 -- asset.description = Daily verified claims by client and provider.
 
--- asset.depends = raw.verified_registry_claims
+-- asset.depends = model.verified_claims
 
 -- asset.column = date | UTC claim date.
 -- asset.column = client_id | Filecoin client actor id address.
@@ -17,12 +17,12 @@
 -- asset.assert = verified_claims > 0
 
 select
-    date(to_timestamp((claim_epoch * 30) + 1598306400)) as date,
-    'f0' || cast(client_id as varchar) as client_id,
-    'f0' || cast(provider_id as varchar) as provider_id,
-    cast(sum(piece_size_bytes) as double) / power(1024, 4)
-        as verified_data_onboarded_tibs,
+    date,
+    client_id,
+    provider_id,
+    sum(piece_size_tibs) as verified_data_onboarded_tibs,
     count(*) as verified_claims
-from raw.verified_registry_claims
+from model.verified_claims
+where date <= current_date - 1
 group by 1, 2, 3
 order by date desc

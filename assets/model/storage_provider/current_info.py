@@ -3,7 +3,7 @@
 # asset.depends = model.storage_provider_power_daily
 # asset.depends = model.storage_provider_sector_lifecycle_daily
 # asset.depends = model.storage_provider_block_rewards_daily
-# asset.depends = raw.verified_registry_claims
+# asset.depends = model.verified_claims
 
 # asset.materialization = dataframe
 
@@ -112,8 +112,8 @@ def load_provider_ids() -> list[str]:
             select distinct provider_id
             from model.storage_provider_block_rewards_daily
             union
-            select distinct 'f0' || cast(provider_id as varchar) as provider_id
-            from raw.verified_registry_claims
+            select distinct provider_id
+            from model.verified_claims
         )
         select provider_id
         from providers

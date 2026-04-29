@@ -1,7 +1,7 @@
 -- asset.description = Filecoin clients metrics and latest details.
 
 -- asset.depends = raw.datacapstats_verified_clients
--- asset.depends = raw.verified_registry_claims
+-- asset.depends = model.verified_claims
 
 -- asset.column = client_id | Filecoin client actor id address.
 -- asset.column = first_claim_at | Timestamp of the first successful verified claim.
@@ -36,12 +36,12 @@
 with claims_by_client as (
     select
         client_id,
-        min(to_timestamp((claim_epoch * 30) + 1598306400)) as first_claim_at,
-        max(to_timestamp((claim_epoch * 30) + 1598306400)) as last_claim_at,
+        min(claim_at) as first_claim_at,
+        max(claim_at) as last_claim_at,
         count(*) as verified_claims,
         count(distinct provider_id) as verified_providers,
-        cast(sum(piece_size_bytes) as double) / power(1024, 4) as verified_data_onboarded_tibs
-    from raw.verified_registry_claims
+        sum(piece_size_tibs) as verified_data_onboarded_tibs
+    from model.verified_claims
     group by 1
 ),
 datacap_clients as (
@@ -77,7 +77,7 @@ datacap_clients as (
     ) = 1
 )
 select
-    'f0' || cast(c.client_id as varchar) as client_id,
+    c.client_id,
     c.first_claim_at,
     c.last_claim_at,
     c.verified_claims,
@@ -105,5 +105,5 @@ select
     d.datacap_retries
 from claims_by_client as c
 left join datacap_clients as d
-    on c.client_id = d.numeric_client_id
+    on try_cast(substr(c.client_id, 3) as bigint) = d.numeric_client_id
 order by last_claim_at desc
