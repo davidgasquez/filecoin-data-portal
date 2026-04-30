@@ -61,7 +61,10 @@
 -- asset.column = block_rewards_fil_per_qap_tib_day | Exact block rewards minted on the date per 1 TiB of network quality adjusted power, in FIL.
 -- asset.column = block_rewards_usd_per_qap_tib_day | Exact block rewards minted on the date per 1 TiB of network quality adjusted power, in USD.
 -- asset.column = reward_per_wincount_fil | Exact reward allocated per win count on the date, in FIL.
--- asset.column = total_pgf_deployments_usd | Cumulative public goods funding deployments disbursed by the date, in USD.
+-- asset.column = annual_pgf_deployments_usd | Public goods funding deployments disbursed over the trailing 365 days, in USD.
+-- asset.column = annual_protocol_revenue_usd | Protocol revenue over the trailing 365 days, in USD.
+-- asset.column = annual_block_rewards_usd | Block reward issuance over the trailing 365 days, in USD.
+-- asset.column = revenue_coverage_ratio | Annual protocol revenue divided by annual public goods funding and block reward issuance.
 
 -- asset.not_null = date
 -- asset.unique = date
@@ -139,12 +142,13 @@ with verified_claims as (
     select
         dates.date,
         coalesce(sum(pgf_deployments.disbursed_usd), 0)
-            as total_pgf_deployments_usd
+            as annual_pgf_deployments_usd
     from dates
     left join raw.daily_pgf_deployments as pgf_deployments
-        on pgf_deployments.date <= dates.date
+        on pgf_deployments.date between dates.date - interval 364 days
+            and dates.date
     group by 1
-)
+), daily_metrics as (
 select
     dates.date,
     coalesce(network_activity.transactions, 0) as transactions,
@@ -203,7 +207,7 @@ select
         / nullif(network_power.quality_adjusted_power_pibs * 1024, 0)
         as block_rewards_usd_per_qap_tib_day,
     coalesce(block_rewards.reward_per_wincount_fil, 0) as reward_per_wincount_fil,
-    pgf_deployments.total_pgf_deployments_usd
+    pgf_deployments.annual_pgf_deployments_usd
 from dates
 left join model.warm_storage_daily_activity as warm_storage
     using (date)
@@ -231,4 +235,22 @@ left join providers_with_power
     using (date)
 left join model.daily_network_activity as network_activity
     using (date)
+), annual_metrics as (
+    select
+        daily_metrics.*,
+        sum(protocol_revenue_usd) over annual_window
+            as annual_protocol_revenue_usd,
+        sum(block_rewards_usd) over annual_window as annual_block_rewards_usd
+    from daily_metrics
+    window annual_window as (
+        order by date
+        range between interval 364 days preceding and current row
+    )
+)
+select
+    *,
+    annual_protocol_revenue_usd
+        / nullif(annual_pgf_deployments_usd + annual_block_rewards_usd, 0)
+        as revenue_coverage_ratio
+from annual_metrics
 order by date desc

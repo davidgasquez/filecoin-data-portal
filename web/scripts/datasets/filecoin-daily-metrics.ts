@@ -24,12 +24,14 @@ const SQL = `
     coalesce(filecoin_pay_active_rails, 0) AS filecoin_pay_active_rails,
     coalesce(usdfc_paid, 0) AS usdfc_paid,
     coalesce(arr_usdfc, 0) AS arr_usdfc,
-    0 AS revenue_coverage_ratio,
+    revenue_coverage_ratio,
     0 AS high_profile_paying_clients,
     fil_token_price_avg_usd,
     fil_token_volume_usd,
     fil_token_market_cap_usd,
-    total_pgf_deployments_usd
+    annual_pgf_deployments_usd,
+    annual_protocol_revenue_usd,
+    annual_block_rewards_usd
   FROM read_parquet('${DAILY_NETWORK_METRICS_PARQUET_URL}')
   WHERE date IS NOT NULL
   ORDER BY date

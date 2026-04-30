@@ -41,7 +41,7 @@ const sections = [
   {
     id: "key-metrics",
     title: "Ecosystem KPIs",
-    columns: 4,
+    columns: 3,
     charts: [
       {
         id: "total-arr-usdfc",
@@ -54,9 +54,9 @@ const sections = [
       {
         id: "revenue-coverage-ratio",
         title: "Revenue Coverage Ratio",
-        description: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+        description: "Trailing-365-day protocol revenue divided by annual PGF deployments plus block reward issuance.",
         y: "revenue_coverage_ratio",
-        format: "number",
+        format: "percent",
       },
       {
         id: "high-profile-paying-clients",
@@ -64,14 +64,6 @@ const sections = [
         description: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
         y: "high_profile_paying_clients",
         format: "number",
-      },
-      {
-        id: "total-pgf-deployments-usd",
-        title: "PGF Deployments",
-        description: "Cumulative public goods funding deployments disbursed by each UTC day-end.",
-        y: "total_pgf_deployments_usd",
-        format: "usd",
-        showMovingAverage: false,
       },
     ],
   },
@@ -198,6 +190,37 @@ const sections = [
         title: "Reward Per Wincount",
         y: "reward_per_wincount_fil",
         format: "fil",
+      },
+    ],
+  },
+  {
+    id: "revenue-coverage-ratio-components",
+    title: "Revenue Coverage Ratio",
+    columns: 3,
+    charts: [
+      {
+        id: "annual-protocol-revenue-usd",
+        title: "Annual Protocol Revenue",
+        description: "Protocol revenue over the trailing 365 days.",
+        y: "annual_protocol_revenue_usd",
+        format: "usd",
+        showMovingAverage: false,
+      },
+      {
+        id: "annual-pgf-deployments-usd",
+        title: "Annual PGF Deployments",
+        description: "Public goods funding deployments disbursed over the trailing 365 days.",
+        y: "annual_pgf_deployments_usd",
+        format: "usd",
+        showMovingAverage: false,
+      },
+      {
+        id: "annual-block-rewards-usd",
+        title: "Annual Block Rewards",
+        description: "Block reward issuance over the trailing 365 days.",
+        y: "annual_block_rewards_usd",
+        format: "usd",
+        showMovingAverage: false,
       },
     ],
   },
