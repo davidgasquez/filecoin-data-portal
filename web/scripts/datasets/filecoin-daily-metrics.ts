@@ -18,6 +18,7 @@ const SQL = `
     total_value_fil,
     total_value_flow_fil,
     protocol_revenue_fil,
+    locked_fil / nullif(circulating_fil, 0) AS locked_to_circulating_ratio,
     block_rewards_fil,
     reward_per_wincount_fil,
     coalesce(filecoin_pay_active_payers, 0) AS filecoin_pay_active_payers,
