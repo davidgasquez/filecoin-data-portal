@@ -59,13 +59,6 @@ const sections = [
         format: "percent",
       },
       {
-        id: "locked-to-circulating-ratio",
-        title: "Locked to Circulating Ratio",
-        description: "Percentage of circulating FIL that is locked.",
-        y: "locked_to_circulating_ratio",
-        format: "percent",
-      },
-      {
         id: "high-profile-paying-clients",
         title: "High Profile Paying Clients",
         description: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
@@ -177,7 +170,7 @@ const sections = [
   {
     id: "protocol",
     title: "Protocol",
-    columns: 3,
+    columns: 2,
     charts: [
       {
         id: "burnt-fil",
@@ -197,6 +190,13 @@ const sections = [
         title: "Reward Per Wincount",
         y: "reward_per_wincount_fil",
         format: "fil",
+      },
+      {
+        id: "locked-to-circulating-ratio",
+        title: "Locked to Circulating Ratio",
+        description: "Percentage of circulating FIL that is locked.",
+        y: "locked_to_circulating_ratio",
+        format: "percent",
       },
     ],
   },
