@@ -51,6 +51,8 @@ class EventField:
     abi_type: str
     indexed: bool
     is_dynamic: bool
+    is_array: bool
+    components: tuple[EventField, ...]
 
 
 @dataclass(frozen=True)
@@ -121,6 +123,11 @@ def build_event_field(parameter: dict[str, Any]) -> EventField:
         abi_type=canonical_abi_type(parameter),
         indexed=bool(parameter.get("indexed")),
         is_dynamic=is_dynamic_abi_type(parameter),
+        is_array="[" in str(parameter["type"]),
+        components=tuple(
+            build_event_field(component)
+            for component in parameter.get("components", [])
+        ),
     )
 
 
@@ -215,9 +222,23 @@ def parse_hex_int(value: str | int) -> int:
     return int(value, 16) if value.startswith("0x") else int(value)
 
 
-def normalize_value(value: Any) -> Any:
+def normalize_tuple_value(
+    value: list[Any] | tuple[Any, ...],
+    components: tuple[EventField, ...],
+) -> dict[str, Any]:
+    return {
+        component.name or str(index): normalize_value(item, component)
+        for index, (component, item) in enumerate(zip(components, value, strict=True))
+    }
+
+
+def normalize_value(value: Any, field: EventField | None = None) -> Any:
     if isinstance(value, (HexBytes, bytes, bytearray)):
         return "0x" + HexBytes(value).hex()
+    if field is not None and field.components and field.is_array:
+        return [normalize_tuple_value(item, field.components) for item in value]
+    if field is not None and field.components:
+        return normalize_tuple_value(value, field.components)
     if isinstance(value, list | tuple):
         return [normalize_value(item) for item in value]
     return value
@@ -226,7 +247,9 @@ def normalize_value(value: Any) -> Any:
 def decode_topic_value(field: EventField, topic_hex: str) -> Any:
     if field.is_dynamic:
         return topic_hex.lower()
-    return normalize_value(ABI_CODEC.decode([field.abi_type], HexBytes(topic_hex))[0])
+    return normalize_value(
+        ABI_CODEC.decode([field.abi_type], HexBytes(topic_hex))[0], field
+    )
 
 
 def decode_data_values(fields: tuple[EventField, ...], data_hex: str) -> dict[str, Any]:
@@ -238,7 +261,7 @@ def decode_data_values(fields: tuple[EventField, ...], data_hex: str) -> dict[st
         HexBytes(data_hex),
     )
     return {
-        field.name: normalize_value(value)
+        field.name: normalize_value(value, field)
         for field, value in zip(fields, values, strict=True)
     }
 
