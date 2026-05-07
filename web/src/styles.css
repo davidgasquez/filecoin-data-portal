@@ -234,12 +234,30 @@
   }
 
   .section-title {
+    position: relative;
+    scroll-margin-block-start: var(--space-5);
     margin-block-start: 0;
     padding-block-end: var(--space-3);
     border-block-end: 1px solid var(--color-border);
     text-transform: uppercase;
     letter-spacing: 0.15em;
     font-size: 1.1rem;
+  }
+
+  .heading-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .heading-anchor {
+    margin-inline-start: 0.35em;
+    opacity: 0;
+  }
+
+  .heading-link:hover .heading-anchor,
+  .heading-link:focus-visible .heading-anchor {
+    opacity: 1;
   }
 
   .content-flow > * + * {
@@ -302,6 +320,8 @@
   }
 
   .numbers-section__legend {
+    position: relative;
+    scroll-margin-block-start: 4rem;
     margin: 0 0 var(--space-3) 0;
     padding: 0;
     border: 0;

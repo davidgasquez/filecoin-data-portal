@@ -1,4 +1,5 @@
 ---
+import SectionHeading from "../components/SectionHeading.astro"
 import Layout from "../layouts/Layout.astro"
 ---
 
@@ -13,8 +14,8 @@ import Layout from "../layouts/Layout.astro"
     </p>
   </section>
 
-  <section class="content-flow" aria-label="Available data">
-    <h2 class="section-title">Data</h2>
+  <section class="content-flow" aria-labelledby="data-title">
+    <SectionHeading id="data-title" label="Data" />
     <p>
       Open Parquet datasets updated daily covering network metrics, storage
       providers, clients, allocators, deals, and more.
@@ -22,8 +23,8 @@ import Layout from "../layouts/Layout.astro"
     <a href="/datasets" class="section-link">Browse datasets →</a>
   </section>
 
-  <section class="hero-prompt" aria-label="Quickstart">
-    <h2 class="section-title">Quickstart</h2>
+  <section class="hero-prompt" aria-labelledby="quickstart-title">
+    <SectionHeading id="quickstart-title" label="Quickstart" />
     <p>
       Check the <a href="/datasets">datasets</a> page or ask your agent
       (<a href="https://ampcode.com" target="_blank" rel="noopener noreferrer">Amp</a>,
@@ -45,8 +46,8 @@ import Layout from "../layouts/Layout.astro"
     </p>
   </section>
 
-  <section class="content-flow" aria-label="Dashboards">
-    <h2 class="section-title">Dashboards</h2>
+  <section class="content-flow" aria-labelledby="dashboards-title">
+    <SectionHeading id="dashboards-title" label="Dashboards" />
     <p>
       Multiple public dashboards powered by the same open datasets.
     </p>
@@ -57,8 +58,8 @@ import Layout from "../layouts/Layout.astro"
     </ul>
   </section>
 
-  <section class="content-flow" aria-label="Source code">
-    <h2 class="section-title">Source</h2>
+  <section class="content-flow" aria-labelledby="source-title">
+    <SectionHeading id="source-title" label="Source" />
     <p>
       Everything is open source. Assets, pipelines, and this website live in a
       single repository.

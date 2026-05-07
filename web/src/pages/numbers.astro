@@ -1,6 +1,7 @@
 ---
 import type { ComponentProps } from "astro/types"
 import dailyMetricsDataset from "../data/generated/filecoin-daily-metrics.json"
+import SectionHeading from "../components/SectionHeading.astro"
 import StatCard from "../components/StatCard.astro"
 import Layout from "../layouts/Layout.astro"
 
@@ -287,7 +288,7 @@ const serializedDailyMetrics = JSON.stringify(
   {
     sections.map((section) => (
       <section class="numbers-section" aria-labelledby={section.id}>
-        <h2 id={section.id} class="numbers-section__legend">{section.title}</h2>
+        <SectionHeading id={section.id} label={section.title} class="numbers-section__legend" />
 
         <div class={`stat-grid${section.columns ? ` stat-grid--${section.columns}` : ""}`}>
           {section.charts.map((chart) => (

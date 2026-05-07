@@ -1,0 +1,15 @@
+---
+interface Props {
+  id: string
+  label: string
+  class?: string
+}
+
+const { id, label, class: className = "section-title" } = Astro.props
+---
+
+<h2 id={id} class={className}>
+  <a class="heading-link" href={`#${id}`} aria-label={`Link to ${label} section`}>
+    {label}<span class="heading-anchor" aria-hidden="true">#</span>
+  </a>
+</h2>
