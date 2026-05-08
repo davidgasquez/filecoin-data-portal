@@ -102,7 +102,7 @@ const sections = [
       {
         id: "high-profile-paying-clients",
         title: "High Profile Paying Clients",
-        description: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+        description: "Count of recognized paying clients using Filecoin products.",
         y: "high_profile_paying_clients",
         format: "number",
       },
@@ -151,24 +151,28 @@ const sections = [
       {
         id: "sector-onboarding",
         title: "Onboarded PiBs",
+        description: "Raw sector data onboarded to the network per day.",
         y: "onboarded_pibs",
         format: "pib",
       },
       {
         id: "sector-termination",
         title: "Terminated PiBs",
+        description: "Raw sector data terminated from the network per day.",
         y: "terminated_pibs",
         format: "pib",
       },
       {
         id: "raw-power",
         title: "Raw Power",
+        description: "End-of-day raw storage power committed to the network.",
         y: "raw_power_pibs",
         format: "pib",
       },
       {
         id: "quality-adjusted-power",
         title: "Quality Adjusted Power",
+        description: "End-of-day quality-adjusted storage power committed to the network.",
         y: "quality_adjusted_power_pibs",
         format: "pib",
       },
@@ -182,6 +186,7 @@ const sections = [
       {
         id: "all-transactions",
         title: "All Transactions",
+        description: "On-chain transactions included per day.",
         y: "transactions",
         format: "number",
         formatScale: 1_000_000,
@@ -190,6 +195,7 @@ const sections = [
       {
         id: "total-value-fil",
         title: "Total Value FIL",
+        description: "FIL transferred by top-level messages per day.",
         y: "total_value_fil",
         format: "number",
         formatScale: 1_000_000,
@@ -198,6 +204,7 @@ const sections = [
       {
         id: "total-gas-used",
         title: "Total Gas Used",
+        description: "Total gas consumed by on-chain messages per day.",
         y: "gas_used_millions",
         format: "number",
         formatScale: 1_000_000,
@@ -220,14 +227,30 @@ const sections = [
       {
         id: "block-rewards-fil",
         title: "Block Rewards FIL",
+        description: "FIL block rewards minted by the network per day.",
         y: "block_rewards_fil",
         format: "fil",
       },
       {
+        id: "mining-yield",
+        title: "Mining Yield",
+        description: "Annualized block rewards relative to locked FIL.",
+        y: "mining_yield",
+        format: "percent",
+      },
+      {
         id: "reward-per-wincount",
         title: "Reward Per Wincount",
+        description: "Average FIL reward allocated per winning proof each day.",
         y: "reward_per_wincount_fil",
         format: "fil",
+      },
+      {
+        id: "circulating-fil",
+        title: "Circulating FIL",
+        description: "Amount of FIL circulating and tradeable in the economy.",
+        y: "circulating_fil",
+        format: "mfil",
       },
       {
         id: "locked-to-circulating-ratio",
@@ -246,12 +269,14 @@ const sections = [
       {
         id: "fil-token-price",
         title: "FIL Token Price",
+        description: "Average daily FIL token price in USD.",
         y: "fil_token_price_avg_usd",
         format: "usd",
       },
       {
         id: "fil-token-volume",
         title: "FIL Token Volume",
+        description: "Reported daily FIL trading volume in USD.",
         y: "fil_token_volume_usd",
         format: "usd",
         formatScale: 1_000_000,
@@ -260,6 +285,7 @@ const sections = [
       {
         id: "fil-token-market-cap",
         title: "FIL Token Market Cap",
+        description: "Daily FIL market capitalization in USD.",
         y: "fil_token_market_cap_usd",
         format: "usd",
         formatScale: 1_000_000_000,
