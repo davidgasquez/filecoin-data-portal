@@ -22,7 +22,23 @@ type NumbersChartConfig = Pick<
   | "formatPrefix"
   | "formatSuffix"
   | "percentMode"
-  | "showMovingAverage"
+> & {
+  details?: {
+    charts: NumbersDetailChartConfig[]
+  }
+}
+
+type NumbersDetailChartConfig = Pick<
+  StatCardProps,
+  | "id"
+  | "title"
+  | "description"
+  | "y"
+  | "format"
+  | "formatScale"
+  | "formatPrefix"
+  | "formatSuffix"
+  | "percentMode"
 >
 
 type NumbersSectionConfig = {
@@ -50,7 +66,6 @@ const sections = [
         description: "Annualized value of active recurring Filecoin Pay rails at each UTC day-end.",
         y: "arr_usdfc",
         format: "usdfc",
-        showMovingAverage: false,
       },
       {
         id: "revenue-coverage-ratio",
@@ -58,6 +73,31 @@ const sections = [
         description: "Trailing-365-day protocol revenue divided by annual PGF deployments plus block reward issuance.",
         y: "revenue_coverage_ratio",
         format: "percent",
+        details: {
+          charts: [
+            {
+              id: "annual-protocol-revenue-usd",
+              title: "Protocol Revenue",
+              description: "Sum of FIL burned times average FIL/USD price, trailing 365 days.",
+              y: "annual_protocol_revenue_usd",
+              format: "usd",
+            },
+            {
+              id: "annual-pgf-deployments-usd",
+              title: "PGF Deployments",
+              description: "Public goods funding deployments disbursed over the trailing 365 days.",
+              y: "annual_pgf_deployments_usd",
+              format: "usd",
+            },
+            {
+              id: "annual-block-rewards-usd",
+              title: "Block Rewards",
+              description: "Block reward issuance over the trailing 365 days.",
+              y: "annual_block_rewards_usd",
+              format: "usd",
+            },
+          ],
+        },
       },
       {
         id: "high-profile-paying-clients",
@@ -79,7 +119,6 @@ const sections = [
         description: "Unique Filecoin Pay payer addresses with at least one active rail at each UTC day-end.",
         y: "filecoin_pay_active_payers",
         format: "integer",
-        showMovingAverage: false,
       },
       {
         id: "foc-active-rails",
@@ -87,7 +126,6 @@ const sections = [
         description: "Filecoin Pay rails active at each UTC day-end.",
         y: "filecoin_pay_active_rails",
         format: "integer",
-        showMovingAverage: false,
       },
       {
         id: "foc-usdfc-paid",
@@ -102,7 +140,6 @@ const sections = [
         description: "Annualized value of active recurring Filecoin Pay rails at each UTC day-end.",
         y: "arr_usdfc",
         format: "usdfc",
-        showMovingAverage: false,
       },
     ],
   },
@@ -202,37 +239,6 @@ const sections = [
     ],
   },
   {
-    id: "revenue-coverage-ratio-components",
-    title: "Revenue Coverage Ratio",
-    columns: 3,
-    charts: [
-      {
-        id: "annual-protocol-revenue-usd",
-        title: "Annual Protocol Revenue",
-        description: "Trailing 365-day sum of FIL burned on-chain, multiplied by that day’s average FIL/USD price.",
-        y: "annual_protocol_revenue_usd",
-        format: "usd",
-        showMovingAverage: false,
-      },
-      {
-        id: "annual-pgf-deployments-usd",
-        title: "Annual PGF Deployments",
-        description: "Public goods funding deployments disbursed over the trailing 365 days.",
-        y: "annual_pgf_deployments_usd",
-        format: "usd",
-        showMovingAverage: false,
-      },
-      {
-        id: "annual-block-rewards-usd",
-        title: "Annual Block Rewards",
-        description: "Block reward issuance over the trailing 365 days.",
-        y: "annual_block_rewards_usd",
-        format: "usd",
-        showMovingAverage: false,
-      },
-    ],
-  },
-  {
     id: "markets",
     title: "Markets",
     columns: 3,
@@ -264,7 +270,17 @@ const sections = [
 ] as NumbersSectionConfig[]
 
 const chartX = "date"
-const datasetColumnNames = [chartX, ...new Set(sections.flatMap((section) => section.charts.map((chart) => chart.y)))]
+const datasetColumnNames = [
+  chartX,
+  ...new Set(
+    sections.flatMap((section) =>
+      section.charts.flatMap((chart) => [
+        chart.y,
+        ...(chart.details?.charts.map((detailChart) => detailChart.y) ?? []),
+      ]),
+    ),
+  ),
+]
 const serializedDailyMetrics = JSON.stringify(
   Object.fromEntries(
     datasetColumnNames.map((key) => [key, dailyMetrics.map((row) => row[key] ?? null)]),
@@ -303,8 +319,38 @@ const serializedDailyMetrics = JSON.stringify(
               formatPrefix={chart.formatPrefix}
               formatSuffix={chart.formatSuffix}
               percentMode={chart.percentMode}
-              showMovingAverage={chart.showMovingAverage}
-            />
+            >
+              {chart.details && (
+                <div class="stat-card__details" slot="details">
+                  <div class="stat-card__detail-grid">
+                    {chart.details.charts.map((detailChart) => (
+                      <div
+                        class="stat-card__detail"
+                        data-component-spark
+                        data-chart-id={detailChart.id}
+                        data-x={chartX}
+                        data-y={detailChart.y}
+                        data-format={detailChart.format}
+                        data-format-scale={detailChart.formatScale !== undefined ? detailChart.formatScale : undefined}
+                        data-format-prefix={detailChart.formatPrefix ?? undefined}
+                        data-format-suffix={detailChart.formatSuffix ?? undefined}
+                        data-percent-mode={detailChart.percentMode ?? "fraction"}
+                      >
+                        <div class="stat-card__detail-header">
+                          <span>{detailChart.title}</span>
+                          <strong data-component-spark-value></strong>
+                        </div>
+                        {detailChart.description && <p>{detailChart.description}</p>}
+                        <div class="stat-card__detail-chart">
+                          <svg class="stat-card__detail-spark" aria-hidden="true"></svg>
+                          <div class="line-chart__tooltip" data-component-spark-tooltip hidden></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </StatCard>
           ))}
         </div>
       </section>
@@ -361,6 +407,7 @@ const serializedDailyMetrics = JSON.stringify(
     const DATASET_SELECTOR = "[data-numbers-dataset]"
     const CHART_SELECTOR = "[data-line-chart]"
     const STAT_CARD_SELECTOR = "[data-stat-card]"
+    const COMPONENT_SPARK_SELECTOR = "[data-component-spark]"
     const RANGE_BUTTON_SELECTOR = "[data-line-chart-range]"
     const RANGE_PARAM = "range"
     const CHART_MARGIN = { top: 22, right: 10, bottom: 28, left: 10 }
@@ -1091,21 +1138,20 @@ const serializedDailyMetrics = JSON.stringify(
         showMovingAverage: boolean
       }
 
-      const statCardNodes = Array.from(document.querySelectorAll<HTMLElement>(STAT_CARD_SELECTOR))
-      const statCards: ParsedStatCard[] = statCardNodes.map((node) => {
+      function parseMetricNode(node: HTMLElement, label: string): ParsedStatCard {
         const x = node.dataset.x
         const y = node.dataset.y
         const chartId = node.dataset.chartId
 
         if (!chartId || !x || !y) {
-          throw new Error("Stat card is missing required dataset attributes")
+          throw new Error(`${label} is missing required dataset attributes`)
         }
 
         const xColumn = dataset[x]
         const yColumn = dataset[y]
 
         if (!xColumn || !yColumn) {
-          throw new Error(`Stat card ${chartId} references missing columns`)
+          throw new Error(`${label} ${chartId} references missing columns`)
         }
 
         const data: LineChartPoint[] = []
@@ -1130,7 +1176,12 @@ const serializedDailyMetrics = JSON.stringify(
           percentMode: parsePercentMode(node.dataset.percentMode),
           showMovingAverage: node.dataset.showMovingAverage === "true",
         }
-      })
+      }
+
+      const statCardNodes = Array.from(document.querySelectorAll<HTMLElement>(STAT_CARD_SELECTOR))
+      const statCards = statCardNodes.map((node) => parseMetricNode(node, "Stat card"))
+      const componentSparkNodes = Array.from(document.querySelectorAll<HTMLElement>(COMPONENT_SPARK_SELECTOR))
+      const componentSparks = componentSparkNodes.map((node) => parseMetricNode(node, "Component spark"))
 
       function renderStatCard(card: ParsedStatCard): void {
         const points = getPointsForRange(card.data, currentRange)
@@ -1185,6 +1236,101 @@ const serializedDailyMetrics = JSON.stringify(
         }
       }
 
+      function renderComponentSpark(card: ParsedStatCard): void {
+        const points = getPointsForRange(card.data, currentRange)
+        const valueEl = card.node.querySelector<HTMLElement>("[data-component-spark-value]")
+        const svg = card.node.querySelector<SVGElement>(".stat-card__detail-spark")
+        const tooltip = card.node.querySelector<HTMLDivElement>("[data-component-spark-tooltip]")
+
+        if (!valueEl || !svg || !tooltip) return
+        if (points.length < 2) {
+          valueEl.textContent = "—"
+          svg.innerHTML = ""
+          tooltip.hidden = true
+          return
+        }
+
+        const latest = points[points.length - 1].value
+        valueEl.textContent = formatValue(latest, card, "headline")
+
+        const width = Math.max(180, card.node.clientWidth)
+        const height = 88
+        const margin = { top: 8, right: 4, bottom: 18, left: 4 }
+        const plotWidth = width - margin.left - margin.right
+        const plotHeight = height - margin.top - margin.bottom
+        const values = points.map((point) => point.value)
+        const minX = points[0].timestamp
+        const maxX = points[points.length - 1].timestamp
+        const dataMinY = Math.min(...values)
+        const minY = dataMinY >= 0 ? 0 : dataMinY
+        let maxY = Math.max(...values)
+        if (maxY === minY) maxY = minY + 1
+        maxY += (maxY - minY) * 0.08
+
+        const sx = (t: number) => margin.left + ((t - minX) / Math.max(maxX - minX, DAY_IN_MS)) * plotWidth
+        const sy = (v: number) => margin.top + ((maxY - v) / (maxY - minY)) * plotHeight
+        const chartPoints = points.map((point) => ({ ...point, x: sx(point.timestamp), y: sy(point.value) }))
+        const d = chartPoints.map((point, i) => `${i === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ")
+        const yTicks = buildTicks(minY, maxY, 3)
+          .map((tick) => {
+            const y = sy(tick)
+            return `<line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" class="line-chart__gridline" />`
+          })
+          .join("")
+
+        svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
+        svg.innerHTML = `
+          ${yTicks}
+          <path d="${d}" class="line-chart__path" />
+          <line x1="0" y1="0" x2="0" y2="0" class="line-chart__crosshair" visibility="hidden" />
+          <circle cx="0" cy="0" r="3" class="line-chart__dot" visibility="hidden" />
+          <rect x="${margin.left}" y="${margin.top}" width="${plotWidth}" height="${plotHeight}" class="line-chart__overlay" />
+        `
+
+        const crosshair = svg.querySelector<SVGLineElement>(".line-chart__crosshair")
+        const dot = svg.querySelector<SVGCircleElement>(".line-chart__dot")
+        const overlay = svg.querySelector<SVGRectElement>(".line-chart__overlay")
+        if (!crosshair || !dot || !overlay) return
+
+        const hideTooltip = (): void => {
+          crosshair.setAttribute("visibility", "hidden")
+          dot.setAttribute("visibility", "hidden")
+          tooltip.hidden = true
+        }
+
+        const showTooltipFromClientX = (clientX: number): void => {
+          const rect = svg.getBoundingClientRect()
+          const pointerX = ((clientX - rect.left) / rect.width) * width
+          const closestPointIndex = findClosestPointIndex(chartPoints, pointerX)
+          const point = chartPoints[closestPointIndex]
+
+          crosshair.setAttribute("x1", String(point.x))
+          crosshair.setAttribute("y1", String(margin.top))
+          crosshair.setAttribute("x2", String(point.x))
+          crosshair.setAttribute("y2", String(height - margin.bottom))
+          crosshair.setAttribute("visibility", "visible")
+          dot.setAttribute("cx", String(point.x))
+          dot.setAttribute("cy", String(point.y))
+          dot.setAttribute("visibility", "visible")
+
+          tooltip.textContent = `${tooltipDateFormatter.format(new Date(point.timestamp))} · ${formatValue(point.value, card, "tooltip")}`
+          tooltip.hidden = false
+          tooltip.style.left = `${Math.min(width - tooltip.offsetWidth - 4, Math.max(4, point.x - tooltip.offsetWidth / 2))}px`
+          tooltip.style.top = `${Math.max(4, point.y - 28)}px`
+        }
+
+        overlay.addEventListener("pointermove", (e) => showTooltipFromClientX(e.clientX))
+        overlay.addEventListener("pointerdown", (e) => showTooltipFromClientX(e.clientX))
+        overlay.addEventListener("pointerleave", hideTooltip)
+        overlay.addEventListener("pointercancel", hideTooltip)
+      }
+
+      function renderAllComponentSparks(): void {
+        for (const card of componentSparks) {
+          renderComponentSpark(card)
+        }
+      }
+
       const observers: ResizeObserver[] = charts.map((chart) => {
         const observer = new ResizeObserver(() => {
           renderChart(chart)
@@ -1196,6 +1342,12 @@ const serializedDailyMetrics = JSON.stringify(
 
       for (const card of statCards) {
         const observer = new ResizeObserver(() => renderStatCard(card))
+        observer.observe(card.node)
+        observers.push(observer)
+      }
+
+      for (const card of componentSparks) {
+        const observer = new ResizeObserver(() => renderComponentSpark(card))
         observer.observe(card.node)
         observers.push(observer)
       }
@@ -1219,6 +1371,7 @@ const serializedDailyMetrics = JSON.stringify(
           updateUrlState()
           renderAllCharts()
           renderAllStatCards()
+          renderAllComponentSparks()
         })
       }
 
@@ -1254,6 +1407,7 @@ const serializedDailyMetrics = JSON.stringify(
       updateUrlState()
       renderAllCharts()
       renderAllStatCards()
+      renderAllComponentSparks()
 
       if (expandedChartId) {
         requestAnimationFrame(() => {

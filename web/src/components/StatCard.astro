@@ -37,7 +37,7 @@ const {
   formatPrefix,
   formatSuffix,
   percentMode = "fraction",
-  showMovingAverage = true,
+  showMovingAverage = false,
 } = Astro.props
 ---
 
@@ -89,4 +89,6 @@ const {
     <p class="line-chart__empty" hidden>No data available for this range.</p>
     <div class="line-chart__tooltip" hidden></div>
   </div>
+
+  <slot name="details" />
 </figure>
