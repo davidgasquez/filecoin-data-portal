@@ -38,6 +38,7 @@ from filecoin.roi.all_funding_events
 where currency = 'USD'
   and amount is not null
   and event_source in ('PROPGF', 'RETROPGF')
+  and event_type = 'FUNDING_DISBURSED'
 group by 1, 2, 3, 4
 order by date desc, deployment_id
 """
