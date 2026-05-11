@@ -126,15 +126,14 @@ def render_dataset_links(
     *,
     asset_docs_path: str,
 ) -> list[str]:
-    lines: list[str] = []
-    for asset_view in asset_views:
-        description = asset_view.asset.description or "No description."
-        lines.append(
+    return [
+        (
             f"- [`{asset_view.asset.name}`]"
             f"({asset_docs_path}/{asset_doc_filename(asset_view.asset)})"
-            f" — {description}"
+            f" — {asset_view.asset.description or 'No description.'}"
         )
-    return lines
+        for asset_view in asset_views
+    ]
 
 
 def render_asset_markdown(

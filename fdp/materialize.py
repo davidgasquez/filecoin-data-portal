@@ -11,10 +11,9 @@ from fdp.api import (
     quote_identifier,
     quote_table_key,
     replace_table_arrow,
-    replace_table_frame,
     table_exists,
 )
-from fdp.assets import Asset, LoadedAssets, load_assets, python_asset_function_name
+from fdp.assets import Asset, LoadedAssets, load_assets
 from fdp.inspect import validate_materialized_asset
 from fdp.resources.bigquery import lily as lily_bigquery
 from fdp.selectors import expand_asset_selectors
@@ -143,20 +142,17 @@ def materialize_local_sql(asset: Asset, query: str) -> None:
     with db_connection() as conn:
         conn.execute(f"create schema if not exists {quote_identifier(asset.schema)}")
         conn.execute(f"create or replace table {quoted_asset_key} as {query}")
-        validate_materialized_asset(conn, asset)
-        apply_asset_comments(conn, asset)
+    validate_and_comment_asset(asset)
 
 
 def materialize_remote_sql(asset: Asset, query: str) -> None:
     replace_table_arrow(asset.key, lily_bigquery.query_arrow(query))
-    with db_connection() as conn:
-        validate_materialized_asset(conn, asset)
-        apply_asset_comments(conn, asset)
+    validate_and_comment_asset(asset)
 
 
 def materialize_python(asset: Asset) -> None:
     module = load_module(asset.path)
-    function_name = python_asset_function_name(asset.path)
+    function_name = asset.path.stem
     func = getattr(module, function_name, None)
     if func is None or not callable(func):
         raise ValueError(
@@ -170,9 +166,7 @@ def materialize_python(asset: Asset) -> None:
                 f"Python asset {asset.path} declares asset.materialization = custom "
                 "and must return None"
             )
-        with db_connection() as conn:
-            validate_materialized_asset(conn, asset)
-            apply_asset_comments(conn, asset)
+        validate_and_comment_asset(asset)
         return
 
     if asset.python_materialization != "dataframe":
@@ -186,7 +180,11 @@ def materialize_python(asset: Asset) -> None:
 
 
 def materialize_polars_frame(asset: Asset, frame: pl.DataFrame) -> None:
-    replace_table_frame(asset.key, frame)
+    replace_table_arrow(asset.key, frame.to_arrow())
+    validate_and_comment_asset(asset)
+
+
+def validate_and_comment_asset(asset: Asset) -> None:
     with db_connection() as conn:
         validate_materialized_asset(conn, asset)
         apply_asset_comments(conn, asset)

@@ -118,7 +118,7 @@ def asset_folder_index(loaded: LoadedAssets) -> dict[str, tuple[str, ...]]:
             *folder_selectors(relative_path.parent),
             *path_selectors(relative_path.parent),
             *path_selectors(project_relative_path.parent),
-            *prefixed_path_selectors(loaded.project_root, project_relative_path.parent),
+            *path_selectors(project_relative_path.parent, prefix=loaded.project_root),
         ):
             folder_index.setdefault(selector, set()).add(asset.key)
     return {
@@ -148,15 +148,11 @@ def folder_selectors(path: Path) -> tuple[str, ...]:
     return tuple(selectors)
 
 
-def path_selectors(path: Path) -> tuple[str, ...]:
+def path_selectors(path: Path, *, prefix: Path | None = None) -> tuple[str, ...]:
     selectors: list[str] = []
     for index in range(1, len(path.parts) + 1):
-        selectors.append(Path(*path.parts[:index]).as_posix())
-    return tuple(selectors)
-
-
-def prefixed_path_selectors(prefix: Path, path: Path) -> tuple[str, ...]:
-    selectors: list[str] = []
-    for index in range(1, len(path.parts) + 1):
-        selectors.append((prefix / Path(*path.parts[:index])).as_posix())
+        selector = Path(*path.parts[:index])
+        if prefix is not None:
+            selector = prefix / selector
+        selectors.append(selector.as_posix())
     return tuple(selectors)

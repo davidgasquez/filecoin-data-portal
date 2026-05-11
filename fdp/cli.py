@@ -1,7 +1,7 @@
 import argparse
 
-from fdp.api import db_connection, find_project_root
-from fdp.assets import check_assets, discover_assets
+from fdp.api import db_connection
+from fdp.assets import check_assets, load_assets
 from fdp.docs import generate_docs
 from fdp.materialize import materialize
 from fdp.publish import available_targets, publish
@@ -19,14 +19,14 @@ def _check(_: argparse.Namespace) -> None:
 
 
 def _list_assets(_: argparse.Namespace) -> None:
-    project_root = find_project_root()
-    assets = discover_assets()
+    loaded = load_assets()
+    assets = loaded.assets
     if not assets:
         print("No assets found.")
         return
     for key in sorted(assets):
         asset = assets[key]
-        rel_path = asset.path.relative_to(project_root)
+        rel_path = asset.path.relative_to(loaded.project_root)
         print(f"- {asset.key} [{asset.kind}] ({rel_path})")
         if asset.description:
             print(f"  description: {asset.description}")

@@ -78,7 +78,7 @@ def print_asset_view(asset_view: AssetView, project_root: Path) -> None:
 
 def asset_test_lines(asset_view: AssetView, project_root: Path) -> list[str]:
     asset = asset_view.asset
-    lines = [
+    return [
         *(f"not_null: {column}" for column in asset.tests.not_null),
         *(f"unique: {column}" for column in asset.tests.unique),
         *(f"assert: {assertion}" for assertion in asset.tests.assertions),
@@ -87,4 +87,3 @@ def asset_test_lines(asset_view: AssetView, project_root: Path) -> list[str]:
             for custom_test in asset_view.custom_tests
         ),
     ]
-    return lines

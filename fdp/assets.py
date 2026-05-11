@@ -160,20 +160,13 @@ def check_assets() -> None:
     load_assets(reporter=print_check_status)
 
 
-def discover_assets() -> dict[str, Asset]:
-    return load_assets().assets
-
-
-def schema_assets(schema: str) -> list[Asset]:
-    assets = discover_assets()
-    return sorted(
-        (asset for asset in assets.values() if asset.schema == schema),
-        key=lambda asset: asset.key,
-    )
-
-
 def main_assets() -> list[Asset]:
-    return schema_assets("main")
+    loaded = load_assets()
+    return [
+        loaded.assets[key]
+        for key in loaded.ordered_keys
+        if loaded.assets[key].schema == "main"
+    ]
 
 
 def collect_assets(assets_root: Path) -> list[Asset]:
@@ -278,7 +271,9 @@ def asset_from_path(path: Path, assets_root: Path) -> Asset:
         python_materialization=python_materialization,
         resource=resource,
         depends=tuple(parse_dependencies(metadata.get("depends", []), path)),
-        description=optional_metadata_value(metadata, "description", path),
+        description=single_metadata_value(
+            metadata, "description", path, required=False
+        ),
         columns=tuple(parse_columns(metadata.get("column", []), path)),
         tests=AssetTests(
             not_null=tuple(
@@ -378,17 +373,21 @@ def unsupported_metadata_message(key: str, path: Path) -> str:
     return f"Unsupported asset.{key} in {path}"
 
 
-def optional_metadata_value(
+def single_metadata_value(
     metadata: dict[str, list[str]],
     key: str,
     path: Path,
+    *,
+    required: bool,
 ) -> str | None:
     values = metadata.get(key, [])
     if not values:
+        if required:
+            raise ValueError(f"asset.{key} must have a value in {path}")
         return None
     if len(values) != 1:
         raise ValueError(f"asset.{key} must appear once in {path}")
-    value = values[0]
+    value = values[0].strip()
     if not value:
         raise ValueError(f"asset.{key} must have a value in {path}")
     return value
@@ -509,22 +508,16 @@ def parse_python_materialization(
     metadata: dict[str, list[str]],
     path: Path,
 ) -> PythonMaterialization | None:
-    values = metadata.get("materialization", [])
     if kind != "python":
-        if values:
+        if "materialization" in metadata:
             raise ValueError(
                 f"asset.materialization is only supported on Python assets: {path}"
             )
         return None
 
-    if not values:
-        raise ValueError(f"Python asset {path} must declare asset.materialization")
-    if len(values) != 1:
-        raise ValueError(f"asset.materialization must appear once in {path}")
-
-    materialization = values[0].strip()
-    if not materialization:
-        raise ValueError(f"asset.materialization must have a value in {path}")
+    materialization = single_metadata_value(
+        metadata, "materialization", path, required=True
+    )
     if materialization == "dataframe":
         return "dataframe"
     if materialization == "custom":
@@ -540,17 +533,12 @@ def parse_asset_resource(
     metadata: dict[str, list[str]],
     path: Path,
 ) -> str | None:
-    values = metadata.get("resource", [])
-    if not values:
-        return None
-    if kind != "sql":
+    if kind != "sql" and "resource" in metadata:
         raise ValueError(f"asset.resource is only supported on SQL assets: {path}")
-    if len(values) != 1:
-        raise ValueError(f"asset.resource must appear once in {path}")
 
-    resource = values[0].strip()
-    if not resource:
-        raise ValueError(f"asset.resource must have a value in {path}")
+    resource = single_metadata_value(metadata, "resource", path, required=False)
+    if resource is None:
+        return None
     if resource not in VALID_SQL_RESOURCES:
         known_resources = ", ".join(sorted(VALID_SQL_RESOURCES))
         raise ValueError(
@@ -558,10 +546,6 @@ def parse_asset_resource(
             f"Expected one of: {known_resources}."
         )
     return resource
-
-
-def python_asset_function_name(path: Path) -> str:
-    return path.stem
 
 
 def index_assets(assets: Iterable[Asset]) -> dict[str, Asset]:
@@ -644,24 +628,13 @@ def run_validation_step[T](
     try:
         result = func()
     except Exception:
-        report_validation_status(reporter, label, "FAIL")
+        if reporter is not None:
+            reporter(label, "FAIL")
         raise
-    report_validation_status(reporter, label, "OK")
+    if reporter is not None:
+        reporter(label, "OK")
     return result
 
 
-def report_validation_status(
-    reporter: ValidationReporter | None,
-    label: str,
-    status: str,
-) -> None:
-    if reporter is not None:
-        reporter(label, status)
-
-
 def print_check_status(label: str, status: str) -> None:
-    print(format_check_status(label, status), flush=True)
-
-
-def format_check_status(label: str, status: str) -> str:
-    return f"{label:.<{CHECK_STATUS_WIDTH}} {status}"
+    print(f"{label:.<{CHECK_STATUS_WIDTH}} {status}", flush=True)

@@ -44,10 +44,7 @@ def sql(
 ) -> None:
     cleaned = statement.strip()
     with db_connection(db_path) as conn:
-        if params is None:
-            conn.execute(cleaned)
-            return
-        conn.execute(cleaned, params)
+        conn.execute(cleaned, params or [])
 
 
 def table(name: str, *, db_path: Path | str | None = None) -> pl.DataFrame:
@@ -126,7 +123,3 @@ def replace_table_arrow(asset_key: str, table: pa.Table) -> int:
             f"create or replace table {quoted_table} as select * from asset_result"
         )
     return table.num_rows
-
-
-def replace_table_frame(asset_key: str, frame: pl.DataFrame) -> int:
-    return replace_table_arrow(asset_key, frame.to_arrow())

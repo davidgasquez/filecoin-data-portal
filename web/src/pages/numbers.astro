@@ -415,12 +415,7 @@ const serializedDailyMetrics = JSON.stringify(
 
     type RangeType = "6m" | "1y" | "all"
 
-    type ParsedChart = {
-      id: string
-      node: HTMLElement
-      toggleButton: HTMLAnchorElement
-      title: string
-      data: LineChartPoint[]
+    type ChartFormatConfig = {
       format: LineChartFormat
       formatScale: number
       formatPrefix: string
@@ -429,6 +424,14 @@ const serializedDailyMetrics = JSON.stringify(
       showMovingAverage: boolean
       movingAverageWindowDays: number
     }
+
+    type ParsedChart = {
+      id: string
+      node: HTMLElement
+      toggleButton: HTMLAnchorElement
+      title: string
+      data: LineChartPoint[]
+    } & ChartFormatConfig
 
     const DATASET_SELECTOR = "[data-numbers-dataset]"
     const CHART_SELECTOR = "[data-line-chart]"
@@ -519,6 +522,12 @@ const serializedDailyMetrics = JSON.stringify(
             )
             .filter((point): point is LineChartPoint => point !== null)
             .sort((left, right) => left.timestamp - right.timestamp),
+          ...parseChartFormatConfig(node),
+        }
+      }
+
+      function parseChartFormatConfig(node: HTMLElement): ChartFormatConfig {
+        return {
           format: parseFormat(node.dataset.format),
           formatScale: parsePositiveNumber(node.dataset.formatScale, 1),
           formatPrefix: node.dataset.formatPrefix ?? "",
@@ -1156,13 +1165,7 @@ const serializedDailyMetrics = JSON.stringify(
       type ParsedStatCard = {
         node: HTMLElement
         data: LineChartPoint[]
-        format: LineChartFormat
-        formatScale: number
-        formatPrefix: string
-        formatSuffix: string
-        percentMode: PercentMode
-        showMovingAverage: boolean
-      }
+      } & ChartFormatConfig
 
       function parseMetricNode(node: HTMLElement, label: string): ParsedStatCard {
         const x = node.dataset.x
@@ -1195,12 +1198,7 @@ const serializedDailyMetrics = JSON.stringify(
         return {
           node,
           data,
-          format: parseFormat(node.dataset.format),
-          formatScale: parsePositiveNumber(node.dataset.formatScale, 1),
-          formatPrefix: node.dataset.formatPrefix ?? "",
-          formatSuffix: node.dataset.formatSuffix ?? "",
-          percentMode: parsePercentMode(node.dataset.percentMode),
-          showMovingAverage: node.dataset.showMovingAverage === "true",
+          ...parseChartFormatConfig(node),
         }
       }
 
@@ -1224,9 +1222,9 @@ const serializedDailyMetrics = JSON.stringify(
         }
 
         const rawValues = points.map((p) => p.value)
-        const series = card.showMovingAverage ? buildMovingAverage(rawValues, 30) : rawValues
+        const series = card.showMovingAverage ? buildMovingAverage(rawValues, card.movingAverageWindowDays) : rawValues
         const latest = series[series.length - 1]
-        const compareIndex = Math.max(0, series.length - 1 - 30)
+        const compareIndex = Math.max(0, series.length - 1 - card.movingAverageWindowDays)
         const prev = series[compareIndex]
 
         valueEl.textContent = formatValue(latest, card, "headline")
@@ -1234,7 +1232,7 @@ const serializedDailyMetrics = JSON.stringify(
         const pctChange = prev !== 0 ? ((latest - prev) / prev) * 100 : 0
         const sign = pctChange > 0 ? "+" : ""
         const trend = pctChange > 0 ? "▲" : pctChange < 0 ? "▼" : "■"
-        trendEl.textContent = `${trend} ${sign}${formatDecimal(pctChange, 2)}% 30d`
+        trendEl.textContent = `${trend} ${sign}${formatDecimal(pctChange, 2)}% ${card.movingAverageWindowDays}d`
 
         // Sparkline
         const width = card.node.clientWidth
