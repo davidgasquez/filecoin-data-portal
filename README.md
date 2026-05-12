@@ -13,8 +13,6 @@
 - Open source code producing open datasets in open formats using public infrastructure.
 - Runs on a laptop, server, or CI runner without any lock-ins.
 
-> Historical note: previous dashboard apps and the older pipeline stack were removed during the repository cleanup. Explore the GitHub history before that cleanup commit to revisit that state.
-
 <div align="center">
   <a href="https://drips.network/app/projects/github/davidgasquez/filecoin-data-portal">
     <img src="https://filecoin.drips.network/api/embed/project/https%3A%2F%2Fgithub.com%2Fdavidgasquez%2Ffilecoin-data-portal/support.png?background=light&style=drips&text=project&stat=none" alt="Support filecoin-data-portal on drips.network" height="21">
@@ -65,6 +63,10 @@ You can run the Filecoin Data Portal anywhere using `uv`. You'll need the follow
 Share the target spreadsheet with the Google service account from `ENCODED_GOOGLE_APPLICATION_CREDENTIALS`.
 
 For local development, load them explicitly with `uv run --env-file .env ...`.
+
+## 🗃️ Historical State
+
+Previous dashboard apps and the older pipeline stack were removed in [`ab4c667`](https://github.com/davidgasquez/filecoin-data-portal/commit/ab4c667d6c1e11970bc3dfce5ad5740a0ab5ef2d). To explore the repository as it was before the cleanup, browse [`822793d`](https://github.com/davidgasquez/filecoin-data-portal/tree/822793d36f7e474e5cf9258322f6f60d5d434684).
 
 ## 📃 Disclaimer
 
