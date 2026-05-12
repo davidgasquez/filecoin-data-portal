@@ -51,7 +51,3 @@ Use QMD before `rg` when:
 - Searching for concepts. when you know *what* you need but not *where* it lives or what it's called
 
 Additionally, use `rg`/`grep` to explore the actual repository! Check and validate assumptions.
-
-## Legacy Projects
-
-The previous iteration can be explored in `legacy`, and is still powering `pulse` and `numbers` and a large part of `web`.

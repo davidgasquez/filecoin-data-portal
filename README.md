@@ -6,13 +6,14 @@
   Open, minimal, local-first Data Platform for the Filecoin Ecosystem.
 
   ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/davidgasquez/filecoin-data-portal/pipeline.yml?style=flat-square)
-  ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/davidgasquez/filecoin-data-portal/tables.yml?style=flat-square)
   ![GitHub](https://img.shields.io/github/license/davidgasquez/filecoin-data-portal?style=flat-square)
   ![GitHub Repo stars](https://img.shields.io/github/stars/davidgasquez/filecoin-data-portal?style=flat-square)
 </div>
 
 - Open source code producing open datasets in open formats using public infrastructure.
 - Runs on a laptop, server, or CI runner without any lock-ins.
+
+> Historical note: previous dashboard apps and the older pipeline stack were removed during the repository cleanup. Explore the GitHub history before that cleanup commit to revisit that state.
 
 <div align="center">
   <a href="https://drips.network/app/projects/github/davidgasquez/filecoin-data-portal">
