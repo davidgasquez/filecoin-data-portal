@@ -34,6 +34,7 @@
 # asset.unique = provider_id
 # asset.assert = sector_size > 0
 
+import asyncio
 import base64
 import datetime as dt
 import json
@@ -50,6 +51,8 @@ import fdp
 
 RPC_URL = "https://filecoin.chain.love/rpc"
 BATCH_SIZE = 100
+MAX_CONCURRENT_CHUNKS = 24
+RPC_ATTEMPTS = 3
 ATTO_FIL = Decimal("1000000000000000000")
 RPC_METHODS = {
     "info": "Filecoin.StateMinerInfo",
@@ -61,17 +64,42 @@ RPC_METHODS = {
 
 
 def current_info() -> pl.DataFrame:
+    return build_dataframe(asyncio.run(load_current_info_rows()))
+
+
+async def load_current_info_rows() -> list[dict[str, Any]]:
     provider_ids = load_provider_ids()
     fetched_at = dt.datetime.now(dt.UTC).replace(tzinfo=None)
-    rows: list[dict[str, Any]] = []
+    limits = httpx.Limits(
+        max_connections=MAX_CONCURRENT_CHUNKS,
+        max_keepalive_connections=MAX_CONCURRENT_CHUNKS,
+    )
 
-    with httpx.Client(follow_redirects=True, timeout=120) as client:
-        tipset_key = load_tipset_key(client)
-        for provider_chunk in chunked(provider_ids, BATCH_SIZE):
-            rows.extend(
-                fetch_chunk_rows(client, provider_chunk, tipset_key, fetched_at)
-            )
+    async with httpx.AsyncClient(
+        follow_redirects=True,
+        timeout=120,
+        limits=limits,
+    ) as client:
+        tipset_key = await load_tipset_key(client)
+        semaphore = asyncio.Semaphore(MAX_CONCURRENT_CHUNKS)
 
+        async def fetch_limited(provider_chunk: list[str]) -> list[dict[str, Any]]:
+            async with semaphore:
+                return await fetch_chunk_rows(
+                    client,
+                    provider_chunk,
+                    tipset_key,
+                    fetched_at,
+                )
+
+        chunk_rows = await asyncio.gather(
+            *(fetch_limited(chunk) for chunk in chunked(provider_ids, BATCH_SIZE))
+        )
+
+    return [row for rows in chunk_rows for row in rows]
+
+
+def build_dataframe(rows: list[dict[str, Any]]) -> pl.DataFrame:
     return pl.DataFrame(
         rows,
         schema_overrides={
@@ -123,8 +151,8 @@ def load_provider_ids() -> list[str]:
         return [provider_id for (provider_id,) in conn.execute(query).fetchall()]
 
 
-def load_tipset_key(client: httpx.Client) -> list[dict[str, str]]:
-    response = post_rpc(
+async def load_tipset_key(client: httpx.AsyncClient) -> list[dict[str, str]]:
+    response = await post_rpc(
         client,
         {"jsonrpc": "2.0", "id": 1, "method": "Filecoin.ChainHead", "params": []},
     )
@@ -138,8 +166,8 @@ def load_tipset_key(client: httpx.Client) -> list[dict[str, str]]:
     return cids
 
 
-def fetch_chunk_rows(
-    client: httpx.Client,
+async def fetch_chunk_rows(
+    client: httpx.AsyncClient,
     provider_ids: list[str],
     tipset_key: list[dict[str, str]],
     fetched_at: dt.datetime,
@@ -154,7 +182,7 @@ def fetch_chunk_rows(
         for provider_id in provider_ids
         for alias, method in RPC_METHODS.items()
     ]
-    responses = post_rpc(client, payload)
+    responses = await post_rpc(client, payload)
 
     results_by_provider = {provider_id: {} for provider_id in provider_ids}
     for response in responses:
@@ -237,12 +265,20 @@ def build_row(
     }
 
 
-def post_rpc(
-    client: httpx.Client, payload: dict[str, Any] | list[dict[str, Any]]
+async def post_rpc(
+    client: httpx.AsyncClient, payload: dict[str, Any] | list[dict[str, Any]]
 ) -> Any:
-    response = client.post(RPC_URL, json=payload)
-    response.raise_for_status()
-    return response.json()
+    for attempt in range(1, RPC_ATTEMPTS + 1):
+        try:
+            response = await client.post(RPC_URL, json=payload)
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPError, json.JSONDecodeError:
+            if attempt == RPC_ATTEMPTS:
+                raise
+            await asyncio.sleep(attempt)
+
+    raise RuntimeError("unreachable RPC retry state")
 
 
 def expect_dict(value: Any, context: str) -> dict[str, Any]:
