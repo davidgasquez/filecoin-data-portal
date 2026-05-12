@@ -20,7 +20,7 @@ const SQL = `
     protocol_revenue_fil,
     circulating_fil,
     locked_fil / nullif(circulating_fil, 0) AS locked_to_circulating_ratio,
-    block_rewards_fil / nullif(locked_fil, 0) * 365 AS mining_yield,
+    mining_yield,
     block_rewards_fil,
     reward_per_wincount_fil,
     coalesce(filecoin_pay_active_payers, 0) AS filecoin_pay_active_payers,

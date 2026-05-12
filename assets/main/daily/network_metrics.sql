@@ -58,6 +58,7 @@
 -- asset.column = win_count | Winning proofs recorded on the date.
 -- asset.column = block_rewards_fil | Exact block rewards minted on the date, in FIL.
 -- asset.column = block_rewards_usd | Exact block rewards minted on the date, valued with the daily average FIL price, in USD.
+-- asset.column = mining_yield | Annualized block rewards divided by locked FIL.
 -- asset.column = block_rewards_fil_per_qap_tib_day | Exact block rewards minted on the date per 1 TiB of network quality adjusted power, in FIL.
 -- asset.column = block_rewards_usd_per_qap_tib_day | Exact block rewards minted on the date per 1 TiB of network quality adjusted power, in USD.
 -- asset.column = reward_per_wincount_fil | Exact reward allocated per win count on the date, in FIL.
@@ -200,6 +201,8 @@ select
     coalesce(block_rewards.block_rewards_fil, 0) as block_rewards_fil,
     coalesce(block_rewards.block_rewards_fil, 0) * market_data.fil_token_price_avg_usd
         as block_rewards_usd,
+    coalesce(block_rewards.block_rewards_fil, 0)
+        / nullif(network_economics.locked_fil, 0) * 365 as mining_yield,
     coalesce(block_rewards.block_rewards_fil, 0)
         / nullif(network_power.quality_adjusted_power_pibs * 1024, 0)
         as block_rewards_fil_per_qap_tib_day,
