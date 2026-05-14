@@ -299,7 +299,11 @@ function workspaceMarkdownLinks(markdown: string): string[] {
 	for (const match of markdown.matchAll(regex)) {
 		const value = match[1];
 		if (!value) continue;
-		links.push(decodeURI(value));
+		try {
+			links.push(decodeURI(value));
+		} catch {
+			continue;
+		}
 	}
 	return links;
 }

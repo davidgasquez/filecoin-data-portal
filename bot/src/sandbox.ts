@@ -31,18 +31,22 @@ export class UserSandbox {
 		if (this.vm) return this.vm;
 		if (this.starting) return this.starting;
 		this.starting = (async () => {
-			const vm = await VM.create({
-				sessionLabel: `telegram-pi ${this.workspaceDir}`,
-				vfs: { mounts: { [GUEST_WORKSPACE]: new RealFSProvider(this.workspaceDir) } },
-			});
-			const uv = await vm.exec("command -v uv >/dev/null 2>&1");
-			if (!uv.ok) {
-				await vm.close();
-				throw new Error("Gondolin image is missing uv");
+			let vm: VM | undefined;
+			try {
+				vm = await VM.create({
+					sessionLabel: `telegram-pi ${this.workspaceDir}`,
+					vfs: { mounts: { [GUEST_WORKSPACE]: new RealFSProvider(this.workspaceDir) } },
+				});
+				const uv = await vm.exec("command -v uv >/dev/null 2>&1");
+				if (!uv.ok) throw new Error("Gondolin image is missing uv");
+				this.vm = vm;
+				return vm;
+			} catch (error) {
+				await vm?.close().catch(() => undefined);
+				throw error;
+			} finally {
+				this.starting = undefined;
 			}
-			this.vm = vm;
-			this.starting = undefined;
-			return vm;
 		})();
 		return this.starting;
 	}
