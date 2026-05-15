@@ -38,9 +38,7 @@ import asyncio
 import base64
 import datetime as dt
 import json
-from collections.abc import Iterator
 from decimal import Decimal
-from itertools import islice
 from typing import Any
 
 import httpx
@@ -52,7 +50,6 @@ import fdp
 RPC_URL = "https://filecoin.chain.love/rpc"
 BATCH_SIZE = 100
 MAX_CONCURRENT_CHUNKS = 24
-RPC_ATTEMPTS = 3
 ATTO_FIL = Decimal("1000000000000000000")
 RPC_METHODS = {
     "info": "Filecoin.StateMinerInfo",
@@ -60,6 +57,29 @@ RPC_METHODS = {
     "market_balance": "Filecoin.StateMarketBalance",
     "available_balance": "Filecoin.StateMinerAvailableBalance",
     "state": "Filecoin.StateReadState",
+}
+SCHEMA = {
+    "provider_id": pl.String,
+    "owner_id": pl.String,
+    "worker_id": pl.String,
+    "beneficiary_id": pl.String,
+    "peer_id": pl.String,
+    "control_addresses": pl.String,
+    "multi_addresses": pl.String,
+    "sector_size": pl.Int64,
+    "live_sectors": pl.Int64,
+    "active_sectors": pl.Int64,
+    "faulty_sectors": pl.Int64,
+    "actor_balance_fil": pl.Float64,
+    "available_balance_fil": pl.Float64,
+    "market_escrow_fil": pl.Float64,
+    "market_locked_fil": pl.Float64,
+    "market_available_fil": pl.Float64,
+    "initial_pledge_fil": pl.Float64,
+    "locked_funds_fil": pl.Float64,
+    "pre_commit_deposits_fil": pl.Float64,
+    "fee_debt_fil": pl.Float64,
+    "fetched_at": pl.Datetime,
 }
 
 
@@ -75,57 +95,29 @@ async def load_current_info_rows() -> list[dict[str, Any]]:
         max_keepalive_connections=MAX_CONCURRENT_CHUNKS,
     )
 
+    rows: list[dict[str, Any]] = []
     async with httpx.AsyncClient(
         follow_redirects=True,
         timeout=120,
         limits=limits,
     ) as client:
         tipset_key = await load_tipset_key(client)
-        semaphore = asyncio.Semaphore(MAX_CONCURRENT_CHUNKS)
+        provider_chunks = chunked(provider_ids, BATCH_SIZE)
 
-        async def fetch_limited(provider_chunk: list[str]) -> list[dict[str, Any]]:
-            async with semaphore:
-                return await fetch_chunk_rows(
-                    client,
-                    provider_chunk,
-                    tipset_key,
-                    fetched_at,
+        for chunks in chunked(provider_chunks, MAX_CONCURRENT_CHUNKS):
+            chunk_rows = await asyncio.gather(
+                *(
+                    fetch_chunk_rows(client, chunk, tipset_key, fetched_at)
+                    for chunk in chunks
                 )
+            )
+            rows.extend(row for chunk in chunk_rows for row in chunk)
 
-        chunk_rows = await asyncio.gather(
-            *(fetch_limited(chunk) for chunk in chunked(provider_ids, BATCH_SIZE))
-        )
-
-    return [row for rows in chunk_rows for row in rows]
+    return rows
 
 
 def build_dataframe(rows: list[dict[str, Any]]) -> pl.DataFrame:
-    return pl.DataFrame(
-        rows,
-        schema_overrides={
-            "provider_id": pl.String,
-            "owner_id": pl.String,
-            "worker_id": pl.String,
-            "beneficiary_id": pl.String,
-            "peer_id": pl.String,
-            "control_addresses": pl.String,
-            "multi_addresses": pl.String,
-            "sector_size": pl.Int64,
-            "live_sectors": pl.Int64,
-            "active_sectors": pl.Int64,
-            "faulty_sectors": pl.Int64,
-            "actor_balance_fil": pl.Float64,
-            "available_balance_fil": pl.Float64,
-            "market_escrow_fil": pl.Float64,
-            "market_locked_fil": pl.Float64,
-            "market_available_fil": pl.Float64,
-            "initial_pledge_fil": pl.Float64,
-            "locked_funds_fil": pl.Float64,
-            "pre_commit_deposits_fil": pl.Float64,
-            "fee_debt_fil": pl.Float64,
-            "fetched_at": pl.Datetime,
-        },
-    ).sort("provider_id")
+    return pl.DataFrame(rows, schema_overrides=SCHEMA).sort("provider_id")
 
 
 def load_provider_ids() -> list[str]:
@@ -156,10 +148,7 @@ async def load_tipset_key(client: httpx.AsyncClient) -> list[dict[str, str]]:
         client,
         {"jsonrpc": "2.0", "id": 1, "method": "Filecoin.ChainHead", "params": []},
     )
-    result = response["result"]
-    if not isinstance(result, dict):
-        raise TypeError(f"Unexpected ChainHead result: {type(result).__name__}")
-
+    result = expect_dict(response.get("result"), "Filecoin.ChainHead result")
     cids = result.get("Cids")
     if not isinstance(cids, list) or not cids:
         raise ValueError("Filecoin.ChainHead returned an empty tipset key")
@@ -203,7 +192,7 @@ async def fetch_chunk_rows(
     rows: list[dict[str, Any]] = []
     for provider_id in provider_ids:
         provider_results = results_by_provider[provider_id]
-        missing_aliases = sorted(set(RPC_METHODS) - set(provider_results))
+        missing_aliases = sorted(RPC_METHODS.keys() - provider_results.keys())
         if missing_aliases:
             missing = ", ".join(missing_aliases)
             raise ValueError(f"Missing JSON-RPC responses for {provider_id}: {missing}")
@@ -234,9 +223,11 @@ def build_row(
 
     market_escrow_fil = atto_fil_to_fil(market_balance.get("Escrow"))
     market_locked_fil = atto_fil_to_fil(market_balance.get("Locked"))
-    market_available_fil = None
-    if market_escrow_fil is not None and market_locked_fil is not None:
-        market_available_fil = market_escrow_fil - market_locked_fil
+    market_available_fil = (
+        market_escrow_fil - market_locked_fil
+        if market_escrow_fil is not None and market_locked_fil is not None
+        else None
+    )
 
     return {
         "provider_id": provider_id,
@@ -268,17 +259,9 @@ def build_row(
 async def post_rpc(
     client: httpx.AsyncClient, payload: dict[str, Any] | list[dict[str, Any]]
 ) -> Any:
-    for attempt in range(1, RPC_ATTEMPTS + 1):
-        try:
-            response = await client.post(RPC_URL, json=payload)
-            response.raise_for_status()
-            return response.json()
-        except httpx.HTTPError, json.JSONDecodeError:
-            if attempt == RPC_ATTEMPTS:
-                raise
-            await asyncio.sleep(attempt)
-
-    raise RuntimeError("unreachable RPC retry state")
+    response = await client.post(RPC_URL, json=payload)
+    response.raise_for_status()
+    return response.json()
 
 
 def expect_dict(value: Any, context: str) -> dict[str, Any]:
@@ -295,40 +278,31 @@ def atto_fil_to_fil(value: Any) -> float | None:
 
 
 def decoded_multiaddrs(value: Any) -> list[str]:
-    if not isinstance(value, list):
-        return []
-
-    decoded: list[str] = []
-    for item in value:
-        encoded = null_if_empty(item)
-        if encoded is None:
-            continue
-        decoded.append(str(Multiaddr(base64.b64decode(encoded))))
-    return decoded
+    return [
+        str(Multiaddr(base64.b64decode(encoded)))
+        for encoded in non_empty_strings(value)
+    ]
 
 
 def json_array_string(value: Any) -> str | None:
-    if not isinstance(value, list):
-        return None
+    values = non_empty_strings(value)
+    return json.dumps(values) if values else None
 
-    values = [
-        item for item in (null_if_empty(item) for item in value) if item is not None
+
+def non_empty_strings(value: Any) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [
+        normalized for item in value if (normalized := null_if_empty(item)) is not None
     ]
-    if not values:
-        return None
-    return json.dumps(values)
 
 
 def null_if_empty(value: Any) -> str | None:
     if value is None:
         return None
     normalized = str(value).strip()
-    if not normalized or normalized == "<empty>":
-        return None
-    return normalized
+    return None if not normalized or normalized == "<empty>" else normalized
 
 
-def chunked(values: list[str], size: int) -> Iterator[list[str]]:
-    iterator = iter(values)
-    while chunk := list(islice(iterator, size)):
-        yield chunk
+def chunked[T](values: list[T], size: int) -> list[list[T]]:
+    return [values[index : index + size] for index in range(0, len(values), size)]
