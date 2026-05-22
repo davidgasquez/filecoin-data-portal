@@ -23,22 +23,33 @@ from pyoso import Client
 
 QUERY = """
 select
-    bucket_day as date,
+    sample_date as date,
     lower(
         regexp_replace(
-            concat(event_source, '_', coalesce(tag, 'untagged')),
+            concat(
+                case
+                    when metric_name = 'propgf_amount_usd_equiv' then 'propgf'
+                    when metric_name = 'retropgf_amount_usd_equiv' then 'retropgf'
+                end,
+                '_',
+                oso_project_slug
+            ),
             '[^A-Za-z0-9]+',
             '_'
         )
     ) as deployment_id,
-    event_source as program,
-    coalesce(tag, event_source) as name,
+    case
+        when metric_name = 'propgf_amount_usd_equiv' then 'PROPGF'
+        when metric_name = 'retropgf_amount_usd_equiv' then 'RETROPGF'
+    end as program,
+    oso_project_slug as name,
     sum(amount) as disbursed_usd
-from filecoin.roi.all_funding_events
-where currency = 'USD'
-  and amount is not null
-  and event_source in ('PROPGF', 'RETROPGF')
-  and event_type = 'FUNDING_DISBURSED'
+from filecoin.filpgf_public.timeseries_metrics_by_project
+where time_interval = 'daily'
+  and metric_name in (
+    'propgf_amount_usd_equiv',
+    'retropgf_amount_usd_equiv'
+  )
 group by 1, 2, 3, 4
 order by date desc, deployment_id
 """
