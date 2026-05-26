@@ -4,16 +4,19 @@ The Filecoin Data Portal is a minimalistic and functional open data platform to 
 
 ## Principles
 
-- Minimal, simple, UNIXy, and opinionated
+- Minimal, simple, UNIXy, malleable, and opinionated
 - Functional and idempotent transformations/pipelines with minimal cognitive load
-- Modular, declarative, independent, composable steps
-- Low abstractions, no frameworks, low LOC
+- Modular, declarative, independent, composable transformations
+- Low abstractions, small kernel, no frameworks, low LOC
 - Everything as text/code, everything versioned
 - Colocated assets, metadata, tests, and documentation
 - Quick feedback cycles (run assets locally, immediately results, easy to debug)
 - No backward compatibility constraints, don't care about regressions, old schemas, ...
-- Clean and concise [documentation](./docs)
-- This is a POC, breaking changes are ok. Goal is the simplest possible code
+- Clean and concise [documentation](./docs) with progressive disclosure
+- Reconstructable state (persist facts, derive views)
+- Separate lifecycle boundaries
+- Files are the control plane
+- The repo is the platform
 
 ## Code
 
