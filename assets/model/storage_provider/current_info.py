@@ -49,8 +49,10 @@ from multiaddr import Multiaddr
 import fdp
 
 RPC_URL = "https://filecoin.chain.love/rpc"
-BATCH_SIZE = 20
-MAX_CONCURRENT = 2
+BATCH_SIZE = 10
+MAX_CONCURRENT = 1
+MAX_RPC_ATTEMPTS = 5
+BASE_RETRY_SECONDS = 5
 ATTO_FIL = Decimal("1000000000000000000")
 RPC_METHODS = {
     "info": "Filecoin.StateMinerInfo",
@@ -203,9 +205,28 @@ def build_row(
 
 
 async def post_rpc(client: httpx.AsyncClient, payload: Any) -> Any:
-    response = await client.post(RPC_URL, json=payload)
-    response.raise_for_status()
-    return response.json()
+    for attempt in range(1, MAX_RPC_ATTEMPTS + 1):
+        response = await client.post(RPC_URL, json=payload)
+        if response.status_code != 429:
+            response.raise_for_status()
+            return response.json()
+
+        if attempt == MAX_RPC_ATTEMPTS:
+            response.raise_for_status()
+
+        await asyncio.sleep(retry_delay(response, attempt))
+
+    raise RuntimeError("JSON-RPC request failed without a response")
+
+
+def retry_delay(response: httpx.Response, attempt: int) -> float:
+    retry_after = response.headers.get("retry-after")
+    if retry_after is not None:
+        try:
+            return float(retry_after)
+        except ValueError:
+            pass
+    return BASE_RETRY_SECONDS * attempt
 
 
 def atto_to_fil(value: Any) -> float | None:
