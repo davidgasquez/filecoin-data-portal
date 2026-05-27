@@ -6,6 +6,9 @@
 -- asset.column = payer | Payer address.
 -- asset.column = payee | Payee address.
 -- asset.column = token | ERC20 token address.
+-- asset.column = token_symbol | ERC20 token symbol.
+-- asset.column = token_decimals | ERC20 token decimals.
+-- asset.column = is_stablecoin | Whether the rail token is a tagged stablecoin.
 -- asset.column = operator | Operator address.
 -- asset.column = service | Service classification.
 -- asset.column = validator | Validator address.
@@ -30,6 +33,9 @@ select
     payer,
     payee,
     token,
+    token_symbol,
+    token_decimals,
+    is_stablecoin,
     operator,
     service,
     validator,

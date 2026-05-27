@@ -46,7 +46,7 @@
 -- asset.column = active_datasets | Active chargeable warm storage datasets.
 -- asset.column = new_payers | Payers whose first chargeable warm storage dataset started billing on the date.
 -- asset.column = new_datasets | Warm storage datasets whose billing started on the date.
--- asset.column = arr_usdfc | End-of-day ARR run-rate from active ARR-eligible rails.
+-- asset.column = arr_filecoin_pay_usd | End-of-day USD ARR run-rate from active stablecoin recurring Filecoin Pay rails.
 -- asset.column = fil_token_price_avg_usd | Average FIL price in USD.
 -- asset.column = fil_token_volume_usd | FIL trading volume in USD.
 -- asset.column = fil_token_market_cap_usd | FIL market capitalization in USD.
@@ -187,7 +187,7 @@ select
     coalesce(warm_storage.active_datasets, 0) as active_datasets,
     coalesce(warm_storage.new_payers, 0) as new_payers,
     coalesce(warm_storage.new_datasets, 0) as new_datasets,
-    coalesce(pay_arr.arr_usdfc, 0) as arr_usdfc,
+    coalesce(pay_arr.arr_filecoin_pay_usd, 0) as arr_filecoin_pay_usd,
     market_data.fil_token_price_avg_usd,
     market_data.fil_token_volume_usd,
     market_data.fil_token_market_cap_usd,
