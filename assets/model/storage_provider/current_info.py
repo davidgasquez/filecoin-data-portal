@@ -49,8 +49,8 @@ from multiaddr import Multiaddr
 import fdp
 
 RPC_URL = "https://filecoin.chain.love/rpc"
-BATCH_SIZE = 100
-MAX_CONCURRENT = 24
+BATCH_SIZE = 20
+MAX_CONCURRENT = 2
 ATTO_FIL = Decimal("1000000000000000000")
 RPC_METHODS = {
     "info": "Filecoin.StateMinerInfo",
