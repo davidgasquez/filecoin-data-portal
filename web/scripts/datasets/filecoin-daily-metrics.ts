@@ -26,7 +26,7 @@ const SQL = `
     reward_per_wincount_fil,
     coalesce(filecoin_pay_active_payers, 0) AS filecoin_pay_active_payers,
     coalesce(filecoin_pay_active_rails, 0) AS filecoin_pay_active_rails,
-    coalesce(usdfc_paid, 0) AS usdfc_paid,
+    coalesce(filecoin_pay_paid_usd, 0) AS filecoin_pay_paid_usd,
     coalesce(arr_filecoin_pay_usd, 0) AS arr_filecoin_pay_usd,
     revenue_coverage_ratio,
     0 AS high_profile_paying_clients,

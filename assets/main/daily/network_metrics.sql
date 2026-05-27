@@ -41,7 +41,7 @@
 -- asset.column = pledge_collateral_fil | End-of-day total pledge collateral locked by storage providers, in FIL.
 -- asset.column = filecoin_pay_active_payers | Payers with at least one active Filecoin Pay rail at end of day.
 -- asset.column = filecoin_pay_active_rails | Active Filecoin Pay rails at end of day.
--- asset.column = usdfc_paid | Gross USDFC paid through Filecoin Pay rails on the date.
+-- asset.column = filecoin_pay_paid_usd | Gross stablecoin paid through Filecoin Pay rails on the date, assuming tagged stablecoins at $1.
 -- asset.column = active_payers | Payers with at least one active chargeable warm storage dataset.
 -- asset.column = active_datasets | Active chargeable warm storage datasets.
 -- asset.column = new_payers | Payers whose first chargeable warm storage dataset started billing on the date.
@@ -182,7 +182,7 @@ select
         as pledge_collateral_fil,
     coalesce(pay_activity.active_payers, 0) as filecoin_pay_active_payers,
     coalesce(pay_activity.active_rails, 0) as filecoin_pay_active_rails,
-    coalesce(pay_activity.usdfc_paid, 0) as usdfc_paid,
+    coalesce(pay_activity.filecoin_pay_paid_usd, 0) as filecoin_pay_paid_usd,
     coalesce(warm_storage.active_payers, 0) as active_payers,
     coalesce(warm_storage.active_datasets, 0) as active_datasets,
     coalesce(warm_storage.new_payers, 0) as new_payers,

@@ -47,8 +47,8 @@ def eth_logs() -> None:
     last = last_loaded_date()
     from_day = last + dt.timedelta(days=1) if last else START_DATE
 
-    today = dt.date.today()
-    if from_day > today:
+    latest_day = dt.datetime.now(dt.UTC).date() - dt.timedelta(days=1)
+    if from_day > latest_day:
         return
 
     with fdp.db_connection() as conn:
@@ -58,7 +58,7 @@ def eth_logs() -> None:
 
         with httpx.Client(follow_redirects=True, timeout=10) as client:
             day = from_day
-            while day <= today:
+            while day <= latest_day:
                 url = build_url(day)
                 resp = client.head(url)
                 if resp.status_code == 404:
