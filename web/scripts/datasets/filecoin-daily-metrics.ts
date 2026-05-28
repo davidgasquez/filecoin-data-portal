@@ -37,7 +37,7 @@ const SQL = `
     annual_protocol_revenue_usd,
     annual_block_rewards_usd
   FROM read_parquet('${DAILY_NETWORK_METRICS_PARQUET_URL}')
-  WHERE date IS NOT NULL
+  WHERE date IS NOT NULL AND date <= current_date - INTERVAL 2 DAY
   ORDER BY date
 `;
 
