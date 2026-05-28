@@ -8,6 +8,9 @@
 -- asset.column = payer | Payer address.
 -- asset.column = payee | Payee address.
 -- asset.column = token | ERC20 token address.
+-- asset.column = token_symbol | ERC20 token symbol.
+-- asset.column = token_decimals | ERC20 token decimals.
+-- asset.column = is_stablecoin | Whether the rail token is a tagged stablecoin.
 -- asset.column = operator | Operator address.
 -- asset.column = validator | Validator address.
 -- asset.column = is_arr_eligible | Whether the rail counts toward ARR.
@@ -59,6 +62,9 @@ valid_change_points as (
         rails.payer,
         rails.payee,
         rails.token,
+        rails.token_symbol,
+        rails.token_decimals,
+        rails.is_stablecoin,
         rails.operator,
         rails.validator,
         rails.is_arr_eligible,
@@ -78,6 +84,9 @@ ordered_intervals as (
         payer,
         payee,
         token,
+        token_symbol,
+        token_decimals,
+        is_stablecoin,
         operator,
         validator,
         is_arr_eligible,
@@ -96,6 +105,9 @@ intervals as (
         payer,
         payee,
         token,
+        token_symbol,
+        token_decimals,
+        is_stablecoin,
         operator,
         validator,
         is_arr_eligible,
@@ -118,6 +130,9 @@ select
     payer,
     payee,
     token,
+    token_symbol,
+    token_decimals,
+    is_stablecoin,
     operator,
     validator,
     is_arr_eligible,
@@ -139,6 +154,7 @@ select
         else to_timestamp(cast(end_ordinal / 1000000 as bigint) * 30 + (select genesis_timestamp from params))
     end as end_at,
     rate_wei_per_epoch,
-    cast(rate_wei_per_epoch as decimal(38, 0)) / cast(1000000000000000000 as decimal(38, 0)) as rate_token_per_epoch
+    cast(rate_wei_per_epoch as decimal(38, 0))
+        / power(cast(10 as decimal(38, 0)), token_decimals) as rate_token_per_epoch
 from intervals
 order by start_at desc

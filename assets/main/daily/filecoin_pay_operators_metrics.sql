@@ -10,7 +10,7 @@
 -- asset.column = arr_eligible_rails | Active recurring rails counted toward ARR at end of day.
 -- asset.column = unique_payers | Payers across the operator's active rails at end of day.
 -- asset.column = unique_payees | Payees across the operator's active rails at end of day.
--- asset.column = arr_usdfc | End-of-day ARR run-rate from the operator's active ARR-eligible rails.
+-- asset.column = arr_filecoin_pay_usd | End-of-day USD ARR run-rate from the operator's active stablecoin recurring rails.
 
 -- asset.not_null = date
 -- asset.not_null = operator
@@ -19,7 +19,7 @@
 -- asset.not_null = arr_eligible_rails
 -- asset.not_null = unique_payers
 -- asset.not_null = unique_payees
--- asset.not_null = arr_usdfc
+-- asset.not_null = arr_filecoin_pay_usd
 
 with days as (
     select date, checkpoint_ordinal
@@ -53,7 +53,7 @@ select
     count(distinct payer) as unique_payers,
     count(distinct payee) as unique_payees,
     coalesce(sum(case when is_arr_eligible and rate_wei_per_epoch > 0 then rate_token_per_epoch else 0 end), 0)
-        * 2880 * 365 as arr_usdfc
+        * 2880 * 365 as arr_filecoin_pay_usd
 from operator_day_active_rails
 group by 1, 2
 order by date desc

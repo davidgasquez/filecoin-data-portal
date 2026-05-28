@@ -1,6 +1,7 @@
 -- asset.description = Daily FEVM end-of-day checkpoints.
 
 -- asset.depends = raw.fevm_eth_logs_decoded
+-- asset.depends = raw.fevm_eth_logs
 
 -- asset.column = date | UTC date.
 -- asset.column = checkpoint_ordinal | Last FEVM event ordinal observed on or before the date.
@@ -11,18 +12,17 @@
 
 with chain_day_ordinals as (
     select
-        date(to_timestamp(block_number * 30 + 1598306400)) as date,
+        file_date as date,
         max(block_number * 1000000 + log_index) as day_end_ordinal
     from raw.fevm_eth_logs_decoded
+    where file_date <= current_date - 1
     group by 1
 ),
 days as (
-    select cast(generate_series as date) as date
-    from generate_series(
-        (select min(date) from chain_day_ordinals),
-        (select max(date) from chain_day_ordinals),
-        interval 1 day
-    )
+    select distinct file_date as date
+    from raw.fevm_eth_logs
+    where file_date between (select min(date) from chain_day_ordinals)
+        and current_date - 1
 )
 select
     days.date,

@@ -61,11 +61,11 @@ const sections = [
     columns: 3,
     charts: [
       {
-        id: "total-arr-usdfc",
-        title: "USDFC ARR Run-Rate",
-        description: "Annualized value of active recurring Filecoin Pay rails at each UTC day-end.",
-        y: "arr_usdfc",
-        format: "usdfc",
+        id: "total-arr-filecoin-pay-usd",
+        title: "Filecoin Pay ARR Run-Rate",
+        description: "Annualized USD value of active recurring Filecoin Pay stablecoin rails, including USDFC and USDC.axl, at each UTC day-end.",
+        y: "arr_filecoin_pay_usd",
+        format: "usd",
       },
       {
         id: "revenue-coverage-ratio",
@@ -128,18 +128,18 @@ const sections = [
         format: "integer",
       },
       {
-        id: "foc-usdfc-paid",
-        title: "USDFC Paid",
-        description: "Gross USDFC paid through Filecoin Pay rails per day.",
-        y: "usdfc_paid",
-        format: "usdfc",
+        id: "foc-filecoin-pay-paid-usd",
+        title: "Filecoin Pay Paid",
+        description: "Gross stablecoin paid through Filecoin Pay rails per day, including USDFC and USDC.axl.",
+        y: "filecoin_pay_paid_usd",
+        format: "usd",
       },
       {
-        id: "foc-arr-usdfc",
-        title: "USDFC ARR Run-Rate",
-        description: "Annualized value of active recurring Filecoin Pay rails at each UTC day-end.",
-        y: "arr_usdfc",
-        format: "usdfc",
+        id: "foc-arr-filecoin-pay-usd",
+        title: "Filecoin Pay ARR Run-Rate",
+        description: "Annualized USD value of active recurring Filecoin Pay stablecoin rails, including USDFC and USDC.axl, at each UTC day-end.",
+        y: "arr_filecoin_pay_usd",
+        format: "usd",
       },
     ],
   },
@@ -407,7 +407,6 @@ const serializedDailyMetrics = JSON.stringify(
       | "tib"
       | "fil"
       | "mfil"
-      | "usdfc"
       | "usd"
       | "percent"
 
@@ -577,7 +576,6 @@ const serializedDailyMetrics = JSON.stringify(
           case "tib":
           case "fil":
           case "mfil":
-          case "usdfc":
           case "usd":
           case "percent":
             return value
@@ -689,7 +687,6 @@ const serializedDailyMetrics = JSON.stringify(
           pib: " PiB",
           tib: " TiB",
           fil: " FIL",
-          usdfc: " USDFC",
         } satisfies Record<Exclude<LineChartFormat, "integer" | "mfil" | "usd" | "percent">, string>
 
         return `${chart.formatPrefix}${formatDecimal(scaledValue, maximumFractionDigits)}${suffixByFormat[chart.format]}${chart.formatSuffix}`

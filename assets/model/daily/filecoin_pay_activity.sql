@@ -7,19 +7,15 @@
 -- asset.column = date | UTC date.
 -- asset.column = active_payers | Payers with at least one active rail at end of day.
 -- asset.column = active_rails | Active rails at end of day.
--- asset.column = usdfc_paid | Gross USDFC paid through Filecoin Pay rails on the date.
+-- asset.column = filecoin_pay_paid_usd | Gross stablecoin paid through Filecoin Pay rails on the date, assuming tagged stablecoins at $1.
 
 -- asset.not_null = date
 -- asset.not_null = active_payers
 -- asset.not_null = active_rails
--- asset.not_null = usdfc_paid
+-- asset.not_null = filecoin_pay_paid_usd
 -- asset.unique = date
 
-with params as (
-    select
-        '0x80b98d3aa09ffff255c3ba4a241111ff1262f045' as usdfc_token,
-        cast(1000000000000000000 as decimal(38, 0)) as token_scale
-), days as (
+with days as (
     select date, checkpoint_ordinal
     from model.fevm_daily_checkpoints
     where date >= coalesce(
@@ -38,7 +34,7 @@ with params as (
     from model.filecoin_pay_rails
 ), payment_events as (
     select
-        date(to_timestamp(events.block_number * 30 + 1598306400)) as date,
+        events.file_date as date,
         case
             when events.event_name = 'RailSettled' then
                 cast(json_extract_string(events.args, '$.totalSettledAmount') as decimal(38, 0))
@@ -46,29 +42,37 @@ with params as (
                 cast(json_extract_string(events.args, '$.netPayeeAmount') as decimal(38, 0))
                 + cast(json_extract_string(events.args, '$.operatorCommission') as decimal(38, 0))
                 + cast(json_extract_string(events.args, '$.networkFee') as decimal(38, 0))
-        end as paid_wei
+        end / power(cast(10 as decimal(38, 0)), payment_rails.token_decimals)
+            as paid_usd
     from raw.fevm_eth_logs_decoded as events
     join model.filecoin_pay_rails as payment_rails
         on cast(json_extract_string(events.args, '$.railId') as bigint) = payment_rails.rail_id
     where events.abi_name = 'filecoin_pay_v1'
       and events.event_name in ('RailSettled', 'RailOneTimePaymentProcessed')
-      and payment_rails.token = (select usdfc_token from params)
+      and payment_rails.is_stablecoin
+      and events.file_date <= current_date - 1
 ), daily_payments as (
     select
         date,
-        sum(paid_wei) / (select token_scale from params) as usdfc_paid
+        sum(paid_usd) as filecoin_pay_paid_usd
     from payment_events
+    group by 1
+), active_counts as (
+    select
+        days.date,
+        count(distinct rails.payer) as active_payers,
+        count(distinct rails.rail_id) as active_rails
+    from days
+    left join rails
+        on rails.created_ordinal <= days.checkpoint_ordinal
+       and coalesce(rails.terminated_ordinal, 9223372036854775807) > days.checkpoint_ordinal
     group by 1
 )
 select
-    days.date,
-    count(distinct rails.payer) as active_payers,
-    count(distinct rails.rail_id) as active_rails,
-    coalesce(daily_payments.usdfc_paid, 0) as usdfc_paid
-from days
-left join rails
-    on rails.created_ordinal <= days.checkpoint_ordinal
-   and coalesce(rails.terminated_ordinal, 9223372036854775807) > days.checkpoint_ordinal
+    active_counts.date,
+    active_counts.active_payers,
+    active_counts.active_rails,
+    coalesce(daily_payments.filecoin_pay_paid_usd, 0) as filecoin_pay_paid_usd
+from active_counts
 left join daily_payments using (date)
-group by 1, 4
 order by date desc

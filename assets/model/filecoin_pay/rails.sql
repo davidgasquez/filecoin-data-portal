@@ -6,6 +6,9 @@
 -- asset.column = payer | Payer address.
 -- asset.column = payee | Payee address.
 -- asset.column = token | ERC20 token address.
+-- asset.column = token_symbol | ERC20 token symbol.
+-- asset.column = token_decimals | ERC20 token decimals.
+-- asset.column = is_stablecoin | Whether the rail token is a tagged stablecoin.
 -- asset.column = operator | Operator address.
 -- asset.column = service | Service classification.
 -- asset.column = validator | Validator address.
@@ -31,9 +34,21 @@
 with params as (
     select
         1598306400 as genesis_timestamp,
-        '0x80b98d3aa09ffff255c3ba4a241111ff1262f045' as usdfc_token,
         '0xa5f90bc2aa73a2e0bad4d7092a932644d5dd5d71' as dealbot_payer,
         '0x56e53c5e7f27504b810494cc3b88b2aa0645a839' as storacha_operator
+),
+tokens as (
+    select
+        '0x80b98d3aa09ffff255c3ba4a241111ff1262f045' as token,
+        'USDFC' as token_symbol,
+        18 as token_decimals,
+        true as is_stablecoin
+    union all
+    select
+        '0xeb466342c4d449bc9f53a865d5cb90586f405215' as token,
+        'USDC.axl' as token_symbol,
+        6 as token_decimals,
+        true as is_stablecoin
 ),
 rail_created as (
     select
@@ -80,6 +95,9 @@ select
     created.payer,
     created.payee,
     created.token,
+    tokens.token_symbol,
+    tokens.token_decimals,
+    coalesce(tokens.is_stablecoin, false) as is_stablecoin,
     created.operator,
     case
         when created.operator = (select storacha_operator from params) then 'Storacha'
@@ -88,7 +106,7 @@ select
     created.validator,
     created.service_fee_recipient,
     created.commission_rate_bps,
-    created.token = (select usdfc_token from params)
+    coalesce(tokens.is_stablecoin, false)
         and created.payer != (select dealbot_payer from params) as is_arr_eligible,
     created.created_block,
     created.created_log_index,
@@ -103,6 +121,8 @@ select
     terminated.terminated_end_at,
     terminated.terminated_block is not null as is_terminated
 from rail_created as created
+left join tokens
+    on created.token = tokens.token
 left join rail_terminated as terminated
     on created.rail_id = terminated.rail_id
    and terminated.row_num = 1
