@@ -8,6 +8,7 @@ import polars as pl
 
 from fdp.api import (
     db_connection,
+    default_db_path,
     quote_identifier,
     quote_table_key,
     replace_table_arrow,
@@ -69,12 +70,31 @@ def materialize_assets(assets: list[Asset]) -> None:
     total = len(assets)
     count_width = len(str(total))
     asset_width = max((len(asset.key) for asset in assets), default=0)
+    kept_existing: list[str] = []
 
     for index, asset in enumerate(assets, start=1):
         started_at = perf_counter()
         try:
             materialize_asset(asset)
-        except Exception:
+        except Exception as exc:
+            elapsed_seconds = perf_counter() - started_at
+            if can_keep_existing(asset):
+                kept_existing.append(asset.key)
+                print(
+                    format_materialize_status(
+                        index,
+                        total,
+                        count_width,
+                        asset_width,
+                        asset,
+                        "KEEP_EXISTING",
+                        elapsed_seconds,
+                    ),
+                    flush=True,
+                )
+                print(f"  {type(exc).__name__}: {exc}", flush=True)
+                continue
+
             print(
                 format_materialize_status(
                     index,
@@ -83,7 +103,7 @@ def materialize_assets(assets: list[Asset]) -> None:
                     asset_width,
                     asset,
                     "FAIL",
-                    perf_counter() - started_at,
+                    elapsed_seconds,
                 ),
                 flush=True,
             )
@@ -100,6 +120,20 @@ def materialize_assets(assets: list[Asset]) -> None:
             ),
             flush=True,
         )
+
+    if kept_existing:
+        print("Kept existing tables after refresh failures:", flush=True)
+        for key in kept_existing:
+            print(f"  - {key}", flush=True)
+
+
+def can_keep_existing(asset: Asset) -> bool:
+    if not asset.keep_existing_on_failure:
+        return False
+    if not default_db_path().exists():
+        return False
+    with db_connection(read_only=True) as conn:
+        return table_exists(conn, asset.schema, asset.name)
 
 
 def format_materialize_status(

@@ -6,6 +6,7 @@
 # asset.depends = model.verified_claims
 
 # asset.materialization = dataframe
+# asset.keep_existing_on_failure = true
 
 # asset.column = provider_id | Filecoin storage provider actor id address.
 # asset.column = owner_id | Current owner actor id address.
