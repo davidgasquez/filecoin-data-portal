@@ -71,6 +71,17 @@ def materialize_assets(assets: list[Asset]) -> None:
     asset_width = max((len(asset.key) for asset in assets), default=0)
 
     for index, asset in enumerate(assets, start=1):
+        print(
+            format_materialize_status(
+                index,
+                total,
+                count_width,
+                asset_width,
+                asset,
+                "RUN",
+            ),
+            flush=True,
+        )
         started_at = perf_counter()
         try:
             materialize_asset(asset)
@@ -109,12 +120,13 @@ def format_materialize_status(
     asset_width: int,
     asset: Asset,
     status: str,
-    elapsed_seconds: float,
+    elapsed_seconds: float | None = None,
 ) -> str:
-    return (
-        f"[{index:>{count_width}}/{total:>{count_width}}] "
-        f"{asset.key:<{asset_width}} {status} {elapsed_seconds:.1f}s"
-    )
+    prefix = f"[{index:>{count_width}}/{total:>{count_width}}]"
+    message = f"{prefix} {asset.key:<{asset_width}} {status}"
+    if elapsed_seconds is None:
+        return message
+    return f"{message} {elapsed_seconds:.1f}s"
 
 
 def materialize_asset(asset: Asset) -> None:
