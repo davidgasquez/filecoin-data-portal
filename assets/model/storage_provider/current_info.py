@@ -38,27 +38,42 @@ import asyncio
 import base64
 import datetime as dt
 import json
+import os
 from decimal import Decimal
 from itertools import batched
+from json import JSONDecodeError
 from typing import Any
 
 import httpx
 import polars as pl
+from httpx import HTTPStatusError, TimeoutException, TransportError
 from multiaddr import Multiaddr
 
 import fdp
 
-RPC_URL = "https://filecoin.chain.love/rpc"
-BATCH_SIZE = 10
-MAX_CONCURRENT = 1
-MAX_RPC_ATTEMPTS = 5
-BASE_RETRY_SECONDS = 5
+DEFAULT_RPC_URLS = (
+    "https://filecoin.chainup.net/rpc/v1",
+    "https://api.node.glif.io/rpc/v1",
+    "https://api.chain.love/rpc/v1",
+)
+CONFIGURED_RPC_URLS = tuple(
+    url.strip()
+    for url in os.getenv("FDP_FILECOIN_RPC_URLS", ",".join(DEFAULT_RPC_URLS)).split(",")
+    if url.strip()
+)
+RPC_URLS = CONFIGURED_RPC_URLS or DEFAULT_RPC_URLS
+BATCH_SIZE = int(os.getenv("FDP_FILECOIN_RPC_BATCH_SIZE", "10"))
+MAX_CONCURRENT = int(os.getenv("FDP_FILECOIN_RPC_MAX_CONCURRENT", "2"))
+REQUEST_TIMEOUT_SECONDS = float(os.getenv("FDP_FILECOIN_RPC_TIMEOUT_SECONDS", "45"))
+MAX_RPC_ATTEMPTS = int(os.getenv("FDP_FILECOIN_RPC_MAX_ATTEMPTS", "5"))
+BASE_RETRY_SECONDS = float(os.getenv("FDP_FILECOIN_RPC_BASE_RETRY_SECONDS", "2"))
+RETRYABLE_STATUS_CODES = {408, 429, 500, 502, 503, 504}
+RETRYABLE_RPC_ERROR_CODES = {-32601, -32160, -32090, -32062}
 ATTO_FIL = Decimal("1000000000000000000")
 RPC_METHODS = {
     "info": "Filecoin.StateMinerInfo",
     "sector_count": "Filecoin.StateMinerSectorCount",
     "market_balance": "Filecoin.StateMarketBalance",
-    "available_balance": "Filecoin.StateMinerAvailableBalance",
     "state": "Filecoin.StateReadState",
 }
 SCHEMA = {
@@ -100,16 +115,24 @@ async def load_rows() -> list[dict[str, Any]]:
     semaphore = asyncio.Semaphore(MAX_CONCURRENT)
 
     async with httpx.AsyncClient(
-        follow_redirects=True, timeout=120, limits=limits
+        follow_redirects=True, timeout=REQUEST_TIMEOUT_SECONDS, limits=limits
     ) as client:
         tipset_key = await fetch_tipset_key(client)
 
-        async def fetch(chunk: tuple[str, ...]) -> list[dict[str, Any]]:
+        async def fetch(index: int, chunk: tuple[str, ...]) -> list[dict[str, Any]]:
             async with semaphore:
-                return await fetch_chunk(client, chunk, tipset_key, fetched_at)
+                return await fetch_chunk(
+                    client,
+                    chunk,
+                    tipset_key,
+                    fetched_at,
+                    rpc_urls_for(index),
+                )
 
         chunks = list(batched(provider_ids, BATCH_SIZE, strict=False))
-        results = await asyncio.gather(*(fetch(chunk) for chunk in chunks))
+        results = await asyncio.gather(
+            *(fetch(index, chunk) for index, chunk in enumerate(chunks))
+        )
         return [row for chunk in results for row in chunk]
 
 
@@ -141,6 +164,7 @@ async def fetch_chunk(
     provider_ids: tuple[str, ...],
     tipset_key: list[dict[str, str]],
     fetched_at: dt.datetime,
+    rpc_urls: tuple[str, ...],
 ) -> list[dict[str, Any]]:
     payload = [
         {
@@ -152,7 +176,7 @@ async def fetch_chunk(
         for provider_id in provider_ids
         for alias, method in RPC_METHODS.items()
     ]
-    responses = await post_rpc(client, payload)
+    responses = await post_rpc(client, payload, rpc_urls)
 
     results: dict[str, dict[str, Any]] = {pid: {} for pid in provider_ids}
     for response in responses:
@@ -162,6 +186,15 @@ async def fetch_chunk(
                 f"JSON-RPC error for {provider_id} {alias}: {response['error']}"
             )
         results[provider_id][alias] = response["result"]
+
+    missing = [
+        f"{provider_id}:{alias}"
+        for provider_id in provider_ids
+        for alias in RPC_METHODS
+        if alias not in results[provider_id]
+    ]
+    if missing:
+        raise ValueError(f"Missing JSON-RPC responses: {', '.join(missing[:5])}")
 
     return [build_row(pid, results[pid], fetched_at) for pid in provider_ids]
 
@@ -192,7 +225,7 @@ def build_row(
         "active_sectors": sector_count.get("Active"),
         "faulty_sectors": sector_count.get("Faulty"),
         "actor_balance_fil": atto_to_fil(state_result.get("Balance")),
-        "available_balance_fil": atto_to_fil(results["available_balance"]),
+        "available_balance_fil": miner_available_balance_fil(state_result),
         "market_escrow_fil": escrow,
         "market_locked_fil": locked,
         "market_available_fil": available,
@@ -204,34 +237,113 @@ def build_row(
     }
 
 
-async def post_rpc(client: httpx.AsyncClient, payload: Any) -> Any:
+async def post_rpc(
+    client: httpx.AsyncClient,
+    payload: Any,
+    rpc_urls: tuple[str, ...] | None = None,
+) -> Any:
+    urls = RPC_URLS if rpc_urls is None else rpc_urls
+    last_error: Exception | None = None
     for attempt in range(1, MAX_RPC_ATTEMPTS + 1):
-        response = await client.post(RPC_URL, json=payload)
-        if response.status_code != 429:
-            response.raise_for_status()
-            return response.json()
+        for url in urls:
+            try:
+                response = await client.post(url, json=payload)
+                if response.status_code in RETRYABLE_STATUS_CODES:
+                    response.raise_for_status()
+                response.raise_for_status()
+                data = parse_rpc_json(response)
+                raise_for_retryable_rpc_error(data)
+                return data
+            except (
+                HTTPStatusError,
+                TimeoutException,
+                TransportError,
+                JSONDecodeError,
+                RetryableRpcError,
+            ) as exc:
+                last_error = exc
 
         if attempt == MAX_RPC_ATTEMPTS:
-            response.raise_for_status()
+            break
 
-        await asyncio.sleep(retry_delay(response, attempt))
+        await asyncio.sleep(retry_delay(last_error, attempt))
 
-    raise RuntimeError("JSON-RPC request failed without a response")
+    raise RuntimeError("JSON-RPC request failed") from last_error
 
 
-def retry_delay(response: httpx.Response, attempt: int) -> float:
-    retry_after = response.headers.get("retry-after")
-    if retry_after is not None:
-        try:
-            return float(retry_after)
-        except ValueError:
-            pass
+def rpc_urls_for(index: int) -> tuple[str, ...]:
+    offset = index % len(RPC_URLS)
+    return (*RPC_URLS[offset:], *RPC_URLS[:offset])
+
+
+class RetryableRpcError(Exception):
+    pass
+
+
+def retry_delay(error: Exception | None, attempt: int) -> float:
+    if isinstance(error, HTTPStatusError):
+        retry_after = error.response.headers.get("retry-after")
+        if retry_after is not None:
+            try:
+                return float(retry_after)
+            except ValueError:
+                pass
     return BASE_RETRY_SECONDS * attempt
 
 
+def raise_for_retryable_rpc_error(data: Any) -> None:
+    responses = data if isinstance(data, list) else [data]
+    for response in responses:
+        if not isinstance(response, dict) or not isinstance(
+            error := response.get("error"), dict
+        ):
+            continue
+        message = str(error.get("message", "")).lower()
+        if error.get("code") in RETRYABLE_RPC_ERROR_CODES or any(
+            phrase in message for phrase in ("rate limit", "too many requests")
+        ):
+            raise RetryableRpcError(error)
+
+
+def miner_available_balance_fil(state_result: dict[str, Any]) -> float | None:
+    balance = atto_decimal(state_result.get("Balance"))
+    if balance is None:
+        return None
+
+    state = state_result.get("State") or {}
+    locked = sum(
+        atto_decimal(state.get(field)) or Decimal(0)
+        for field in (
+            "InitialPledge",
+            "LockedFunds",
+            "PreCommitDeposits",
+            "FeeDebt",
+        )
+    )
+    available = max(balance - locked, Decimal(0))
+    return float(available / ATTO_FIL)
+
+
+def parse_rpc_json(response: httpx.Response) -> Any:
+    try:
+        return response.json()
+    except JSONDecodeError:
+        text = response.text.lstrip()
+        decoder = json.JSONDecoder()
+        data, index = decoder.raw_decode(text)
+        if text[index:].strip():
+            return data
+        raise
+
+
 def atto_to_fil(value: Any) -> float | None:
+    value_atto = atto_decimal(value)
+    return float(value_atto / ATTO_FIL) if value_atto is not None else None
+
+
+def atto_decimal(value: Any) -> Decimal | None:
     cleaned = null_if_empty(value)
-    return float(Decimal(cleaned) / ATTO_FIL) if cleaned else None
+    return Decimal(cleaned) if cleaned else None
 
 
 def decode_multiaddrs(value: Any) -> list[str]:
