@@ -51,6 +51,21 @@ from multiaddr import Multiaddr
 
 import fdp
 
+
+def env_int(name: str, default: int) -> int:
+    value = int(os.getenv(name, str(default)))
+    if value <= 0:
+        raise ValueError(f"{name} must be positive")
+    return value
+
+
+def env_float(name: str, default: float) -> float:
+    value = float(os.getenv(name, str(default)))
+    if value <= 0:
+        raise ValueError(f"{name} must be positive")
+    return value
+
+
 DEFAULT_RPC_URLS = (
     "https://filecoin.chainup.net/rpc/v1",
     "https://api.node.glif.io/rpc/v1",
@@ -62,11 +77,11 @@ CONFIGURED_RPC_URLS = tuple(
     if url.strip()
 )
 RPC_URLS = CONFIGURED_RPC_URLS or DEFAULT_RPC_URLS
-BATCH_SIZE = int(os.getenv("FDP_FILECOIN_RPC_BATCH_SIZE", "10"))
-MAX_CONCURRENT = int(os.getenv("FDP_FILECOIN_RPC_MAX_CONCURRENT", "2"))
-REQUEST_TIMEOUT_SECONDS = float(os.getenv("FDP_FILECOIN_RPC_TIMEOUT_SECONDS", "45"))
-MAX_RPC_ATTEMPTS = int(os.getenv("FDP_FILECOIN_RPC_MAX_ATTEMPTS", "5"))
-BASE_RETRY_SECONDS = float(os.getenv("FDP_FILECOIN_RPC_BASE_RETRY_SECONDS", "2"))
+BATCH_SIZE = env_int("FDP_FILECOIN_RPC_BATCH_SIZE", 10)
+MAX_CONCURRENT = env_int("FDP_FILECOIN_RPC_MAX_CONCURRENT", 2)
+REQUEST_TIMEOUT_SECONDS = env_float("FDP_FILECOIN_RPC_TIMEOUT_SECONDS", 45)
+MAX_RPC_ATTEMPTS = env_int("FDP_FILECOIN_RPC_MAX_ATTEMPTS", 5)
+BASE_RETRY_SECONDS = env_float("FDP_FILECOIN_RPC_BASE_RETRY_SECONDS", 2)
 RETRYABLE_STATUS_CODES = {408, 429, 500, 502, 503, 504}
 RETRYABLE_RPC_ERROR_CODES = {-32601, -32160, -32090, -32062}
 ATTO_FIL = Decimal("1000000000000000000")
@@ -76,6 +91,7 @@ RPC_METHODS = {
     "market_balance": "Filecoin.StateMarketBalance",
     "state": "Filecoin.StateReadState",
 }
+
 SCHEMA = {
     "provider_id": pl.String,
     "owner_id": pl.String,
@@ -112,7 +128,6 @@ async def load_rows() -> list[dict[str, Any]]:
     limits = httpx.Limits(
         max_connections=MAX_CONCURRENT, max_keepalive_connections=MAX_CONCURRENT
     )
-    semaphore = asyncio.Semaphore(MAX_CONCURRENT)
 
     async with httpx.AsyncClient(
         follow_redirects=True, timeout=REQUEST_TIMEOUT_SECONDS, limits=limits
@@ -120,18 +135,21 @@ async def load_rows() -> list[dict[str, Any]]:
         tipset_key = await fetch_tipset_key(client)
 
         async def fetch(index: int, chunk: tuple[str, ...]) -> list[dict[str, Any]]:
-            async with semaphore:
-                return await fetch_chunk(
-                    client,
-                    chunk,
-                    tipset_key,
-                    fetched_at,
-                    rpc_urls_for(index),
-                )
+            return await fetch_chunk(
+                client,
+                chunk,
+                tipset_key,
+                fetched_at,
+                rpc_urls_for(index),
+            )
 
-        chunks = list(batched(provider_ids, BATCH_SIZE, strict=False))
         results = await asyncio.gather(
-            *(fetch(index, chunk) for index, chunk in enumerate(chunks))
+            *(
+                fetch(index, chunk)
+                for index, chunk in enumerate(
+                    batched(provider_ids, BATCH_SIZE, strict=False)
+                )
+            )
         )
         return [row for chunk in results for row in chunk]
 
@@ -206,7 +224,9 @@ def build_row(
     sector_count = results["sector_count"]
     market = results["market_balance"]
     state_result = results["state"]
-    state = state_result["State"]
+    state = state_result.get("State")
+    if not isinstance(state, dict):
+        raise ValueError(f"Missing miner state for {provider_id}")
 
     escrow = atto_to_fil(market.get("Escrow"))
     locked = atto_to_fil(market.get("Locked"))
@@ -244,16 +264,11 @@ async def post_rpc(
 ) -> Any:
     urls = RPC_URLS if rpc_urls is None else rpc_urls
     last_error: Exception | None = None
+
     for attempt in range(1, MAX_RPC_ATTEMPTS + 1):
         for url in urls:
             try:
-                response = await client.post(url, json=payload)
-                if response.status_code in RETRYABLE_STATUS_CODES:
-                    response.raise_for_status()
-                response.raise_for_status()
-                data = parse_rpc_json(response)
-                raise_for_retryable_rpc_error(data)
-                return data
+                return await try_rpc_url(client, url, payload)
             except (
                 HTTPStatusError,
                 TimeoutException,
@@ -263,12 +278,23 @@ async def post_rpc(
             ) as exc:
                 last_error = exc
 
-        if attempt == MAX_RPC_ATTEMPTS:
-            break
+        if attempt < MAX_RPC_ATTEMPTS:
+            await asyncio.sleep(retry_delay(last_error, attempt))
 
-        await asyncio.sleep(retry_delay(last_error, attempt))
+    raise RuntimeError(
+        f"JSON-RPC request failed after {MAX_RPC_ATTEMPTS} attempts "
+        f"across {len(urls)} URLs"
+    ) from last_error
 
-    raise RuntimeError("JSON-RPC request failed") from last_error
+
+async def try_rpc_url(client: httpx.AsyncClient, url: str, payload: Any) -> Any:
+    response = await client.post(url, json=payload)
+    if response.status_code in RETRYABLE_STATUS_CODES:
+        response.raise_for_status()
+    response.raise_for_status()
+    data = parse_rpc_json(response)
+    raise_if_retryable_rpc_error(data)
+    return data
 
 
 def rpc_urls_for(index: int) -> tuple[str, ...]:
@@ -291,7 +317,7 @@ def retry_delay(error: Exception | None, attempt: int) -> float:
     return BASE_RETRY_SECONDS * attempt
 
 
-def raise_for_retryable_rpc_error(data: Any) -> None:
+def raise_if_retryable_rpc_error(data: Any) -> None:
     responses = data if isinstance(data, list) else [data]
     for response in responses:
         if not isinstance(response, dict) or not isinstance(
@@ -330,10 +356,8 @@ def parse_rpc_json(response: httpx.Response) -> Any:
     except JSONDecodeError:
         text = response.text.lstrip()
         decoder = json.JSONDecoder()
-        data, index = decoder.raw_decode(text)
-        if text[index:].strip():
-            return data
-        raise
+        data, _ = decoder.raw_decode(text)
+        return data
 
 
 def atto_to_fil(value: Any) -> float | None:
