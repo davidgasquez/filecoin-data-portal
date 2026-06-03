@@ -21,6 +21,7 @@ jobs:
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
       FDP_GSHEET_SPREADSHEET_ID: ${{ secrets.FDP_GSHEET_SPREADSHEET_ID }}
       OSO_API_KEY: ${{ secrets.OSO_API_KEY }}
+      FDP_FILECOIN_RPC_MAX_CONCURRENT: 1
 
     steps:
       - name: Checkout

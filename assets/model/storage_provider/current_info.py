@@ -39,6 +39,7 @@ import base64
 import datetime as dt
 import json
 import os
+import random
 from decimal import Decimal
 from itertools import batched
 from json import JSONDecodeError
@@ -129,27 +130,29 @@ async def load_rows() -> list[dict[str, Any]]:
         max_connections=MAX_CONCURRENT, max_keepalive_connections=MAX_CONCURRENT
     )
 
+    timeout = httpx.Timeout(
+        REQUEST_TIMEOUT_SECONDS,
+        pool=REQUEST_TIMEOUT_SECONDS * MAX_CONCURRENT,
+    )
     async with httpx.AsyncClient(
-        follow_redirects=True, timeout=REQUEST_TIMEOUT_SECONDS, limits=limits
+        follow_redirects=True, timeout=timeout, limits=limits
     ) as client:
         tipset_key = await fetch_tipset_key(client)
+        semaphore = asyncio.Semaphore(MAX_CONCURRENT)
 
         async def fetch(index: int, chunk: tuple[str, ...]) -> list[dict[str, Any]]:
-            return await fetch_chunk(
-                client,
-                chunk,
-                tipset_key,
-                fetched_at,
-                rpc_urls_for(index),
-            )
-
-        results = await asyncio.gather(
-            *(
-                fetch(index, chunk)
-                for index, chunk in enumerate(
-                    batched(provider_ids, BATCH_SIZE, strict=False)
+            async with semaphore:
+                return await fetch_chunk(
+                    client,
+                    chunk,
+                    tipset_key,
+                    fetched_at,
+                    rpc_urls_for(index),
                 )
-            )
+
+        chunks = tuple(batched(provider_ids, BATCH_SIZE, strict=False))
+        results = await asyncio.gather(
+            *(fetch(index, chunk) for index, chunk in enumerate(chunks))
         )
         return [row for chunk in results for row in chunk]
 
@@ -283,7 +286,7 @@ async def post_rpc(
 
     raise RuntimeError(
         f"JSON-RPC request failed after {MAX_RPC_ATTEMPTS} attempts "
-        f"across {len(urls)} URLs"
+        f"across {len(urls)} URLs: {last_error!r}"
     ) from last_error
 
 
@@ -314,7 +317,7 @@ def retry_delay(error: Exception | None, attempt: int) -> float:
                 return float(retry_after)
             except ValueError:
                 pass
-    return BASE_RETRY_SECONDS * attempt
+    return BASE_RETRY_SECONDS * (2 ** (attempt - 1)) + random.uniform(0, 1)
 
 
 def raise_if_retryable_rpc_error(data: Any) -> None:
