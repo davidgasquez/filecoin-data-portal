@@ -11,6 +11,11 @@ type DatasetRow = Record<string, DatasetRowValue>
 type DatasetColumn = DatasetRowValue[]
 type ColumnarDataset = Record<string, DatasetColumn>
 
+type LineChartSeriesConfig = {
+  label: string
+  y: string
+}
+
 type NumbersChartConfig = Pick<
   StatCardProps,
   | "id"
@@ -23,6 +28,7 @@ type NumbersChartConfig = Pick<
   | "formatSuffix"
   | "percentMode"
 > & {
+  series?: LineChartSeriesConfig[]
   details?: {
     charts: NumbersDetailChartConfig[]
   }
@@ -49,6 +55,10 @@ type NumbersSectionConfig = {
 }
 
 const dailyMetrics = dailyMetricsDataset as DatasetRow[]
+const filecoinPayArrSeries: LineChartSeriesConfig[] = [
+  { label: "USDFC", y: "arr_filecoin_pay_usdfc_usd" },
+  { label: "USDC.axl", y: "arr_filecoin_pay_usdc_axl_usd" },
+]
 
 if (dailyMetrics.length === 0) {
   throw new Error("Generated daily metrics dataset is empty")
@@ -66,6 +76,7 @@ const sections = [
         description: "Annualized USD value of active recurring Filecoin Pay stablecoin rails, including USDFC and USDC.axl, at each UTC day-end.",
         y: "arr_filecoin_pay_usd",
         format: "usd",
+        series: filecoinPayArrSeries,
       },
       {
         id: "revenue-coverage-ratio",
@@ -140,6 +151,7 @@ const sections = [
         description: "Annualized USD value of active recurring Filecoin Pay stablecoin rails, including USDFC and USDC.axl, at each UTC day-end.",
         y: "arr_filecoin_pay_usd",
         format: "usd",
+        series: filecoinPayArrSeries,
       },
     ],
   },
@@ -302,6 +314,7 @@ const datasetColumnNames = [
     sections.flatMap((section) =>
       section.charts.flatMap((chart) => [
         chart.y,
+        ...(chart.series?.map((series) => series.y) ?? []),
         ...(chart.details?.charts.map((detailChart) => detailChart.y) ?? []),
       ]),
     ),
@@ -345,6 +358,7 @@ const serializedDailyMetrics = JSON.stringify(
               formatPrefix={chart.formatPrefix}
               formatSuffix={chart.formatSuffix}
               percentMode={chart.percentMode}
+              series={chart.series}
             >
               {chart.details && (
                 <div class="stat-card__details" slot="details">
@@ -400,6 +414,15 @@ const serializedDailyMetrics = JSON.stringify(
       value: number
     }
 
+    type LineChartSeriesConfig = {
+      label: string
+      y: string
+    }
+
+    type ParsedLineChartSeries = LineChartSeriesConfig & {
+      data: LineChartPoint[]
+    }
+
     type LineChartFormat =
       | "integer"
       | "number"
@@ -420,6 +443,7 @@ const serializedDailyMetrics = JSON.stringify(
       toggleButton: HTMLAnchorElement
       title: string
       data: LineChartPoint[]
+      series: ParsedLineChartSeries[]
       format: LineChartFormat
       formatScale: number
       formatPrefix: string
@@ -435,7 +459,7 @@ const serializedDailyMetrics = JSON.stringify(
     const COMPONENT_SPARK_SELECTOR = "[data-component-spark]"
     const RANGE_BUTTON_SELECTOR = "[data-line-chart-range]"
     const RANGE_PARAM = "range"
-    const CHART_MARGIN = { top: 22, right: 10, bottom: 28, left: 10 }
+    const CHART_MARGIN = { top: 32, right: 10, bottom: 28, left: 10 }
     const DAY_IN_MS = 86_400_000
 
     const chartNodes = Array.from(document.querySelectorAll<HTMLElement>(CHART_SELECTOR))
@@ -503,21 +527,26 @@ const serializedDailyMetrics = JSON.stringify(
           throw new Error(`Line chart ${chartId} references missing dataset columns`)
         }
 
-        if (xColumn.length !== yColumn.length) {
-          throw new Error(`Line chart ${chartId} dataset columns must be the same length`)
-        }
+        const series = parseSeriesConfig(chartId, node.dataset.series).map((config) => {
+          const seriesColumn = dataset[config.y]
+
+          if (!seriesColumn) {
+            throw new Error(`Line chart ${chartId} references missing series column ${config.y}`)
+          }
+
+          return {
+            ...config,
+            data: parsePointColumn(chartId, xColumn, seriesColumn, config.y),
+          }
+        })
 
         return {
           id: chartId,
           node,
           toggleButton,
           title: titleNode.textContent.trim(),
-          data: xColumn
-            .map((rawTimestamp, rowIndex) =>
-              toPoint(chartId, rawTimestamp, yColumn[rowIndex], y, rowIndex),
-            )
-            .filter((point): point is LineChartPoint => point !== null)
-            .sort((left, right) => left.timestamp - right.timestamp),
+          data: parsePointColumn(chartId, xColumn, yColumn, y),
+          series,
           format: parseFormat(node.dataset.format),
           formatScale: parsePositiveNumber(node.dataset.formatScale, 1),
           formatPrefix: node.dataset.formatPrefix ?? "",
@@ -529,6 +558,54 @@ const serializedDailyMetrics = JSON.stringify(
             30,
           ),
         }
+      }
+
+      function parsePointColumn(
+        chartId: string,
+        xColumn: DatasetColumn,
+        yColumn: DatasetColumn,
+        y: string,
+      ): LineChartPoint[] {
+        if (xColumn.length !== yColumn.length) {
+          throw new Error(`Line chart ${chartId} dataset columns must be the same length`)
+        }
+
+        return xColumn
+          .map((rawTimestamp, rowIndex) =>
+            toPoint(chartId, rawTimestamp, yColumn[rowIndex], y, rowIndex),
+          )
+          .filter((point): point is LineChartPoint => point !== null)
+          .sort((left, right) => left.timestamp - right.timestamp)
+      }
+
+      function parseSeriesConfig(chartId: string, rawSeries: string | undefined): LineChartSeriesConfig[] {
+        if (!rawSeries) {
+          return []
+        }
+
+        const parsed = JSON.parse(rawSeries) as unknown
+
+        if (!Array.isArray(parsed)) {
+          throw new Error(`Line chart ${chartId} series config must be an array`)
+        }
+
+        return parsed.map((item, index) => {
+          if (item === null || typeof item !== "object" || Array.isArray(item)) {
+            throw new Error(`Line chart ${chartId} series ${index} must be an object`)
+          }
+
+          const { label, y } = item as Record<string, unknown>
+
+          if (typeof label !== "string" || label.trim() === "") {
+            throw new Error(`Line chart ${chartId} series ${index} must have a label`)
+          }
+
+          if (typeof y !== "string" || y.trim() === "") {
+            throw new Error(`Line chart ${chartId} series ${index} must have a y column`)
+          }
+
+          return { label: label.trim(), y: y.trim() }
+        })
       }
 
       function toPoint(
@@ -926,6 +1003,13 @@ const serializedDailyMetrics = JSON.stringify(
 
       function renderChart(chart: ParsedChart): void {
         const filteredData = getPointsForRange(chart.data, currentRange)
+        const filteredSeries = chart.series
+          .map((series) => ({ ...series, data: getPointsForRange(series.data, currentRange) }))
+          .filter((series) => series.data.length >= 2)
+        const hasVisibleSeries = filteredSeries.length > 0
+        const renderedData = hasVisibleSeries
+          ? filteredSeries.flatMap((series) => series.data)
+          : filteredData
 
         const svg = chart.node.querySelector<SVGElement>(".line-chart__svg")
         const tooltip = chart.node.querySelector<HTMLDivElement>(".line-chart__tooltip")
@@ -942,7 +1026,7 @@ const serializedDailyMetrics = JSON.stringify(
         const plotWidth = width - margin.left - margin.right
         const plotHeight = height - margin.top - margin.bottom
 
-        if (filteredData.length < 2) {
+        if (filteredData.length < 2 || renderedData.length < 2) {
           svg.innerHTML = ""
           emptyMessage.hidden = false
           tooltip.hidden = true
@@ -954,15 +1038,16 @@ const serializedDailyMetrics = JSON.stringify(
 
         emptyMessage.hidden = true
 
-        const minX = filteredData[0].timestamp
-        const maxX = filteredData[filteredData.length - 1].timestamp
+        const minX = Math.min(...renderedData.map((point) => point.timestamp))
+        const maxX = Math.max(...renderedData.map((point) => point.timestamp))
         const rawValues = filteredData.map((point) => point.value)
+        const domainValues = renderedData.map((point) => point.value)
         const displayValues = chart.showMovingAverage
           ? buildMovingAverage(rawValues, chart.movingAverageWindowDays)
           : rawValues
 
-        const dataMinY = Math.min(...rawValues)
-        const dataMaxY = Math.max(...rawValues)
+        const dataMinY = Math.min(...domainValues)
+        const dataMaxY = Math.max(...domainValues)
         const startsAtZero = dataMinY >= 0
         const minY = startsAtZero ? 0 : dataMinY
         let maxY = dataMaxY
@@ -991,6 +1076,16 @@ const serializedDailyMetrics = JSON.stringify(
           value: displayValues[index],
           x: scaleX(point.timestamp),
           y: scaleY(displayValues[index]),
+        }))
+
+        const scaledSeries = filteredSeries.map((series, seriesIndex) => ({
+          ...series,
+          seriesIndex,
+          points: series.data.map((point) => ({
+            ...point,
+            x: scaleX(point.timestamp),
+            y: scaleY(point.value),
+          })),
         }))
 
         const latestPoint = points[points.length - 1]
@@ -1058,34 +1153,69 @@ const serializedDailyMetrics = JSON.stringify(
           })
           .join("")
 
-        const pathMarkup = chart.showMovingAverage
-          ? `
-            <path d="${rawPath}" class="line-chart__path line-chart__path--raw" />
-            <path d="${displayPath}" class="line-chart__path line-chart__path--average" />
-          `
-          : `<path d="${displayPath}" class="line-chart__path" />`
+        const pathMarkup = hasVisibleSeries
+          ? scaledSeries
+            .map((series) => {
+              const path = series.points
+                .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+                .join(" ")
+
+              return `<path d="${path}" class="line-chart__path line-chart__path--series-${series.seriesIndex}" />`
+            })
+            .join("")
+          : chart.showMovingAverage
+            ? `
+              <path d="${rawPath}" class="line-chart__path line-chart__path--raw" />
+              <path d="${displayPath}" class="line-chart__path line-chart__path--average" />
+            `
+            : `<path d="${displayPath}" class="line-chart__path" />`
+
+        const legendMarkup = hasVisibleSeries
+          ? scaledSeries
+            .map(
+              (series) => `
+                <g class="line-chart__legend" transform="translate(${margin.left + series.seriesIndex * 88}, 12)">
+                  <line x1="0" y1="0" x2="14" y2="0" class="line-chart__legend-line line-chart__path--series-${series.seriesIndex}" />
+                  <text x="18" y="3" class="line-chart__legend-label">${series.label}</text>
+                </g>
+              `,
+            )
+            .join("")
+          : ""
+
+        const dotMarkup = hasVisibleSeries
+          ? scaledSeries
+            .map(
+              (series) =>
+                `<circle cx="0" cy="0" r="3" class="line-chart__dot line-chart__dot--series-${series.seriesIndex}" visibility="hidden" />`,
+            )
+            .join("")
+          : `<circle cx="0" cy="0" r="3" class="line-chart__dot" visibility="hidden" />`
 
         svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
         svg.innerHTML = `
           ${yTickMarkup}
           ${xTickMarkup}
+          ${legendMarkup}
           ${pathMarkup}
           <line x1="0" y1="0" x2="0" y2="0" class="line-chart__crosshair" visibility="hidden" />
-          <circle cx="0" cy="0" r="3" class="line-chart__dot" visibility="hidden" />
+          ${dotMarkup}
           <rect x="${margin.left}" y="${margin.top}" width="${plotWidth}" height="${plotHeight}" class="line-chart__overlay" />
         `
 
         const crosshair = svg.querySelector<SVGLineElement>(".line-chart__crosshair")
-        const dot = svg.querySelector<SVGCircleElement>(".line-chart__dot")
+        const dots = Array.from(svg.querySelectorAll<SVGCircleElement>(".line-chart__dot"))
         const overlay = svg.querySelector<SVGRectElement>(".line-chart__overlay")
 
-        if (!crosshair || !dot || !overlay) {
+        if (!crosshair || dots.length === 0 || !overlay) {
           throw new Error(`Line chart ${chart.id} interactive layer could not be initialized`)
         }
 
         const hideTooltip = (): void => {
           crosshair.setAttribute("visibility", "hidden")
-          dot.setAttribute("visibility", "hidden")
+          for (const dot of dots) {
+            dot.setAttribute("visibility", "hidden")
+          }
           tooltip.hidden = true
         }
 
@@ -1098,8 +1228,9 @@ const serializedDailyMetrics = JSON.stringify(
             return
           }
 
-          const closestPointIndex = findClosestPointIndex(points, pointerX)
-          const point = points[closestPointIndex]
+          const tooltipPoints = hasVisibleSeries ? scaledSeries[0].points : points
+          const closestPointIndex = findClosestPointIndex(tooltipPoints, pointerX)
+          const point = tooltipPoints[closestPointIndex]
 
           crosshair.setAttribute("x1", String(point.x))
           crosshair.setAttribute("y1", String(margin.top))
@@ -1107,22 +1238,63 @@ const serializedDailyMetrics = JSON.stringify(
           crosshair.setAttribute("y2", String(height - margin.bottom))
           crosshair.setAttribute("visibility", "visible")
 
+          const formattedDate = tooltipDateFormatter.format(new Date(point.timestamp))
+          const tooltipPadding = 10
+
+          if (hasVisibleSeries) {
+            const seriesPoints = scaledSeries.map((series) => ({
+              ...series,
+              point: series.points[findClosestPointIndex(series.points, point.x)],
+            }))
+
+            for (const [index, series] of seriesPoints.entries()) {
+              const dot = dots[index]
+              if (!dot) continue
+              dot.setAttribute("cx", String(series.point.x))
+              dot.setAttribute("cy", String(series.point.y))
+              dot.setAttribute("visibility", "visible")
+            }
+
+            tooltip.classList.add("line-chart__tooltip--series")
+            tooltip.hidden = false
+            tooltip.innerHTML = ""
+            tooltip.style.left = "0"
+            tooltip.style.top = "0"
+
+            for (const series of seriesPoints) {
+              const box = document.createElement("div")
+              box.className = `line-chart__tooltip-box line-chart__tooltip-box--series-${series.seriesIndex}`
+              box.textContent = `${formattedDate} · ${series.label} ${formatValue(series.point.value, chart, "tooltip")}`
+              tooltip.append(box)
+
+              const maxLeft = width - box.offsetWidth - tooltipPadding
+              const boxLeft = Math.min(maxLeft, Math.max(tooltipPadding, series.point.x - box.offsetWidth / 2))
+              const boxTop = Math.max(tooltipPadding, series.point.y - 28)
+              box.style.left = `${boxLeft}px`
+              box.style.top = `${boxTop}px`
+            }
+            return
+          }
+
+          const dot = dots[0]
           dot.setAttribute("cx", String(point.x))
           dot.setAttribute("cy", String(point.y))
           dot.setAttribute("visibility", "visible")
 
-          const formattedDate = tooltipDateFormatter.format(new Date(point.timestamp))
+          tooltip.classList.remove("line-chart__tooltip--series")
 
           if (chart.showMovingAverage) {
+            const rawValue = "rawValue" in point && typeof point.rawValue === "number"
+              ? point.rawValue
+              : point.value
             tooltip.textContent =
-              `${formattedDate} · MA${chart.movingAverageWindowDays} ${formatValue(point.value, chart, "tooltip")} · Raw ${formatValue(point.rawValue, chart, "tooltip")}`
+              `${formattedDate} · MA${chart.movingAverageWindowDays} ${formatValue(point.value, chart, "tooltip")} · Raw ${formatValue(rawValue, chart, "tooltip")}`
           } else {
             tooltip.textContent = `${formattedDate} · ${formatValue(point.value, chart, "tooltip")}`
           }
 
           tooltip.hidden = false
 
-          const tooltipPadding = 10
           const tooltipHalfWidth = tooltip.offsetWidth / 2
           const minLeft = tooltipPadding
           const maxLeft = width - tooltip.offsetWidth - tooltipPadding
