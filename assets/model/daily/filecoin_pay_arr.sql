@@ -5,9 +5,13 @@
 
 -- asset.column = date | UTC date.
 -- asset.column = arr_filecoin_pay_usd | End-of-day USD ARR run-rate from active stablecoin recurring rails.
+-- asset.column = arr_filecoin_pay_usdfc_usd | End-of-day USD ARR run-rate from active USDFC recurring rails.
+-- asset.column = arr_filecoin_pay_usdc_axl_usd | End-of-day USD ARR run-rate from active USDC.axl recurring rails.
 
 -- asset.not_null = date
 -- asset.not_null = arr_filecoin_pay_usd
+-- asset.not_null = arr_filecoin_pay_usdfc_usd
+-- asset.not_null = arr_filecoin_pay_usdc_axl_usd
 -- asset.unique = date
 
 with days as (
@@ -20,7 +24,15 @@ with days as (
 )
 select
     days.date,
-    coalesce(sum(intervals.rate_token_per_epoch), 0) * 2880 * 365 as arr_filecoin_pay_usd
+    coalesce(sum(intervals.rate_token_per_epoch), 0) * 2880 * 365 as arr_filecoin_pay_usd,
+    coalesce(
+        sum(case when intervals.token_symbol = 'USDFC' then intervals.rate_token_per_epoch else 0 end),
+        0
+    ) * 2880 * 365 as arr_filecoin_pay_usdfc_usd,
+    coalesce(
+        sum(case when intervals.token_symbol = 'USDC.axl' then intervals.rate_token_per_epoch else 0 end),
+        0
+    ) * 2880 * 365 as arr_filecoin_pay_usdc_axl_usd
 from days
 left join model.filecoin_pay_rail_rate_intervals as intervals
     on intervals.is_arr_eligible
