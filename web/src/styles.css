@@ -718,6 +718,24 @@
     stroke-width: 1.5;
   }
 
+  .line-chart__path--series-0 {
+    stroke: var(--color-border-strong);
+  }
+
+  .line-chart__path--series-1 {
+    stroke: var(--color-text-muted);
+    stroke-dasharray: 5 4;
+  }
+
+  .line-chart__legend-line {
+    stroke-width: 1.5;
+  }
+
+  .line-chart__legend-label {
+    fill: var(--color-text-muted);
+    font-size: 10px;
+  }
+
   .line-chart__gridline {
     stroke: var(--color-border);
     stroke-width: 0.5;
@@ -742,6 +760,14 @@
     stroke-width: 1.5;
   }
 
+  .line-chart__dot--series-0 {
+    stroke: var(--color-border-strong);
+  }
+
+  .line-chart__dot--series-1 {
+    stroke: var(--color-text-muted);
+  }
+
   .line-chart__overlay {
     fill: transparent;
     pointer-events: all;
@@ -758,6 +784,26 @@
     padding: 0.2rem 0.4rem;
     font-size: 0.7rem;
     white-space: nowrap;
+  }
+
+  .line-chart__tooltip--series {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    white-space: normal;
+  }
+
+  .line-chart__tooltip-box {
+    position: absolute;
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-bg);
+    color: var(--color-text);
+    padding: 0.2rem 0.4rem;
+    white-space: nowrap;
+  }
+
+  .line-chart__tooltip-box--series-1 {
+    border-color: var(--color-text-muted);
   }
 
   .line-chart__tooltip[hidden] {

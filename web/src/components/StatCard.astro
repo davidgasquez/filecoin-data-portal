@@ -11,6 +11,11 @@ type LineChartFormat =
 
 type PercentMode = "fraction" | "points"
 
+type LineChartSeries = {
+  label: string
+  y: string
+}
+
 interface Props {
   id: string
   title: string
@@ -23,6 +28,7 @@ interface Props {
   formatSuffix?: string
   percentMode?: PercentMode
   showMovingAverage?: boolean
+  series?: LineChartSeries[]
 }
 
 const {
@@ -37,6 +43,7 @@ const {
   formatSuffix,
   percentMode = "fraction",
   showMovingAverage = false,
+  series,
 } = Astro.props
 ---
 
@@ -54,6 +61,7 @@ const {
   data-percent-mode={percentMode}
   data-show-moving-average={String(showMovingAverage)}
   data-moving-average-window-days="30"
+  data-series={series && series.length > 0 ? JSON.stringify(series) : undefined}
 >
   <figcaption class="stat-card__header">
     <a href={`#${id}`} id={id} class="stat-card__label line-chart__title">{title}</a>
