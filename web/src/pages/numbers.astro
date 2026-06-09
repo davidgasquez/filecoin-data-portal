@@ -54,7 +54,19 @@ type NumbersSectionConfig = {
   charts: NumbersChartConfig[]
 }
 
-const dailyMetrics = dailyMetricsDataset as DatasetRow[]
+const sourceDailyMetrics = dailyMetricsDataset as DatasetRow[]
+const dailyMetrics: DatasetRow[] = sourceDailyMetrics.map((row, rowIndex): DatasetRow => {
+  const lockedFil = toNumber(row.locked_fil)
+  const previousLockedFil = toNumber(sourceDailyMetrics[rowIndex - 1]?.locked_fil)
+
+  return {
+    ...row,
+    locked_fil_delta:
+      lockedFil !== null && previousLockedFil !== null
+        ? lockedFil - previousLockedFil
+        : null,
+  }
+})
 const filecoinPayArrSeries: LineChartSeriesConfig[] = [
   { label: "USDFC", y: "arr_filecoin_pay_usdfc_usd" },
   { label: "USDC.axl", y: "arr_filecoin_pay_usdc_axl_usd" },
@@ -62,6 +74,10 @@ const filecoinPayArrSeries: LineChartSeriesConfig[] = [
 
 if (dailyMetrics.length === 0) {
   throw new Error("Generated daily metrics dataset is empty")
+}
+
+function toNumber(value: DatasetRowValue | undefined): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null
 }
 
 const sections = [
@@ -230,11 +246,53 @@ const sections = [
     columns: 2,
     charts: [
       {
-        id: "burnt-fil",
-        title: "Burnt FIL",
-        description: "Amount of FIL burned as part of on-chain computations and penalties.",
+        id: "daily-burnt-fil",
+        title: "Daily Burnt FIL",
+        description: "FIL burned on-chain per day.",
         y: "protocol_revenue_fil",
         format: "fil",
+      },
+      {
+        id: "total-burnt-fil",
+        title: "Total Burnt FIL",
+        description: "End-of-day cumulative FIL burned by the network.",
+        y: "burnt_fil",
+        format: "mfil",
+      },
+      {
+        id: "daily-locked-fil-change",
+        title: "Daily Locked FIL Change",
+        description: "Daily net change in FIL locked in the network.",
+        y: "locked_fil_delta",
+        format: "fil",
+      },
+      {
+        id: "locked-fil",
+        title: "Locked FIL",
+        description: "End-of-day FIL locked in the network.",
+        y: "locked_fil",
+        format: "mfil",
+      },
+      {
+        id: "circulating-fil",
+        title: "Circulating FIL",
+        description: "End-of-day FIL circulating and tradeable in the economy.",
+        y: "circulating_fil",
+        format: "mfil",
+      },
+      {
+        id: "yearly-inflation-rate",
+        title: "Yearly Inflation Rate",
+        description: "Year-over-year change in circulating FIL.",
+        y: "yearly_inflation_rate",
+        format: "percent",
+      },
+      {
+        id: "locked-to-circulating-ratio",
+        title: "Locked to Circulating Ratio",
+        description: "Percentage of circulating FIL that is locked.",
+        y: "locked_to_circulating_ratio",
+        format: "percent",
       },
       {
         id: "block-rewards-fil",
@@ -256,20 +314,6 @@ const sections = [
         description: "Average FIL reward allocated per winning proof each day.",
         y: "reward_per_wincount_fil",
         format: "fil",
-      },
-      {
-        id: "circulating-fil",
-        title: "Circulating FIL",
-        description: "Amount of FIL circulating and tradeable in the economy.",
-        y: "circulating_fil",
-        format: "mfil",
-      },
-      {
-        id: "locked-to-circulating-ratio",
-        title: "Locked to Circulating Ratio",
-        description: "Percentage of circulating FIL that is locked.",
-        y: "locked_to_circulating_ratio",
-        format: "percent",
       },
     ],
   },

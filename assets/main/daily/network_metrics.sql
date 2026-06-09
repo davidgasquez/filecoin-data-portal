@@ -61,6 +61,7 @@
 -- asset.column = block_rewards_fil | Exact block rewards minted on the date, in FIL.
 -- asset.column = block_rewards_usd | Exact block rewards minted on the date, valued with the daily average FIL price, in USD.
 -- asset.column = mining_yield | Annualized block rewards divided by locked FIL.
+-- asset.column = yearly_inflation_rate | Year-over-year circulating FIL change.
 -- asset.column = block_rewards_fil_per_qap_tib_day | Exact block rewards minted on the date per 1 TiB of network quality adjusted power, in FIL.
 -- asset.column = block_rewards_usd_per_qap_tib_day | Exact block rewards minted on the date per 1 TiB of network quality adjusted power, in USD.
 -- asset.column = reward_per_wincount_fil | Exact reward allocated per win count on the date, in FIL.
@@ -245,6 +246,9 @@ left join model.daily_network_activity as network_activity
 ), annual_metrics as (
     select
         daily_metrics.*,
+        (circulating_fil - lag(circulating_fil, 365) over (order by date))
+            / nullif(lag(circulating_fil, 365) over (order by date), 0)
+            as yearly_inflation_rate,
         sum(protocol_revenue_usd) over annual_window
             as annual_protocol_revenue_usd,
         sum(block_rewards_usd) over annual_window as annual_block_rewards_usd
