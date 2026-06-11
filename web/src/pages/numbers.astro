@@ -67,9 +67,9 @@ const dailyMetrics: DatasetRow[] = sourceDailyMetrics.map((row, rowIndex): Datas
         : null,
   }
 })
-const filecoinPayArrSeries: LineChartSeriesConfig[] = [
-  { label: "USDFC", y: "arr_filecoin_pay_usdfc_usd" },
-  { label: "USDC.axl", y: "arr_filecoin_pay_usdc_axl_usd" },
+const filecoinPayGrossPaymentVolumeRunRateSeries: LineChartSeriesConfig[] = [
+  { label: "USDFC", y: "filecoin_pay_gross_payment_volume_run_rate_usdfc_usd" },
+  { label: "USDC.axl", y: "filecoin_pay_gross_payment_volume_run_rate_usdc_axl_usd" },
 ]
 
 if (dailyMetrics.length === 0) {
@@ -87,12 +87,12 @@ const sections = [
     columns: 3,
     charts: [
       {
-        id: "total-arr-filecoin-pay-usd",
-        title: "Filecoin Pay ARR Run-Rate",
-        description: "Annualized USD value of active recurring Filecoin Pay stablecoin rails, including USDFC and USDC.axl, at each UTC day-end.",
-        y: "arr_filecoin_pay_usd",
+        id: "filecoin-pay-gross-payment-volume-run-rate-usd",
+        title: "Filecoin Pay GPV Run Rate",
+        description: "Annualized gross stablecoin payment volume run-rate from active eligible recurring Filecoin Pay rails, including USDFC and USDC.axl, at each UTC day-end.",
+        y: "filecoin_pay_gross_payment_volume_run_rate_usd",
         format: "usd",
-        series: filecoinPayArrSeries,
+        series: filecoinPayGrossPaymentVolumeRunRateSeries,
       },
       {
         id: "revenue-coverage-ratio",
@@ -162,12 +162,11 @@ const sections = [
         format: "usd",
       },
       {
-        id: "foc-arr-filecoin-pay-usd",
-        title: "Filecoin Pay ARR Run-Rate",
-        description: "Annualized USD value of active recurring Filecoin Pay stablecoin rails, including USDFC and USDC.axl, at each UTC day-end.",
-        y: "arr_filecoin_pay_usd",
+        id: "foc-filecoin-pay-network-fee-arr-usd",
+        title: "Network Fee ARR",
+        description: "Annualized Filecoin Pay network fee revenue from active eligible recurring stablecoin rails at each UTC day-end.",
+        y: "filecoin_pay_network_fee_arr_usd",
         format: "usd",
-        series: filecoinPayArrSeries,
       },
     ],
   },
@@ -247,8 +246,8 @@ const sections = [
     charts: [
       {
         id: "daily-protocol-revenue-fil",
-        title: "Protocol Revenue FIL",
-        description: "Total FIL burned per day.",
+        title: "Daily FIL Burn",
+        description: "Total FIL burned per day. Also known as network revenue.",
         y: "protocol_revenue_fil",
         format: "fil",
       },
@@ -258,13 +257,6 @@ const sections = [
         description: "FIL burned by message execution miner penalties per day.",
         y: "message_miner_penalty_burn_fil",
         format: "fil",
-      },
-      {
-        id: "total-burnt-fil",
-        title: "Total Burned FIL",
-        description: "End-of-day cumulative FIL burned by the network.",
-        y: "burnt_fil",
-        format: "mfil",
       },
       {
         id: "daily-locked-fil-change",
