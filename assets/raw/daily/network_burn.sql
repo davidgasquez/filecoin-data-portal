@@ -2,10 +2,10 @@
 -- asset.resource = bigquery.lily
 
 -- asset.column = date | UTC date.
--- asset.column = protocol_revenue_fil | Daily total FIL burned on-chain, in FIL.
+-- asset.column = total_burn_fil | Daily total FIL burned on-chain, in FIL.
 
 -- asset.not_null = date
--- asset.not_null = protocol_revenue_fil
+-- asset.not_null = total_burn_fil
 -- asset.unique = date
 
 with by_height as (
@@ -19,7 +19,7 @@ with by_height as (
 select
     date,
     cast(sum(burnt_fil - previous_burnt_fil) / 1e18 as float64)
-        as protocol_revenue_fil
+        as total_burn_fil
 from by_height
 where previous_burnt_fil is not null
 group by 1

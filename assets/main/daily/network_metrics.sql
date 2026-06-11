@@ -11,7 +11,7 @@
 -- asset.depends = raw.coincodex_filecoin_market_data
 -- asset.depends = raw.daily_network_power
 -- asset.depends = raw.daily_network_economics
--- asset.depends = raw.daily_protocol_revenue
+-- asset.depends = model.daily_network_burn
 -- asset.depends = raw.daily_pgf_deployments
 
 -- asset.column = date | UTC date.
@@ -30,14 +30,16 @@
 -- asset.column = base_fee_burn_usd | FIL burned by message base fees, valued with the daily average FIL price, in USD.
 -- asset.column = message_burn_fil | FIL burned by message execution.
 -- asset.column = message_burn_usd | FIL burned by message execution, valued with the daily average FIL price, in USD.
+-- asset.column = message_miner_penalty_burn_fil | FIL burned by message execution miner penalties.
+-- asset.column = message_miner_penalty_burn_usd | FIL burned by message execution miner penalties, valued with the daily average FIL price, in USD.
 -- asset.column = total_value_flow_fil | FIL value transferred plus gas fees.
--- asset.column = protocol_revenue_fil | Daily total FIL burned on-chain, in FIL.
--- asset.column = protocol_revenue_usd | Daily total FIL burned on-chain, valued with the daily average FIL price, in USD.
+-- asset.column = protocol_revenue_fil | Total FIL burned.
+-- asset.column = protocol_revenue_usd | Total FIL burned, valued at average FIL/USD price.
 -- asset.column = circulating_fil | End-of-day VM circulating supply, in FIL.
 -- asset.column = mined_fil | End-of-day cumulative mined FIL, in FIL.
 -- asset.column = vested_fil | End-of-day cumulative vested FIL, in FIL.
 -- asset.column = locked_fil | End-of-day VM locked FIL, in FIL.
--- asset.column = burnt_fil | End-of-day cumulative burnt FIL, in FIL.
+-- asset.column = burnt_fil | End-of-day cumulative burned FIL, in FIL.
 -- asset.column = pledge_collateral_fil | End-of-day total pledge collateral locked by storage providers, in FIL.
 -- asset.column = filecoin_pay_active_payers | Payers with at least one active Filecoin Pay rail at end of day.
 -- asset.column = filecoin_pay_active_rails | Active Filecoin Pay rails at end of day.
@@ -66,9 +68,9 @@
 -- asset.column = block_rewards_usd_per_qap_tib_day | Exact block rewards minted on the date per 1 TiB of network quality adjusted power, in USD.
 -- asset.column = reward_per_wincount_fil | Exact reward allocated per win count on the date, in FIL.
 -- asset.column = annual_pgf_deployments_usd | Public goods funding deployments disbursed over the trailing 365 days, in USD.
--- asset.column = annual_protocol_revenue_usd | Protocol revenue over the trailing 365 days, in USD.
+-- asset.column = annual_protocol_revenue_usd | Total FIL burned over the trailing 365 days, valued at average FIL/USD price.
 -- asset.column = annual_block_rewards_usd | Block reward issuance over the trailing 365 days, in USD.
--- asset.column = revenue_coverage_ratio | Annual protocol revenue divided by annual public goods funding and block reward issuance.
+-- asset.column = revenue_coverage_ratio | Trailing-365-day protocol revenue divided by annual public goods funding and block reward issuance.
 
 -- asset.not_null = date
 -- asset.unique = date
@@ -121,7 +123,7 @@ with verified_claims as (
     union
     select date from market_data
     union
-    select date from raw.daily_protocol_revenue
+    select date from model.daily_network_burn
     union
     select date from raw.daily_network_economics
     union
@@ -172,9 +174,14 @@ select
     coalesce(network_activity.message_burn_fil, 0) as message_burn_fil,
     coalesce(network_activity.message_burn_fil, 0)
         * market_data.fil_token_price_avg_usd as message_burn_usd,
+    coalesce(network_burn.message_miner_penalty_burn_fil, 0)
+        as message_miner_penalty_burn_fil,
+    coalesce(network_burn.message_miner_penalty_burn_fil, 0)
+        * market_data.fil_token_price_avg_usd
+        as message_miner_penalty_burn_usd,
     coalesce(network_activity.total_value_flow_fil, 0) as total_value_flow_fil,
-    coalesce(protocol_revenue.protocol_revenue_fil, 0) as protocol_revenue_fil,
-    coalesce(protocol_revenue.protocol_revenue_fil, 0)
+    coalesce(network_burn.total_burn_fil, 0) as protocol_revenue_fil,
+    coalesce(network_burn.total_burn_fil, 0)
         * market_data.fil_token_price_avg_usd as protocol_revenue_usd,
     coalesce(network_economics.circulating_fil, 0) as circulating_fil,
     coalesce(network_economics.mined_fil, 0) as mined_fil,
@@ -227,7 +234,7 @@ left join pgf_deployments_by_date as pgf_deployments
     using (date)
 left join market_data
     using (date)
-left join raw.daily_protocol_revenue as protocol_revenue
+left join model.daily_network_burn as network_burn
     using (date)
 left join raw.daily_network_economics as network_economics
     using (date)
@@ -245,7 +252,7 @@ left join model.daily_network_activity as network_activity
     using (date)
 ), annual_metrics as (
     select
-        daily_metrics.*,
+        *,
         (circulating_fil - lag(circulating_fil, 365) over (order by date))
             / nullif(lag(circulating_fil, 365) over (order by date), 0)
             as yearly_inflation_rate,
