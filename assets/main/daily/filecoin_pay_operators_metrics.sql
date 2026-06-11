@@ -7,19 +7,21 @@
 -- asset.column = operator | Filecoin Pay operator address.
 -- asset.column = active_rails | Active rails at end of day.
 -- asset.column = recurring_rails | Active rails with a positive recurring rate at end of day.
--- asset.column = arr_eligible_rails | Active recurring rails counted toward ARR at end of day.
+-- asset.column = eligible_recurring_rails | Active recurring rails counted toward payment run-rate and network fee ARR at end of day.
 -- asset.column = unique_payers | Payers across the operator's active rails at end of day.
 -- asset.column = unique_payees | Payees across the operator's active rails at end of day.
--- asset.column = arr_filecoin_pay_usd | End-of-day USD ARR run-rate from the operator's active stablecoin recurring rails.
+-- asset.column = filecoin_pay_gross_payment_volume_run_rate_usd | End-of-day annualized gross stablecoin payment volume run-rate from the operator's active eligible recurring rails.
+-- asset.column = filecoin_pay_network_fee_arr_usd | End-of-day annualized Filecoin Pay network fee revenue from the operator's active eligible recurring stablecoin rails.
 
 -- asset.not_null = date
 -- asset.not_null = operator
 -- asset.not_null = active_rails
 -- asset.not_null = recurring_rails
--- asset.not_null = arr_eligible_rails
+-- asset.not_null = eligible_recurring_rails
 -- asset.not_null = unique_payers
 -- asset.not_null = unique_payees
--- asset.not_null = arr_filecoin_pay_usd
+-- asset.not_null = filecoin_pay_gross_payment_volume_run_rate_usd
+-- asset.not_null = filecoin_pay_network_fee_arr_usd
 
 with days as (
     select date, checkpoint_ordinal
@@ -49,11 +51,13 @@ select
     operator,
     count(distinct rail_id) as active_rails,
     count(distinct case when rate_wei_per_epoch > 0 then rail_id end) as recurring_rails,
-    count(distinct case when is_arr_eligible and rate_wei_per_epoch > 0 then rail_id end) as arr_eligible_rails,
+    count(distinct case when is_arr_eligible and rate_wei_per_epoch > 0 then rail_id end) as eligible_recurring_rails,
     count(distinct payer) as unique_payers,
     count(distinct payee) as unique_payees,
     coalesce(sum(case when is_arr_eligible and rate_wei_per_epoch > 0 then rate_token_per_epoch else 0 end), 0)
-        * 2880 * 365 as arr_filecoin_pay_usd
+        * 2880 * 365 as filecoin_pay_gross_payment_volume_run_rate_usd,
+    coalesce(sum(case when is_arr_eligible and rate_wei_per_epoch > 0 then rate_token_per_epoch else 0 end), 0)
+        * 2880 * 365 * 0.005 as filecoin_pay_network_fee_arr_usd
 from operator_day_active_rails
 group by 1, 2
 order by date desc

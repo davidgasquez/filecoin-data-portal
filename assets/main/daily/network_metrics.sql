@@ -4,7 +4,7 @@
 -- asset.depends = model.daily_sector_lifecycle
 -- asset.depends = model.daily_verified_claims
 -- asset.depends = model.daily_filecoin_pay_activity
--- asset.depends = model.daily_filecoin_pay_arr
+-- asset.depends = model.daily_filecoin_pay_payment_run_rate
 -- asset.depends = model.warm_storage_daily_activity
 -- asset.depends = model.storage_provider_power_daily
 -- asset.depends = model.network_block_rewards_by_height
@@ -48,9 +48,10 @@
 -- asset.column = active_datasets | Active chargeable warm storage datasets.
 -- asset.column = new_payers | Payers whose first chargeable warm storage dataset started billing on the date.
 -- asset.column = new_datasets | Warm storage datasets whose billing started on the date.
--- asset.column = arr_filecoin_pay_usd | End-of-day USD ARR run-rate from active stablecoin recurring Filecoin Pay rails.
--- asset.column = arr_filecoin_pay_usdfc_usd | End-of-day USD ARR run-rate from active USDFC recurring Filecoin Pay rails.
--- asset.column = arr_filecoin_pay_usdc_axl_usd | End-of-day USD ARR run-rate from active USDC.axl recurring Filecoin Pay rails.
+-- asset.column = filecoin_pay_gross_payment_volume_run_rate_usd | End-of-day annualized gross stablecoin payment volume run-rate from active eligible recurring Filecoin Pay rails.
+-- asset.column = filecoin_pay_gross_payment_volume_run_rate_usdfc_usd | End-of-day annualized gross USDFC payment volume run-rate from active eligible recurring Filecoin Pay rails.
+-- asset.column = filecoin_pay_gross_payment_volume_run_rate_usdc_axl_usd | End-of-day annualized gross USDC.axl payment volume run-rate from active eligible recurring Filecoin Pay rails.
+-- asset.column = filecoin_pay_network_fee_arr_usd | End-of-day annualized Filecoin Pay network fee revenue from active eligible recurring stablecoin rails.
 -- asset.column = fil_token_price_avg_usd | Average FIL price in USD.
 -- asset.column = fil_token_volume_usd | FIL trading volume in USD.
 -- asset.column = fil_token_market_cap_usd | FIL market capitalization in USD.
@@ -113,7 +114,7 @@ with verified_claims as (
     union
     select date from model.daily_filecoin_pay_activity
     union
-    select date from model.daily_filecoin_pay_arr
+    select date from model.daily_filecoin_pay_payment_run_rate
     union
     select date from verified_claims
     union
@@ -197,9 +198,14 @@ select
     coalesce(warm_storage.active_datasets, 0) as active_datasets,
     coalesce(warm_storage.new_payers, 0) as new_payers,
     coalesce(warm_storage.new_datasets, 0) as new_datasets,
-    coalesce(pay_arr.arr_filecoin_pay_usd, 0) as arr_filecoin_pay_usd,
-    coalesce(pay_arr.arr_filecoin_pay_usdfc_usd, 0) as arr_filecoin_pay_usdfc_usd,
-    coalesce(pay_arr.arr_filecoin_pay_usdc_axl_usd, 0) as arr_filecoin_pay_usdc_axl_usd,
+    coalesce(pay_run_rate.filecoin_pay_gross_payment_volume_run_rate_usd, 0)
+        as filecoin_pay_gross_payment_volume_run_rate_usd,
+    coalesce(pay_run_rate.filecoin_pay_gross_payment_volume_run_rate_usdfc_usd, 0)
+        as filecoin_pay_gross_payment_volume_run_rate_usdfc_usd,
+    coalesce(pay_run_rate.filecoin_pay_gross_payment_volume_run_rate_usdc_axl_usd, 0)
+        as filecoin_pay_gross_payment_volume_run_rate_usdc_axl_usd,
+    coalesce(pay_run_rate.filecoin_pay_network_fee_arr_usd, 0)
+        as filecoin_pay_network_fee_arr_usd,
     market_data.fil_token_price_avg_usd,
     market_data.fil_token_volume_usd,
     market_data.fil_token_market_cap_usd,
@@ -228,7 +234,7 @@ left join model.warm_storage_daily_activity as warm_storage
     using (date)
 left join model.daily_filecoin_pay_activity as pay_activity
     using (date)
-left join model.daily_filecoin_pay_arr as pay_arr
+left join model.daily_filecoin_pay_payment_run_rate as pay_run_rate
     using (date)
 left join pgf_deployments_by_date as pgf_deployments
     using (date)
