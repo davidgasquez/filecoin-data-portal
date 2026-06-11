@@ -19,6 +19,7 @@ const SQL = `
     total_value_fil,
     total_value_flow_fil,
     protocol_revenue_fil,
+    message_miner_penalty_burn_fil,
     circulating_fil,
     locked_fil,
     burnt_fil,
