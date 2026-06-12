@@ -7,6 +7,7 @@ interface Props {
   description?: string
   image?: string
   canonicalUrl?: string
+  bodyClass?: string
 }
 
 const {
@@ -14,6 +15,7 @@ const {
   description = "Open Data Platform for the Filecoin ecosystem.",
   image = "/banner.png",
   canonicalUrl = Astro.url.pathname,
+  bodyClass,
 } = Astro.props
 
 const navItems = [
@@ -35,7 +37,7 @@ const navItems = [
     />
   </head>
 
-  <body>
+  <body class={bodyClass}>
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <header class="site-header">

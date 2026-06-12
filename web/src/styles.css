@@ -48,6 +48,7 @@
     --color-border: #a6a6a6;
     --color-border-strong: #000;
     --color-focus: #0f62fe;
+    --color-chart-fill: #e6e6e6;
 
     --space-1: 0.25rem;
     --space-2: 0.5rem;
@@ -291,6 +292,10 @@
     text-align: center;
   }
 
+  .numbers-page {
+    background: var(--color-bg-muted);
+  }
+
   .numbers-toolbar {
     position: sticky;
     inset-block-start: 0;
@@ -300,7 +305,7 @@
     justify-content: space-between;
     padding-block: var(--space-3);
     margin-block-end: var(--space-4);
-    background: var(--color-bg);
+    background: var(--color-bg-muted);
   }
 
   .numbers-toolbar h1 {
@@ -316,19 +321,21 @@
   }
 
   .numbers-section + .numbers-section {
-    margin-block-start: var(--space-6);
+    margin-block-start: calc(var(--space-7) + var(--space-4));
   }
 
   .numbers-section__legend {
     position: relative;
     scroll-margin-block-start: 4rem;
-    margin: 0 0 var(--space-3) 0;
+    margin: 0 0 var(--space-5) 0;
     padding: 0;
     border: 0;
-    font-size: 0.85rem;
+    font-size: clamp(1.35rem, 1.6vw + 0.8rem, 2rem);
+    font-weight: 700;
+    line-height: 1.1;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--color-text-muted);
+    letter-spacing: 0.06em;
+    color: var(--color-text);
   }
 
   .chart-range-toggle {
@@ -341,8 +348,9 @@
     border-inline-end: 1px solid var(--color-border-strong);
     background: var(--color-bg);
     color: var(--color-text);
-    padding: 0.35rem 0.75rem;
+    padding: 0.15rem 0.55rem;
     font: inherit;
+    font-size: 0.8rem;
     cursor: pointer;
   }
 
@@ -383,10 +391,11 @@
 
   .stat-card {
     margin: 0;
-    padding: var(--space-3) var(--space-4);
+    padding: var(--space-3) var(--space-4) 0;
     border: 1px solid var(--color-border);
+    background: var(--color-bg);
     display: grid;
-    gap: var(--space-1);
+    gap: var(--space-2);
     cursor: pointer;
     transition: border-color 0.1s;
   }
@@ -397,15 +406,25 @@
 
   .stat-card__header {
     position: relative;
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-2);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--space-1) var(--space-2);
+  }
+
+  .stat-card__title-block {
+    min-inline-size: 0;
   }
 
   .stat-card__label {
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    color: var(--color-text-muted);
+    position: relative;
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text);
   }
 
   .stat-card .line-chart__title {
@@ -413,8 +432,33 @@
     color: inherit;
   }
 
+  .stat-card__title-tooltip {
+    display: none;
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-start: 0;
+    margin-block-start: var(--space-1);
+    padding: var(--space-2);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border-strong);
+    font-size: 0.72rem;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-text-muted);
+    inline-size: max-content;
+    max-inline-size: 40ch;
+    z-index: 10;
+  }
+
+  .stat-card__label:hover .stat-card__title-tooltip,
+  .stat-card__label:focus-visible .stat-card__title-tooltip {
+    display: block;
+  }
+
   .stat-card .line-chart__toggle {
-    margin-inline-start: auto;
+    margin-inline-start: 0;
   }
 
   .stat-card .line-chart__headline,
@@ -423,39 +467,74 @@
     display: none;
   }
 
+  .stat-card__controls {
+    display: inline-flex;
+    justify-self: end;
+    align-items: baseline;
+  }
+
+  .stat-card__metric {
+    display: grid;
+    justify-self: end;
+    justify-items: end;
+    gap: 0.1rem;
+    white-space: nowrap;
+  }
+
+  .stat-card__meta {
+    display: inline-flex;
+    align-items: baseline;
+    white-space: nowrap;
+  }
+
   .stat-card__value {
-    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    font-size: 1.1rem;
     font-weight: 700;
     line-height: 1.1;
     font-variant-numeric: tabular-nums;
   }
 
   .stat-card__trend {
+    display: block;
     font-size: 0.72rem;
+    line-height: 1.1;
     color: var(--color-text-muted);
     font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .stat-card__trend-icon {
+    color: var(--color-text);
+    font-size: 0.85em;
+    font-weight: 400;
   }
 
   .stat-card__spark {
-    inline-size: 100%;
-    block-size: 48px;
-    margin-block-start: var(--space-1);
+    inline-size: calc(100% + 2 * var(--space-4));
+    max-inline-size: none;
+    block-size: 72px;
+    margin-inline: calc(-1 * var(--space-4));
+    align-self: end;
+  }
+
+  .stat-card__spark-area {
+    fill: var(--color-chart-fill);
+    stroke: none;
   }
 
   .stat-card.is-expanded {
     --line-chart-height: 360px;
     grid-column: 1 / -1;
-    padding: var(--space-4);
+    padding: var(--space-4) var(--space-4) 0;
     border-color: var(--color-border-strong);
   }
 
   .stat-card.is-expanded .stat-card__label {
-    font-size: 0.85rem;
+    font-size: 1rem;
     font-weight: 700;
   }
 
-  .stat-card.is-expanded .stat-card__value,
-  .stat-card.is-expanded .stat-card__trend,
+  .stat-card.is-expanded .stat-card__metric,
   .stat-card.is-expanded .stat-card__spark {
     display: none;
   }
@@ -484,10 +563,6 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-inline-start: auto;
-  }
-
-  .stat-card__info + .line-chart__toggle {
     margin-inline-start: 0;
   }
 
@@ -531,6 +606,10 @@
   .stat-card.is-expanded .line-chart__canvas,
   .stat-card.is-expanded .stat-card__details {
     display: block;
+  }
+
+  .stat-card.is-expanded .stat-card__details {
+    padding-block-end: var(--space-4);
   }
 
   .stat-card__detail-grid {
@@ -638,9 +717,9 @@
   }
 
   .line-chart__toggle {
-    border: 1px solid var(--color-border-strong);
+    border: 1px solid var(--color-border);
     background: var(--color-bg);
-    color: var(--color-text);
+    color: var(--color-text-muted);
     inline-size: 1.75rem;
     block-size: 1.75rem;
     padding: 0;
@@ -699,6 +778,11 @@
   .line-chart__svg {
     inline-size: 100%;
     block-size: var(--line-chart-height);
+  }
+
+  .line-chart__area {
+    fill: var(--color-chart-fill);
+    stroke: none;
   }
 
   .line-chart__path {

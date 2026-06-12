@@ -173,7 +173,7 @@ const sections = [
   {
     id: "power",
     title: "Power",
-    columns: 4,
+    columns: 2,
     charts: [
       {
         id: "sector-onboarding",
@@ -373,6 +373,7 @@ const serializedDailyMetrics = JSON.stringify(
 <Layout
   title="Filecoin in Numbers | Filecoin Data Portal"
   description="Core Filecoin metrics with interactive charts for KPIs, sectors, power, activity, state market deals, and economics."
+  bodyClass="numbers-page"
 >
   <div class="numbers-toolbar">
     <h1>Filecoin in Numbers</h1>
@@ -503,6 +504,7 @@ const serializedDailyMetrics = JSON.stringify(
     const RANGE_BUTTON_SELECTOR = "[data-line-chart-range]"
     const RANGE_PARAM = "range"
     const CHART_MARGIN = { top: 32, right: 10, bottom: 28, left: 10 }
+    const FLAT_CHART_MARGIN = { ...CHART_MARGIN, bottom: 0 }
     const DAY_IN_MS = 86_400_000
 
     const chartNodes = Array.from(document.querySelectorAll<HTMLElement>(CHART_SELECTOR))
@@ -559,7 +561,9 @@ const serializedDailyMetrics = JSON.stringify(
           throw new Error("Line chart is missing required dataset attributes")
         }
 
-        if (!toggleButton || !titleNode?.textContent?.trim()) {
+        const title = titleNode?.dataset.chartTitle?.trim()
+
+        if (!toggleButton || !title) {
           throw new Error(`Line chart ${chartId} markup is incomplete`)
         }
 
@@ -587,7 +591,7 @@ const serializedDailyMetrics = JSON.stringify(
           id: chartId,
           node,
           toggleButton,
-          title: titleNode.textContent.trim(),
+          title,
           data: parsePointColumn(chartId, xColumn, yColumn, y),
           series,
           format: parseFormat(node.dataset.format),
@@ -978,7 +982,6 @@ const serializedDailyMetrics = JSON.stringify(
             `${isExpanded ? "Close" : "Expand"} ${chart.title}`,
           )
           chart.toggleButton.title = `${isExpanded ? "Close" : "Expand"} ${chart.title}`
-          chart.toggleButton.textContent = isExpanded ? "-" : "+"
         }
       }
 
@@ -1002,13 +1005,7 @@ const serializedDailyMetrics = JSON.stringify(
           })
         }
 
-        if (nextChartId) {
-          getChartById(nextChartId)?.toggleButton.focus()
-          return
-        }
-
-        if (previousExpandedChartId) {
-          getChartById(previousExpandedChartId)?.toggleButton.focus()
+        if (previousExpandedChartId && !nextChartId) {
           requestAnimationFrame(() => {
             scrollChartIntoView(previousExpandedChartId, "instant")
           })
@@ -1065,7 +1062,8 @@ const serializedDailyMetrics = JSON.stringify(
 
         const width = Math.max(320, chart.node.clientWidth)
         const height = getChartHeight(chart.node)
-        const margin = CHART_MARGIN
+        const isFlatZeroChart = renderedData.every((point) => point.value === 0)
+        const margin = isFlatZeroChart ? FLAT_CHART_MARGIN : CHART_MARGIN
         const plotWidth = width - margin.left - margin.right
         const plotHeight = height - margin.top - margin.bottom
 
@@ -1213,6 +1211,11 @@ const serializedDailyMetrics = JSON.stringify(
             `
             : `<path d="${displayPath}" class="line-chart__path" />`
 
+        const areaBaseline = margin.top + plotHeight
+        const areaMarkup = hasVisibleSeries
+          ? ""
+          : `<path d="${displayPath} L ${points[points.length - 1].x} ${areaBaseline} L ${points[0].x} ${areaBaseline} Z" class="line-chart__area" />`
+
         const legendMarkup = hasVisibleSeries
           ? scaledSeries
             .map(
@@ -1239,6 +1242,7 @@ const serializedDailyMetrics = JSON.stringify(
         svg.innerHTML = `
           ${yTickMarkup}
           ${xTickMarkup}
+          ${areaMarkup}
           ${legendMarkup}
           ${pathMarkup}
           <line x1="0" y1="0" x2="0" y2="0" class="line-chart__crosshair" visibility="hidden" />
@@ -1446,12 +1450,12 @@ const serializedDailyMetrics = JSON.stringify(
         const pctChange = prev !== 0 ? ((latest - prev) / prev) * 100 : 0
         const sign = pctChange > 0 ? "+" : ""
         const trend = pctChange > 0 ? "▲" : pctChange < 0 ? "▼" : "■"
-        trendEl.textContent = `${trend} ${sign}${formatDecimal(pctChange, 2)}% 30d`
+        trendEl.innerHTML = `<span class="stat-card__trend-icon">${trend}</span> ${sign}${formatDecimal(pctChange, 2)}% 30d`
 
         // Sparkline
         const width = card.node.clientWidth
-        const height = 48
-        const pad = 2
+        const height = 72
+        const padTop = 2
 
         const minX = points[0].timestamp
         const maxX = points[points.length - 1].timestamp
@@ -1459,13 +1463,15 @@ const serializedDailyMetrics = JSON.stringify(
         let maxY = Math.max(...series)
         if (maxY === minY) maxY = minY + 1
 
-        const sx = (t: number) => pad + ((t - minX) / Math.max(maxX - minX, DAY_IN_MS)) * (width - pad * 2)
-        const sy = (v: number) => pad + ((maxY - v) / (maxY - minY)) * (height - pad * 2)
+        const sx = (t: number) => ((t - minX) / Math.max(maxX - minX, DAY_IN_MS)) * width
+        const sy = (v: number) => padTop + ((maxY - v) / (maxY - minY)) * (height - padTop)
 
         const d = series.map((v, i) => `${i === 0 ? "M" : "L"} ${sx(points[i].timestamp)} ${sy(v)}`).join(" ")
+        const baseline = height
+        const areaD = `${d} L ${sx(points[points.length - 1].timestamp)} ${baseline} L ${sx(points[0].timestamp)} ${baseline} Z`
 
         svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
-        svg.innerHTML = `<path d="${d}" fill="none" stroke="var(--color-border-strong)" stroke-width="1.5" />`
+        svg.innerHTML = `<path d="${areaD}" class="stat-card__spark-area" /><path d="${d}" fill="none" stroke="var(--color-border-strong)" stroke-width="2" />`
       }
 
       function renderAllStatCards(): void {
@@ -1516,9 +1522,13 @@ const serializedDailyMetrics = JSON.stringify(
           })
           .join("")
 
+        const baseline = margin.top + plotHeight
+        const areaD = `${d} L ${chartPoints[chartPoints.length - 1].x} ${baseline} L ${chartPoints[0].x} ${baseline} Z`
+
         svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
         svg.innerHTML = `
           ${yTicks}
+          <path d="${areaD}" class="line-chart__area" />
           <path d="${d}" class="line-chart__path" />
           <line x1="0" y1="0" x2="0" y2="0" class="line-chart__crosshair" visibility="hidden" />
           <circle cx="0" cy="0" r="3" class="line-chart__dot" visibility="hidden" />

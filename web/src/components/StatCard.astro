@@ -64,32 +64,32 @@ const {
   data-series={series && series.length > 0 ? JSON.stringify(series) : undefined}
 >
   <figcaption class="stat-card__header">
-    <a href={`#${id}`} id={id} class="stat-card__label line-chart__title">{title}</a>
-    <span class="line-chart__headline" data-line-chart-last-value hidden></span>
+    <span class="stat-card__title-block">
+      <a
+        href={`#${id}`}
+        id={id}
+        class="stat-card__label line-chart__title"
+        data-line-chart-toggle
+        data-chart-title={title}
+        aria-expanded="false"
+      >
+        {title}
+        {description && <span class="stat-card__title-tooltip">{description}</span>}
+      </a>
+    </span>
+    <span class="stat-card__metric">
+      <span class="stat-card__value" data-stat-card-value></span>
+      <span class="stat-card__trend" data-stat-card-trend></span>
+    </span>
+    <span class="stat-card__controls">
+      <span class="line-chart__headline" data-line-chart-last-value hidden></span>
+    </span>
     <span class="line-chart__headline-tip" data-line-chart-headline-tip hidden></span>
-    {description && (
-      <span class="stat-card__info" aria-label="Info" tabindex="0">
-        i
-        <span class="stat-card__info-tooltip">{description}</span>
-      </span>
-    )}
-    <a
-      href={`#${id}`}
-      class="line-chart__toggle"
-      data-line-chart-toggle
-      aria-expanded="false"
-      aria-label={`Expand ${title}`}
-      title={`Expand ${title}`}
-    >
-      +
-    </a>
   </figcaption>
 
-  <span class="stat-card__value" data-stat-card-value></span>
-  <span class="stat-card__trend" data-stat-card-trend></span>
-  <svg class="stat-card__spark" aria-hidden="true"></svg>
-
   {description && <p class="stat-card__description">{description}</p>}
+
+  <svg class="stat-card__spark" aria-hidden="true"></svg>
 
   <div class="line-chart__canvas">
     <svg class="line-chart__svg" aria-hidden="true"></svg>
