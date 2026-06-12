@@ -7,55 +7,55 @@ collections:
   builtin-actors:
     path: .qmd/external
     pattern: "{builtin-actors/**/*.{md,rs,toml,yml,yaml,json},builtin-actors/**/Makefile}"
-    update: "[ -d builtin-actors/.git ] && git -C builtin-actors pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/builtin-actors.git builtin-actors"
+    update: "if [ -d builtin-actors/.git ]; then git -C builtin-actors fetch --no-tags origin $(git -C builtin-actors branch --show-current) && git -C builtin-actors merge --ff-only FETCH_HEAD; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/builtin-actors.git builtin-actors; fi"
     context:
       "": Filecoin builtin actors source of truth, including actor implementations, state transitions, and protocol-level behavior.
   lotus:
     path: .qmd/external
     pattern: "{lotus/**/*.{md,go,sh,toml,yml,yaml,json},lotus/**/Makefile}"
-    update: "[ -d lotus/.git ] && git -C lotus pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/lotus.git lotus"
+    update: "if [ -d lotus/.git ]; then git -C lotus fetch --no-tags origin $(git -C lotus branch --show-current) && git -C lotus merge --ff-only FETCH_HEAD; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/lotus.git lotus; fi"
     context:
       "": Lotus reference Filecoin client implementation, including chain logic, APIs, node behavior, markets, storage, and operational documentation.
   lily:
     path: .qmd/external
     pattern: "{lily/**/*.{md,go,sql,sh,toml,yml,yaml,json},lily/**/Makefile}"
-    update: "[ -d lily/.git ] && git -C lily pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/lily.git lily"
+    update: "if [ -d lily/.git ]; then git -C lily fetch --no-tags origin $(git -C lily branch --show-current) && git -C lily merge --ff-only FETCH_HEAD; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/lily.git lily; fi"
     context:
       "": Lily data extraction and indexing code for Filecoin, including tasks, schemas, models, chain data processing, and dataset-oriented documentation.
   filecoin-docs:
     path: .qmd/external
     pattern: "{filecoin-docs/**/*.{md,mdx,ts,js,json,toml,yml,yaml},filecoin-docs/**/Makefile}"
-    update: "[ -d filecoin-docs/.git ] && git -C filecoin-docs pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/filecoin-docs.git filecoin-docs"
+    update: "if [ -d filecoin-docs/.git ]; then git -C filecoin-docs fetch --no-tags origin $(git -C filecoin-docs branch --show-current) && git -C filecoin-docs merge --ff-only FETCH_HEAD; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/filecoin-docs.git filecoin-docs; fi"
     context:
       "": Official Filecoin documentation covering concepts, protocol details, tooling, and user/developer guides.
   fips:
     path: .qmd/external
     pattern: "{fips/**/*.{md,json,toml,yml,yaml},fips/**/Makefile}"
-    update: "[ -d fips/.git ] && git -C fips pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/FIPs.git fips"
+    update: "if [ -d fips/.git ]; then git -C fips fetch --no-tags origin $(git -C fips branch --show-current) && git -C fips merge --ff-only FETCH_HEAD; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/FIPs.git fips; fi"
     context:
       "": Filecoin Improvement Proposals and Filecoin Runtime Component specs, including accepted and draft protocol changes, standards, rationale, and proposal process docs.
   filecoin-services:
     path: .qmd/external
     pattern: "{filecoin-services/**/*.{md,sol,sh,js,toml,yml,yaml,json},filecoin-services/**/Makefile}"
-    update: "[ -d filecoin-services/.git ] && git -C filecoin-services pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-services.git filecoin-services"
+    update: "if [ -d filecoin-services/.git ]; then git -C filecoin-services fetch --no-tags origin $(git -C filecoin-services branch --show-current) && git -C filecoin-services merge --ff-only FETCH_HEAD; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-services.git filecoin-services; fi"
     context:
       "": Filecoin Onchain Cloud repository for onchain programmable services, centered on smart contracts, deployment tooling, tests, specs, and operational docs for warm storage and related services.
   filecoin-pay:
     path: .qmd/external
     pattern: "{filecoin-pay/**/*.{md,sol,sh,toml,yml,yaml,json},filecoin-pay/**/Makefile}"
-    update: "[ -d filecoin-pay/.git ] && git -C filecoin-pay pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-pay.git filecoin-pay"
+    update: "if [ -d filecoin-pay/.git ]; then git -C filecoin-pay fetch --no-tags origin $(git -C filecoin-pay branch --show-current) && git -C filecoin-pay merge --ff-only FETCH_HEAD; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-pay.git filecoin-pay; fi"
     context:
       "": Filecoin Onchain Cloud payment rails and settlement contracts, including Solidity sources, tests, specs, audits references, and deployment tooling for Filecoin Pay.
   synapse-sdk:
     path: .qmd/external
     pattern: "{synapse-sdk/**/*.{md,mdx,ts,tsx,js,mjs,html,css,json,jsonc,toml,yml,yaml},synapse-sdk/**/Makefile,synapse-sdk/**/AGENTS.md}"
-    update: "[ -d synapse-sdk/.git ] && git -C synapse-sdk pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/synapse-sdk.git synapse-sdk"
+    update: "if [ -d synapse-sdk/.git ]; then git -C synapse-sdk fetch --no-tags origin $(git -C synapse-sdk branch --show-current) && git -C synapse-sdk merge --ff-only FETCH_HEAD; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/synapse-sdk.git synapse-sdk; fi"
     context:
       "": Filecoin Onchain Cloud JavaScript and React SDK monorepo for Synapse, including packages, examples, docs site content, and developer workflows.
   pdp:
     path: .qmd/external
     pattern: "{pdp/**/*.{md,sol,sh,toml,yml,yaml,json},pdp/**/Makefile,pdp/**/configure}"
-    update: "[ -d pdp/.git ] && git -C pdp pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/pdp.git pdp"
+    update: "if [ -d pdp/.git ]; then git -C pdp fetch --no-tags origin $(git -C pdp branch --show-current) && git -C pdp merge --ff-only FETCH_HEAD; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/pdp.git pdp; fi"
     context:
       "": Filecoin Onchain Cloud provable data possession contracts and tools, including verifier and service contracts, tests, deployment scripts, and design documentation.
 models:
