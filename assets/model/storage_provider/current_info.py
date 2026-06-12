@@ -18,8 +18,8 @@
 # asset.column = live_sectors | Current live sector count.
 # asset.column = active_sectors | Current active sector count.
 # asset.column = faulty_sectors | Current faulty sector count.
-# asset.column = actor_balance_fil | Current miner actor balance in FIL.
-# asset.column = available_balance_fil | Current available miner balance in FIL.
+# asset.column = actor_balance_fil | Current storage provider actor balance in FIL.
+# asset.column = available_balance_fil | Current available provider balance in FIL.
 # asset.column = market_escrow_fil | Current market escrow balance in FIL.
 # asset.column = market_locked_fil | Current market locked balance in FIL.
 # asset.column = market_available_fil | Current market available balance in FIL.
@@ -229,7 +229,7 @@ def build_row(
     state_result = results["state"]
     state = state_result.get("State")
     if not isinstance(state, dict):
-        raise ValueError(f"Missing miner state for {provider_id}")
+        raise ValueError(f"Missing storage provider state for {provider_id}")
 
     escrow = atto_to_fil(market.get("Escrow"))
     locked = atto_to_fil(market.get("Locked"))
@@ -248,7 +248,7 @@ def build_row(
         "active_sectors": sector_count.get("Active"),
         "faulty_sectors": sector_count.get("Faulty"),
         "actor_balance_fil": atto_to_fil(state_result.get("Balance")),
-        "available_balance_fil": miner_available_balance_fil(state_result),
+        "available_balance_fil": available_balance_fil(state_result),
         "market_escrow_fil": escrow,
         "market_locked_fil": locked,
         "market_available_fil": available,
@@ -334,7 +334,7 @@ def raise_if_retryable_rpc_error(data: Any) -> None:
             raise RetryableRpcError(error)
 
 
-def miner_available_balance_fil(state_result: dict[str, Any]) -> float | None:
+def available_balance_fil(state_result: dict[str, Any]) -> float | None:
     balance = atto_decimal(state_result.get("Balance"))
     if balance is None:
         return None

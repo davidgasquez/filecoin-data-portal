@@ -7,7 +7,7 @@
 -- asset.column = first_claim_at | Timestamp of the first successful verified claim.
 -- asset.column = last_claim_at | Timestamp of the most recent successful verified claim.
 -- asset.column = verified_claims | Total successful verified claims.
--- asset.column = verified_providers | Providers with at least one successful verified claim.
+-- asset.column = verified_storage_providers | Providers with at least one successful verified claim.
 -- asset.column = verified_data_onboarded_tibs | Verified data successfully claimed, in tebibytes.
 -- asset.column = client_address | Filecoin client address from DatacapStats.
 -- asset.column = client_name | Client name from DatacapStats.
@@ -20,8 +20,8 @@
 -- asset.column = allocator_id | Latest allocator actor id address.
 -- asset.column = allocator_name | Latest allocator name.
 -- asset.column = deal_count | Deal count from DatacapStats.
--- asset.column = provider_count | Provider count from DatacapStats.
--- asset.column = top_provider | Top provider from DatacapStats.
+-- asset.column = storage_provider_count | Provider count from DatacapStats.
+-- asset.column = top_storage_provider | Top provider from DatacapStats.
 -- asset.column = received_datacap_change_tibs | Received datacap change, in tebibytes.
 -- asset.column = used_datacap_change_tibs | Used datacap change, in tebibytes.
 -- asset.column = used_datacap_tibs | Used datacap, in tebibytes.
@@ -39,7 +39,7 @@ with claims_by_client as (
         min(claim_at) as first_claim_at,
         max(claim_at) as last_claim_at,
         count(*) as verified_claims,
-        count(distinct provider_id) as verified_providers,
+        count(distinct provider_id) as verified_storage_providers,
         sum(piece_size_tibs) as verified_data_onboarded_tibs
     from model.verified_claims
     group by 1
@@ -61,8 +61,8 @@ datacap_clients as (
         verifier_address_id as allocator_id,
         nullif(verifier_name, '') as allocator_name,
         try_cast(deal_count as bigint) as deal_count,
-        try_cast(provider_count as bigint) as provider_count,
-        nullif(top_provider, '') as top_provider,
+        try_cast(provider_count as bigint) as storage_provider_count,
+        nullif(top_provider, '') as top_storage_provider,
         try_cast(received_datacap_change as double) / power(1024, 4) as received_datacap_change_tibs,
         try_cast(used_datacap_change as double) / power(1024, 4) as used_datacap_change_tibs,
         try_cast(used_datacap as double) / power(1024, 4) as used_datacap_tibs,
@@ -81,7 +81,7 @@ select
     c.first_claim_at,
     c.last_claim_at,
     c.verified_claims,
-    c.verified_providers,
+    c.verified_storage_providers,
     c.verified_data_onboarded_tibs,
     d.client_address,
     d.client_name,
@@ -94,8 +94,8 @@ select
     d.allocator_id,
     d.allocator_name,
     d.deal_count,
-    d.provider_count,
-    d.top_provider,
+    d.storage_provider_count,
+    d.top_storage_provider,
     d.received_datacap_change_tibs,
     d.used_datacap_change_tibs,
     d.used_datacap_tibs,
