@@ -72,8 +72,13 @@ const {
         data-chart-title={title}
       >
         {title}
-        {description && <span class="stat-card__title-tooltip">{description}</span>}
       </a>
+      {description && (
+        <span class="stat-card__title-info" aria-label="Description" tabindex="0">
+          i
+          <span class="stat-card__title-tooltip">{description}</span>
+        </span>
+      )}
     </span>
     <span class="stat-card__metric">
       <span class="stat-card__value" data-stat-card-value></span>

@@ -1476,12 +1476,12 @@ const serializedDailyMetrics = JSON.stringify(
         const pctChange = prev !== 0 ? ((latest - prev) / prev) * 100 : 0
         const sign = pctChange > 0 ? "+" : ""
         const trend = pctChange > 0 ? "▲" : pctChange < 0 ? "▼" : "■"
-        trendEl.innerHTML = `<span class="stat-card__trend-icon">${trend}</span> ${sign}${formatDecimal(pctChange, 2)}% 30d`
+        trendEl.textContent = `${trend} ${sign}${formatDecimal(pctChange, 2)}% 30d`
 
         // Sparkline
-        const width = card.node.clientWidth
-        const height = 92
-        const padTop = 2
+        const width = Math.max(120, svg.clientWidth)
+        const height = 52
+        const pad = 2
 
         const minX = points[0].timestamp
         const maxX = points[points.length - 1].timestamp
@@ -1489,15 +1489,13 @@ const serializedDailyMetrics = JSON.stringify(
         let maxY = Math.max(...series)
         if (maxY === minY) maxY = minY + 1
 
-        const sx = (t: number) => ((t - minX) / Math.max(maxX - minX, DAY_IN_MS)) * width
-        const sy = (v: number) => padTop + ((maxY - v) / (maxY - minY)) * (height - padTop)
+        const sx = (t: number) => pad + ((t - minX) / Math.max(maxX - minX, DAY_IN_MS)) * (width - pad * 2)
+        const sy = (v: number) => pad + ((maxY - v) / (maxY - minY)) * (height - pad * 2)
 
         const d = series.map((v, i) => `${i === 0 ? "M" : "L"} ${sx(points[i].timestamp)} ${sy(v)}`).join(" ")
-        const baseline = height
-        const areaD = `${d} L ${sx(points[points.length - 1].timestamp)} ${baseline} L ${sx(points[0].timestamp)} ${baseline} Z`
 
         svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
-        svg.innerHTML = `<path d="${areaD}" class="stat-card__spark-area" /><path d="${d}" fill="none" stroke="var(--color-border-strong)" stroke-width="2" />`
+        svg.innerHTML = `<path d="${d}" fill="none" stroke="var(--color-border-strong)" stroke-width="1.15" />`
       }
 
       function renderAllStatCards(): void {
@@ -1669,7 +1667,7 @@ const serializedDailyMetrics = JSON.stringify(
 
         chart.node.addEventListener("click", (event: Event) => {
           const target = event.target as HTMLElement
-          if (target.closest(".line-chart__tooltip, .line-chart__svg, .line-chart__title, [data-line-chart-collapse]")) {
+          if (target.closest(".line-chart__tooltip, .line-chart__svg, .line-chart__title, .stat-card__title-info, [data-line-chart-collapse]")) {
             return
           }
 
