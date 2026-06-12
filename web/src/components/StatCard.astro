@@ -73,8 +73,8 @@ const {
         <span class="stat-card__info-tooltip">{description}</span>
       </span>
     )}
-    <a
-      href={`#${id}`}
+    <button
+      type="button"
       class="line-chart__toggle"
       data-line-chart-toggle
       aria-expanded="false"
@@ -82,7 +82,7 @@ const {
       title={`Expand ${title}`}
     >
       +
-    </a>
+    </button>
   </figcaption>
 
   <span class="stat-card__value" data-stat-card-value></span>

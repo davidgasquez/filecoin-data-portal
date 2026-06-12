@@ -376,10 +376,16 @@ const serializedDailyMetrics = JSON.stringify(
 >
   <div class="numbers-toolbar">
     <h1>Filecoin in Numbers</h1>
-    <div class="chart-range-toggle" role="group" aria-label="Chart timeframe">
-      <button type="button" data-line-chart-range="6m" aria-pressed="false">6M</button>
-      <button type="button" data-line-chart-range="1y" aria-pressed="true">1Y</button>
-      <button type="button" data-line-chart-range="all" aria-pressed="false">All</button>
+    <nav class="numbers-toc" aria-label="Numbers sections">
+      {sections.map((section) => <a href={`#${section.id}`}>{section.title}</a>)}
+    </nav>
+    <div class="numbers-toolbar__controls">
+      <div class="chart-range-toggle" role="group" aria-label="Chart timeframe">
+        <button type="button" data-line-chart-range="6m" aria-pressed="false">6M</button>
+        <button type="button" data-line-chart-range="1y" aria-pressed="true">1Y</button>
+        <button type="button" data-line-chart-range="all" aria-pressed="false">All</button>
+      </div>
+      <button type="button" class="numbers-expand-toggle" data-expand-all aria-pressed="false">Expand Charts</button>
     </div>
   </div>
 
@@ -483,7 +489,7 @@ const serializedDailyMetrics = JSON.stringify(
     type ParsedChart = {
       id: string
       node: HTMLElement
-      toggleButton: HTMLAnchorElement
+      toggleButton: HTMLButtonElement
       title: string
       data: LineChartPoint[]
       series: ParsedLineChartSeries[]
@@ -511,7 +517,7 @@ const serializedDailyMetrics = JSON.stringify(
       const dataset = parseDataset()
       const charts = chartNodes.map((node) => parseChart(node, dataset))
       let currentRange = getInitialRangeFromUrl()
-      let expandedChartId = getExpandedChartFromUrl()
+      let expandedChartIds = getInitialExpandedChartIds()
 
       const tooltipDateFormatter = new Intl.DateTimeFormat("en-US", {
         month: "short",
@@ -552,7 +558,7 @@ const serializedDailyMetrics = JSON.stringify(
         const chartId = node.dataset.chartId
         const x = node.dataset.x
         const y = node.dataset.y
-        const toggleButton = node.querySelector<HTMLAnchorElement>("[data-line-chart-toggle]")
+        const toggleButton = node.querySelector<HTMLButtonElement>("[data-line-chart-toggle]")
         const titleNode = node.querySelector<HTMLElement>(".line-chart__title")
 
         if (!chartId || !x || !y) {
@@ -931,10 +937,19 @@ const serializedDailyMetrics = JSON.stringify(
         return charts.find((chart) => chart.id === chartId)
       }
 
-      function getExpandedChartFromUrl(): string | null {
+      function getLinkedChartFromUrl(): string | null {
         const hash = window.location.hash.slice(1)
 
         return getChartById(hash)?.id ?? null
+      }
+
+      function getInitialExpandedChartIds(): Set<string> {
+        const linkedChartId = getLinkedChartFromUrl()
+        return linkedChartId ? new Set([linkedChartId]) : new Set()
+      }
+
+      function areAllChartsExpanded(): boolean {
+        return expandedChartIds.size === charts.length
       }
 
       function updateUrlState(): void {
@@ -945,8 +960,6 @@ const serializedDailyMetrics = JSON.stringify(
         } else {
           url.searchParams.set(RANGE_PARAM, currentRange)
         }
-
-        url.hash = expandedChartId ? `#${expandedChartId}` : ""
 
         history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`)
       }
@@ -970,49 +983,56 @@ const serializedDailyMetrics = JSON.stringify(
 
       function syncExpandedChartState(): void {
         for (const chart of charts) {
-          const isExpanded = chart.id === expandedChartId
+          const isExpanded = expandedChartIds.has(chart.id)
           chart.node.classList.toggle("is-expanded", isExpanded)
           chart.toggleButton.setAttribute("aria-expanded", String(isExpanded))
           chart.toggleButton.setAttribute(
             "aria-label",
-            `${isExpanded ? "Close" : "Expand"} ${chart.title}`,
+            `${isExpanded ? "Collapse" : "Expand"} ${chart.title}`,
           )
-          chart.toggleButton.title = `${isExpanded ? "Close" : "Expand"} ${chart.title}`
+          chart.toggleButton.title = `${isExpanded ? "Collapse" : "Expand"} ${chart.title}`
           chart.toggleButton.textContent = isExpanded ? "-" : "+"
         }
+
+        updateExpandAllButton()
       }
 
-      function setExpandedChart(
-        nextChartId: string | null,
-        options: { scrollIntoView?: boolean } = {},
-      ): void {
-        if (expandedChartId === nextChartId) {
+      function updateExpandAllButton(): void {
+        const button = document.querySelector<HTMLButtonElement>("[data-expand-all]")
+        const isExpanded = areAllChartsExpanded()
+
+        if (!button) {
           return
         }
 
-        const previousExpandedChartId = expandedChartId
-        expandedChartId = nextChartId
-        updateUrlState()
+        button.setAttribute("aria-pressed", String(isExpanded))
+        button.textContent = isExpanded ? "Collapse Charts" : "Expand Charts"
+      }
+
+      function setExpandedChart(chartId: string, isExpanded: boolean): void {
+        const wasExpanded = expandedChartIds.has(chartId)
+
+        if (wasExpanded === isExpanded) {
+          return
+        }
+
+        if (isExpanded) {
+          expandedChartIds.add(chartId)
+        } else {
+          expandedChartIds.delete(chartId)
+        }
+
         syncExpandedChartState()
         renderAllCharts()
+      }
 
-        if (options.scrollIntoView && nextChartId) {
-          requestAnimationFrame(() => {
-            scrollChartIntoView(nextChartId)
-          })
-        }
+      function setAllChartsExpanded(isExpanded: boolean): void {
+        expandedChartIds = isExpanded
+          ? new Set(charts.map((chart) => chart.id))
+          : new Set()
 
-        if (nextChartId) {
-          getChartById(nextChartId)?.toggleButton.focus()
-          return
-        }
-
-        if (previousExpandedChartId) {
-          getChartById(previousExpandedChartId)?.toggleButton.focus()
-          requestAnimationFrame(() => {
-            scrollChartIntoView(previousExpandedChartId, "instant")
-          })
-        }
+        syncExpandedChartState()
+        renderAllCharts()
       }
 
       function setupHeadlineTip(
@@ -1613,29 +1633,47 @@ const serializedDailyMetrics = JSON.stringify(
         })
       }
 
+      const expandAllButton = document.querySelector<HTMLButtonElement>("[data-expand-all]")
+      expandAllButton?.addEventListener("click", () => {
+        setAllChartsExpanded(!areAllChartsExpanded())
+      })
+
       for (const chart of charts) {
-        const handleToggle = (event: Event): void => {
-          event.preventDefault()
-          setExpandedChart(expandedChartId === chart.id ? null : chart.id, {
-            scrollIntoView: expandedChartId !== chart.id,
-          })
-        }
+        const titleLink = chart.node.querySelector<HTMLAnchorElement>(".line-chart__title")
+
+        titleLink?.addEventListener("click", (event) => {
+          event.stopPropagation()
+
+          if (!expandedChartIds.has(chart.id)) {
+            setExpandedChart(chart.id, true)
+          }
+        })
+
+        chart.toggleButton.addEventListener("click", (event) => {
+          event.stopPropagation()
+          setExpandedChart(chart.id, !expandedChartIds.has(chart.id))
+        })
 
         chart.node.addEventListener("click", (event: Event) => {
           const target = event.target as HTMLElement
-          if (target.closest(".line-chart__tooltip, .line-chart__svg")) {
+          const ignoredTarget = target.closest(
+            ".line-chart__tooltip, .line-chart__svg, .line-chart__title, .stat-card__info, .line-chart__toggle, .line-chart__canvas, .stat-card__details",
+          )
+
+          if (ignoredTarget) {
             return
           }
-          handleToggle(event)
+
+          setExpandedChart(chart.id, !expandedChartIds.has(chart.id))
         })
       }
 
       const onKeyDown = (event: KeyboardEvent): void => {
-        if (event.key !== "Escape" || expandedChartId === null) {
+        if (event.key !== "Escape" || expandedChartIds.size === 0) {
           return
         }
 
-        setExpandedChart(null)
+        setAllChartsExpanded(false)
       }
 
       document.addEventListener("keydown", onKeyDown)
@@ -1647,11 +1685,21 @@ const serializedDailyMetrics = JSON.stringify(
       renderAllStatCards()
       renderAllComponentSparks()
 
-      if (expandedChartId) {
+      const linkedChartId = getLinkedChartFromUrl()
+      if (linkedChartId) {
         requestAnimationFrame(() => {
-          scrollChartIntoView(expandedChartId)
+          scrollChartIntoView(linkedChartId)
         })
       }
+
+      window.addEventListener("hashchange", () => {
+        const linkedChartId = getLinkedChartFromUrl()
+
+        if (linkedChartId) {
+          setExpandedChart(linkedChartId, true)
+          scrollChartIntoView(linkedChartId)
+        }
+      })
 
       window.addEventListener(
         "pagehide",
