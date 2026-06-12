@@ -48,7 +48,8 @@
     --color-border: #a6a6a6;
     --color-border-strong: #000;
     --color-focus: #0f62fe;
-    --color-chart-fill: #e6e6e6;
+    --color-chart-surface: #f8f8f8;
+    --color-chart-fill: rgba(0, 0, 0, 0.08);
 
     --space-1: 0.25rem;
     --space-2: 0.5rem;
@@ -246,7 +247,8 @@
   }
 
   .heading-link {
-    display: block;
+    display: inline-block;
+    max-inline-size: 100%;
     color: inherit;
     text-decoration: none;
   }
@@ -293,26 +295,62 @@
   }
 
   .numbers-page {
-    background: var(--color-bg-muted);
+    background: var(--color-bg);
   }
 
   .numbers-toolbar {
     position: sticky;
     inset-block-start: 0;
     z-index: 10;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
     padding-block: var(--space-3);
     margin-block-end: var(--space-4);
-    background: var(--color-bg-muted);
+    background: var(--color-bg);
+  }
+
+  .numbers-toolbar__main {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
   }
 
   .numbers-toolbar h1 {
     margin: 0;
     font-size: 1.1rem;
+    line-height: 1;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+  }
+
+  .numbers-toolbar__controls {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .numbers-toc {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: var(--space-1);
+    overflow-x: auto;
+  }
+
+  .numbers-toc a {
+    flex: 0 0 auto;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    padding: 0.12rem 0.45rem;
+    font-size: 0.7rem;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .numbers-toc a:hover,
+  .numbers-toc a:focus-visible {
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
   }
 
   .numbers-section {
@@ -326,7 +364,7 @@
 
   .numbers-section__legend {
     position: relative;
-    scroll-margin-block-start: 4rem;
+    scroll-margin-block-start: 5rem;
     margin: 0 0 var(--space-5) 0;
     padding: 0;
     border: 0;
@@ -340,10 +378,12 @@
 
   .chart-range-toggle {
     display: inline-flex;
+    align-items: stretch;
     border: 1px solid var(--color-border-strong);
   }
 
-  .chart-range-toggle button {
+  .chart-range-toggle button,
+  .numbers-expand-toggle {
     border: 0;
     border-inline-end: 1px solid var(--color-border-strong);
     background: var(--color-bg);
@@ -358,9 +398,15 @@
     border-inline-end: 0;
   }
 
-  .chart-range-toggle button[aria-pressed="true"] {
+  .chart-range-toggle button[aria-pressed="true"],
+  .numbers-expand-toggle[aria-pressed="true"] {
     background: var(--color-text);
     color: var(--color-bg);
+  }
+
+  .numbers-expand-toggle {
+    border: 1px solid var(--color-border-strong);
+    white-space: nowrap;
   }
 
   .stat-grid {
@@ -390,10 +436,11 @@
   }
 
   .stat-card {
+    scroll-margin-block-start: 5rem;
     margin: 0;
-    padding: var(--space-3) var(--space-4) 0;
-    border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    padding: var(--space-4) var(--space-4) 0;
+    border: 2px solid var(--color-border);
+    background: var(--color-chart-surface);
     display: grid;
     gap: var(--space-2);
     cursor: pointer;
@@ -418,9 +465,10 @@
 
   .stat-card__label {
     position: relative;
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 700;
+    display: inline-block;
+    max-inline-size: 100%;
+    font-size: 0.95rem;
+    font-weight: 800;
     line-height: 1.25;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -430,6 +478,17 @@
   .stat-card .line-chart__title {
     text-decoration: none;
     color: inherit;
+  }
+
+  .stat-card .line-chart__title::after {
+    content: " #";
+    color: var(--color-text-muted);
+    opacity: 0;
+  }
+
+  .stat-card .line-chart__title:hover::after,
+  .stat-card .line-chart__title:focus-visible::after {
+    opacity: 1;
   }
 
   .stat-card__title-tooltip {
@@ -462,6 +521,7 @@
   }
 
   .stat-card .line-chart__headline,
+  .stat-card .line-chart__collapse,
   .stat-card .line-chart__canvas,
   .stat-card__details {
     display: none;
@@ -470,7 +530,8 @@
   .stat-card__controls {
     display: inline-flex;
     justify-self: end;
-    align-items: baseline;
+    align-items: center;
+    gap: var(--space-2);
   }
 
   .stat-card__metric {
@@ -488,9 +549,10 @@
   }
 
   .stat-card__value {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     line-height: 1.1;
+    color: var(--color-text-muted);
     font-variant-numeric: tabular-nums;
   }
 
@@ -512,7 +574,7 @@
   .stat-card__spark {
     inline-size: calc(100% + 2 * var(--space-4));
     max-inline-size: none;
-    block-size: 72px;
+    block-size: 92px;
     margin-inline: calc(-1 * var(--space-4));
     align-self: end;
   }
@@ -542,6 +604,10 @@
   .stat-card.is-expanded .line-chart__headline {
     display: inline;
     margin-inline-start: auto;
+  }
+
+  .stat-card.is-expanded .line-chart__collapse {
+    display: inline-flex;
   }
 
   .stat-card.is-expanded .stat-card__info,
@@ -716,7 +782,8 @@
     cursor: default;
   }
 
-  .line-chart__toggle {
+  .line-chart__toggle,
+  .line-chart__collapse {
     border: 1px solid var(--color-border);
     background: var(--color-bg);
     color: var(--color-text-muted);
@@ -728,12 +795,16 @@
     line-height: 1;
     cursor: pointer;
     text-decoration: none;
-    display: inline-flex;
     align-items: center;
     justify-content: center;
   }
 
-  .line-chart__toggle:hover {
+  .line-chart__toggle {
+    display: inline-flex;
+  }
+
+  .line-chart__toggle:hover,
+  .line-chart__collapse:hover {
     background: var(--color-text);
     color: var(--color-bg);
   }
@@ -773,6 +844,7 @@
     position: relative;
     inline-size: 100%;
     min-block-size: var(--line-chart-height);
+    background: var(--color-chart-surface);
   }
 
   .line-chart__svg {

@@ -48,6 +48,7 @@ const {
 ---
 
 <figure
+  id={id}
   class="stat-card"
   data-stat-card
   data-line-chart
@@ -67,11 +68,8 @@ const {
     <span class="stat-card__title-block">
       <a
         href={`#${id}`}
-        id={id}
         class="stat-card__label line-chart__title"
-        data-line-chart-toggle
         data-chart-title={title}
-        aria-expanded="false"
       >
         {title}
         {description && <span class="stat-card__title-tooltip">{description}</span>}
@@ -83,6 +81,13 @@ const {
     </span>
     <span class="stat-card__controls">
       <span class="line-chart__headline" data-line-chart-last-value hidden></span>
+      <button
+        type="button"
+        class="line-chart__collapse"
+        data-line-chart-collapse
+        aria-label={`Collapse ${title}`}
+        title={`Collapse ${title}`}
+      >−</button>
     </span>
     <span class="line-chart__headline-tip" data-line-chart-headline-tip hidden></span>
   </figcaption>
