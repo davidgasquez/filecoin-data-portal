@@ -2,8 +2,8 @@
 
 -- asset.depends = raw.fevm_eth_logs_decoded
 
--- asset.column = provider_id | Service provider registry identifier.
--- asset.column = service_provider | Provider control address.
+-- asset.column = service_provider_id | Service provider registry identifier.
+-- asset.column = service_provider_address | Provider control address.
 -- asset.column = payee | Payee address.
 -- asset.column = is_registered | Whether the provider has a registration event.
 -- asset.column = is_removed | Whether the provider has a removal event.
@@ -40,8 +40,8 @@
 -- asset.column = fwss_last_approval_transaction_hash | Latest FWSS approval transaction hash, if any.
 -- asset.column = fwss_last_approval_at | UTC latest FWSS approval timestamp, if any.
 
--- asset.not_null = provider_id
--- asset.unique = provider_id
+-- asset.not_null = service_provider_id
+-- asset.unique = service_provider_id
 
 with params as (
     select 1598306400 as genesis_timestamp
@@ -234,8 +234,8 @@ fwss_first_approval as (
     where row_num = 1
 )
 select
-    registered.provider_id,
-    registered.service_provider,
+    registered.provider_id as service_provider_id,
+    registered.service_provider as service_provider_address,
     registered.payee,
     true as is_registered,
     removed.provider_id is not null as is_removed,

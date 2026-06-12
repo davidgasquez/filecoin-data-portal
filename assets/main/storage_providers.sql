@@ -7,7 +7,7 @@
 -- asset.depends = model.storage_provider_market_deal_activity
 -- asset.depends = model.verified_claims
 
--- asset.column = provider_id | Filecoin storage provider actor id address.
+-- asset.column = storage_provider_id | Filecoin storage provider actor id address.
 -- asset.column = owner_id | Current owner actor id address.
 -- asset.column = worker_id | Current worker actor id address.
 -- asset.column = beneficiary_id | Current beneficiary actor id address.
@@ -18,8 +18,8 @@
 -- asset.column = live_sectors | Current live sector count.
 -- asset.column = active_sectors | Current active sector count.
 -- asset.column = faulty_sectors | Current faulty sector count.
--- asset.column = actor_balance_fil | Current miner actor balance, in FIL.
--- asset.column = available_balance_fil | Current available miner balance, in FIL.
+-- asset.column = actor_balance_fil | Current storage provider actor balance, in FIL.
+-- asset.column = available_balance_fil | Current available storage provider balance, in FIL.
 -- asset.column = market_escrow_fil | Current market escrow balance, in FIL.
 -- asset.column = market_locked_fil | Current market locked balance, in FIL.
 -- asset.column = market_available_fil | Current market available balance, in FIL.
@@ -44,12 +44,12 @@
 -- asset.column = verified_data_onboarded_tibs | Verified data successfully claimed, in tebibytes.
 -- asset.column = total_block_rewards_fil | Total block rewards allocated to the provider, in FIL.
 
--- asset.not_null = provider_id
+-- asset.not_null = storage_provider_id
 -- asset.not_null = has_power
 -- asset.not_null = has_sector_activity
 -- asset.not_null = has_verified_claims
 -- asset.not_null = has_market_deals
--- asset.unique = provider_id
+-- asset.unique = storage_provider_id
 
 with current_power as (
     select
@@ -109,7 +109,7 @@ providers as (
     select provider_id from market_deal_activity
 )
 select
-    providers.provider_id,
+    providers.provider_id as storage_provider_id,
     info.owner_id,
     info.worker_id,
     info.beneficiary_id,
