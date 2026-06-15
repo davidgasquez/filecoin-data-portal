@@ -7,7 +7,7 @@
 -- asset.depends = raw.coincodex_filecoin_market_data
 
 -- asset.column = date | UTC date.
--- asset.column = provider_id | Filecoin storage provider actor id address.
+-- asset.column = storage_provider_id | Filecoin storage provider actor id address.
 -- asset.column = raw_power_tibs | End-of-day raw byte power, in tebibytes.
 -- asset.column = quality_adjusted_power_tibs | End-of-day quality adjusted power, in tebibytes.
 -- asset.column = onboarded_tibs | Raw data onboarded on the date, in tebibytes.
@@ -27,7 +27,7 @@
 -- asset.column = block_rewards_usd | Exact block rewards allocated to the provider on the date, valued with the daily average FIL price, in USD.
 
 -- asset.not_null = date
--- asset.not_null = provider_id
+-- asset.not_null = storage_provider_id
 -- asset.not_null = raw_power_tibs
 -- asset.not_null = quality_adjusted_power_tibs
 -- asset.not_null = onboarded_tibs
@@ -70,7 +70,7 @@ with verified_claims as (
 )
 select
     provider_dates.date,
-    provider_dates.provider_id,
+    provider_dates.provider_id as storage_provider_id,
     coalesce(power.raw_power_tibs, 0) as raw_power_tibs,
     coalesce(power.quality_adjusted_power_tibs, 0) as quality_adjusted_power_tibs,
     coalesce(sector_lifecycle.onboarded_tibs, 0) as onboarded_tibs,

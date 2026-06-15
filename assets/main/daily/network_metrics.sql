@@ -22,7 +22,7 @@
 -- asset.column = removed_pibs | Raw sector data removed on the date, in pebibytes.
 -- asset.column = raw_power_pibs | End-of-day raw byte power, in pebibytes.
 -- asset.column = quality_adjusted_power_pibs | End-of-day quality adjusted power, in pebibytes.
--- asset.column = providers_with_power | Storage providers with positive end-of-day power.
+-- asset.column = storage_providers_with_power | Storage providers with positive end-of-day power.
 -- asset.column = gas_used_millions | Total gas used, in millions.
 -- asset.column = total_value_fil | FIL transferred by top-level messages.
 -- asset.column = total_gas_fee_fil | FIL paid in gas fees.
@@ -30,8 +30,8 @@
 -- asset.column = base_fee_burn_usd | FIL burned by message base fees, valued with the daily average FIL price, in USD.
 -- asset.column = message_burn_fil | FIL burned by message execution.
 -- asset.column = message_burn_usd | FIL burned by message execution, valued with the daily average FIL price, in USD.
--- asset.column = message_miner_penalty_burn_fil | FIL burned by message execution miner penalties.
--- asset.column = message_miner_penalty_burn_usd | FIL burned by message execution miner penalties, valued with the daily average FIL price, in USD.
+-- asset.column = message_storage_provider_penalty_fil | FIL penalties incurred by storage providers during message execution.
+-- asset.column = message_storage_provider_penalty_usd | FIL penalties incurred by storage providers during message execution, valued with the daily average FIL price, in USD.
 -- asset.column = total_value_flow_fil | FIL value transferred plus gas fees.
 -- asset.column = protocol_revenue_fil | Total FIL burned.
 -- asset.column = protocol_revenue_usd | Total FIL burned, valued at average FIL/USD price.
@@ -58,7 +58,7 @@
 -- asset.column = verified_data_onboarded_pibs | Verified data claimed on the date, in pebibytes.
 -- asset.column = verified_claims | Successful verified claims on the date.
 -- asset.column = verified_clients | Clients with at least one successful verified claim on the date.
--- asset.column = verified_providers | Providers with at least one successful verified claim on the date.
+-- asset.column = verified_storage_providers | Providers with at least one successful verified claim on the date.
 -- asset.column = blocks_mined | Block headers mined on the date.
 -- asset.column = win_count | Winning proofs recorded on the date.
 -- asset.column = block_rewards_fil | Exact block rewards minted on the date, in FIL.
@@ -82,7 +82,7 @@ with verified_claims as (
         sum(verified_data_onboarded_tibs) / 1024 as verified_data_onboarded_pibs,
         sum(verified_claims) as verified_claims,
         count(distinct client_id) as verified_clients,
-        count(distinct provider_id) as verified_providers
+        count(distinct provider_id) as verified_storage_providers
     from model.daily_verified_claims
     group by 1
 ), block_rewards as (
@@ -102,10 +102,10 @@ with verified_claims as (
         volume_usd as fil_token_volume_usd,
         market_cap_usd as fil_token_market_cap_usd
     from raw.coincodex_filecoin_market_data
-), providers_with_power as (
+), storage_providers_with_power as (
     select
         date,
-        count(distinct provider_id) as providers_with_power
+        count(distinct provider_id) as storage_providers_with_power
     from model.storage_provider_power_daily
     where has_power
     group by 1
@@ -120,7 +120,7 @@ with verified_claims as (
     union
     select date from block_rewards
     union
-    select date from providers_with_power
+    select date from storage_providers_with_power
     union
     select date from market_data
     union
@@ -165,7 +165,7 @@ select
     coalesce(sector_lifecycle.removed_pibs, 0) as removed_pibs,
     network_power.raw_power_pibs,
     network_power.quality_adjusted_power_pibs,
-    coalesce(providers_with_power.providers_with_power, 0) as providers_with_power,
+    coalesce(storage_providers_with_power.storage_providers_with_power, 0) as storage_providers_with_power,
     coalesce(network_activity.gas_used_millions, 0) as gas_used_millions,
     coalesce(network_activity.total_value_fil, 0) as total_value_fil,
     coalesce(network_activity.total_gas_fee_fil, 0) as total_gas_fee_fil,
@@ -175,11 +175,11 @@ select
     coalesce(network_activity.message_burn_fil, 0) as message_burn_fil,
     coalesce(network_activity.message_burn_fil, 0)
         * market_data.fil_token_price_avg_usd as message_burn_usd,
-    coalesce(network_burn.message_miner_penalty_burn_fil, 0)
-        as message_miner_penalty_burn_fil,
-    coalesce(network_burn.message_miner_penalty_burn_fil, 0)
+    coalesce(network_burn.message_storage_provider_penalty_fil, 0)
+        as message_storage_provider_penalty_fil,
+    coalesce(network_burn.message_storage_provider_penalty_fil, 0)
         * market_data.fil_token_price_avg_usd
-        as message_miner_penalty_burn_usd,
+        as message_storage_provider_penalty_usd,
     coalesce(network_activity.total_value_flow_fil, 0) as total_value_flow_fil,
     coalesce(network_burn.total_burn_fil, 0) as protocol_revenue_fil,
     coalesce(network_burn.total_burn_fil, 0)
@@ -213,7 +213,7 @@ select
         as verified_data_onboarded_pibs,
     coalesce(verified_claims.verified_claims, 0) as verified_claims,
     coalesce(verified_claims.verified_clients, 0) as verified_clients,
-    coalesce(verified_claims.verified_providers, 0) as verified_providers,
+    coalesce(verified_claims.verified_storage_providers, 0) as verified_storage_providers,
     coalesce(block_rewards.blocks_mined, 0) as blocks_mined,
     coalesce(block_rewards.win_count, 0) as win_count,
     coalesce(block_rewards.block_rewards_fil, 0) as block_rewards_fil,
@@ -252,7 +252,7 @@ left join model.daily_sector_lifecycle as sector_lifecycle
     using (date)
 left join raw.daily_network_power as network_power
     using (date)
-left join providers_with_power
+left join storage_providers_with_power
     using (date)
 left join model.daily_network_activity as network_activity
     using (date)

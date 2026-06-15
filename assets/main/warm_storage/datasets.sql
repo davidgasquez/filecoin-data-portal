@@ -4,8 +4,8 @@
 
 -- asset.column = dataset_id | FWSS dataset identifier.
 -- asset.column = payer | Payer address.
--- asset.column = provider_id | Service provider registry identifier.
--- asset.column = service_provider | Service provider address.
+-- asset.column = service_provider_id | Service provider registry identifier.
+-- asset.column = service_provider_address | Service provider address.
 -- asset.column = payee | Payee address.
 -- asset.column = pdp_rail_id | Filecoin Pay PDP rail identifier.
 -- asset.column = cache_miss_rail_id | Filecoin Pay cache-miss rail identifier, if any.
@@ -23,8 +23,8 @@
 select
     dataset_id,
     payer,
-    provider_id,
-    service_provider,
+    provider_id as service_provider_id,
+    service_provider as service_provider_address,
     payee,
     pdp_rail_id,
     cache_miss_rail_id,

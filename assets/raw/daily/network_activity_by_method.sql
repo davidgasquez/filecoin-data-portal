@@ -27,7 +27,7 @@ select
         ) as float64
     ) as message_burn_fil,
     sum(cast(miner_penalty as float64) / 1e18)
-        as message_miner_penalty_burn_fil,
+        as message_storage_provider_penalty_fil,
     cast(
         sum(
             (
