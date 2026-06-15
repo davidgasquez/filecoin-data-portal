@@ -54,19 +54,7 @@ type NumbersSectionConfig = {
   charts: NumbersChartConfig[]
 }
 
-const sourceDailyMetrics = dailyMetricsDataset as DatasetRow[]
-const dailyMetrics: DatasetRow[] = sourceDailyMetrics.map((row, rowIndex): DatasetRow => {
-  const lockedFil = toNumber(row.locked_fil)
-  const previousLockedFil = toNumber(sourceDailyMetrics[rowIndex - 1]?.locked_fil)
-
-  return {
-    ...row,
-    locked_fil_delta:
-      lockedFil !== null && previousLockedFil !== null
-        ? lockedFil - previousLockedFil
-        : null,
-  }
-})
+const dailyMetrics = dailyMetricsDataset as DatasetRow[]
 const filecoinPayGrossPaymentVolumeRunRateSeries: LineChartSeriesConfig[] = [
   { label: "USDFC", y: "filecoin_pay_gross_payment_volume_run_rate_usdfc_usd" },
   { label: "USDC.axl", y: "filecoin_pay_gross_payment_volume_run_rate_usdc_axl_usd" },
@@ -74,10 +62,6 @@ const filecoinPayGrossPaymentVolumeRunRateSeries: LineChartSeriesConfig[] = [
 
 if (dailyMetrics.length === 0) {
   throw new Error("Generated daily metrics dataset is empty")
-}
-
-function toNumber(value: DatasetRowValue | undefined): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null
 }
 
 const sections = [
@@ -88,8 +72,8 @@ const sections = [
     charts: [
       {
         id: "filecoin-pay-gross-payment-volume-run-rate-usd",
-        title: "Filecoin Pay GPV Run Rate",
-        description: "Annualized gross stablecoin payment volume run-rate from active eligible recurring Filecoin Pay rails, including USDFC and USDC.axl, at each UTC day-end.",
+        title: "Filecoin Pay Gross Payment Volume Run Rate",
+        description: "Annualized gross stablecoin payment volume from active eligible recurring Filecoin Pay rails, including USDFC and USDC.axl, at day-end.",
         y: "filecoin_pay_gross_payment_volume_run_rate_usd",
         format: "usd",
         series: filecoinPayGrossPaymentVolumeRunRateSeries,
@@ -128,7 +112,7 @@ const sections = [
       },
       {
         id: "high-profile-paying-clients",
-        title: "High Profile Paying Clients",
+        title: "High-profile Paying Clients",
         description: "Count of recognized paying clients using Filecoin products.",
         y: "high_profile_paying_clients",
         format: "number",
@@ -143,14 +127,14 @@ const sections = [
       {
         id: "foc-active-payers",
         title: "Active Payers",
-        description: "Unique Filecoin Pay payer addresses with at least one active rail at each UTC day-end.",
+        description: "Unique Filecoin Pay payer addresses with at least one active rail at day-end.",
         y: "filecoin_pay_active_payers",
         format: "integer",
       },
       {
         id: "foc-active-rails",
         title: "Active Rails",
-        description: "Filecoin Pay rails active at each UTC day-end.",
+        description: "Filecoin Pay rails active at day-end.",
         y: "filecoin_pay_active_rails",
         format: "integer",
       },
@@ -164,7 +148,7 @@ const sections = [
       {
         id: "foc-filecoin-pay-network-fee-arr-usd",
         title: "Network Fee ARR",
-        description: "Annualized Filecoin Pay network fee revenue from active eligible recurring stablecoin rails at each UTC day-end.",
+        description: "Annualized Filecoin Pay network fee revenue from active eligible recurring stablecoin rails at day-end.",
         y: "filecoin_pay_network_fee_arr_usd",
         format: "usd",
       },
@@ -177,14 +161,14 @@ const sections = [
     charts: [
       {
         id: "sector-onboarding",
-        title: "Onboarded PiBs",
+        title: "Onboarded Data",
         description: "Raw sector data onboarded to the network per day.",
         y: "onboarded_pibs",
         format: "pib",
       },
       {
         id: "sector-termination",
-        title: "Terminated PiBs",
+        title: "Terminated Data",
         description: "Raw sector data terminated from the network per day.",
         y: "terminated_pibs",
         format: "pib",
@@ -212,7 +196,7 @@ const sections = [
     charts: [
       {
         id: "all-transactions",
-        title: "All Transactions",
+        title: "Transactions",
         description: "On-chain transactions included per day.",
         y: "transactions",
         format: "number",
@@ -221,7 +205,7 @@ const sections = [
       },
       {
         id: "total-value-fil",
-        title: "Total Value FIL",
+        title: "Value Transferred",
         description: "FIL transferred by top-level messages per day.",
         y: "total_value_fil",
         format: "number",
@@ -230,8 +214,8 @@ const sections = [
       },
       {
         id: "total-gas-used",
-        title: "Total Gas Used",
-        description: "Total gas consumed by on-chain messages per day.",
+        title: "Gas Used",
+        description: "Gas consumed by on-chain messages per day.",
         y: "gas_used_millions",
         format: "number",
         formatScale: 1_000_000,
@@ -245,24 +229,38 @@ const sections = [
     columns: 2,
     charts: [
       {
-        id: "daily-protocol-revenue-fil",
-        title: "Daily FIL Burn",
-        description: "Total FIL burned per day. Also known as network revenue.",
+        id: "fil-burned",
+        title: "FIL Burned",
+        description: "FIL burned per day. Also known as network revenue.",
         y: "protocol_revenue_fil",
         format: "fil",
       },
       {
-        id: "message-miner-penalty-burn-fil",
-        title: "Message Miner Penalty Burn",
-        description: "FIL burned by message execution miner penalties per day.",
-        y: "message_miner_penalty_burn_fil",
+        id: "protocol-revenue-usd",
+        title: "Protocol Revenue",
+        description: "FIL burned per day, valued at average FIL/USD price.",
+        y: "protocol_revenue_usd",
+        format: "usd",
+      },
+      {
+        id: "total-gas-fees",
+        title: "Total Gas Fees",
+        description: "FIL paid in gas fees per day.",
+        y: "total_gas_fee_fil",
         format: "fil",
       },
       {
-        id: "daily-locked-fil-change",
-        title: "Daily Locked FIL Change",
-        description: "Daily net change in FIL locked in the network.",
-        y: "locked_fil_delta",
+        id: "base-fee-burn",
+        title: "Base Fee Burn",
+        description: "FIL burned by message base fees per day.",
+        y: "base_fee_burn_fil",
+        format: "fil",
+      },
+      {
+        id: "storage-provider-penalties",
+        title: "Storage Provider Penalties",
+        description: "FIL penalties incurred by storage providers during message execution per day.",
+        y: "message_storage_provider_penalty_fil",
         format: "fil",
       },
       {
@@ -270,6 +268,13 @@ const sections = [
         title: "Locked FIL",
         description: "End-of-day FIL locked in the network.",
         y: "locked_fil",
+        format: "mfil",
+      },
+      {
+        id: "pledge-collateral",
+        title: "Pledge Collateral",
+        description: "End-of-day FIL locked as storage provider pledge collateral.",
+        y: "pledge_collateral_fil",
         format: "mfil",
       },
       {
@@ -295,10 +300,17 @@ const sections = [
       },
       {
         id: "block-rewards-fil",
-        title: "Block Rewards FIL",
+        title: "Block Rewards",
         description: "FIL block rewards minted by the network per day.",
         y: "block_rewards_fil",
         format: "fil",
+      },
+      {
+        id: "block-rewards-usd",
+        title: "Block Rewards Value",
+        description: "Block rewards minted per day, valued at average FIL/USD price.",
+        y: "block_rewards_usd",
+        format: "usd",
       },
       {
         id: "mining-yield",
@@ -309,8 +321,8 @@ const sections = [
       },
       {
         id: "reward-per-wincount",
-        title: "Reward Per Wincount",
-        description: "Average FIL reward allocated per winning proof each day.",
+        title: "Reward per Wincount",
+        description: "Average FIL reward allocated per winning proof per day.",
         y: "reward_per_wincount_fil",
         format: "fil",
       },
@@ -330,7 +342,7 @@ const sections = [
       },
       {
         id: "fil-token-volume",
-        title: "FIL Token Volume",
+        title: "FIL Trading Volume",
         description: "Reported daily FIL trading volume in USD.",
         y: "fil_token_volume_usd",
         format: "usd",
@@ -339,7 +351,7 @@ const sections = [
       },
       {
         id: "fil-token-market-cap",
-        title: "FIL Token Market Cap",
+        title: "FIL Market Cap",
         description: "Daily FIL market capitalization in USD.",
         y: "fil_token_market_cap_usd",
         format: "usd",
