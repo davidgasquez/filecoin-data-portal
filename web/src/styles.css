@@ -380,6 +380,7 @@
   }
 
   .numbers-section__legend .heading-link {
+    position: relative;
     display: inline-block;
   }
 
@@ -391,12 +392,16 @@
   .numbers-section__legend .heading-link:hover::before,
   .numbers-section__legend .heading-link:focus-visible::before {
     content: "[";
+    position: absolute;
+    inset-inline-end: 100%;
   }
 
   .numbers-section__legend:target .heading-link::after,
   .numbers-section__legend .heading-link:hover::after,
   .numbers-section__legend .heading-link:focus-visible::after {
     content: "]";
+    position: absolute;
+    inset-inline-start: 100%;
   }
 
   .chart-range-toggle {
@@ -515,6 +520,7 @@
   }
 
   .stat-card .line-chart__title {
+    position: relative;
     justify-self: start;
     inline-size: fit-content;
     max-inline-size: 100%;
@@ -528,12 +534,16 @@
   .stat-card .line-chart__title:hover::before,
   .stat-card .line-chart__title:focus-visible::before {
     content: "[";
+    position: absolute;
+    inset-inline-end: 100%;
   }
 
   .stat-card .line-chart__title:target::after,
   .stat-card .line-chart__title:hover::after,
   .stat-card .line-chart__title:focus-visible::after {
     content: "]";
+    position: absolute;
+    inset-inline-start: 100%;
   }
 
   .stat-card .line-chart__toggle {
