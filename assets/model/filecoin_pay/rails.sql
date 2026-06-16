@@ -69,7 +69,7 @@ rail_created as (
             order by block_number, log_index
         ) as row_num
     from raw.fevm_eth_logs_decoded
-    where abi_name = 'filecoin_pay_v1'
+    where contract_name = 'filecoin_pay_v1'
       and event_name = 'RailCreated'
 ),
 rail_terminated as (
@@ -87,7 +87,7 @@ rail_terminated as (
             order by block_number, log_index
         ) as row_num
     from raw.fevm_eth_logs_decoded
-    where abi_name = 'filecoin_pay_v1'
+    where contract_name = 'filecoin_pay_v1'
       and event_name = 'RailTerminated'
 )
 select

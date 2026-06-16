@@ -60,7 +60,7 @@ provider_registered as (
             order by block_number, log_index
         ) as row_num
     from raw.fevm_eth_logs_decoded
-    where abi_name = 'service_provider_registry'
+    where contract_name = 'service_provider_registry'
       and event_name = 'ProviderRegistered'
 ),
 provider_removed as (
@@ -75,7 +75,7 @@ provider_removed as (
             order by block_number, log_index
         ) as row_num
     from raw.fevm_eth_logs_decoded
-    where abi_name = 'service_provider_registry'
+    where contract_name = 'service_provider_registry'
       and event_name = 'ProviderRemoved'
 ),
 product_events as (
@@ -93,7 +93,7 @@ product_events as (
             order by block_number desc, log_index desc
         ) as row_num
     from raw.fevm_eth_logs_decoded
-    where abi_name = 'service_provider_registry'
+    where contract_name = 'service_provider_registry'
       and event_name in ('ProductAdded', 'ProductUpdated', 'ProductRemoved')
 ),
 latest_pdp_product as (
@@ -199,7 +199,7 @@ fwss_approval_events as (
             order by block_number desc, log_index desc
         ) as latest_row_num
     from raw.fevm_eth_logs_decoded
-    where abi_name = 'filecoin_warm_storage_service'
+    where contract_name = 'filecoin_warm_storage_service'
       and event_name in ('ProviderApproved', 'ProviderUnapproved')
 ),
 fwss_latest_approval as (
@@ -228,7 +228,7 @@ fwss_first_approval as (
                 order by block_number, log_index
             ) as row_num
         from raw.fevm_eth_logs_decoded
-        where abi_name = 'filecoin_warm_storage_service'
+        where contract_name = 'filecoin_warm_storage_service'
           and event_name = 'ProviderApproved'
     )
     where row_num = 1

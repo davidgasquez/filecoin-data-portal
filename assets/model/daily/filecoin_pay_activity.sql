@@ -47,7 +47,7 @@ with days as (
     from raw.fevm_eth_logs_decoded as events
     join model.filecoin_pay_rails as payment_rails
         on cast(json_extract_string(events.args, '$.railId') as bigint) = payment_rails.rail_id
-    where events.abi_name = 'filecoin_pay_v1'
+    where events.contract_name = 'filecoin_pay_v1'
       and events.event_name in ('RailSettled', 'RailOneTimePaymentProcessed')
       and payment_rails.is_stablecoin
       and events.file_date <= current_date - 1

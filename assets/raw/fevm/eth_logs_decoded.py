@@ -12,7 +12,7 @@
 # asset.column = transaction_index | Decoded transaction index within the block.
 # asset.column = topic0 | Primary event signature topic used for ABI lookup.
 # asset.column = event_name | Decoded ABI event name.
-# asset.column = abi_name | Logical ABI source used to decode the event.
+# asset.column = contract_name | Logical contract that emitted the decoded event.
 # asset.column = args | Decoded event arguments stored as JSON.
 # asset.column = file_date | Archive partition date of the raw log.
 
@@ -38,7 +38,7 @@ OUTPUT_SCHEMA = {
     "transaction_index": pl.Int64,
     "topic0": pl.String,
     "event_name": pl.String,
-    "abi_name": pl.String,
+    "contract_name": pl.String,
     "args_json": pl.String,
     "file_date": pl.Date,
 }
@@ -57,7 +57,7 @@ class EventField:
 
 @dataclass(frozen=True)
 class EventSpec:
-    abi_name: str
+    contract_name: str
     event_name: str
     address: str
     topic0: str
@@ -140,13 +140,13 @@ def event_topic0(event_abi: dict[str, Any]) -> str:
 
 
 def build_event_spec(
-    abi_name: str,
+    contract_name: str,
     address: str,
     event_abi: dict[str, Any],
 ) -> EventSpec:
     fields = tuple(build_event_field(parameter) for parameter in event_abi["inputs"])
     return EventSpec(
-        abi_name=abi_name,
+        contract_name=contract_name,
         event_name=str(event_abi["name"]),
         address=address,
         topic0=event_topic0(event_abi),
@@ -159,22 +159,22 @@ def load_event_specs() -> dict[tuple[str, str], EventSpec]:
     with fdp.db_connection() as conn:
         rows = conn.execute(
             """
-            select abi_name, lower(address) as address, abi_json
+            select contract_name, lower(address) as address, abi_json
             from raw.fevm_contract_registry
-            order by abi_name, address
+            order by contract_name, address
             """
         ).fetchall()
 
     specs: dict[tuple[str, str], EventSpec] = {}
-    for abi_name, address, abi_json in rows:
+    for contract_name, address, abi_json in rows:
         abi = json.loads(abi_json)
         if not isinstance(abi, list):
-            raise TypeError(f"ABI for {abi_name} at {address} must be a list")
+            raise TypeError(f"ABI for {contract_name} at {address} must be a list")
 
         for entry in abi:
             if entry.get("type") != "event" or entry.get("anonymous"):
                 continue
-            spec = build_event_spec(str(abi_name), str(address), entry)
+            spec = build_event_spec(str(contract_name), str(address), entry)
             key = (spec.address, spec.topic0)
             if key in specs:
                 raise ValueError(
@@ -270,7 +270,7 @@ def decode_args(spec: EventSpec, topics: list[str], data_hex: str) -> dict[str, 
     expected_topic_count = 1 + len(spec.indexed_fields)
     if len(topics) != expected_topic_count:
         raise ValueError(
-            f"Unexpected topic count for {spec.abi_name}.{spec.event_name}: "
+            f"Unexpected topic count for {spec.contract_name}.{spec.event_name}: "
             f"expected {expected_topic_count}, got {len(topics)}"
         )
 
@@ -315,7 +315,7 @@ def decode_row(
         "transaction_index": transaction_index,
         "topic0": topic0,
         "event_name": spec.event_name,
-        "abi_name": spec.abi_name,
+        "contract_name": spec.contract_name,
         "args_json": json.dumps(args, sort_keys=True),
         "file_date": file_date,
     }
@@ -334,7 +334,7 @@ def ensure_table() -> None:
                 transaction_index bigint,
                 topic0 varchar,
                 event_name varchar,
-                abi_name varchar,
+                contract_name varchar,
                 args json,
                 file_date date
             )
@@ -357,7 +357,7 @@ def insert_rows(rows: list[dict[str, Any]]) -> None:
                 transaction_index,
                 topic0,
                 event_name,
-                abi_name,
+                contract_name,
                 cast(args_json as json) as args,
                 file_date
             from decoded_rows

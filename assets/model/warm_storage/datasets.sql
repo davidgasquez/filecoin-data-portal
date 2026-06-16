@@ -43,7 +43,7 @@ dataset_created as (
             order by block_number, log_index
         ) as row_num
     from raw.fevm_eth_logs_decoded
-    where abi_name = 'filecoin_warm_storage_service'
+    where contract_name = 'filecoin_warm_storage_service'
       and event_name = 'DataSetCreated'
 ),
 dataset_billing_started as (
@@ -51,7 +51,7 @@ dataset_billing_started as (
         cast(json_extract_string(args, '$.dataSetId') as bigint) as dataset_id,
         min(block_number) as billing_started_block
     from raw.fevm_eth_logs_decoded
-    where abi_name = 'filecoin_warm_storage_service'
+    where contract_name = 'filecoin_warm_storage_service'
       and event_name = 'RailRateUpdated'
       and cast(json_extract_string(args, '$.newRate') as bigint) > 0
     group by 1
@@ -71,7 +71,7 @@ dataset_billing_terminated as (
                 order by block_number, log_index
             ) as row_num
         from raw.fevm_eth_logs_decoded
-        where abi_name = 'filecoin_warm_storage_service'
+        where contract_name = 'filecoin_warm_storage_service'
           and event_name = 'PDPPaymentTerminated'
     )
     where row_num = 1
