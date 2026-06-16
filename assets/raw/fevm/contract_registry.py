@@ -43,7 +43,6 @@ POREP_MARKET_RAW_BASE = (
     f"/{POREP_MARKET_SOURCE_REF}"
 )
 POREP_MARKET_DEPLOYMENT_URL = f"{POREP_MARKET_RAW_BASE}/deployments/mainnet/latest.json"
-POREP_MARKET_SP_REGISTRY_ABI_URL = f"{POREP_MARKET_RAW_BASE}/abis/SPRegistry.json"
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,6 +84,15 @@ GITHUB_CONTRACTS = [
         "SESSION_KEY_REGISTRY",
     ),
 ]
+
+POREP_MARKET_CONTRACTS = {
+    "Client": ("porep_datacap_evidence_adapter", "DataCapEvidenceAdapter"),
+    "PoRepMarket": ("porep_market", "PoRepMarket"),
+    "SLIOracle": ("porep_sli_oracle", "SLIOracle"),
+    "SLIScorer": ("porep_sli_scorer", "SLIScorer"),
+    "SPRegistry": ("porep_sp_registry", "SPRegistry"),
+    "ValidatorFactory": ("porep_validator_factory", "ValidatorFactory"),
+}
 
 BLOCKSCOUT_PROXY_CONTRACTS = [
     BlockscoutProxyContract(
@@ -221,7 +229,7 @@ def resolve_github_rows(client: httpx.Client, fetched_at: dt.datetime) -> list[d
     return rows
 
 
-def resolve_porep_sp_registry_rows(
+def resolve_porep_market_rows(
     client: httpx.Client,
     fetched_at: dt.datetime,
 ) -> list[dict]:
@@ -233,35 +241,52 @@ def resolve_porep_sp_registry_rows(
     if chain_id != MAINNET_CHAIN_ID:
         raise ValueError(f"Expected PoRep chain ID {MAINNET_CHAIN_ID}, got {chain_id}")
 
-    sp_registry = cast(dict[str, object], deployment.get("SPRegistry") or {})
-    if "proxy" not in sp_registry or "impl" not in sp_registry:
-        raise TypeError("Unexpected PoRep SPRegistry deployment payload")
-
     deployment_block = deployment.get("block")
     source_version = (
         f"block:{deployment_block}" if deployment_block is not None else None
     )
-    return [
-        {
+
+    rows: list[dict] = []
+    for deployment_key, (contract_name, abi_name) in POREP_MARKET_CONTRACTS.items():
+        if deployment_key not in deployment:
+            raise ValueError(f"Missing PoRep deployment key: {deployment_key}")
+
+        address_role = "address"
+        deployed = deployment[deployment_key]
+        implementation_address = None
+        if isinstance(deployed, dict):
+            deployed_contract = cast(dict[str, object], deployed)
+            if "proxy" not in deployed_contract or "impl" not in deployed_contract:
+                raise TypeError(
+                    f"Unexpected PoRep deployment payload: {deployment_key}"
+                )
+            address = normalize_address(str(deployed_contract["proxy"]))
+            implementation_address = normalize_address(str(deployed_contract["impl"]))
+            address_role = "proxy"
+        elif isinstance(deployed, str):
+            address = normalize_address(deployed)
+        else:
+            raise TypeError(f"Unexpected PoRep deployment payload: {deployment_key}")
+
+        abi_url = f"{POREP_MARKET_RAW_BASE}/abis/{abi_name}.json"
+        rows.append({
             "chain_id": MAINNET_CHAIN_ID,
             "network": MAINNET_NETWORK,
-            "contract_name": "porep_sp_registry",
-            "abi_name": "SPRegistry",
-            "deployment_key": "SPRegistry.proxy",
-            "deployment_role": "proxy",
-            "address": normalize_address(str(sp_registry["proxy"])),
-            "implementation_address": normalize_address(str(sp_registry["impl"])),
+            "contract_name": contract_name,
+            "abi_name": abi_name,
+            "deployment_key": f"{deployment_key}.{address_role}",
+            "deployment_role": address_role,
+            "address": address,
+            "implementation_address": implementation_address,
             "source_kind": "github_deployment_artifact",
             "source_name": POREP_MARKET_SOURCE_REPO,
             "address_source_url": POREP_MARKET_DEPLOYMENT_URL,
-            "abi_source_url": POREP_MARKET_SP_REGISTRY_ABI_URL,
-            "abi_json": normalize_abi_json(
-                fetch_json(client, POREP_MARKET_SP_REGISTRY_ABI_URL)
-            ),
+            "abi_source_url": abi_url,
+            "abi_json": normalize_abi_json(fetch_json(client, abi_url)),
             "source_version": source_version,
             "fetched_at": fetched_at,
-        }
-    ]
+        })
+    return rows
 
 
 def resolve_blockscout_proxy_rows(
@@ -305,7 +330,7 @@ def contract_registry() -> pl.DataFrame:
     with httpx.Client(follow_redirects=True, timeout=30) as client:
         rows = [
             *resolve_github_rows(client, fetched_at),
-            *resolve_porep_sp_registry_rows(client, fetched_at),
+            *resolve_porep_market_rows(client, fetched_at),
             *resolve_blockscout_proxy_rows(client, fetched_at),
         ]
 

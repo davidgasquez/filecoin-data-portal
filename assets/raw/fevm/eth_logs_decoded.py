@@ -159,22 +159,22 @@ def load_event_specs() -> dict[tuple[str, str], EventSpec]:
     with fdp.db_connection() as conn:
         rows = conn.execute(
             """
-            select contract_name, lower(address) as address, abi_json
+            select abi_name, lower(address) as address, abi_json
             from raw.fevm_contract_registry
-            order by contract_name, address
+            order by abi_name, address
             """
         ).fetchall()
 
     specs: dict[tuple[str, str], EventSpec] = {}
-    for contract_name, address, abi_json in rows:
+    for abi_name, address, abi_json in rows:
         abi = json.loads(abi_json)
         if not isinstance(abi, list):
-            raise TypeError(f"ABI for {contract_name} at {address} must be a list")
+            raise TypeError(f"ABI for {abi_name} at {address} must be a list")
 
         for entry in abi:
             if entry.get("type") != "event" or entry.get("anonymous"):
                 continue
-            spec = build_event_spec(str(contract_name), str(address), entry)
+            spec = build_event_spec(str(abi_name), str(address), entry)
             key = (spec.address, spec.topic0)
             if key in specs:
                 raise ValueError(
