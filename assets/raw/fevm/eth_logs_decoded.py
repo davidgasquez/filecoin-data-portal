@@ -12,7 +12,7 @@
 # asset.column = transaction_index | Decoded transaction index within the block.
 # asset.column = topic0 | Primary event signature topic used for ABI lookup.
 # asset.column = event_name | Decoded ABI event name.
-# asset.column = abi_name | Logical ABI source used to decode the event.
+# asset.column = contract_name | Logical contract that emitted the decoded event.
 # asset.column = args | Decoded event arguments stored as JSON.
 # asset.column = file_date | Archive partition date of the raw log.
 
@@ -38,10 +38,13 @@ OUTPUT_SCHEMA = {
     "transaction_index": pl.Int64,
     "topic0": pl.String,
     "event_name": pl.String,
-    "abi_name": pl.String,
+    "contract_name": pl.String,
     "args_json": pl.String,
     "file_date": pl.Date,
 }
+EXPECTED_TABLE_COLUMNS = tuple(
+    column if column != "args_json" else "args" for column in OUTPUT_SCHEMA
+)
 ABI_CODEC = Web3().codec
 
 
@@ -57,7 +60,7 @@ class EventField:
 
 @dataclass(frozen=True)
 class EventSpec:
-    abi_name: str
+    contract_name: str
     event_name: str
     address: str
     topic0: str
@@ -140,13 +143,13 @@ def event_topic0(event_abi: dict[str, Any]) -> str:
 
 
 def build_event_spec(
-    abi_name: str,
+    contract_name: str,
     address: str,
     event_abi: dict[str, Any],
 ) -> EventSpec:
     fields = tuple(build_event_field(parameter) for parameter in event_abi["inputs"])
     return EventSpec(
-        abi_name=abi_name,
+        contract_name=contract_name,
         event_name=str(event_abi["name"]),
         address=address,
         topic0=event_topic0(event_abi),
@@ -270,7 +273,7 @@ def decode_args(spec: EventSpec, topics: list[str], data_hex: str) -> dict[str, 
     expected_topic_count = 1 + len(spec.indexed_fields)
     if len(topics) != expected_topic_count:
         raise ValueError(
-            f"Unexpected topic count for {spec.abi_name}.{spec.event_name}: "
+            f"Unexpected topic count for {spec.contract_name}.{spec.event_name}: "
             f"expected {expected_topic_count}, got {len(topics)}"
         )
 
@@ -315,10 +318,70 @@ def decode_row(
         "transaction_index": transaction_index,
         "topic0": topic0,
         "event_name": spec.event_name,
-        "abi_name": spec.abi_name,
+        "contract_name": spec.contract_name,
         "args_json": json.dumps(args, sort_keys=True),
         "file_date": file_date,
     }
+
+
+def reset_stale_table(event_specs: dict[tuple[str, str], EventSpec]) -> None:
+    with fdp.db_connection() as conn:
+        if not table_exists(conn, "raw", "fevm_eth_logs_decoded"):
+            return
+        if decoded_table_columns(conn) != EXPECTED_TABLE_COLUMNS:
+            conn.execute(f"drop table {TABLE_NAME}")
+            return
+        if has_missing_decoded_candidates(conn, event_specs):
+            conn.execute(f"drop table {TABLE_NAME}")
+
+
+def decoded_table_columns(conn: Any) -> tuple[str, ...]:
+    rows = conn.execute(
+        """
+        select column_name
+        from information_schema.columns
+        where table_schema = 'raw'
+          and table_name = 'fevm_eth_logs_decoded'
+        order by ordinal_position
+        """
+    ).fetchall()
+    return tuple(str(row[0]) for row in rows)
+
+
+def has_missing_decoded_candidates(
+    conn: Any,
+    event_specs: dict[tuple[str, str], EventSpec],
+) -> bool:
+    if not event_specs:
+        return False
+
+    addresses = tuple(sorted({address for address, _ in event_specs}))
+    topic0s = tuple(sorted({topic0 for _, topic0 in event_specs}))
+    row = conn.execute(
+        f"""
+        select 1
+        from raw.fevm_eth_logs as raw
+        where lower(raw.address) in ({sql_string_list(addresses)})
+          and array_length(raw.topics) > 0
+          and lower(raw.topics[1]) in ({sql_string_list(topic0s)})
+          and exists (
+              select 1
+              from {TABLE_NAME} as decoded_date
+              where decoded_date.file_date = raw.file_date
+          )
+          and not exists (
+              select 1
+              from {TABLE_NAME} as decoded
+              where decoded.file_date = raw.file_date
+                and decoded.address = lower(raw.address)
+                and decoded.log_index = cast(raw.logIndex as bigint)
+                and decoded.transaction_hash = lower(raw.transactionHash)
+                and decoded.topic0 = lower(raw.topics[1])
+          )
+        limit 1
+        """
+    ).fetchone()
+    return row is not None
 
 
 def ensure_table() -> None:
@@ -334,7 +397,7 @@ def ensure_table() -> None:
                 transaction_index bigint,
                 topic0 varchar,
                 event_name varchar,
-                abi_name varchar,
+                contract_name varchar,
                 args json,
                 file_date date
             )
@@ -357,7 +420,7 @@ def insert_rows(rows: list[dict[str, Any]]) -> None:
                 transaction_index,
                 topic0,
                 event_name,
-                abi_name,
+                contract_name,
                 cast(args_json as json) as args,
                 file_date
             from decoded_rows
@@ -366,9 +429,10 @@ def insert_rows(rows: list[dict[str, Any]]) -> None:
 
 
 def eth_logs_decoded() -> None:
+    event_specs = load_event_specs()
+    reset_stale_table(event_specs)
     ensure_table()
 
-    event_specs = load_event_specs()
     if not event_specs:
         return
 

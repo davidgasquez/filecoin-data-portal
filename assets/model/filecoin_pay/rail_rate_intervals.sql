@@ -48,7 +48,7 @@ rate_change_points as (
         events.block_number * 1000000 + events.log_index as ordinal,
         cast(json_extract_string(events.args, '$.newRate') as bigint) as rate_wei_per_epoch
     from raw.fevm_eth_logs_decoded as events
-    where events.abi_name = 'filecoin_pay_v1'
+    where events.contract_name = 'filecoin_pay_v1'
       and events.event_name = 'RailRateModified'
 ),
 valid_change_points as (
