@@ -364,6 +364,11 @@ def has_missing_decoded_candidates(
         where lower(raw.address) in ({sql_string_list(addresses)})
           and array_length(raw.topics) > 0
           and lower(raw.topics[1]) in ({sql_string_list(topic0s)})
+          and exists (
+              select 1
+              from {TABLE_NAME} as decoded_date
+              where decoded_date.file_date = raw.file_date
+          )
           and not exists (
               select 1
               from {TABLE_NAME} as decoded
