@@ -1,0 +1,568 @@
+---
+import dailyMetricsDataset from "../data/generated/filecoin-daily-metrics.json"
+import Layout from "../layouts/Layout.astro"
+
+type Value = string | number | null
+type Row = Record<string, Value>
+type MetricRow = Row & { date: string }
+
+const rows = (dailyMetricsDataset as Row[])
+  .filter((row): row is MetricRow => typeof row.date === "string")
+  .sort((left, right) => left.date.localeCompare(right.date))
+
+if (rows.length === 0) {
+  throw new Error("Revenue page needs daily metrics data")
+}
+
+const latest = rows[rows.length - 1]
+const recent = rows.slice(-30)
+const trailingYear = rows.slice(-365)
+
+function numberValue(row: Row, key: string): number {
+  const value = row[key]
+  if (typeof value === "number" && Number.isFinite(value)) return value
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+  return 0
+}
+
+function sum(rows: Row[], key: string): number {
+  return rows.reduce((total, row) => total + numberValue(row, key), 0)
+}
+
+function last(rows: Row[], key: string): number {
+  for (let index = rows.length - 1; index >= 0; index--) {
+    const value = numberValue(rows[index], key)
+    if (value !== 0) return value
+  }
+  return 0
+}
+
+function formatUsd(value: number): string {
+  if (Math.abs(value) >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(2)}B`
+  if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`
+  if (Math.abs(value) >= 1_000) return `$${(value / 1_000).toFixed(2)}K`
+  return `$${value.toFixed(2)}`
+}
+
+function formatFil(value: number): string {
+  if (Math.abs(value) >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M FIL`
+  if (Math.abs(value) >= 1_000) return `${(value / 1_000).toFixed(2)}K FIL`
+  return `${value.toFixed(2)} FIL`
+}
+
+function formatInteger(value: number): string {
+  return Math.round(value).toLocaleString("en-US")
+}
+
+function pct(value: number): string {
+  return `${value.toFixed(2)}%`
+}
+
+function monthLabel(month: string): string {
+  const [year, monthIndex] = month.split("-").map(Number)
+  return new Intl.DateTimeFormat("en-US", { month: "short", year: "2-digit", timeZone: "UTC" })
+    .format(new Date(Date.UTC(year, monthIndex - 1, 1)))
+}
+
+const monthMap = new Map<string, Record<string, number>>()
+for (const row of rows) {
+  const month = row.date.slice(0, 7)
+  const bucket = monthMap.get(month) ?? {
+    revenueUsd: 0,
+    rewardsUsd: 0,
+    payUsd: 0,
+    payArrUsd: 0,
+    activeRails: 0,
+  }
+  bucket.revenueUsd += numberValue(row, "protocol_revenue_usd")
+  bucket.rewardsUsd += numberValue(row, "block_rewards_usd")
+  bucket.payUsd += numberValue(row, "filecoin_pay_paid_usd")
+  bucket.payArrUsd = numberValue(row, "filecoin_pay_network_fee_arr_usd")
+  bucket.activeRails = numberValue(row, "filecoin_pay_active_rails")
+  monthMap.set(month, bucket)
+}
+
+const monthly = [...monthMap.entries()].slice(-18)
+const daily = rows.slice(-180)
+const supply = rows.filter((_, index) => index % 14 === 0 || index === rows.length - 1).slice(-90)
+
+const annualRevenueUsd = numberValue(latest, "annual_protocol_revenue_usd") || sum(trailingYear, "protocol_revenue_usd")
+const annualRewardsUsd = numberValue(latest, "annual_block_rewards_usd") || sum(trailingYear, "block_rewards_usd")
+const annualPgfUsd = numberValue(latest, "annual_pgf_deployments_usd")
+const coverage = numberValue(latest, "revenue_coverage_ratio") * 100
+const latestDailyRevenueUsd = numberValue(latest, "protocol_revenue_usd")
+const monthlyRevenueUsd = sum(recent, "protocol_revenue_usd")
+const latestPayArrUsd = last(rows, "filecoin_pay_network_fee_arr_usd")
+const latestPayRails = last(rows, "filecoin_pay_active_rails")
+
+const chartPayload = {
+  gauge: Math.max(0, Math.min(100, coverage)),
+  daily: {
+    labels: daily.map((row) => row.date),
+    revenue: daily.map((row) => numberValue(row, "protocol_revenue_usd")),
+    rewards: daily.map((row) => numberValue(row, "block_rewards_usd")),
+  },
+  monthly: {
+    labels: monthly.map(([month]) => monthLabel(month)),
+    revenue: monthly.map(([, value]) => value.revenueUsd),
+    rewards: monthly.map(([, value]) => value.rewardsUsd),
+  },
+  pay: {
+    labels: monthly.map(([month]) => monthLabel(month)),
+    paid: monthly.map(([, value]) => value.payUsd),
+    arr: monthly.map(([, value]) => value.payArrUsd),
+    rails: monthly.map(([, value]) => value.activeRails),
+  },
+  supply: {
+    labels: supply.map((row) => row.date),
+    circulating: supply.map((row) => numberValue(row, "circulating_fil") / 1_000_000),
+    locked: supply.map((row) => numberValue(row, "locked_fil") / 1_000_000),
+  },
+}
+
+const payloadJson = JSON.stringify(chartPayload)
+
+const cards = [
+  {
+    label: "365d burn",
+    value: formatUsd(annualRevenueUsd),
+    detail: `${formatFil(sum(trailingYear, "protocol_revenue_fil"))} removed from supply`,
+  },
+  {
+    label: "365d issuance",
+    value: formatUsd(annualRewardsUsd),
+    detail: `${formatFil(sum(trailingYear, "block_rewards_fil"))} minted as block rewards`,
+  },
+  {
+    label: "Coverage",
+    value: pct(coverage),
+    detail: "Burn divided by public goods funding plus block rewards",
+  },
+  {
+    label: "Filecoin Pay ARR",
+    value: formatUsd(latestPayArrUsd),
+    detail: `${formatInteger(latestPayRails)} active rails with eligible recurring rates`,
+  },
+]
+---
+
+<Layout
+  title="Filecoin Revenue | Filecoin Data Portal"
+  description="A Filecoin revenue view for FIL burn, issuance coverage, Filecoin Pay revenue, and supply context."
+>
+  <article class="revenue-page">
+    <section class="revenue-hero" aria-labelledby="revenue-title">
+      <div class="revenue-hero__copy">
+        <p class="eyebrow">+ Filecoin revenue</p>
+        <h1 id="revenue-title">Filecoin earns by burning FIL.</h1>
+        <p>
+          Protocol revenue is FIL removed from supply. This page shows how much
+          burn covers issuance, public goods funding, and Filecoin Pay revenue.
+        </p>
+        <dl class="hero-metrics">
+          <div>
+            <dt>Latest day</dt>
+            <dd>{formatUsd(latestDailyRevenueUsd)}</dd>
+          </div>
+          <div>
+            <dt>30d burn</dt>
+            <dd>{formatUsd(monthlyRevenueUsd)}</dd>
+          </div>
+        </dl>
+      </div>
+      <div class="hero-gauge">
+        <p>Revenue coverage</p>
+        <div class="chart chart--gauge" data-chart="coverage"></div>
+        <strong>{pct(coverage)}</strong>
+        <span>{formatUsd(annualRevenueUsd)} burn against {formatUsd(annualRewardsUsd + annualPgfUsd)} issuance and public goods funding</span>
+      </div>
+    </section>
+
+    <section class="card-grid" aria-label="Revenue summary">
+      {cards.map((card) => (
+        <div class="metric-card">
+          <span>{card.label}</span>
+          <strong>{card.value}</strong>
+          <p>{card.detail}</p>
+        </div>
+      ))}
+    </section>
+
+    <section class="story-grid">
+      <div class="section-copy">
+        <p class="eyebrow">+ Economic balance</p>
+        <h2>Burn is protocol revenue. Issuance sets the hurdle.</h2>
+        <p>
+          Filecoin protocol revenue is FIL removed from supply through gas and
+          penalty mechanics. The charts compare that burn with block rewards,
+          which are newly minted FIL paid to storage providers.
+        </p>
+      </div>
+      <div class="panel panel--wide">
+        <div class="panel__header">
+          <h3>Monthly burn and block rewards</h3>
+          <span>USD</span>
+        </div>
+        <div class="chart chart--large" data-chart="monthly"></div>
+      </div>
+    </section>
+
+    <section class="panel panel--wide">
+      <div class="panel__header">
+        <div>
+          <p class="eyebrow">+ Daily pulse</p>
+          <h2>Daily burn changes with network activity.</h2>
+        </div>
+        <span>Last 180 days</span>
+      </div>
+      <div class="chart chart--large" data-chart="daily"></div>
+    </section>
+
+    <section class="story-grid">
+      <div class="section-copy">
+        <p class="eyebrow">+ Product layer</p>
+        <h2>Filecoin Pay adds product revenue.</h2>
+        <p>
+          The Filecoin Pay network fee ARR value is yearly revenue estimated
+          from active eligible recurring stablecoin payment rails. The model
+          applies a 0.5% network fee to the current payment rate.
+        </p>
+      </div>
+      <div class="panel">
+        <div class="panel__header">
+          <h3>Filecoin Pay activity</h3>
+          <span>monthly</span>
+        </div>
+        <div class="chart chart--medium" data-chart="pay"></div>
+      </div>
+    </section>
+
+    <section class="panel panel--wide">
+      <div class="panel__header">
+        <div>
+          <p class="eyebrow">+ Supply context</p>
+          <h2>Burn changes the supply state.</h2>
+        </div>
+        <span>FIL, millions</span>
+      </div>
+      <div class="chart chart--large" data-chart="supply"></div>
+    </section>
+
+  </article>
+
+  <script is:inline type="application/json" data-revenue-payload set:html={payloadJson}></script>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+  <script is:inline>
+    const payloadNode = document.querySelector("[data-revenue-payload]")
+    const payload = payloadNode ? JSON.parse(payloadNode.textContent || "{}") : {}
+    const colors = ["#000000", "#555555", "#8a8a8a", "#c8c8c8"]
+    const textStyle = { color: "#000", fontFamily: "JetBrains Mono, ui-monospace, monospace" }
+    const grid = { left: 8, right: 8, top: 32, bottom: 28, containLabel: true }
+
+    function currency(value) {
+      if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
+      if (Math.abs(value) >= 1_000) return `$${(value / 1_000).toFixed(0)}K`
+      return `$${Math.round(value)}`
+    }
+
+    function initChart(name, option) {
+      const node = document.querySelector(`[data-chart="${name}"]`)
+      if (!node || !window.echarts) return null
+      const chart = window.echarts.init(node, null, { renderer: "svg" })
+      chart.setOption({ animation: false, ...option })
+      return chart
+    }
+
+    const charts = [
+      initChart("coverage", {
+        series: [{
+          type: "gauge",
+          startAngle: 210,
+          endAngle: -30,
+          min: 0,
+          max: 100,
+          center: ["50%", "57%"],
+          radius: "108%",
+          progress: { show: true, width: 14, itemStyle: { color: "#000" } },
+          axisLine: { lineStyle: { width: 14, color: [[1, "#ededed"]] } },
+          axisTick: { show: false },
+          splitLine: { show: false },
+          axisLabel: { show: false },
+          pointer: { show: false },
+          detail: { show: false },
+          data: [{ value: payload.gauge || 0 }],
+        }],
+      }),
+      initChart("monthly", {
+        color: colors,
+        textStyle,
+        tooltip: { trigger: "axis", valueFormatter: currency },
+        legend: { bottom: 0, textStyle },
+        grid,
+        xAxis: { type: "category", data: payload.monthly.labels, axisLabel: { color: "#000" } },
+        yAxis: { type: "value", axisLabel: { color: "#000", formatter: currency }, splitLine: { lineStyle: { color: "#ddd" } } },
+        series: [
+          { name: "Protocol burn", type: "bar", data: payload.monthly.revenue },
+          { name: "Block rewards", type: "line", smooth: true, data: payload.monthly.rewards },
+        ],
+      }),
+      initChart("daily", {
+        color: colors,
+        textStyle,
+        tooltip: { trigger: "axis", valueFormatter: currency },
+        legend: { bottom: 0, textStyle },
+        grid,
+        xAxis: { type: "category", data: payload.daily.labels, axisLabel: { color: "#000" } },
+        yAxis: { type: "value", axisLabel: { color: "#000", formatter: currency }, splitLine: { lineStyle: { color: "#ddd" } } },
+        series: [
+          { name: "Daily burn", type: "line", smooth: true, showSymbol: false, data: payload.daily.revenue },
+          { name: "Daily rewards", type: "line", smooth: true, showSymbol: false, data: payload.daily.rewards },
+        ],
+      }),
+      initChart("pay", {
+        color: colors,
+        textStyle,
+        tooltip: { trigger: "axis" },
+        legend: { bottom: 0, textStyle },
+        grid,
+        xAxis: { type: "category", data: payload.pay.labels, axisLabel: { color: "#000" } },
+        yAxis: [
+          { type: "value", axisLabel: { color: "#000", formatter: currency }, splitLine: { lineStyle: { color: "#ddd" } } },
+          { type: "value", axisLabel: { color: "#000" } },
+        ],
+        series: [
+          { name: "Paid volume", type: "bar", data: payload.pay.paid },
+          { name: "Network fee ARR", type: "line", smooth: true, data: payload.pay.arr },
+          { name: "Active rails", type: "line", yAxisIndex: 1, smooth: true, data: payload.pay.rails },
+        ],
+      }),
+      initChart("supply", {
+        color: colors,
+        textStyle,
+        tooltip: { trigger: "axis", valueFormatter: (value) => `${value.toFixed(1)}M FIL` },
+        legend: { bottom: 0, textStyle },
+        grid,
+        xAxis: { type: "category", data: payload.supply.labels, axisLabel: { color: "#000" } },
+        yAxis: { type: "value", axisLabel: { color: "#000", formatter: "{value}M" }, splitLine: { lineStyle: { color: "#ddd" } } },
+        series: [
+          { name: "Circulating", type: "line", smooth: true, showSymbol: false, data: payload.supply.circulating },
+          { name: "Locked", type: "line", smooth: true, showSymbol: false, data: payload.supply.locked },
+        ],
+      }),
+    ].filter(Boolean)
+
+    window.addEventListener("resize", () => {
+      for (const chart of charts) chart.resize()
+    })
+  </script>
+</Layout>
+
+<style>
+  .revenue-page {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .revenue-hero,
+  .story-grid {
+    display: grid;
+    gap: var(--space-5);
+    align-items: stretch;
+  }
+
+  .revenue-hero {
+    min-block-size: min(560px, calc(100vh - 11rem));
+    padding: clamp(1rem, 4vw, 4rem);
+    border: 2px solid var(--color-border-strong);
+    background:
+      linear-gradient(135deg, rgba(0, 0, 0, 0.08), transparent 42%),
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.04) 0 1px, transparent 1px 72px),
+      var(--color-bg-muted);
+  }
+
+  .revenue-hero__copy {
+    align-self: end;
+    max-inline-size: 48rem;
+  }
+
+  .eyebrow {
+    margin: 0 0 var(--space-2);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  .revenue-hero h1 {
+    font-size: clamp(2.6rem, 8vw, 7rem);
+    line-height: 0.95;
+    margin-block-end: var(--space-4);
+    max-inline-size: 10ch;
+  }
+
+  .revenue-hero p {
+    max-inline-size: 58ch;
+  }
+
+  .hero-metrics,
+  .card-grid {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .hero-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: var(--space-6) 0 0;
+  }
+
+  .hero-metrics div,
+  .metric-card,
+  .panel,
+  .hero-gauge {
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-bg);
+  }
+
+  .hero-metrics div,
+  .metric-card {
+    padding: var(--space-4);
+  }
+
+  dt,
+  .metric-card span,
+  .hero-gauge p,
+  .panel__header span {
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  dd {
+    margin: 0;
+    font-size: clamp(1rem, 1.8vw, 1.4rem);
+    font-weight: 700;
+  }
+
+  .hero-gauge {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: var(--space-2);
+    padding: clamp(1.25rem, 3vw, 2rem);
+    text-align: center;
+  }
+
+  .hero-gauge strong {
+    font-size: clamp(2.4rem, 5.5vw, 4.8rem);
+    line-height: 1;
+  }
+
+  .hero-gauge span {
+    max-inline-size: 30ch;
+    color: var(--color-text-muted);
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .metric-card {
+    min-block-size: 10rem;
+    display: grid;
+    align-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .metric-card strong {
+    font-size: clamp(1.4rem, 3vw, 2.4rem);
+    line-height: 1;
+  }
+
+  .metric-card p {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .story-grid {
+    grid-template-columns: minmax(18rem, 0.8fr) minmax(0, 1.4fr);
+  }
+
+  .section-copy {
+    align-self: center;
+    max-inline-size: 36rem;
+  }
+
+  .panel {
+    padding: var(--space-4);
+    overflow: hidden;
+  }
+
+  .panel--wide {
+    inline-size: 100%;
+  }
+
+  .panel__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: var(--space-4);
+    margin-block-end: var(--space-4);
+    border-block-end: 1px solid var(--color-border);
+    padding-block-end: var(--space-3);
+  }
+
+  .panel__header h2,
+  .panel__header h3,
+  .panel__header p {
+    margin: 0;
+  }
+
+  .chart {
+    inline-size: 100%;
+  }
+
+  .chart--gauge {
+    block-size: clamp(260px, 34vw, 360px);
+  }
+
+  .chart--medium {
+    block-size: 360px;
+  }
+
+  .chart--large {
+    block-size: 420px;
+  }
+
+  @media (min-width: 860px) {
+    .revenue-hero {
+      grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
+    }
+  }
+
+  @media (max-width: 859px) {
+    .hero-metrics,
+    .card-grid,
+    .story-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .revenue-hero {
+      padding: var(--space-4);
+    }
+
+    .panel__header {
+      display: grid;
+    }
+
+    .chart--large,
+    .chart--medium {
+      block-size: 320px;
+    }
+  }
+</style>
