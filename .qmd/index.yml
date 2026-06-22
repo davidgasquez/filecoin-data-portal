@@ -40,6 +40,12 @@ collections:
     update: "[ -d filecoin-services/.git ] && git -C filecoin-services pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-services.git filecoin-services"
     context:
       "": Filecoin Onchain Cloud repository for onchain programmable services, centered on smart contracts, deployment tooling, tests, specs, and operational docs for warm storage and related services.
+  porep-market:
+    path: .qmd/external
+    pattern: "{porep-market/**/*.{md,sol,sh,py,toml,yml,yaml,json},porep-market/**/Makefile,porep-market/**/justfile}"
+    update: "[ -d porep-market/.git ] && git -C porep-market pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/fidlabs/porep-market.git porep-market"
+    context:
+      "": FIDLabs PoRep Market smart contracts and tooling, including Solidity sources, tests, deployment scripts, ABIs, and documentation for storage-provider deal allocation and validation workflows.
   filecoin-pay:
     path: .qmd/external
     pattern: "{filecoin-pay/**/*.{md,sol,sh,toml,yml,yaml,json},filecoin-pay/**/Makefile}"
