@@ -2,6 +2,13 @@ collections:
   fdp:
     path: .
     pattern: "{**/*.{md,py,sql,toml,yml,yaml,json},**/Makefile,**/AGENTS.md}"
+    ignore:
+      - "web/src/data/generated/**"
+      - "web/public/assets/**"
+      - "web/deweb-local-sample/**"
+      - "**/package-lock.json"
+      - "**/pnpm-lock.yaml"
+      - "**/bun.lock"
     context:
       "": FDP codebase for a minimal Filecoin open data platform, including orchestration code, assets, tests, and repository-specific documentation.
   builtin-actors:
@@ -22,6 +29,12 @@ collections:
     update: "[ -d lily/.git ] && git -C lily pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/lily.git lily"
     context:
       "": Lily data extraction and indexing code for Filecoin, including tasks, schemas, models, chain data processing, and dataset-oriented documentation.
+  forest:
+    path: .qmd/external
+    pattern: "{forest/**/*.{md,rs,toml,yml,yaml,json},forest/**/Makefile}"
+    update: "[ -d forest/.git ] && git -C forest pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/ChainSafe/forest.git forest"
+    context:
+      "": Forest Filecoin client implementation in Rust, including node behavior, chain sync, state management, RPC, tooling, and operational documentation.
   filecoin-docs:
     path: .qmd/external
     pattern: "{filecoin-docs/**/*.{md,mdx,ts,js,json,toml,yml,yaml},filecoin-docs/**/Makefile}"
