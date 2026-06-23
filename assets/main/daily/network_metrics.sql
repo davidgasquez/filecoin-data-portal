@@ -28,8 +28,12 @@
 -- asset.column = total_gas_fee_fil | FIL paid in gas fees.
 -- asset.column = base_fee_burn_fil | FIL burned by message base fees.
 -- asset.column = base_fee_burn_usd | FIL burned by message base fees, valued with the daily average FIL price, in USD.
+-- asset.column = overestimation_burn_fil | FIL burned by gas overestimation.
+-- asset.column = overestimation_burn_usd | FIL burned by gas overestimation, valued with the daily average FIL price, in USD.
 -- asset.column = message_burn_fil | FIL burned by message execution.
 -- asset.column = message_burn_usd | FIL burned by message execution, valued with the daily average FIL price, in USD.
+-- asset.column = miner_tip_fil | FIL paid to miners as message tips.
+-- asset.column = miner_tip_usd | FIL paid to miners as message tips, valued with the daily average FIL price, in USD.
 -- asset.column = message_storage_provider_penalty_fil | FIL penalties incurred by storage providers during message execution.
 -- asset.column = message_storage_provider_penalty_usd | FIL penalties incurred by storage providers during message execution, valued with the daily average FIL price, in USD.
 -- asset.column = total_value_flow_fil | FIL value transferred plus gas fees.
@@ -75,6 +79,8 @@
 
 -- asset.not_null = date
 -- asset.unique = date
+-- asset.assert = abs(message_burn_fil - base_fee_burn_fil - overestimation_burn_fil) < 0.000001
+-- asset.assert = abs(total_gas_fee_fil - base_fee_burn_fil - overestimation_burn_fil - miner_tip_fil) < 0.000001
 
 with verified_claims as (
     select
@@ -172,9 +178,15 @@ select
     coalesce(network_activity.base_fee_burn_fil, 0) as base_fee_burn_fil,
     coalesce(network_activity.base_fee_burn_fil, 0)
         * market_data.fil_token_price_avg_usd as base_fee_burn_usd,
+    coalesce(network_activity.overestimation_burn_fil, 0) as overestimation_burn_fil,
+    coalesce(network_activity.overestimation_burn_fil, 0)
+        * market_data.fil_token_price_avg_usd as overestimation_burn_usd,
     coalesce(network_activity.message_burn_fil, 0) as message_burn_fil,
     coalesce(network_activity.message_burn_fil, 0)
         * market_data.fil_token_price_avg_usd as message_burn_usd,
+    coalesce(network_activity.miner_tip_fil, 0) as miner_tip_fil,
+    coalesce(network_activity.miner_tip_fil, 0)
+        * market_data.fil_token_price_avg_usd as miner_tip_usd,
     coalesce(network_burn.message_storage_provider_penalty_fil, 0)
         as message_storage_provider_penalty_fil,
     coalesce(network_burn.message_storage_provider_penalty_fil, 0)

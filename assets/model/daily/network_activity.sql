@@ -8,7 +8,9 @@
 -- asset.column = total_value_fil | FIL transferred by top-level messages.
 -- asset.column = total_gas_fee_fil | FIL paid in gas fees.
 -- asset.column = base_fee_burn_fil | FIL burned by message base fees.
+-- asset.column = overestimation_burn_fil | FIL burned by gas overestimation.
 -- asset.column = message_burn_fil | FIL burned by message execution.
+-- asset.column = miner_tip_fil | FIL paid to miners as message tips.
 -- asset.column = message_storage_provider_penalty_fil | FIL penalties incurred by storage providers during message execution.
 -- asset.column = total_value_flow_fil | FIL value transferred plus gas fees.
 
@@ -18,7 +20,9 @@
 -- asset.not_null = total_value_fil
 -- asset.not_null = total_gas_fee_fil
 -- asset.not_null = base_fee_burn_fil
+-- asset.not_null = overestimation_burn_fil
 -- asset.not_null = message_burn_fil
+-- asset.not_null = miner_tip_fil
 -- asset.not_null = message_storage_provider_penalty_fil
 -- asset.not_null = total_value_flow_fil
 -- asset.unique = date
@@ -30,7 +34,9 @@ select
     cast(sum(total_value_fil) as double) as total_value_fil,
     cast(sum(total_gas_fee_fil) as double) as total_gas_fee_fil,
     cast(sum(base_fee_burn_fil) as double) as base_fee_burn_fil,
+    cast(sum(overestimation_burn_fil) as double) as overestimation_burn_fil,
     cast(sum(message_burn_fil) as double) as message_burn_fil,
+    cast(sum(miner_tip_fil) as double) as miner_tip_fil,
     cast(sum(message_storage_provider_penalty_fil) as double)
         as message_storage_provider_penalty_fil,
     cast(sum(total_value_fil) + sum(total_gas_fee_fil) as double)

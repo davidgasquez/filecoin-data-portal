@@ -18,6 +18,8 @@ select
     cast(sum(cast(value as bignumeric) / 1e18) as float64) as total_value_fil,
     cast(sum(cast(base_fee_burn as bignumeric) / 1e18) as float64)
         as base_fee_burn_fil,
+    cast(sum(cast(over_estimation_burn as bignumeric) / 1e18) as float64)
+        as overestimation_burn_fil,
     cast(
         sum(
             (
@@ -26,6 +28,8 @@ select
             ) / 1e18
         ) as float64
     ) as message_burn_fil,
+    cast(sum(cast(miner_tip as bignumeric) / 1e18) as float64)
+        as miner_tip_fil,
     sum(cast(miner_penalty as float64) / 1e18)
         as message_storage_provider_penalty_fil,
     cast(
