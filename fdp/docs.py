@@ -69,52 +69,47 @@ def render_skill_markdown(asset_views: list[AssetView], *, asset_docs_path: str)
     lines = [
         "---",
         "name: fdp",
-        "description: Help users explore and use Filecoin Data Portal (fdp) datasets.",
+        (
+            "description: Use when the user asks about Filecoin Data Portal, FDP, "
+            "Filecoin parquet datasets, Filecoin clients, storage providers, "
+            "network metrics, Filecoin Pay, PDP, or warm storage data."
+        ),
         "---",
         "",
-        "# Filecoin Data Portal",
-        "",
-        (
-            "Guidelines on how to help users explore and use Filecoin Data Portal "
-            "(fdp) datasets."
-        ),
-        "",
-        "## Datasets",
+        "## Dataset Catalog",
         "",
         *render_dataset_links(asset_views, asset_docs_path=asset_docs_path),
         "",
-        "## Using Datasets",
+        "## Workflow",
+        "",
+        "1. Choose the most relevant datasets from the catalog.",
+        "2. Read the dataset docs before querying.",
+        "3. Inspect columns, types, and sample rows.",
+        "4. Query the canonical parquet URL:",
+        f"   `{PUBLIC_DATASETS_BASE_URL}/<dataset>.parquet`",
+        "5. Answer with the datasets used and any important caveats.",
+        "",
+        "Use DuckDB first:",
+        "",
+        "```sh",
+        (
+            'duckdb -c "describe select * from read_parquet('
+            f"'{PUBLIC_DATASETS_BASE_URL}/<dataset>.parquet'"
+            ')"'
+        ),
+        "```",
         "",
         (
-            "Start with `duckdb` if available. Consider asking the user to "
-            "install it or ask the user for a tool (Pandas, Javascript, ...) "
-            "to use as a replacement."
+            "Ask a clarification question only if the relevant dataset or metric "
+            "remains ambiguous."
         ),
         "",
-        (
-            "Canonical dataset URLs follow "
-            f"`{PUBLIC_DATASETS_BASE_URL}/<dataset>.parquet`."
-        ),
+        "## Charts",
         "",
-        "1. Inspect the dataset.",
-        "2. Read the columns, types, and a few sample rows.",
-        "3. Ask any clarification question if needed.",
-        "4. Write temporary self-contained scripts that answer the user's question.",
-        "5. Get back in a clear and concise way.",
+        "When asked for a chart or dashboard:",
         "",
-        "## Answering Questions",
-        "",
-        "- Mention the used datasets explicitly.",
-        "- Inspect columns, types, and sample rows first.",
-        "- Offer to plot charts if it makes sense.",
-        "- Clone the repo for deeper exploration if needed.",
-        "",
-        "## Charts & Dashboards",
-        "",
-        "When the user asks for a chart, dashboard, or visualization:",
-        "",
-        "1. Write a self-contained `index.html` using vanilla HTML, CSS, and JS.",
-        "  - Mention and link the source (filecoindataportal.xyz)",
+        "1. Create a self-contained `index.html` with vanilla HTML, CSS, and JS.",
+        "2. Mention and link `filecoindataportal.xyz` as the source.",
         "3. Serve it locally and share the URL.",
         "",
     ]
