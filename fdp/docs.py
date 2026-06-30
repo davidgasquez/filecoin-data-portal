@@ -66,54 +66,15 @@ def write_docs(
 
 
 def render_skill_markdown(asset_views: list[AssetView], *, asset_docs_path: str) -> str:
-    lines = [
-        "---",
-        "name: fdp",
-        (
-            "description: Use when the user asks about Filecoin Data Portal, FDP, "
-            "Filecoin parquet datasets, Filecoin clients, storage providers, "
-            "network metrics, Filecoin Pay, PDP, or warm storage data."
-        ),
-        "---",
-        "",
-        "## Dataset Catalog",
-        "",
-        *render_dataset_links(asset_views, asset_docs_path=asset_docs_path),
-        "",
-        "## Workflow",
-        "",
-        "1. Choose the most relevant datasets from the catalog.",
-        "2. Read the dataset docs before querying.",
-        "3. Inspect columns, types, and sample rows.",
-        "4. Query the canonical parquet URL:",
-        f"   `{PUBLIC_DATASETS_BASE_URL}/<dataset>.parquet`",
-        "5. Answer with the datasets used and any important caveats.",
-        "",
-        "Use DuckDB first:",
-        "",
-        "```sh",
-        (
-            'duckdb -c "describe select * from read_parquet('
-            f"'{PUBLIC_DATASETS_BASE_URL}/<dataset>.parquet'"
-            ')"'
-        ),
-        "```",
-        "",
-        (
-            "Ask a clarification question only if the relevant dataset or metric "
-            "remains ambiguous."
-        ),
-        "",
-        "## Charts",
-        "",
-        "When asked for a chart or dashboard:",
-        "",
-        "1. Create a self-contained `index.html` with vanilla HTML, CSS, and JS.",
-        "2. Mention and link `filecoindataportal.xyz` as the source.",
-        "3. Serve it locally and share the URL.",
-        "",
-    ]
-    return "\n".join(lines)
+    template = (Path(__file__).with_name("templates") / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    dataset_catalog = "\n".join(
+        render_dataset_links(asset_views, asset_docs_path=asset_docs_path)
+    )
+    return template.replace("{{ dataset_catalog }}", dataset_catalog).replace(
+        "{{ public_datasets_base_url }}", PUBLIC_DATASETS_BASE_URL
+    )
 
 
 def render_dataset_links(
