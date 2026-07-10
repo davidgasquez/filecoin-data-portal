@@ -1,5 +1,6 @@
 -- asset.description = Warm storage datasets created onchain.
 
+-- asset.depends = model.filecoin_pay_rail_rate_intervals
 -- asset.depends = raw.fevm_eth_logs_decoded
 
 -- asset.column = dataset_id | FWSS dataset identifier.
@@ -48,13 +49,18 @@ dataset_created as (
 ),
 dataset_billing_started as (
     select
-        cast(json_extract_string(args, '$.dataSetId') as bigint) as dataset_id,
-        min(block_number) as billing_started_block
-    from raw.fevm_eth_logs_decoded
-    where contract_name = 'filecoin_warm_storage_service'
-      and event_name = 'RailRateUpdated'
-      and cast(json_extract_string(args, '$.newRate') as bigint) > 0
-    group by 1
+        created.dataset_id,
+        intervals.start_block as billing_started_block,
+        intervals.start_at as billing_started_at
+    from dataset_created as created
+    join model.filecoin_pay_rail_rate_intervals as intervals
+        on created.pdp_rail_id = intervals.rail_id
+    where created.row_num = 1
+      and intervals.rate_wei_per_epoch > 0
+    qualify row_number() over (
+        partition by created.dataset_id
+        order by intervals.start_ordinal
+    ) = 1
 ),
 dataset_billing_terminated as (
     select
@@ -89,10 +95,7 @@ select
     created.created_block,
     created.created_at,
     started.billing_started_block,
-    case
-        when started.billing_started_block is null then null
-        else to_timestamp(started.billing_started_block * 30 + (select genesis_timestamp from params))
-    end as billing_started_at,
+    started.billing_started_at,
     terminated.billing_terminated_block,
     case
         when terminated.billing_terminated_block is null then null
