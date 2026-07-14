@@ -1,82 +1,32 @@
 ---
-type LineChartFormat =
-  | "integer"
-  | "number"
-  | "pib"
-  | "tib"
-  | "fil"
-  | "mfil"
-  | "usd"
-  | "percent"
+import type { ChartConfig, NumbersMetric } from "../types/numbers"
 
-type PercentMode = "fraction" | "points"
+const { id, title, description, details, y, format, scale, suffix, series } =
+  Astro.props as NumbersMetric
 
-type LineChartSeries = {
-  label: string
-  y: string
-}
+const serializeChart = (config: ChartConfig) => JSON.stringify(config)
 
-interface Props {
-  id: string
-  title: string
-  description?: string
-  x: string
-  y: string
-  format?: LineChartFormat
-  formatScale?: number
-  formatPrefix?: string
-  formatSuffix?: string
-  percentMode?: PercentMode
-  showMovingAverage?: boolean
-  series?: LineChartSeries[]
-}
-
-const {
-  id,
-  title,
-  description,
-  x,
-  y,
-  format = "number",
-  formatScale,
-  formatPrefix,
-  formatSuffix,
-  percentMode = "fraction",
-  showMovingAverage = false,
-  series,
-} = Astro.props
+const chartConfig = serializeChart({ y, format, scale, suffix, series })
+const tooltipId = `${id}-description`
 ---
 
-<figure
-  class="stat-card"
-  data-stat-card
-  data-line-chart
-  data-chart-id={id}
-  data-x={x}
-  data-y={y}
-  data-format={format}
-  data-format-scale={formatScale !== undefined ? formatScale : undefined}
-  data-format-prefix={formatPrefix ?? undefined}
-  data-format-suffix={formatSuffix ?? undefined}
-  data-percent-mode={percentMode}
-  data-show-moving-average={String(showMovingAverage)}
-  data-moving-average-window-days="30"
-  data-series={series && series.length > 0 ? JSON.stringify(series) : undefined}
->
+<figure class="stat-card" data-stat-card data-chart={chartConfig} data-chart-id={id}>
   <figcaption class="stat-card__header">
-    <a href={`#${id}`} id={id} class="stat-card__label line-chart__title">{title}</a>
-    <span class="line-chart__headline" data-line-chart-last-value hidden></span>
-    <span class="line-chart__headline-tip" data-line-chart-headline-tip hidden></span>
-    {description && (
-      <span class="stat-card__info" aria-label="Info" tabindex="0">
-        i
-        <span class="stat-card__info-tooltip">{description}</span>
-      </span>
-    )}
+    <a href={`#${id}`} id={id} class="stat-card__label" data-chart-title>{title}</a>
+    <span class="stat-card__headline" data-chart-headline></span>
     <button
       type="button"
-      class="line-chart__toggle"
-      data-line-chart-toggle
+      class="stat-card__info"
+      aria-label={`About ${title}`}
+      aria-describedby={tooltipId}
+    >
+      i
+      <span id={tooltipId} class="stat-card__info-tooltip" role="tooltip">{description}</span>
+    </button>
+    <button
+      type="button"
+      class="stat-card__toggle"
+      data-chart-toggle
       aria-expanded="false"
       aria-label={`Expand ${title}`}
       title={`Expand ${title}`}
@@ -85,17 +35,35 @@ const {
     </button>
   </figcaption>
 
-  <span class="stat-card__value" data-stat-card-value></span>
-  <span class="stat-card__trend" data-stat-card-trend></span>
-  <svg class="stat-card__spark" aria-hidden="true"></svg>
+  <strong class="stat-card__value" data-chart-value></strong>
+  <span class="stat-card__trend" data-chart-trend></span>
+  <p class="stat-card__description">{description}</p>
+  <div
+    class="stat-card__chart"
+    data-chart-canvas
+    role="img"
+    aria-label={`${title} trend chart`}
+  ></div>
 
-  {description && <p class="stat-card__description">{description}</p>}
-
-  <div class="line-chart__canvas">
-    <svg class="line-chart__svg" aria-hidden="true"></svg>
-    <p class="line-chart__empty" hidden>No data available for this range.</p>
-    <div class="line-chart__tooltip" hidden></div>
-  </div>
-
-  <slot name="details" />
+  {details && (
+    <div class="stat-card__details">
+      <div class="stat-card__detail-grid">
+        {details.map(({ title: detailTitle, description: detailDescription, ...config }) => (
+          <div class="stat-card__detail" data-detail-chart data-chart={serializeChart(config)}>
+            <header class="stat-card__detail-header">
+              <span>{detailTitle}</span>
+              <strong data-detail-value></strong>
+            </header>
+            <p>{detailDescription}</p>
+            <div
+              class="stat-card__detail-chart"
+              data-chart-canvas
+              role="img"
+              aria-label={`${detailTitle} trend chart`}
+            ></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
 </figure>
