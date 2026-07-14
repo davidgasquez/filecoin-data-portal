@@ -7,13 +7,13 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "generate:datasets": "tsx ./scripts/generate-datasets.ts",
+    "generate:data": "tsx ./scripts/generate-daily-metrics.ts",
     "generate:fdp-docs": "cd .. && uv run fdp docs --out web/.generated/fdp-docs/raw && npm run stage:fdp-docs --prefix web",
     "stage:fdp-docs": "tsx ./scripts/stage-fdp-docs.ts",
-    "predev": "DAILY_NETWORK_METRICS_PARQUET_URL=.generated/data/daily_network_metrics.parquet npm run generate:datasets && npm run stage:fdp-docs",
+    "predev": "DAILY_NETWORK_METRICS_PARQUET_URL=.generated/data/daily_network_metrics.parquet npm run generate:data && npm run stage:fdp-docs",
     "check": "astro check",
-    "precheck": "npm run generate:datasets && npm run stage:fdp-docs",
-    "prebuild": "npm run generate:datasets && npm run stage:fdp-docs",
+    "precheck": "npm run generate:data && npm run stage:fdp-docs",
+    "prebuild": "npm run generate:data && npm run stage:fdp-docs",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
