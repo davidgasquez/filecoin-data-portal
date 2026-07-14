@@ -1,69 +1,154 @@
 ---
-import type { ChartConfig, NumbersMetric } from "../types/numbers"
+type MetricFormat =
+  | "integer"
+  | "number"
+  | "pib"
+  | "fil"
+  | "mfil"
+  | "usd"
+  | "percent"
 
-const { id, title, description, details, y, format, scale, suffix, series } =
-  Astro.props as NumbersMetric
+type ChartConfig = {
+  y: string
+  format: MetricFormat
+  scale?: number
+  suffix?: string
+  series?: { label: string; y: string }[]
+}
+
+type Props = ChartConfig & {
+  id: string
+  title: string
+  description: string
+  details?: (ChartConfig & { title: string; description: string })[]
+  summary: {
+    value: string
+    trend: string
+    rangeLabels: Record<"6m" | "1y" | "all", string>
+    sparklinePaths: Record<"6m" | "1y" | "all", string>
+    accessibleSummary: string
+  }
+}
+
+const {
+  id,
+  title,
+  description,
+  details,
+  y,
+  format,
+  scale,
+  suffix,
+  series,
+  summary,
+} = Astro.props as Props
 
 const serializeChart = (config: ChartConfig) => JSON.stringify(config)
-
 const chartConfig = serializeChart({ y, format, scale, suffix, series })
 const tooltipId = `${id}-description`
+const panelId = `${id}-panel`
+const titleId = `${id}-title`
+const chartSummaryId = `${id}-chart-summary`
 ---
 
-<figure class="stat-card" data-stat-card data-chart={chartConfig} data-chart-id={id}>
+<figure id={id} class="stat-card" data-stat-card data-chart={chartConfig}>
   <figcaption class="stat-card__header">
-    <a href={`#${id}`} id={id} class="stat-card__label" data-chart-title>{title}</a>
-    <span class="stat-card__headline" data-chart-headline></span>
-    <button
-      type="button"
-      class="stat-card__info"
-      aria-label={`About ${title}`}
-      aria-describedby={tooltipId}
-    >
-      i
-      <span id={tooltipId} class="stat-card__info-tooltip" role="tooltip">{description}</span>
-    </button>
+    <span id={titleId} class="stat-card__title" data-chart-title>{title}</span>
+    <span class="stat-card__headline">{summary.value}</span>
+    <span class="stat-card__tools">
+      <span class="stat-card__info-wrap">
+        <button
+          type="button"
+          class="stat-card__info"
+          aria-label={`About ${title}`}
+          aria-describedby={tooltipId}
+        >
+          i
+        </button>
+        <span id={tooltipId} class="stat-card__info-tooltip" role="tooltip">{description}</span>
+      </span>
+      <button
+        type="button"
+        class="stat-card__copy-link"
+        data-chart-copy-link
+        aria-label={`Copy link to ${title}`}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+      </button>
+      <span class="visually-hidden" data-chart-copy-status role="status"></span>
+    </span>
     <button
       type="button"
       class="stat-card__toggle"
       data-chart-toggle
       aria-expanded="false"
+      aria-controls={panelId}
       aria-label={`Expand ${title}`}
-      title={`Expand ${title}`}
     >
       +
     </button>
   </figcaption>
 
-  <strong class="stat-card__value" data-chart-value></strong>
-  <span class="stat-card__trend" data-chart-trend></span>
-  <p class="stat-card__description">{description}</p>
-  <div
-    class="stat-card__chart"
-    data-chart-canvas
-    role="img"
-    aria-label={`${title} trend chart`}
-  ></div>
+  <strong class="stat-card__value">{summary.value}</strong>
+  <span class="stat-card__trend">{summary.trend}</span>
+  <svg
+    class="stat-card__sparkline"
+    viewBox="0 0 100 32"
+    preserveAspectRatio="none"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path
+      data-chart-sparkline
+      data-range-paths={JSON.stringify(summary.sparklinePaths)}
+      d={summary.sparklinePaths["1y"]}
+      vector-effect="non-scaling-stroke"
+    ></path>
+  </svg>
 
-  {details && (
-    <div class="stat-card__details">
-      <div class="stat-card__detail-grid">
-        {details.map(({ title: detailTitle, description: detailDescription, ...config }) => (
-          <div class="stat-card__detail" data-detail-chart data-chart={serializeChart(config)}>
-            <header class="stat-card__detail-header">
-              <span>{detailTitle}</span>
-              <strong data-detail-value></strong>
-            </header>
-            <p>{detailDescription}</p>
-            <div
-              class="stat-card__detail-chart"
-              data-chart-canvas
-              role="img"
-              aria-label={`${detailTitle} trend chart`}
-            ></div>
-          </div>
-        ))}
+  <div id={panelId} class="stat-card__panel" data-chart-panel hidden>
+    <p class="stat-card__description">{description}</p>
+    <p
+      id={chartSummaryId}
+      class="visually-hidden"
+      data-chart-summary
+      data-summary-base={summary.accessibleSummary}
+      data-range-labels={JSON.stringify(summary.rangeLabels)}
+    >
+      {summary.accessibleSummary} Daily trend: {summary.rangeLabels["1y"]}.
+    </p>
+    <div
+      class="stat-card__chart"
+      data-chart-canvas
+      role="img"
+      aria-labelledby={titleId}
+      aria-describedby={chartSummaryId}
+    ></div>
+    <p class="stat-card__status" data-chart-status aria-live="polite"></p>
+
+    {details && (
+      <div class="stat-card__details">
+        <div class="stat-card__detail-grid">
+          {details.map(({ title: detailTitle, description: detailDescription, ...config }) => (
+            <section class="stat-card__detail" data-detail-chart data-chart={serializeChart(config)}>
+              <header class="stat-card__detail-header">
+                <h3>{detailTitle}</h3>
+                <strong data-detail-value>—</strong>
+              </header>
+              <p>{detailDescription}</p>
+              <div
+                class="stat-card__detail-chart"
+                data-chart-canvas
+                role="img"
+                aria-label={`${detailTitle} daily trend`}
+              ></div>
+            </section>
+          ))}
+        </div>
       </div>
-    </div>
-  )}
+    )}
+  </div>
 </figure>
