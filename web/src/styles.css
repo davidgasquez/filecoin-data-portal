@@ -41,8 +41,9 @@
 
 @layer tokens {
   :root {
-    --color-bg: #fff;
+    --color-bg: #f5f5f1;
     --color-bg-muted: #f6f6f6;
+    --color-surface: #fff;
     --color-text: #000;
     --color-text-muted: #1f1f1f;
     --color-border: #a6a6a6;
@@ -568,6 +569,7 @@
     min-block-size: 10.75rem;
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--color-border);
+    background: var(--color-surface);
     display: grid;
     grid-template-rows: auto auto auto 1fr;
     gap: var(--space-1);
@@ -620,7 +622,7 @@
   }
 
   .stat-card__trend {
-    color: var(--color-text-muted);
+    color: #62625c;
     font-size: 0.78rem;
     font-variant-numeric: tabular-nums;
   }
@@ -670,7 +672,7 @@
     block-size: 2rem;
     padding: 0;
     border: 1px solid var(--color-border-strong);
-    background: var(--color-bg);
+    background: var(--color-surface);
     color: var(--color-text);
     font: inherit;
     font-size: 1rem;
@@ -678,8 +680,8 @@
   }
 
   .stat-card__info {
-    border-color: var(--color-border);
-    color: var(--color-text-muted);
+    border-color: #c4c4bc;
+    color: #62625c;
     cursor: help;
   }
 
@@ -743,7 +745,7 @@
     margin-block-start: var(--space-1);
     padding: var(--space-2);
     border: 1px solid var(--color-border-strong);
-    background: var(--color-bg);
+    background: var(--color-surface);
     color: var(--color-text-muted);
     font-size: 0.78rem;
     font-weight: 400;

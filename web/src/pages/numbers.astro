@@ -720,7 +720,7 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
     const rootStyle = getComputedStyle(document.documentElement)
     const bodyStyle = getComputedStyle(document.body)
     const colors = {
-      background: rootStyle.getPropertyValue("--color-bg").trim(),
+      background: rootStyle.getPropertyValue("--color-surface").trim(),
       border: rootStyle.getPropertyValue("--color-border").trim(),
       strong: rootStyle.getPropertyValue("--color-border-strong").trim(),
       text: rootStyle.getPropertyValue("--color-text").trim(),
