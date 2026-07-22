@@ -125,6 +125,48 @@ function parseAssetDoc(fileName: string, markdown: string): ParsedAssetDoc {
   return { title, description, codeUrl, body: withTables }
 }
 
+function renderDatasetSections(markdown: string): string {
+  const sections = markdown.match(/^## Columns\n\n([\s\S]*?)\n\n## Sample\n\n([\s\S]*)$/)
+  if (!sections) {
+    throw new Error("Expected Columns and Sample sections in generated dataset docs.")
+  }
+
+  const columnRows = sections[1].trim().split("\n")
+  if (columnRows.length < 3) {
+    throw new Error("Expected a columns table in generated dataset docs.")
+  }
+
+  const columns = columnRows.slice(2).map((row) => {
+    const cells = row.slice(1, -1).split("|").map((cell) => cell.trim())
+    if (cells.length !== 4) {
+      throw new Error(`Expected four cells in columns row: ${row}`)
+    }
+    return `| ${cells[0]} | ${cells[2]} |`
+  })
+
+  const columnsTable = [
+    "| name | description |",
+    "|---|---|",
+    ...columns,
+  ].join("\n")
+
+  return [
+    '<details class="dataset-section dataset-section--columns">',
+    "<summary>Columns</summary>",
+    "",
+    columnsTable,
+    "",
+    "</details>",
+    "",
+    '<details class="dataset-section dataset-section--sample">',
+    "<summary>Sample</summary>",
+    "",
+    sections[2].trim(),
+    "",
+    "</details>",
+  ].join("\n")
+}
+
 function renderCollectionDoc(parsed: ParsedAssetDoc): string {
   const frontmatter = [
     "---",
@@ -135,7 +177,7 @@ function renderCollectionDoc(parsed: ParsedAssetDoc): string {
     "",
   ].join("\n")
 
-  return `${frontmatter}${parsed.body.trim()}\n`
+  return `${frontmatter}${renderDatasetSections(parsed.body.trim())}\n`
 }
 
 async function syncDocs(sourceDir: string): Promise<void> {
