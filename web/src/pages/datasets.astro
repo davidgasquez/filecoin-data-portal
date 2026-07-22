@@ -47,7 +47,7 @@ const datasets = await Promise.all(
 
         <div class="datasets-content">
           {datasets.map(({ id, title, description, downloadUrl, queryUrl, codeUrl, Content }) => (
-            <section class="dataset-entry" id={id}>
+            <section class="dataset-entry" id={id} aria-labelledby={`${id}-title`}>
               <header>
                 <div>
                   <h2 id={`${id}-title`}><a href={`#${id}`}>{title}</a></h2>
