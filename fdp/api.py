@@ -70,9 +70,14 @@ def table_exists(
 
 
 class TableAsset(Protocol):
-    key: str
-    schema: str
-    name: str
+    @property
+    def key(self) -> str: ...
+
+    @property
+    def schema(self) -> str: ...
+
+    @property
+    def name(self) -> str: ...
 
 
 def ensure_tables_exist(
