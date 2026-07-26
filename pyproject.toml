@@ -5,18 +5,18 @@ readme = "README.md"
 authors = [{ name = "David Gasquez", email = "davidgasquez@gmail.com" }]
 requires-python = ">=3.14"
 dependencies = [
-    "duckdb>=1.5.3",
+    "duckdb>=1.5.5",
     "eth-utils>=6.0.0",
-    "google-auth>=2.55.0",
-    "google-cloud-bigquery>=3.42.0",
+    "google-auth>=2.56.2",
+    "google-cloud-bigquery>=3.42.2",
     "google-cloud-bigquery-storage>=2.39.0",
     "gspread>=6.2.1",
     "httpx>=0.28.1",
     "multiaddr>=0.2.0",
-    "polars>=1.41.2",
-    "pyarrow>=24.0.0",
+    "polars>=1.43.0",
+    "pyarrow>=25.0.0",
     "pyoso>=0.9.0",
-    "pytz>=2026.2",
+    "pytz>=2026.3.post1",
     "web3>=7.16.0",
 ]
 
@@ -33,9 +33,9 @@ module-root = ""
 
 [dependency-groups]
 dev = [
-    "prek>=0.4.5",
-    "ruff>=0.15.17",
-    "ty>=0.0.49",
+    "prek>=0.4.11",
+    "ruff>=0.16.0",
+    "ty>=0.0.63",
 ]
 
 [tool.ruff]
