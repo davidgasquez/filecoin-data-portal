@@ -78,7 +78,7 @@ def verified_client_allowances() -> pl.DataFrame:
             "fetched_at",
             "allowance_array",
         )
-        .explode("allowance_array")
+        .explode("allowance_array", empty_as_null=False)
         .filter(pl.col("allowance_array").is_not_null())
         .unnest("allowance_array")
         .rename(COLUMN_RENAMES)
