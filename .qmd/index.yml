@@ -77,6 +77,12 @@ collections:
     update: "[ -d pdp/.git ] && git -C pdp pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/pdp.git pdp"
     context:
       "": Filecoin Onchain Cloud provable data possession contracts and tools, including verifier and service contracts, tests, deployment scripts, and design documentation.
+  dealbot:
+    path: .qmd/external
+    pattern: "{dealbot/**/*.{css,graphql,html,js,json,md,mjs,sh,svg,ts,tsx,yaml,yml},dealbot/**/{Dockerfile,Makefile,.env.example,.npmrc}}"
+    update: "[ -d dealbot/.git ] && git -C dealbot pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/dealbot.git dealbot"
+    context:
+      "": Automated Filecoin PDP deal creation and performance monitoring system, including backend jobs, retrieval checks, provider metrics, dashboard, deployment configuration, and operational documentation.
 models:
   embed: hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf
   generate: hf:tobil/qmd-query-expansion-1.7B-gguf/qmd-query-expansion-1.7B-q4_k_m.gguf
