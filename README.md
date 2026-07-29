@@ -58,7 +58,7 @@ You can run the Filecoin Data Portal anywhere using `uv`. You'll need the follow
 - `R2_BUCKET`
 - `FDP_GSHEET_SPREADSHEET_ID`
 
-`uv run fdp publish r2` writes one parquet file per `main.*` table to R2.
+`uv run fdp publish r2` writes one Parquet file per `main.*` table to R2 and serves compressed JSON for browser use at `https://data.filecoindataportal.xyz/daily_network_metrics.json.gz`.
 `uv run fdp publish gsheet` syncs one worksheet per `main.*` table to a Google spreadsheet and removes stale worksheets.
 Share the target spreadsheet with the Google service account from `ENCODED_GOOGLE_APPLICATION_CREDENTIALS`.
 
