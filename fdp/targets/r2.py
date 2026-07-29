@@ -9,7 +9,6 @@ R2_ACCESS_KEY_ID_ENV_VAR = "R2_ACCESS_KEY_ID"
 R2_SECRET_ACCESS_KEY_ENV_VAR = "R2_SECRET_ACCESS_KEY"
 R2_ACCOUNT_ID_ENV_VAR = "R2_ACCOUNT_ID"
 R2_BUCKET_ENV_VAR = "R2_BUCKET"
-COMPRESSED_JSON_ASSET_KEY = "main.daily_network_metrics"
 
 
 @dataclass(frozen=True)
@@ -91,13 +90,15 @@ def publish_assets(
 
     for index, asset in enumerate(assets, start=1):
         filename, row_count, file_size_bytes = publish_asset(conn, asset, bucket)
-        filenames = [filename]
-        if asset.key == COMPRESSED_JSON_ASSET_KEY:
-            filenames.append(publish_compressed_json_asset(conn, asset, bucket))
+        if asset.key == "main.daily_network_metrics":
+            conn.execute(
+                f"copy (select * from {asset.key}) to ? (format json, array true)",
+                [f"r2://{bucket}/{asset.name}.json"],
+            )
         print(
             f"[{index:>{count_width}}/{total:>{count_width}}] "
             f"{asset.key:<{asset_width}} OK "
-            f"rows={row_count} bytes={file_size_bytes} {' '.join(filenames)}",
+            f"rows={row_count} bytes={file_size_bytes} {filename}",
             flush=True,
         )
 
@@ -115,7 +116,7 @@ def publish_asset(
         "row_group_size 1000000, "
         "return_stats"
         ")",
-        [r2_target_path(bucket, asset.name, "parquet")],
+        [r2_target_path(bucket, asset.name)],
     ).fetchone()
     if stats is None:
         raise RuntimeError(f"Publish returned no stats for {asset.key}")
@@ -124,19 +125,5 @@ def publish_asset(
     return str(filename), int(row_count), int(file_size_bytes)
 
 
-def publish_compressed_json_asset(
-    conn: duckdb.DuckDBPyConnection,
-    asset: Asset,
-    bucket: str,
-) -> str:
-    filename = r2_target_path(bucket, asset.name, "json.gz")
-    conn.execute(
-        f"copy (select * from {asset.key}) to ? "
-        "(format json, array true, compression gzip)",
-        [filename],
-    )
-    return filename
-
-
-def r2_target_path(bucket: str, table: str, extension: str) -> str:
-    return f"r2://{bucket}/{table}.{extension}"
+def r2_target_path(bucket: str, table: str) -> str:
+    return f"r2://{bucket}/{table}.parquet"

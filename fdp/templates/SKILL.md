@@ -38,7 +38,7 @@ Ask a clarification question only if the relevant dataset or metric remains ambi
 2. Mention and link the relevant datasets used and display `filecoindataportal.xyz` as the source.
 3. Serve it locally and share the URL.
 
-**Note:** _The `daily_network_metrics` dataset/table is also available as an all-column gzip-compressed JSON array at `{{ public_datasets_base_url }}/daily_network_metrics.json.gz`. Load it directly from the HTML so dashboards/charts are always up to date if the user asks for live dashboards, self-updating charts, ...
+**Note:** _The `daily_network_metrics` dataset/table is also available as an all-column JSON array at `{{ public_datasets_base_url }}/daily_network_metrics.json`. Load it directly from the HTML so dashboards/charts are always up to date if the user asks for live dashboards, self-updating charts, ...
 
 ## Feedback
 
