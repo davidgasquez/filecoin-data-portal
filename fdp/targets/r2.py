@@ -90,6 +90,11 @@ def publish_assets(
 
     for index, asset in enumerate(assets, start=1):
         filename, row_count, file_size_bytes = publish_asset(conn, asset, bucket)
+        if asset.key == "main.daily_network_metrics":
+            conn.execute(
+                f"copy (select * from {asset.key}) to ? (format json, array true)",
+                [f"r2://{bucket}/{asset.name}.json"],
+            )
         print(
             f"[{index:>{count_width}}/{total:>{count_width}}] "
             f"{asset.key:<{asset_width}} OK "
