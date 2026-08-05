@@ -753,9 +753,39 @@
     text-align: start;
   }
 
+  .stat-card__copy-prompt {
+    justify-self: start;
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-text);
+    color: var(--color-bg);
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.4;
+    text-transform: uppercase;
+    cursor: copy;
+  }
+
+  .stat-card__copy-prompt:hover,
+  .stat-card__copy-prompt:focus-visible {
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  .stat-card__prompt-status {
+    color: var(--color-text);
+    font-weight: 700;
+  }
+
+  .stat-card__prompt-status:empty {
+    display: none;
+  }
+
   .stat-card__info-wrap:hover .stat-card__info-tooltip,
   .stat-card__info-wrap:focus-within .stat-card__info-tooltip {
-    display: block;
+    display: grid;
+    gap: var(--space-2);
   }
 
   .stat-card.is-expanded {

@@ -671,7 +671,9 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
       panel: HTMLElement
       canvas: HTMLElement
       copyLink: HTMLButtonElement
-      copyStatus: HTMLElement
+      copyPrompt: HTMLButtonElement
+      linkStatus: HTMLElement
+      promptStatus: HTMLElement
       copyResetTimer?: number
       toggle: HTMLButtonElement
       status: HTMLElement
@@ -850,7 +852,9 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
         panel,
         canvas: requiredElement(panel, ":scope > [data-chart-canvas]", "a chart"),
         copyLink: requiredElement(node, "[data-chart-copy-link]", "a copy link button"),
-        copyStatus: requiredElement(node, "[data-chart-copy-status]", "a copy link status"),
+        copyPrompt: requiredElement(node, "[data-chart-copy-prompt]", "a copy prompt button"),
+        linkStatus: requiredElement(node, "[data-chart-link-status]", "a copy link status"),
+        promptStatus: requiredElement(node, "[data-chart-prompt-status]", "a copy prompt status"),
         toggle: requiredElement(node, "[data-chart-toggle]", "an expand button"),
         status: requiredElement(panel, "[data-chart-status]", "a chart status"),
         sparkline,
@@ -1271,18 +1275,38 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
       })
     }
 
-    function showCopyFeedback(card: CardView, message: string, copied: boolean): void {
-      if (card.copyResetTimer) window.clearTimeout(card.copyResetTimer)
+    function resetCopyFeedback(card: CardView): void {
+      card.linkStatus.textContent = ""
+      card.promptStatus.textContent = ""
+      card.copyLink.classList.remove("is-copied")
+      card.copyLink.setAttribute("aria-label", `Copy link to ${card.title}`)
+      card.copyPrompt.classList.remove("is-copied")
+      card.copyPrompt.setAttribute("aria-label", `Copy agent prompt about ${card.title}`)
+    }
 
-      card.copyStatus.textContent = message
-      card.copyLink.classList.toggle("is-copied", copied)
-      card.copyLink.setAttribute("aria-label", message)
+    function showCopyFeedback(
+      card: CardView,
+      button: HTMLButtonElement,
+      status: HTMLElement,
+      message: string,
+      copied: boolean,
+    ): void {
+      if (card.copyResetTimer) window.clearTimeout(card.copyResetTimer)
+      resetCopyFeedback(card)
+
+      status.textContent = message
+      button.classList.toggle("is-copied", copied)
+      button.setAttribute("aria-label", message)
       card.copyResetTimer = window.setTimeout(() => {
-        card.copyStatus.textContent = ""
-        card.copyLink.classList.remove("is-copied")
-        card.copyLink.setAttribute("aria-label", `Copy link to ${card.title}`)
+        resetCopyFeedback(card)
         card.copyResetTimer = undefined
-      }, 2_000)
+      }, 4_000)
+    }
+
+    function cardUrl(card: CardView): URL {
+      const url = new URL(window.location.href)
+      url.hash = card.id
+      return url
     }
 
     async function copyCardLink(card: CardView): Promise<void> {
@@ -1290,15 +1314,61 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
         throw new Error("Clipboard API is unavailable")
       }
 
-      const url = new URL(window.location.href)
-      url.hash = card.id
-      await navigator.clipboard.writeText(url.toString())
-      showCopyFeedback(card, `Link copied for ${card.title}`, true)
+      await navigator.clipboard.writeText(cardUrl(card).toString())
+      showCopyFeedback(
+        card,
+        card.copyLink,
+        card.linkStatus,
+        `Link copied for ${card.title}`,
+        true,
+      )
     }
 
     function requestCopyCardLink(card: CardView): void {
       void copyCardLink(card).catch((error: unknown) => {
-        showCopyFeedback(card, `Could not copy link to ${card.title}`, false)
+        showCopyFeedback(
+          card,
+          card.copyLink,
+          card.linkStatus,
+          `Could not copy link to ${card.title}`,
+          false,
+        )
+        console.error(error)
+      })
+    }
+
+    async function copyCardPrompt(card: CardView): Promise<void> {
+      if (typeof navigator.clipboard?.writeText !== "function") {
+        throw new Error("Clipboard API is unavailable")
+      }
+
+      const columns = [...new Set([
+        card.config.y,
+        ...(card.config.series?.map(({ y }) => y) ?? []),
+        ...card.details.map(({ config }) => config.y),
+      ])]
+      const source = columns.map((column) => `daily_network_metrics.${column}`).join(", ")
+      const prompt = `Read https://filecoindataportal.xyz/SKILL.md and get the definition, model and upstream assets, and data sample for the "${card.title}" chart at ${cardUrl(card)}. Source columns: ${source}. Then answer the following question:\n\n`
+
+      await navigator.clipboard.writeText(prompt)
+      showCopyFeedback(
+        card,
+        card.copyPrompt,
+        card.promptStatus,
+        "Copied! Paste it into your agent.",
+        true,
+      )
+    }
+
+    function requestCopyCardPrompt(card: CardView): void {
+      void copyCardPrompt(card).catch((error: unknown) => {
+        showCopyFeedback(
+          card,
+          card.copyPrompt,
+          card.promptStatus,
+          `Could not copy prompt for ${card.title}`,
+          false,
+        )
         console.error(error)
       })
     }
@@ -1382,6 +1452,10 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
 
       card.copyLink.addEventListener("click", () => {
         requestCopyCardLink(card)
+      })
+
+      card.copyPrompt.addEventListener("click", () => {
+        requestCopyCardPrompt(card)
       })
     }
 
