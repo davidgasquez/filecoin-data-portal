@@ -63,9 +63,20 @@ const chartSummaryId = `${id}-chart-summary`
           aria-label={`About ${title}`}
           aria-describedby={tooltipId}
         >
-          i
+          ?
         </button>
-        <span id={tooltipId} class="stat-card__info-tooltip" role="tooltip">{description}</span>
+        <span class="stat-card__info-tooltip">
+          <span id={tooltipId}>{description}</span>
+          <button
+            type="button"
+            class="stat-card__copy-prompt"
+            data-chart-copy-prompt
+            aria-label={`Copy agent prompt about ${title}`}
+          >
+            Ask your agent
+          </button>
+          <span class="stat-card__prompt-status" data-chart-prompt-status role="status"></span>
+        </span>
       </span>
       <button
         type="button"
@@ -78,7 +89,7 @@ const chartSummaryId = `${id}-chart-summary`
           <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
         </svg>
       </button>
-      <span class="visually-hidden" data-chart-copy-status role="status"></span>
+      <span class="visually-hidden" data-chart-link-status role="status"></span>
     </span>
     <button
       type="button"
