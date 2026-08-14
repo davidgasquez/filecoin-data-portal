@@ -38,9 +38,7 @@ import httpx
 import polars as pl
 
 START_DATE = dt.date(2020, 10, 16)
-BASE_URL = (
-    "https://coincodex.com/api/coincodexcoins/get_historical_data_by_slug/filecoin"
-)
+BASE_URL = "https://coincodex.com/api/v1/coins/get_historical_data"
 COLUMN_RENAMES = {
     "price_open_BTC": "price_open_btc",
     "price_close_BTC": "price_close_btc",
@@ -61,7 +59,7 @@ COLUMN_RENAMES = {
 
 def coincodex_filecoin_market_data() -> pl.DataFrame:
     end_date = dt.datetime.now(dt.UTC).date() - dt.timedelta(days=1)
-    url = f"{BASE_URL}/{START_DATE:%Y-%m-%d}/{end_date:%Y-%m-%d}"
+    url = f"{BASE_URL}?slug=filecoin&start_date={START_DATE}&end_date={end_date}"
     payload = (
         httpx.get(url, follow_redirects=True, timeout=30).raise_for_status().json()
     )
