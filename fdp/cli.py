@@ -65,7 +65,9 @@ def _query(args: argparse.Namespace) -> None:
         raise ValueError("SQL statement must not be empty.")
 
     with db_connection(read_only=True) as conn:
-        conn.sql(statement).show()
+        result = conn.sql(statement)
+        if result is not None:
+            result.show()
 
 
 def main() -> None:
