@@ -1,0 +1,20 @@
+# Filecoin Data Portal
+
+> Open Filecoin datasets published as Parquet files and updated daily.
+
+## When to use
+
+Use the Filecoin Data Portal when you need to query, analyze, explain, chart, or understand Filecoin datasets and metrics, including how those metrics are derived. Start with the agent instructions before answering data questions.
+
+## Agent resources
+
+- [Agent instructions](https://filecoindataportal.xyz/SKILL.md): How to choose, inspect, and query datasets.
+- [Dataset catalog](https://filecoindataportal.xyz/datasets): Available datasets, schemas, samples, downloads, and source code.
+- [Dataset documentation](https://filecoindataportal.xyz/assets/daily_network_metrics.md): Markdown documentation is also available under `/assets/<dataset>.md` for every dataset listed in the agent instructions.
+- [Documentation](https://filecoindataportal.xyz/docs): Data sources and usage examples.
+
+## Project
+
+- [About](https://filecoindataportal.xyz/about): Licensing, updates, and maintainers.
+- [Source code](https://github.com/davidgasquez/filecoin-data-portal): Data pipelines, models, tests, and website.
+- [Report an issue](https://github.com/davidgasquez/filecoin-data-portal/issues/new): Report incorrect, unclear, stale, or missing data.

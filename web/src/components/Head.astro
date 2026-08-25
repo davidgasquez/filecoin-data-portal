@@ -18,15 +18,40 @@ const {
 } = Astro.props
 
 const siteUrl = import.meta.env.SITE || Astro.site || Astro.url
+const siteRootUrl = new URL("/", siteUrl).toString()
 const fullUrl = new URL(canonicalUrl, siteUrl).toString()
 const imageUrl = new URL(image, siteUrl).toString()
+const maintainerId = `${siteRootUrl}#maintainer`
 
 const jsonData = {
   "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: title,
-  description,
-  url: fullUrl,
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${siteRootUrl}#website`,
+      name: "Filecoin Data Portal",
+      description: "Open data platform for the Filecoin ecosystem.",
+      url: siteRootUrl,
+      creator: { "@id": maintainerId },
+    },
+    {
+      "@type": "DataCatalog",
+      "@id": `${siteRootUrl}#catalog`,
+      name: "Filecoin Data Portal datasets",
+      description: "Open Filecoin datasets published as Parquet files and updated daily.",
+      url: new URL("/datasets", siteUrl).toString(),
+      license: "https://creativecommons.org/public-domain/cc0/",
+      isAccessibleForFree: true,
+      creator: { "@id": maintainerId },
+    },
+    {
+      "@type": "Person",
+      "@id": maintainerId,
+      name: "David Gasquez",
+      url: "https://davidgasquez.com/",
+      sameAs: ["https://github.com/davidgasquez"],
+    },
+  ],
 }
 ---
 
