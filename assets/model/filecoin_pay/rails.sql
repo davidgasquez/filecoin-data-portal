@@ -35,7 +35,8 @@ with params as (
     select
         1598306400 as genesis_timestamp,
         '0xa5f90bc2aa73a2e0bad4d7092a932644d5dd5d71' as dealbot_payer,
-        '0x56e53c5e7f27504b810494cc3b88b2aa0645a839' as storacha_operator
+        '0x56e53c5e7f27504b810494cc3b88b2aa0645a839' as storacha_operator,
+        '0x9d4f07b948e87941a4bf4ab335d7a7d854843d75' as fil_one_operator
 ),
 tokens as (
     select
@@ -101,6 +102,7 @@ select
     created.operator,
     case
         when created.operator = (select storacha_operator from params) then 'Storacha'
+        when created.operator = (select fil_one_operator from params) then 'FIL One Storage'
         else 'FWSS'
     end as service,
     created.validator,
