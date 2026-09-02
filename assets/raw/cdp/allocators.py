@@ -111,7 +111,7 @@ COLUMNS = (
 
 
 def allocators() -> pl.DataFrame:
-    data = httpx.get(URL, follow_redirects=True, timeout=30).raise_for_status().json()
+    data = httpx.get(URL, follow_redirects=True, timeout=60).raise_for_status().json()
     return (
         pl
         .DataFrame(data["data"], infer_schema_length=None, strict=False)
