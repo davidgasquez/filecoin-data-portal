@@ -12,6 +12,7 @@
 - Optional and repeatable `asset.depends`
 - Required on Python assets: `asset.materialization` (`dataframe` or `custom`)
 - Optional on SQL assets: `asset.resource` (currently `bigquery.lily`)
+- Optional: `asset.keep_existing_on_failure = true` to continue with the existing table when refresh fails
 - Optional and repeatable `asset.column` as `column_name | description`
 - Optional and repeatable `asset.not_null`
 - Optional and repeatable `asset.unique`
@@ -22,6 +23,7 @@
 - `main.*` assets must fully document columns with `asset.column`
 - If `asset.column` is present, documented columns must exactly match the materialized columns by name
 - Inline tests (`asset.not_null`, `asset.unique`, `asset.assert`) are declared in the asset header and run against the materialized table
+- `asset.keep_existing_on_failure = true` requires the table to already exist; first materialization still fails if refresh fails
 - Leave a blank line between the different metadata sections (`description`, `materialization`, tests, ...)
 - Custom SQL tests live under `assets/` as `*.test.sql` files and are attached to assets by path
 - `uv run fdp materialize schema.table` refreshes only the selected assets by default
