@@ -11,6 +11,7 @@
 -- asset.depends = raw.coincodex_filecoin_market_data
 -- asset.depends = raw.daily_network_power
 -- asset.depends = raw.daily_network_economics
+-- asset.depends = raw.daily_base_fee_stats
 -- asset.depends = model.daily_network_burn
 -- asset.depends = raw.daily_pgf_deployments
 
@@ -24,6 +25,7 @@
 -- asset.column = quality_adjusted_power_pibs | End-of-day quality adjusted power, in pebibytes.
 -- asset.column = storage_providers_with_power | Storage providers with positive end-of-day power.
 -- asset.column = gas_used_millions | Total gas used, in millions.
+-- asset.column = base_fee_avg_nano_fil_per_gas | Average base fee per gas unit, in nanoFIL.
 -- asset.column = total_value_fil | FIL transferred by top-level messages.
 -- asset.column = total_gas_fee_fil | FIL paid in gas fees.
 -- asset.column = base_fee_burn_fil | FIL burned by message base fees.
@@ -173,6 +175,7 @@ select
     network_power.quality_adjusted_power_pibs,
     coalesce(storage_providers_with_power.storage_providers_with_power, 0) as storage_providers_with_power,
     coalesce(network_activity.gas_used_millions, 0) as gas_used_millions,
+    base_fee_stats.base_fee_avg_nano_fil_per_gas,
     coalesce(network_activity.total_value_fil, 0) as total_value_fil,
     coalesce(network_activity.total_gas_fee_fil, 0) as total_gas_fee_fil,
     coalesce(network_activity.base_fee_burn_fil, 0) as base_fee_burn_fil,
@@ -263,6 +266,8 @@ left join block_rewards
 left join model.daily_sector_lifecycle as sector_lifecycle
     using (date)
 left join raw.daily_network_power as network_power
+    using (date)
+left join raw.daily_base_fee_stats as base_fee_stats
     using (date)
 left join storage_providers_with_power
     using (date)
