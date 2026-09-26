@@ -41,9 +41,8 @@
 
 import datetime as dt
 
+import httpx
 import polars as pl
-
-from fdp.resources.cdp import get_json
 
 URL = "https://cdp.allocator.tech/allocators"
 COLUMN_RENAMES = {
@@ -112,7 +111,10 @@ COLUMNS = (
 
 
 def allocators() -> pl.DataFrame:
-    data = get_json(URL)
+    for _ in range(3):
+        if (res := httpx.get(URL, follow_redirects=True, timeout=60)).status_code < 500:
+            break
+    data = res.raise_for_status().json()
     return (
         pl
         .DataFrame(data["data"], infer_schema_length=None, strict=False)
