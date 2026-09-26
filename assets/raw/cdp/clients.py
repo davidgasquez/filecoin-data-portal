@@ -17,8 +17,9 @@
 
 import datetime as dt
 
-import httpx
 import polars as pl
+
+from fdp.resources.cdp import get_json
 
 URL = "https://cdp.allocator.tech/clients"
 COLUMN_RENAMES = {
@@ -41,7 +42,7 @@ COLUMNS = (
 
 
 def clients() -> pl.DataFrame:
-    data = httpx.get(URL, follow_redirects=True, timeout=60).raise_for_status().json()
+    data = get_json(URL)
     return (
         pl
         .DataFrame(data["data"], infer_schema_length=None, strict=False)

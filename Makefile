@@ -11,7 +11,10 @@ lint:
 test:
 	$(FDP) test
 
-check: lint
+unit-test:
+	uv run python -m unittest discover -s tests
+
+check: lint unit-test
 	$(FDP) check
 
 publish:
