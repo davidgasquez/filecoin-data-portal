@@ -22,6 +22,7 @@ SUPPORTED_METADATA_KEYS = {
     "column",
     "materialization",
     "resource",
+    "keep_existing_on_failure",
 }
 VALID_SQL_RESOURCES = {"bigquery.lily"}
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -77,6 +78,7 @@ class Asset:
     kind: AssetKind
     python_materialization: PythonMaterialization | None
     resource: str | None
+    keep_existing_on_failure: bool
     depends: tuple[str, ...]
     description: str | None
     columns: tuple[AssetColumn, ...]
@@ -268,6 +270,11 @@ def asset_from_path(path: Path, assets_root: Path) -> Asset:
     schema, name = asset_identity_from_path(path, assets_root)
     python_materialization = parse_python_materialization(kind, metadata, path)
     resource = parse_asset_resource(kind, metadata, path)
+    keep_existing_on_failure = parse_bool_metadata(
+        metadata,
+        "keep_existing_on_failure",
+        path,
+    )
 
     return Asset(
         name=name,
@@ -277,6 +284,7 @@ def asset_from_path(path: Path, assets_root: Path) -> Asset:
         kind=kind,
         python_materialization=python_materialization,
         resource=resource,
+        keep_existing_on_failure=keep_existing_on_failure,
         depends=tuple(parse_dependencies(metadata.get("depends", []), path)),
         description=optional_metadata_value(metadata, "description", path),
         columns=tuple(parse_columns(metadata.get("column", []), path)),
@@ -558,6 +566,25 @@ def parse_asset_resource(
             f"Expected one of: {known_resources}."
         )
     return resource
+
+
+def parse_bool_metadata(
+    metadata: dict[str, list[str]],
+    key: str,
+    path: Path,
+) -> bool:
+    values = metadata.get(key, [])
+    if not values:
+        return False
+    if len(values) != 1:
+        raise ValueError(f"asset.{key} must appear once in {path}")
+
+    value = values[0].strip().lower()
+    if value == "true":
+        return True
+    if value == "false":
+        return False
+    raise ValueError(f"asset.{key} must be true or false in {path}")
 
 
 def python_asset_function_name(path: Path) -> str:
