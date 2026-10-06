@@ -56,9 +56,12 @@ You can run the Filecoin Data Portal anywhere using `uv`. You'll need the follow
 - `R2_SECRET_ACCESS_KEY`
 - `R2_ACCOUNT_ID`
 - `R2_BUCKET`
+- `CLOUDFLARE_API_TOKEN` (requires Cache Purge permission for `filecoindataportal.xyz`)
+- `CLOUDFLARE_ZONE_ID` (`d301192e601454a9cf7a87b4cd6ee243`)
 - `FDP_GSHEET_SPREADSHEET_ID`
 
 `uv run fdp publish r2` writes one Parquet file per `main.*` table to R2 and serves JSON for browser use at `https://data.filecoindataportal.xyz/daily_network_metrics.json`.
+After uploading, it purges the dataset host's edge cache before the website rebuilds. See [Cloudflare configuration](docs/cloudflare.md) for caching and HTTPS settings.
 `uv run fdp publish gsheet` syncs one worksheet per `main.*` table to a Google spreadsheet and removes stale worksheets.
 Share the target spreadsheet with the Google service account from `ENCODED_GOOGLE_APPLICATION_CREDENTIALS`.
 

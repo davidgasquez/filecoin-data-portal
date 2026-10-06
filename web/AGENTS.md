@@ -1,6 +1,6 @@
 # Web Guidelines
 
-- Fully static site served via Cloudflare Workers.
+- Fully static site served via Cloudflare Pages.
 - Use semantic HTML and keep things vanilla when possible. No react or other frameworks.
 - Use modern CSS.
 - Keep accesibility in mind.
