@@ -2,6 +2,7 @@ import os
 from dataclasses import dataclass
 
 import duckdb
+import httpx
 
 from fdp.assets import Asset
 
@@ -9,6 +10,8 @@ R2_ACCESS_KEY_ID_ENV_VAR = "R2_ACCESS_KEY_ID"
 R2_SECRET_ACCESS_KEY_ENV_VAR = "R2_SECRET_ACCESS_KEY"
 R2_ACCOUNT_ID_ENV_VAR = "R2_ACCOUNT_ID"
 R2_BUCKET_ENV_VAR = "R2_BUCKET"
+CLOUDFLARE_API_TOKEN_ENV_VAR = "CLOUDFLARE_API_TOKEN"
+CLOUDFLARE_ZONE_ID_ENV_VAR = "CLOUDFLARE_ZONE_ID"
 
 
 @dataclass(frozen=True)
@@ -17,6 +20,8 @@ class R2Config:
     secret_access_key: str
     account_id: str
     bucket: str
+    cloudflare_api_token: str
+    cloudflare_zone_id: str
 
 
 def publish(assets: list[Asset], conn: duckdb.DuckDBPyConnection) -> None:
@@ -24,6 +29,7 @@ def publish(assets: list[Asset], conn: duckdb.DuckDBPyConnection) -> None:
     install_httpfs(conn)
     create_temporary_r2_secret(conn, config)
     publish_assets(conn, assets, config.bucket)
+    purge_cache(config)
 
 
 def r2_config_from_env() -> R2Config:
@@ -35,18 +41,37 @@ def r2_config_from_env() -> R2Config:
         ),
         R2_ACCOUNT_ID_ENV_VAR: os.environ.get(R2_ACCOUNT_ID_ENV_VAR, ""),
         R2_BUCKET_ENV_VAR: os.environ.get(R2_BUCKET_ENV_VAR, ""),
+        CLOUDFLARE_API_TOKEN_ENV_VAR: os.environ.get(CLOUDFLARE_API_TOKEN_ENV_VAR, ""),
+        CLOUDFLARE_ZONE_ID_ENV_VAR: os.environ.get(CLOUDFLARE_ZONE_ID_ENV_VAR, ""),
     }
     missing = [name for name, value in values.items() if not value]
     if missing:
         names = ", ".join(missing)
-        raise ValueError(f"Missing R2 environment variables: {names}")
+        raise ValueError(f"Missing R2 publishing environment variables: {names}")
 
     return R2Config(
         access_key_id=values[R2_ACCESS_KEY_ID_ENV_VAR],
         secret_access_key=values[R2_SECRET_ACCESS_KEY_ENV_VAR],
         account_id=values[R2_ACCOUNT_ID_ENV_VAR],
         bucket=values[R2_BUCKET_ENV_VAR],
+        cloudflare_api_token=values[CLOUDFLARE_API_TOKEN_ENV_VAR],
+        cloudflare_zone_id=values[CLOUDFLARE_ZONE_ID_ENV_VAR],
     )
+
+
+def purge_cache(config: R2Config) -> None:
+    response = httpx.post(
+        "https://api.cloudflare.com/client/v4/zones/"
+        f"{config.cloudflare_zone_id}/purge_cache",
+        headers={"Authorization": f"Bearer {config.cloudflare_api_token}"},
+        json={"hosts": ["data.filecoindataportal.xyz"]},
+        timeout=30,
+    )
+    response.raise_for_status()
+    result = response.json()
+    if not result["success"]:
+        raise RuntimeError(f"Cloudflare cache purge failed: {result['errors']}")
+    print("Purged data.filecoindataportal.xyz cache", flush=True)
 
 
 def install_httpfs(conn: duckdb.DuckDBPyConnection) -> None:

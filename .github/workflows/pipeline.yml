@@ -19,6 +19,8 @@ jobs:
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ZONE_ID: d301192e601454a9cf7a87b4cd6ee243
       OSO_API_KEY: ${{ secrets.OSO_API_KEY }}
       FDP_FILECOIN_RPC_MAX_CONCURRENT: 1
 
