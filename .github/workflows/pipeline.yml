@@ -68,6 +68,7 @@ jobs:
           retention-days: 30
 
       - name: Publish to R2
+        if: github.ref == 'refs/heads/main'
         run: uv run fdp publish r2
 
       - name: Publish DuckDB snapshot
