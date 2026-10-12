@@ -21,6 +21,14 @@ publish:
 run:
 	$(FDP) materialize
 
+restore:
+	@set -eu; \
+	test ! -e fdp.duckdb.wal || { echo "Stop FDP and checkpoint fdp.duckdb before restoring." >&2; exit 1; }; \
+	tmp=$$(mktemp ./fdp.duckdb.XXXXXX); \
+	trap 'rm -f "$$tmp"' EXIT; \
+	curl --fail --location "$${SNAPSHOT_URL:-https://data.filecoindataportal.xyz/fdp.duckdb}" --output "$$tmp"; \
+	mv "$$tmp" fdp.duckdb
+
 qmd:
 	qmd update
 	qmd embed --chunk-strategy auto
