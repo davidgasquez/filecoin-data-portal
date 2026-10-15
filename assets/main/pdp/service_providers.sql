@@ -1,13 +1,18 @@
 -- asset.description = PDP service providers.
 
 -- asset.depends = raw.fevm_eth_logs_decoded
+-- asset.depends = raw.pdp_service_provider_info
 
 -- asset.column = service_provider_id | Service provider registry identifier.
+-- asset.column = name | Provider name declared in the registry.
+-- asset.column = description | Provider description declared in the registry.
 -- asset.column = service_provider_address | Provider control address.
 -- asset.column = payee | Payee address.
 -- asset.column = is_registered | Whether the provider has a registration event.
 -- asset.column = is_removed | Whether the provider has a removal event.
+-- asset.column = is_provider_active | Whether the registry marks the provider active.
 -- asset.column = is_active | Whether the provider is active based on registry and PDP product state.
+-- asset.column = is_endorsed | Whether the provider is in the endorsement set.
 -- asset.column = product_type | Latest PDP product type label.
 -- asset.column = offers_pdp_storage | Whether the latest PDP product event indicates an active PDP offering.
 -- asset.column = service_url | Service endpoint URL decoded from capabilities.
@@ -235,12 +240,16 @@ fwss_first_approval as (
 )
 select
     registered.provider_id as service_provider_id,
+    info.name,
+    info.description,
     registered.service_provider as service_provider_address,
     registered.payee,
     true as is_registered,
     removed.provider_id is not null as is_removed,
+    info.is_active as is_provider_active,
     removed.provider_id is null
         and coalesce(products.event_name, 'ProductRemoved') != 'ProductRemoved' as is_active,
+    info.is_endorsed,
     case products.product_type
         when 0 then 'PDP'
         else cast(products.product_type as varchar)
@@ -276,6 +285,8 @@ select
     fwss_latest.fwss_last_approval_transaction_hash,
     fwss_latest.fwss_last_approval_at
 from provider_registered as registered
+left join raw.pdp_service_provider_info as info
+    on registered.provider_id = info.service_provider_id
 left join provider_removed as removed
     on registered.provider_id = removed.provider_id
    and removed.row_num = 1
