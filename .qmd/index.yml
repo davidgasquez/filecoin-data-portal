@@ -83,6 +83,63 @@ collections:
     update: "[ -d dealbot/.git ] && git -C dealbot pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/dealbot.git dealbot"
     context:
       "": Automated Filecoin PDP deal creation and performance monitoring system, including backend jobs, retrieval checks, provider metrics, dashboard, deployment configuration, and operational documentation.
+  indexer:
+    path: .qmd/external
+    pattern: "{indexer/**/*.{md,ts,sql,json,yml,yaml},indexer/**/Dockerfile}"
+    ignore:
+      - "indexer/.agents/**"
+      - "indexer/.claude/**"
+      - "indexer/pnpm-lock.yaml"
+    update: "[ -d indexer/.git ] && git -C indexer pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/indexer.git indexer"
+    context:
+      "": Filecoin inventory indexer, including Ponder event handlers, shared SQL and Drizzle schemas, dataset and piece lifecycle modeling, payment rails, session keys, tests, and deployment documentation.
+  filecoin-agents:
+    path: .qmd/external
+    pattern: "{filecoin-agents/README.md,filecoin-agents/apps/filecoin-api/{README.md,package.json,wrangler.jsonc},filecoin-agents/apps/filecoin-api/{src,test}/**/*.{ts,json,sql},filecoin-agents/docs/filecoin/**/*.md}"
+    update: "[ -d filecoin-agents/.git ] && git -C filecoin-agents pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/agents.git filecoin-agents"
+    context:
+      "": Public Filecoin REST API and MCP implementation, including provider, dataset, piece, payment rail and session key queries, response schemas, tests, deployment configuration, and API documentation.
+  compliance-data-platform:
+    path: .qmd/external
+    pattern: "{compliance-data-platform/{README.md,package.json,Dockerfile},compliance-data-platform/src/**/*.{ts,sql,json},compliance-data-platform/{prisma,prismaDmob}/**/*.{prisma,sql,toml}}"
+    ignore:
+      - "compliance-data-platform/src/po-rep-indexer/manifests/**"
+      - "compliance-data-platform/src/generated/**"
+      - "compliance-data-platform/src/db/auto-generated/**"
+    update: "[ -d compliance-data-platform/.git ] && git -C compliance-data-platform pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/fidlabs/compliance-data-platform.git compliance-data-platform"
+    context:
+      "": Compliance Data Platform backend, including client and allocator modeling, provider retrieval and bandwidth measurements, IPNI reporting, PoRep indexing, payment queries, API contracts, and database schemas.
+  curio:
+    path: .qmd/external
+    pattern: "{curio/README.md,curio/go.mod,curio/documentation/en/**/*.md,curio/{market,pdp,pdpnode}/**/*.{go,sol,sql,md,json,toml},curio/tasks/{pdp,pdpv0,pay,piece,storage-market,indexing}/**/*.{go,sql,md},curio/harmony/harmonydb/**/*.{go,sql,md}}"
+    ignore:
+      - "curio/harmony/harmonydb/downgrade/**"
+      - "curio/**/package-lock.json"
+      - "curio/**/*_gen.go"
+      - "curio/pdp/contract/**/[A-Z]*.go"
+      - "curio/market/mk20/contract/[A-Z]*.go"
+      - "curio/market/mk20/http/docs.go"
+    update: "[ -d curio/.git ] && git -C curio pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/curio.git curio"
+    context:
+      "": Curio storage provider implementation, including PDP and PoRep/DDO deal lifecycles, piece handling, retrieval and IPNI integration, payment tasks, SQL migrations, and provider operational documentation.
+  pdp-explorer:
+    path: .qmd/external
+    pattern: "{pdp-explorer/README.md,pdp-explorer/docs/**/*.md,pdp-explorer/subgraph/**/*.{md,ts,graphql,json,yml,yaml},pdp-explorer/subgraph-client/src/utility/**/*.{ts,graphql}}"
+    ignore:
+      - "pdp-explorer/subgraph/package-lock.json"
+      - "pdp-explorer/subgraph/generated/**"
+    update: "[ -d pdp-explorer/.git ] && git -C pdp-explorer pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/pdp-explorer.git pdp-explorer"
+    context:
+      "": PDP Explorer data model and subgraph, including proving windows, submitted and missed proofs, fault histories, provider and dataset activity, GraphQL queries, and metric calculation tests.
+  filecoin-pay-explorer:
+    path: .qmd/external
+    pattern: "{filecoin-pay-explorer/{README.md,METRIC-DEFINITIONS.md},filecoin-pay-explorer/docs/**/*.md,filecoin-pay-explorer/packages/subgraph/**/*.{md,ts,graphql,json,yml,yaml}}"
+    ignore:
+      - "filecoin-pay-explorer/packages/subgraph/generated/**"
+      - "filecoin-pay-explorer/packages/subgraph/package-lock.json"
+    update: "[ -d filecoin-pay-explorer/.git ] && git -C filecoin-pay-explorer pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-pay-explorer.git filecoin-pay-explorer"
+    context:
+      "": Filecoin Pay Explorer subgraph and metric definitions, including payment rail rate periods, settlements, one-time payments, operator and token aggregates, fees, auction burns, and accounting tests.
 models:
   embed: hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf
   generate: hf:tobil/qmd-query-expansion-1.7B-gguf/qmd-query-expansion-1.7B-q4_k_m.gguf
