@@ -68,5 +68,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: fbe814d4a37d3d3d7fcfeec0ab929ff6
-          command: pages deploy web/dist --project-name=filecoindataportal --branch=main
+          command: deploy --config web/wrangler.jsonc
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
