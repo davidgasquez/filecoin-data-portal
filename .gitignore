@@ -234,6 +234,9 @@ web/public/SKILL.md
 web/public/assets/*.md
 web/src/content/dataset-docs/*.md
 
+# Cloudflare
+.wrangler/
+
 # DuckDB
 *.duckdb
 *.duckdb.wal
