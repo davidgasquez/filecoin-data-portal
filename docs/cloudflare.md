@@ -41,9 +41,9 @@ rollback. Temporary diagnostic Workers and exception rules were removed.
 - Production dataset links use the custom domain.
 
 The website workflow deploys with `wrangler deploy --config web/wrangler.jsonc`.
-Its Cloudflare token needs Workers Scripts Edit and Workers Routes Edit permissions
-for this account/zone. The existing CI token's permissions could not be inspected
-with the CLI OAuth session; verify them on the next workflow run.
+It uses the GitHub Actions secret `CLOUDFLARE_WORKERS_API_TOKEN`, which needs Workers
+Scripts Edit and Workers Routes Edit permissions for this account/zone. The
+pipeline uses the separate `CLOUDFLARE_API_TOKEN` secret for cache purges.
 
 `fdp publish r2` requires a Cloudflare API token with Cache Purge permission and
 `CLOUDFLARE_ZONE_ID`. It invalidates all cache variants on the dataset hostname
