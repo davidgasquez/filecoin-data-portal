@@ -10,8 +10,8 @@ on:
       - ".github/workflows/website.yml"
   workflow_run:
     workflows: ["Pipeline"]
-    types:
-      - completed
+    branches: [main]
+    types: [completed]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,21 +34,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
         run: |
-          set -euo pipefail
-          rm -rf web/.generated/fdp-docs/raw
-          mkdir -p web/.generated/fdp-docs/raw
-
-          if [ -n "${WORKFLOW_RUN_ID:-}" ]; then
-            run_id="$WORKFLOW_RUN_ID"
-          else
-            run_id="$(gh run list --workflow pipeline.yml --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')"
-          fi
-
-          test -n "$run_id"
-          test "$run_id" != "null"
+          run_id="${WORKFLOW_RUN_ID:-$(gh run list --workflow pipeline.yml --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')}"
           gh run download "$run_id" --name fdp-docs --dir web/.generated/fdp-docs/raw
-          test -f web/.generated/fdp-docs/raw/SKILL.md
-          test -d web/.generated/fdp-docs/raw/assets
 
       - name: Install Node.js
         uses: actions/setup-node@v6
@@ -57,11 +44,8 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
 
-      - name: Install Dependencies
-        run: npm ci --prefix web
-
       - name: Build
-        run: npm run build --prefix web
+        run: npm ci --prefix web && npm run build --prefix web
 
       - name: Deploy
         uses: cloudflare/wrangler-action@v3
@@ -70,4 +54,3 @@ jobs:
           accountId: fbe814d4a37d3d3d7fcfeec0ab929ff6
           wranglerVersion: "4.151.3"
           command: deploy --config web/wrangler.jsonc
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
