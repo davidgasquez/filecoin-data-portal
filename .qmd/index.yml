@@ -140,6 +140,26 @@ collections:
     update: "[ -d filecoin-pay-explorer/.git ] && git -C filecoin-pay-explorer pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-pay-explorer.git filecoin-pay-explorer"
     context:
       "": Filecoin Pay Explorer subgraph and metric definitions, including payment rail rate periods, settlements, one-time payments, operator and token aggregates, fees, auction burns, and accounting tests.
+  solstice:
+    path: .qmd/external
+    pattern: "{solstice/**/*.{md,sol,py,toml,yml,yaml,json},solstice/.gitmodules}"
+    ignore:
+      - "solstice/lib/**"
+    update: "[ -d solstice/.git ] && git -C solstice pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/solstice.git solstice"
+    context:
+      "": Solstice contracts (FIPs discussion 1249), including the Service Rewards Actor, Stream Weight Actor, FVM reward methods, unanimous governance proxies, deployments, storage layouts, upgrade tooling, and design docs.
+  solstice-governance:
+    path: .qmd/external
+    pattern: "solstice-governance/**/*.md"
+    update: "[ -d solstice-governance/.git ] && git -C solstice-governance pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/Solstice-Governance.git solstice-governance"
+    context:
+      "": Solstice program governance, including governance tiers, orchestrator operational guidelines and registry, quarterly review runbook and reports, and SRA/SWA action request templates.
+  fpv-indexer:
+    path: .qmd/external
+    pattern: "{fpv-indexer/{README.md,CHANGELOG.md,package.json,Dockerfile,compose.yaml,.env.example},fpv-indexer/{src,test}/**/*.ts,fpv-indexer/prisma/**/*.{prisma,sql,toml}}"
+    update: "[ -d fpv-indexer/.git ] && git -C fpv-indexer pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/fidlabs/fpv-indexer.git fpv-indexer"
+    context:
+      "": Filecoin Pay volume indexer, including Filecoin Pay, Service Rewards Actor and Stream Weight Actor event indexing, payment rails, settlements, pricing periods, fee auctions, service orchestrator gate checks, FIP-0118 quarterly volume calculation, database schema, and REST API.
 models:
   embed: hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf
   generate: hf:tobil/qmd-query-expansion-1.7B-gguf/qmd-query-expansion-1.7B-q4_k_m.gguf
