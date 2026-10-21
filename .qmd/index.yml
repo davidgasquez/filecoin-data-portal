@@ -1,86 +1,123 @@
+# QMD 2.8.3 excludes hidden paths and directories named build, even when explicitly matched.
+# Supplemental build collections below recover authored content; hidden files stay excluded.
+# External collections track upstream branches, not necessarily deployed protocol versions.
 collections:
   fdp:
     path: .
-    pattern: "{**/*.{md,py,sql,toml,yml,yaml,json},**/Makefile,**/AGENTS.md}"
+    pattern: "{**/*.{md,mdx,py,sql,ts,tsx,js,mjs,astro,css,json,jsonc,toml,yml,yaml,nix,sh},**/Makefile,web/public/_headers}"
     ignore:
       - "web/src/data/generated/**"
       - "web/public/assets/**"
-      - "web/deweb-local-sample/**"
-      - "**/package-lock.json"
-      - "**/pnpm-lock.yaml"
-      - "**/bun.lock"
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+      - "web/src/content/dataset-docs/**"
+      - "web/public/SKILL.md"
     context:
-      "": FDP codebase for a minimal Filecoin open data platform, including orchestration code, assets, tests, and repository-specific documentation.
+      "": FDP authored code and documentation for a minimal Filecoin open data platform.
+      "assets/raw/": FDP source-shaped extracts and source-level aggregations; check upstream schemas and extraction semantics.
+      "assets/model/": FDP reusable entities and derived facts; primary business-logic layer for downstream datasets.
+      "assets/main/": FDP public dataset contracts; follow model dependencies for business logic and derivations.
+      "fdp/": FDP orchestration, resources, materialization, publishing, and asset tooling; not Filecoin protocol rules.
+      "web/": FDP website and build tooling; dataset pages are generated from asset documentation.
   builtin-actors:
     path: .qmd/external
     pattern: "{builtin-actors/**/*.{md,rs,sol,fe,eas,sh,toml,yml,yaml,json},builtin-actors/**/Makefile,builtin-actors/**/Dockerfile}"
-    update: "[ -d builtin-actors/.git ] && git -C builtin-actors pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/builtin-actors.git builtin-actors"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+      - "builtin-actors/actors/evm/precompile-testdata/**"
+    update: "if [ -d builtin-actors/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C builtin-actors pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/builtin-actors.git builtin-actors; fi"
     context:
-      "": Filecoin builtin actors source of truth, including actor implementations, state transitions, and protocol-level behavior.
+      "": Filecoin builtin actor implementations, state transitions, and tests. Match actor version and network activation before applying checkout behavior.
   lotus:
     path: .qmd/external
     pattern: "{lotus/**/*.{md,go,sol,sql,sh,bash,py,asm,template,tmpl,html,css,service,conf,toml,yml,yaml,json},lotus/**/Makefile,lotus/**/Dockerfile,lotus/**/go.mod,lotus/GO_VERSION_MIN,lotus/scripts/bash-completion/lotus,lotus/scripts/zsh-completion/lotus,lotus/scripts/dev/drop-local-repos,lotus/scripts/dev/gen-daemon,lotus/scripts/dev/sminer-init,lotus/scripts/mkreleaselog}"
-    update: "[ -d lotus/.git ] && git -C lotus pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/lotus.git lotus"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+      - "lotus/api/**/proxy_gen.go"
+      - "lotus/api/mocks/**"
+    update: "if [ -d lotus/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C lotus pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/lotus.git lotus; fi"
     context:
       "": Lotus reference Filecoin client implementation, including chain logic, APIs, node behavior, markets, storage, and operational documentation.
   lily:
     path: .qmd/external
-    pattern: "{lily/**/*.{md,go,sql,sh,template,tpl,mod,env,toml,yml,yaml,json},lily/**/Makefile,lily/deployment/.env.example,lily/scripts/fiximports,lily/build/grafana/config.monitoring}"
-    update: "[ -d lily/.git ] && git -C lily pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/lily.git lily"
+    pattern: "{lily/**/*.{md,go,sql,sh,template,tpl,mod,env,toml,yml,yaml,json},lily/**/Makefile,lily/scripts/fiximports}"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d lily/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C lily pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/lily.git lily; fi"
     context:
-      "": Lily data extraction and indexing code for Filecoin, including tasks, schemas, models, chain data processing, and dataset-oriented documentation.
+      "": Lily chain extraction, persisted models, and schemas; use to understand indexed Filecoin datasets.
+      "lily/tasks/": Lily extraction tasks; how chain state and events become persisted dataset rows.
+      "lily/model/": Lily persisted models and column semantics consumed by downstream analytics.
+      "lily/schemas/": Lily database schemas and migrations; distinguish schema versions when interpreting historical data.
   forest:
     path: .qmd/external
     pattern: "{forest/**/*.{md,mdx,rs,go,sh,js,ts,tsx,css,rb,py,sol,proto,tpl,toml,yml,yaml,json,dockerfile},forest/**/Makefile,forest/**/go.mod,forest/**/go.work,forest/**/Dockerfile*}"
-    update: "[ -d forest/.git ] && git -C forest pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/ChainSafe/forest.git forest"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d forest/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C forest pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/ChainSafe/forest.git forest; fi"
     context:
       "": Forest Filecoin client implementation in Rust, including node behavior, chain sync, state management, RPC, tooling, and operational documentation.
   filecoin-docs:
     path: .qmd/external
     pattern: "{filecoin-docs/**/*.{md,mdx,ts,js,mjs,sh,json,toml,yml,yaml},filecoin-docs/**/Makefile}"
-    update: "[ -d filecoin-docs/.git ] && git -C filecoin-docs pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/filecoin-docs.git filecoin-docs"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d filecoin-docs/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C filecoin-docs pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/filecoin-docs.git filecoin-docs; fi"
     context:
       "": Official Filecoin documentation covering concepts, protocol details, tooling, and user/developer guides.
   fips:
     path: .qmd/external
     pattern: "{fips/**/*.{md,go,sh,py,ipynb,json,toml,yml,yaml},fips/**/Makefile}"
-    update: "[ -d fips/.git ] && git -C fips pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/FIPs.git fips"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d fips/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C fips pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/FIPs.git fips; fi"
     context:
-      "": Filecoin Improvement Proposals and Filecoin Runtime Component specs, including accepted and draft protocol changes, standards, rationale, and proposal process docs.
+      "": Filecoin Improvement Proposals and Runtime Component specs, rationale, and standards. Check each proposal's status and network activation before treating it as deployed behavior.
   filecoin-services:
     path: .qmd/external
-    pattern: "{filecoin-services/**/*.{md,sol,sh,js,jq,toml,yml,yaml,json},filecoin-services/**/Makefile,filecoin-services/.gitmodules}"
-    update: "[ -d filecoin-services/.git ] && git -C filecoin-services pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-services.git filecoin-services"
+    pattern: "{filecoin-services/**/*.{md,sol,sql,py,sh,js,jq,toml,yml,yaml,json},filecoin-services/**/Makefile}"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d filecoin-services/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C filecoin-services pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-services.git filecoin-services; fi"
     context:
       "": Filecoin Onchain Cloud repository for onchain programmable services, centered on smart contracts, deployment tooling, tests, specs, and operational docs for warm storage and related services.
   porep-market:
     path: .qmd/external
-    pattern: "{porep-market/**/*.{md,sol,sh,py,toml,yml,yaml,json},porep-market/**/Makefile,porep-market/**/justfile,porep-market/**/remappings.txt,porep-market/**/.env.example}"
-    update: "[ -d porep-market/.git ] && git -C porep-market pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/fidlabs/porep-market.git porep-market"
+    pattern: "{porep-market/**/*.{md,sol,sh,py,ts,toml,yml,yaml,json},porep-market/**/Makefile,porep-market/**/justfile,porep-market/**/remappings.txt}"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d porep-market/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C porep-market pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/fidlabs/porep-market.git porep-market; fi"
     context:
       "": FIDLabs PoRep Market smart contracts and tooling, including Solidity sources, tests, deployment scripts, ABIs, and documentation for storage-provider deal allocation and validation workflows.
   filecoin-pay:
     path: .qmd/external
-    pattern: "{filecoin-pay/**/*.{md,sol,sh,toml,yml,yaml,json},filecoin-pay/**/Makefile,filecoin-pay/.gitmodules}"
-    update: "[ -d filecoin-pay/.git ] && git -C filecoin-pay pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-pay.git filecoin-pay"
+    pattern: "{filecoin-pay/**/*.{md,sol,sh,toml,yml,yaml,json},filecoin-pay/**/Makefile}"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d filecoin-pay/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C filecoin-pay pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-pay.git filecoin-pay; fi"
     context:
       "": Filecoin Onchain Cloud payment rails and settlement contracts, including Solidity sources, tests, specs, audits references, and deployment tooling for Filecoin Pay.
   synapse-sdk:
     path: .qmd/external
     pattern: "{synapse-sdk/**/*.{md,mdx,ts,tsx,js,mjs,astro,html,css,json,jsonc,webmanifest,toml,yml,yaml},synapse-sdk/**/Makefile,synapse-sdk/**/AGENTS.md,synapse-sdk/**/_headers}"
-    update: "[ -d synapse-sdk/.git ] && git -C synapse-sdk pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/synapse-sdk.git synapse-sdk"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d synapse-sdk/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C synapse-sdk pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/synapse-sdk.git synapse-sdk; fi"
     context:
       "": Filecoin Onchain Cloud JavaScript and React SDK monorepo for Synapse, including packages, examples, docs site content, and developer workflows.
   pdp:
     path: .qmd/external
-    pattern: "{pdp/**/*.{md,sol,sh,toml,yml,yaml,json},pdp/**/Makefile,pdp/**/configure,pdp/.gitmodules}"
-    update: "[ -d pdp/.git ] && git -C pdp pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/pdp.git pdp"
+    pattern: "{pdp/**/*.{md,sol,sh,toml,yml,yaml,json},pdp/**/Makefile,pdp/**/configure}"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d pdp/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C pdp pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/pdp.git pdp; fi"
     context:
       "": Filecoin Onchain Cloud provable data possession contracts and tools, including verifier and service contracts, tests, deployment scripts, and design documentation.
   dealbot:
     path: .qmd/external
-    pattern: "{dealbot/**/*.{css,graphql,html,js,json,md,mjs,sh,svg,ts,tsx,yaml,yml},dealbot/**/{Dockerfile,Makefile,.env.example,.npmrc}}"
-    update: "[ -d dealbot/.git ] && git -C dealbot pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/dealbot.git dealbot"
+    pattern: "{dealbot/**/*.{css,graphql,html,js,json,md,mjs,sh,ts,tsx,yaml,yml},dealbot/**/{Dockerfile,Makefile}}"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d dealbot/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C dealbot pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/dealbot.git dealbot; fi"
     context:
       "": Automated Filecoin PDP deal creation and performance monitoring system, including backend jobs, retrieval checks, provider metrics, dashboard, deployment configuration, and operational documentation.
   indexer:
@@ -89,24 +126,28 @@ collections:
     ignore:
       - "indexer/.agents/**"
       - "indexer/.claude/**"
-      - "indexer/pnpm-lock.yaml"
-    update: "[ -d indexer/.git ] && git -C indexer pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/indexer.git indexer"
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d indexer/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C indexer pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/indexer.git indexer; fi"
     context:
       "": Filecoin inventory indexer, including Ponder event handlers, shared SQL and Drizzle schemas, dataset and piece lifecycle modeling, payment rails, session keys, tests, and deployment documentation.
   filecoin-agents:
     path: .qmd/external
     pattern: "{filecoin-agents/README.md,filecoin-agents/apps/filecoin-api/{README.md,package.json,wrangler.jsonc},filecoin-agents/apps/filecoin-api/{src,test}/**/*.{ts,json,sql},filecoin-agents/docs/filecoin/**/*.md}"
-    update: "[ -d filecoin-agents/.git ] && git -C filecoin-agents pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/agents.git filecoin-agents"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d filecoin-agents/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C filecoin-agents pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/agents.git filecoin-agents; fi"
     context:
-      "": Public Filecoin REST API and MCP implementation, including provider, dataset, piece, payment rail and session key queries, response schemas, tests, deployment configuration, and API documentation.
+      "": Public Filecoin REST API and MCP implementation; provider, dataset, piece, payment rail, and session key queries and response schemas.
+      "filecoin-agents/docs/filecoin/": Filecoin agents design documentation, including CLI architecture, API/MCP discovery, and historical interface research; not all documents describe implemented API behavior.
   compliance-data-platform:
     path: .qmd/external
-    pattern: "{compliance-data-platform/{README.md,package.json,Dockerfile},compliance-data-platform/src/**/*.{ts,sql,json},compliance-data-platform/{prisma,prismaDmob}/**/*.{prisma,sql,toml}}"
+    pattern: "{compliance-data-platform/{README.md,package.json,Dockerfile},compliance-data-platform/src/**/*.{md,ts,sql,json},compliance-data-platform/{prisma,prismaDmob}/**/*.{prisma,sql,toml}}"
     ignore:
       - "compliance-data-platform/src/po-rep-indexer/manifests/**"
       - "compliance-data-platform/src/generated/**"
       - "compliance-data-platform/src/db/auto-generated/**"
-    update: "[ -d compliance-data-platform/.git ] && git -C compliance-data-platform pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/fidlabs/compliance-data-platform.git compliance-data-platform"
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d compliance-data-platform/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C compliance-data-platform pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/fidlabs/compliance-data-platform.git compliance-data-platform; fi"
     context:
       "": Compliance Data Platform backend, including client and allocator modeling, provider retrieval and bandwidth measurements, IPNI reporting, PoRep indexing, payment queries, API contracts, and database schemas.
   curio:
@@ -114,21 +155,21 @@ collections:
     pattern: "{curio/README.md,curio/go.mod,curio/documentation/en/**/*.md,curio/{market,pdp,pdpnode}/**/*.{go,sol,sql,md,json,toml},curio/tasks/{pdp,pdpv0,pay,piece,storage-market,indexing}/**/*.{go,sql,md},curio/harmony/harmonydb/**/*.{go,sql,md}}"
     ignore:
       - "curio/harmony/harmonydb/downgrade/**"
-      - "curio/**/package-lock.json"
       - "curio/**/*_gen.go"
       - "curio/pdp/contract/**/[A-Z]*.go"
       - "curio/market/mk20/contract/[A-Z]*.go"
       - "curio/market/mk20/http/docs.go"
-    update: "[ -d curio/.git ] && git -C curio pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/curio.git curio"
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d curio/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C curio pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/curio.git curio; fi"
     context:
       "": Curio storage provider implementation, including PDP and PoRep/DDO deal lifecycles, piece handling, retrieval and IPNI integration, payment tasks, SQL migrations, and provider operational documentation.
   pdp-explorer:
     path: .qmd/external
     pattern: "{pdp-explorer/README.md,pdp-explorer/docs/**/*.md,pdp-explorer/subgraph/**/*.{md,ts,graphql,json,yml,yaml},pdp-explorer/subgraph-client/src/utility/**/*.{ts,graphql}}"
     ignore:
-      - "pdp-explorer/subgraph/package-lock.json"
       - "pdp-explorer/subgraph/generated/**"
-    update: "[ -d pdp-explorer/.git ] && git -C pdp-explorer pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/pdp-explorer.git pdp-explorer"
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d pdp-explorer/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C pdp-explorer pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/pdp-explorer.git pdp-explorer; fi"
     context:
       "": PDP Explorer data model and subgraph, including proving windows, submitted and missed proofs, fault histories, provider and dataset activity, GraphQL queries, and metric calculation tests.
   filecoin-pay-explorer:
@@ -136,30 +177,59 @@ collections:
     pattern: "{filecoin-pay-explorer/{README.md,METRIC-DEFINITIONS.md},filecoin-pay-explorer/docs/**/*.md,filecoin-pay-explorer/packages/subgraph/**/*.{md,ts,graphql,json,yml,yaml}}"
     ignore:
       - "filecoin-pay-explorer/packages/subgraph/generated/**"
-      - "filecoin-pay-explorer/packages/subgraph/package-lock.json"
-    update: "[ -d filecoin-pay-explorer/.git ] && git -C filecoin-pay-explorer pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-pay-explorer.git filecoin-pay-explorer"
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d filecoin-pay-explorer/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C filecoin-pay-explorer pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-pay-explorer.git filecoin-pay-explorer; fi"
     context:
-      "": Filecoin Pay Explorer subgraph and metric definitions, including payment rail rate periods, settlements, one-time payments, operator and token aggregates, fees, auction burns, and accounting tests.
+      "": Filecoin Pay Explorer event-derived accounting models, metric definitions, and tests for rails, settlements, fees, and auction burns; contract implementations define protocol behavior.
   solstice:
     path: .qmd/external
-    pattern: "{solstice/**/*.{md,sol,py,toml,yml,yaml,json},solstice/.gitmodules}"
+    pattern: "solstice/**/*.{md,sol,py,toml,yml,yaml,json}"
     ignore:
       - "solstice/lib/**"
-    update: "[ -d solstice/.git ] && git -C solstice pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/solstice.git solstice"
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d solstice/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C solstice pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/solstice.git solstice; fi"
     context:
-      "": Solstice contracts (FIPs discussion 1249), including the Service Rewards Actor, Stream Weight Actor, FVM reward methods, unanimous governance proxies, deployments, storage layouts, upgrade tooling, and design docs.
+      "": Solstice FIP-0118 supporting contracts, Service Rewards Actor, Stream Weight Actor, governance proxies, deployments, upgrades, and tests. Check deployed versions and activation separately.
   solstice-governance:
     path: .qmd/external
     pattern: "solstice-governance/**/*.md"
-    update: "[ -d solstice-governance/.git ] && git -C solstice-governance pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/Solstice-Governance.git solstice-governance"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d solstice-governance/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C solstice-governance pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/Solstice-Governance.git solstice-governance; fi"
     context:
-      "": Solstice program governance, including governance tiers, orchestrator operational guidelines and registry, quarterly review runbook and reports, and SRA/SWA action request templates.
+      "": Solstice governance tiers, operational guidelines, quarterly review runbooks, reports, and orchestrator registry. On-chain registry state is authoritative; hidden GitHub issue templates are not indexed.
   fpv-indexer:
     path: .qmd/external
-    pattern: "{fpv-indexer/{README.md,CHANGELOG.md,package.json,Dockerfile,compose.yaml,.env.example},fpv-indexer/{src,test}/**/*.ts,fpv-indexer/prisma/**/*.{prisma,sql,toml}}"
-    update: "[ -d fpv-indexer/.git ] && git -C fpv-indexer pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/fidlabs/fpv-indexer.git fpv-indexer"
+    pattern: "{fpv-indexer/{README.md,CHANGELOG.md,package.json,Dockerfile,compose.yaml},fpv-indexer/{src,test}/**/*.ts,fpv-indexer/prisma/**/*.{prisma,sql,toml}}"
+    ignore:
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d fpv-indexer/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C fpv-indexer pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/fidlabs/fpv-indexer.git fpv-indexer; fi"
     context:
-      "": Filecoin Pay volume indexer, including Filecoin Pay, Service Rewards Actor and Stream Weight Actor event indexing, payment rails, settlements, pricing periods, fee auctions, service orchestrator gate checks, FIP-0118 quarterly volume calculation, database schema, and REST API.
+      "": Filecoin Pay volume indexer for event-derived rails, settlements, pricing periods, fee auctions, SRA/SWA activity, FIP-0118 quarterly volume, database schema, and REST API.
+      "fpv-indexer/test/": Filecoin Pay volume indexer tests, including FIP-0118 quarterly accounting and adherence edge cases; compare against the FIP and deployed contracts.
+  # Parent collections above update these checkouts first. Do not duplicate pull hooks here.
+  filecoin-docs-build:
+    path: .qmd/external/filecoin-docs/build
+    pattern: "**/*.{md,mdx}"
+    context:
+      "": Official Filecoin developer guides, contract development, FEVM indexers, and storage tutorials; recovered from the authored build directory.
+  lotus-build:
+    path: .qmd/external/lotus/build
+    pattern: "**/*.{md,go,json,toml,yml,yaml}"
+    ignore:
+      - "**/*_gen.go"
+    context:
+      "": Lotus network parameters, upgrade heights, actor metadata, and build configuration. Check network and activation heights before applying constants.
+  lily-build:
+    path: .qmd/external/lily/build
+    pattern: "{**/*.{md,go,sh,tpl,env,toml,yml,yaml,json},grafana/config.monitoring}"
+    context:
+      "": Lily build and deployment documentation, configuration, and test-vector tooling; not extracted chain data.
+  forest-build:
+    path: .qmd/external/forest/build
+    pattern: "{known_blocks.yaml,manifest.json}"
+    context:
+      "": Forest known-block and actor-manifest build inputs; match the network and actor version before interpreting.
 models:
   embed: hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf
   generate: hf:tobil/qmd-query-expansion-1.7B-gguf/qmd-query-expansion-1.7B-q4_k_m.gguf

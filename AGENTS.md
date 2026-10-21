@@ -25,6 +25,7 @@ The Filecoin Data Portal is a minimalistic and functional open data platform to 
 - Orchestration, resources, io, and platform related code lives under `fdp`, assets under `assets`
 - You can learn more about how `fdp` wors in the documentation
 - Assets are executed once a day in GitHub Actions, optimize accordingly
+- Follow commit, issues, and PR style (prepend emoji and concise)
 
 ### Assets
 
