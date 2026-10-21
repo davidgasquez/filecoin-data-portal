@@ -63,7 +63,7 @@ You'll need the following secrets in your environment:
 - `FDP_GSHEET_SPREADSHEET_ID`
 
 `uv run fdp publish r2` writes one Parquet file per `main.*` table to R2 and serves JSON for browser use at `https://data.filecoindataportal.xyz/daily_network_metrics.json`.
-After uploading, it purges the dataset host's edge cache before the website rebuilds. See [Cloudflare configuration](docs/cloudflare.md) for caching and HTTPS settings.
+After uploading, it purges the dataset host's edge cache before the website rebuilds.
 `uv run fdp publish gsheet` syncs one worksheet per `main.*` table to a Google spreadsheet and removes stale worksheets.
 Share the target spreadsheet with the Google service account from `ENCODED_GOOGLE_APPLICATION_CREDENTIALS`.
 
