@@ -49,7 +49,9 @@ Selectors can be asset keys, folder selectors, or asset file/folder paths under 
 
 ## ⚙️ Development
 
-You can run the Filecoin Data Portal anywhere using `uv`. You'll need the following secrets in your environment:
+You can run the Filecoin Data Portal anywhere using `uv`. On Nix, `nix develop` (or `direnv allow` with [nix-direnv](https://github.com/nix-community/nix-direnv)) loads a pinned shell with `uv`, Python, DuckDB, Node, and `qmd`. Run `nix flake update` to refresh it.
+
+You'll need the following secrets in your environment:
 
 - `ENCODED_GOOGLE_APPLICATION_CREDENTIALS` (base64-encoded Google service account JSON)
 - `R2_ACCESS_KEY_ID`
