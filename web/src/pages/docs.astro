@@ -14,153 +14,260 @@ const baseUrl = "https://data.filecoindataportal.xyz"
         <p>Where the data comes from and how to use it.</p>
     </section>
 
-    <nav class="section-nav" aria-label="Documentation sections">
-        <a href="#sources-title">Data Sources</a>
-        <a href="#using-datasets">Using Datasets</a>
-        <a href="#related-tools">Related Tools</a>
-    </nav>
+    <div class="docs">
+        <nav class="section-nav" aria-label="Documentation sections">
+            <a href="#sources-title">Data Sources</a>
+            <a href="#using-datasets">Using Datasets</a>
+            <a href="#related-tools">Related Tools</a>
+        </nav>
 
-    <section class="content-flow" aria-labelledby="sources-title">
-        <SectionHeading id="sources-title" label="Data Sources" />
+        <section aria-labelledby="sources-title">
+            <SectionHeading id="sources-title" label="Data Sources" />
 
-        <p>
-            Datasets are rebuilt daily from these sources. Each asset declares
-            its source in the <a
-                href="https://github.com/davidgasquez/filecoin-data-portal/tree/main/assets"
-                >asset code</a
-            >.
-        </p>
+            <p>
+                Datasets are rebuilt daily from these sources. Each asset declares
+                its source in the <a
+                    href="https://github.com/davidgasquez/filecoin-data-portal/tree/main/assets"
+                    >asset code</a
+                >.
+            </p>
 
-        <ul>
-            <li>
-                <a href="https://github.com/filecoin-project/lily">Lily</a> chain
-                data on BigQuery. Power, sectors, rewards, fees, and messages.
-            </li>
-            <li>
-                <a href="https://docs.filecoin.io/reference/json-rpc"
-                    >Filecoin JSON-RPC</a
-                > nodes (Glif, Chain.love, ChainUp). Current storage provider state
-                snapshots and PDP registry reads.
-            </li>
-            <li>
-                RIBA daily chain archive (<code>chain.data.riba.plus</code>).
-                FEVM event logs from daily <code>eth_getBlockReceipts</code> dumps.
-            </li>
-            <li>
-                <a href="https://github.com/FilOzone/filecoin-services"
-                    >Filecoin Services</a
-                > deployments and <a href="https://filecoin.blockscout.com/"
-                    >Blockscout</a
-                > ABIs. Decoding Filecoin Pay, Warm Storage, and PDP events.
-            </li>
-            <li>
-                PDP service provider registry contract. Provider names, status,
-                and endorsements.
-            </li>
-            <li>
-                <a href="https://coincodex.com/crypto/filecoin/">CoinCodex</a>.
-                Daily FIL price, volume, and market cap.
-            </li>
-            <li>
-                <a href="https://www.opensource.observer/"
-                    >Open Source Observer</a
-                >. Public goods funding deployments.
-            </li>
-        </ul>
+            <dl class="docs-list">
+                <div>
+                    <dt>
+                        <a href="https://github.com/filecoin-project/lily">Lily</a>
+                    </dt>
+                    <dd>
+                        Chain data on BigQuery: power, sectors, rewards, fees, and
+                        messages.
+                    </dd>
+                </div>
+                <div>
+                    <dt>
+                        <a href="https://docs.filecoin.io/reference/json-rpc"
+                            >Filecoin JSON-RPC</a
+                        >
+                    </dt>
+                    <dd>
+                        Current storage provider state and PDP registry reads, from
+                        Glif, Chain.love, and ChainUp nodes.
+                    </dd>
+                </div>
+                <div>
+                    <dt>RIBA chain archive</dt>
+                    <dd>
+                        Daily <code>eth_getBlockReceipts</code> dumps from
+                        <code>chain.data.riba.plus</code>, the source of all FEVM
+                        event logs.
+                    </dd>
+                </div>
+                <div>
+                    <dt>
+                        <a href="https://github.com/FilOzone/filecoin-services"
+                            >Filecoin Services</a
+                        >
+                    </dt>
+                    <dd>
+                        Contract deployments, plus <a
+                            href="https://filecoin.blockscout.com/">Blockscout</a
+                        > ABIs, to decode Filecoin Pay, Warm Storage, and PDP events.
+                    </dd>
+                </div>
+                <div>
+                    <dt>PDP provider registry</dt>
+                    <dd>Provider names, status, and endorsements.</dd>
+                </div>
+                <div>
+                    <dt>
+                        <a href="https://coincodex.com/crypto/filecoin/">CoinCodex</a>
+                    </dt>
+                    <dd>Daily FIL price, volume, and market cap.</dd>
+                </div>
+                <div>
+                    <dt>
+                        <a href="https://www.opensource.observer/"
+                            >Open Source Observer</a
+                        >
+                    </dt>
+                    <dd>Public goods funding deployments.</dd>
+                </div>
+            </dl>
+        </section>
 
-        <SectionHeading id="using-datasets" label="Using Datasets" />
+        <section aria-labelledby="using-datasets">
+            <SectionHeading id="using-datasets" label="Using Datasets" />
 
-        <p>
-            Every dataset in the <a href="/datasets">catalog</a> is published daily
-            as a Parquet file at <code>{baseUrl}/&lt;dataset&gt;.parquet</code>.
-            Any Parquet-capable tool can read it directly.
-        </p>
+            <p>
+                Every dataset in the <a href="/datasets">catalog</a> is published
+                daily as a Parquet file. Any Parquet-capable tool can read it
+                directly from:
+            </p>
+            <pre><code>{`${baseUrl}/<dataset>.parquet`}</code></pre>
 
-        <h3>DuckDB</h3>
-        <pre><code>{`select date, onboarded_pibs, raw_power_pibs
+            <h3>DuckDB</h3>
+            <p>
+                Run it in the DuckDB CLI or in the browser with <a
+                    href="https://sql-workbench.com/">SQL Workbench</a
+                >.
+            </p>
+            <pre><code>{`select date, onboarded_pibs, raw_power_pibs
 from '${baseUrl}/daily_network_metrics.parquet'
 order by date desc
 limit 7;`}</code></pre>
-        <p>
-            Works in the DuckDB CLI or in the browser with <a
-                href="https://sql-workbench.com/">SQL Workbench</a
-            >.
-        </p>
 
-        <h3>Python</h3>
-        <pre><code>{`import polars as pl
+            <h3>Python</h3>
+            <pre><code>{`import polars as pl
 
-df = pl.read_parquet("${baseUrl}/storage_providers.parquet")`}</code></pre>
+df = pl.read_parquet(
+    "${baseUrl}/storage_providers.parquet"
+)`}</code></pre>
 
-        <h3>JavaScript</h3>
-        <p>
-            <code>daily_network_metrics</code> is also available as JSON for
-            dashboards:
-        </p>
-        <pre><code>{`const res = await fetch("${baseUrl}/daily_network_metrics.json")
-const rows = await res.json()`}</code></pre>
+            <h3>JavaScript</h3>
+            <p>
+                <code>daily_network_metrics</code> is also published as JSON for
+                dashboards.
+            </p>
+            <pre><code>{`const url = "${baseUrl}/daily_network_metrics.json"
+const rows = await (await fetch(url)).json()`}</code></pre>
 
-        <h3>AI Agents</h3>
-        <p>
-            Point your agent to <a href="/SKILL.md">SKILL.md</a> or <a
-                href="/llms.txt">llms.txt</a
-            > to find, query, and chart the datasets.
-        </p>
+            <h3>AI agents</h3>
+            <p>
+                Point your agent to <a href="/SKILL.md">SKILL.md</a> or <a
+                    href="/llms.txt">llms.txt</a
+                > to find, query, and chart the datasets.
+            </p>
 
-        <h3>Dashboards</h3>
-        <p>
-            <a href="/numbers">Filecoin In Numbers</a> and <a href="/revenue"
-                >Revenue</a
-            > are built on the same datasets. See the <a
-                href="https://github.com/davidgasquez/filecoin-data-portal"
-                >source code</a
-            >.
-        </p>
-
-        <SectionHeading id="related-tools" label="Related Tools" />
-
-        <ul>
-            <li><a href="https://filfox.info">Filfox</a>. Chain explorer.</li>
-            <li>
-                <a href="https://filecoin.blockscout.com/">Blockscout</a>. FEVM
-                explorer.
-            </li>
-            <li>
-                <a href="https://dashboard.starboard.ventures/dashboard"
-                    >Starboard</a
-                >. Network dashboards.
-            </li>
-            <li>
-                <a href="https://docs.filecoin.io/networks/mainnet/rpcs"
-                    >Public RPC endpoints</a
+            <h3>Dashboards</h3>
+            <p>
+                <a href="/numbers">Filecoin In Numbers</a> and <a href="/revenue"
+                    >Revenue</a
+                > are built on the same datasets. See the <a
+                    href="https://github.com/davidgasquez/filecoin-data-portal"
+                    >source code</a
                 >.
-            </li>
-        </ul>
+            </p>
+        </section>
 
-        <p>
-            Missing a source or tool? <a
-                href="https://github.com/davidgasquez/filecoin-data-portal/issues/new"
-                >Open an issue</a
-            >.
-        </p>
-    </section>
+        <section aria-labelledby="related-tools">
+            <SectionHeading id="related-tools" label="Related Tools" />
+
+            <dl class="docs-list">
+                <div>
+                    <dt><a href="https://filfox.info">Filfox</a></dt>
+                    <dd>Chain explorer.</dd>
+                </div>
+                <div>
+                    <dt>
+                        <a href="https://filecoin.blockscout.com/">Blockscout</a>
+                    </dt>
+                    <dd>FEVM explorer.</dd>
+                </div>
+                <div>
+                    <dt>
+                        <a href="https://dashboard.starboard.ventures/dashboard"
+                            >Starboard</a
+                        >
+                    </dt>
+                    <dd>Network dashboards.</dd>
+                </div>
+                <div>
+                    <dt>
+                        <a href="https://docs.filecoin.io/networks/mainnet/rpcs"
+                            >Public RPCs</a
+                        >
+                    </dt>
+                    <dd>Mainnet JSON-RPC endpoints.</dd>
+                </div>
+            </dl>
+
+            <p>
+                Missing a source or tool? <a
+                    href="https://github.com/davidgasquez/filecoin-data-portal/issues/new"
+                    >Open an issue</a
+                >.
+            </p>
+        </section>
+    </div>
 </Layout>
 
 <style>
-    p code {
+    .docs {
+        max-inline-size: 72ch;
+        margin-inline: auto;
+        font-size: 1rem;
+        line-height: 1.65;
+    }
+
+    .docs section + section {
+        margin-block-start: var(--space-7);
+    }
+
+    .docs :global(.section-title) {
+        margin-block-end: var(--space-4);
+    }
+
+    .docs h3 {
+        margin-block: var(--space-6) var(--space-2);
+        font-size: 1rem;
+    }
+
+    .docs p {
+        margin-block: 0 var(--space-3);
+        text-wrap: pretty;
+    }
+
+    .docs p code,
+    .docs dd code {
+        padding: 0.05em 0.3em;
+        border: 1px solid var(--color-border);
+        background: var(--color-surface);
+        font-size: 0.9em;
         overflow-wrap: anywhere;
     }
 
-    pre {
-        margin: 0;
-        padding: var(--space-3);
+    .docs pre {
+        margin-block: 0 var(--space-4);
+        padding: var(--space-3) var(--space-4);
         overflow-x: auto;
         border: 1px solid var(--color-border);
-        background: var(--color-bg-muted);
+        background: var(--color-surface);
+        font-size: 0.9rem;
+        line-height: 1.55;
     }
 
-    pre code {
+    .docs pre code {
         background: none;
         padding: 0;
+    }
+
+    .docs-list {
+        margin-block: var(--space-4) var(--space-4);
+        border-block-start: 1px solid var(--color-border);
+    }
+
+    .docs :global(.section-title) + .docs-list {
+        margin-block-start: 0;
+        border-block-start: 0;
+    }
+
+    .docs-list > div {
+        display: grid;
+        gap: var(--space-1) var(--space-4);
+        padding-block: var(--space-3);
+        border-block-end: 1px solid var(--color-border);
+    }
+
+    .docs-list dt {
+        font-weight: 700;
+    }
+
+    .docs-list dd {
+        margin: 0;
+    }
+
+    @media (min-width: 40rem) {
+        .docs-list > div {
+            grid-template-columns: 22ch 1fr;
+        }
     }
 </style>
