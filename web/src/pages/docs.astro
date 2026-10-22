@@ -1,6 +1,8 @@
 ---
 import SectionHeading from "../components/SectionHeading.astro"
 import Layout from "../layouts/Layout.astro"
+
+const baseUrl = "https://data.filecoindataportal.xyz"
 ---
 
 <Layout
@@ -9,324 +11,156 @@ import Layout from "../layouts/Layout.astro"
 >
     <section class="page-header" aria-labelledby="docs-title">
         <h1 id="docs-title">Documentation</h1>
+        <p>Where the data comes from and how to use it.</p>
     </section>
 
     <nav class="section-nav" aria-label="Documentation sections">
         <a href="#sources-title">Data Sources</a>
         <a href="#using-datasets">Using Datasets</a>
-        <a href="#others-title">Others</a>
+        <a href="#related-tools">Related Tools</a>
     </nav>
 
     <section class="content-flow" aria-labelledby="sources-title">
-    <SectionHeading id="sources-title" label="Data Sources" />
+        <SectionHeading id="sources-title" label="Data Sources" />
 
-    <p>
-        Most of the data used through the portal comes from the Filecoin chain.
-        There is also some off-chain data like <a
-            href="https://docs.filecoin.io/basics/how-storage-works/filecoin-plus"
-        >
-            Datacap Applications
-        </a> or <a
-            href="https://filecoin.io/blog/posts/reputation-systems-in-filecoin/"
-        >
-            Storage Provider's Reputation scores
-        </a> that are collected from other places.
-    </p>
-
-    <h3 id="deals">Deals</h3>
-    <p>
-        Deals data is available on chain and can be obtained in different ways:
-    </p>
-    <ul>
-        <li>
-            Doing a <code>StateMarketDeals</code> JSON-RPC call and parsing the returned
-            JSON. If you don't have a node running, you can use <a
-                href="https://lotus.filecoin.io/lotus/developers/glif-nodes/"
-            >
-                Glif nodes
-            </a>
-            <code>StateMarketDeals</code> periodic dump on S3 (<a
-                href="https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst"
-                >direct link</a
-            >).
-        </li>
-        <li>
-            Using an <a
-                href="https://github.com/ribasushi/fil-naive-marketwatch"
-                >oracle like <code>fil-naive-marketwatch</code></a
+        <p>
+            Datasets are rebuilt daily from these sources. Each asset declares
+            its source in the <a
+                href="https://github.com/davidgasquez/filecoin-data-portal/tree/main/assets"
+                >asset code</a
             >.
-        </li>
-        <li>
-            Reconstructing the deals state <a href="https://lilium.sh/"
-                >from Lily</a
-            > tables.
-        </li>
-    </ul>
+        </p>
 
-    <h3>Clients</h3>
-    <p>
-        Clients can be derived from the <a href="#deals">deals</a> dataset and expanded
-        with the following sources:
-    </p>
-    <ul>
-        <li>
-            Datacap from the <a href="https://cdp.allocator.tech/docs"
-                >Compliance Data Platform API</a
-            >. The clients endpoint provides Filecoin Plus client names,
-            application URLs, and Datacap usage.
-        </li>
-    </ul>
+        <ul>
+            <li>
+                <a href="https://github.com/filecoin-project/lily">Lily</a> chain
+                data on BigQuery. Power, sectors, rewards, fees, and messages.
+            </li>
+            <li>
+                <a href="https://docs.filecoin.io/reference/json-rpc"
+                    >Filecoin JSON-RPC</a
+                > nodes (Glif, Chain.love, ChainUp). Current storage provider state
+                snapshots and PDP registry reads.
+            </li>
+            <li>
+                RIBA daily chain archive (<code>chain.data.riba.plus</code>).
+                FEVM event logs from daily <code>eth_getBlockReceipts</code> dumps.
+            </li>
+            <li>
+                <a href="https://github.com/FilOzone/filecoin-services"
+                    >Filecoin Services</a
+                > deployments and <a href="https://filecoin.blockscout.com/"
+                    >Blockscout</a
+                > ABIs. Decoding Filecoin Pay, Warm Storage, and PDP events.
+            </li>
+            <li>
+                PDP service provider registry contract. Provider names, status,
+                and endorsements.
+            </li>
+            <li>
+                <a href="https://coincodex.com/crypto/filecoin/">CoinCodex</a>.
+                Daily FIL price, volume, and market cap.
+            </li>
+            <li>
+                <a href="https://www.opensource.observer/"
+                    >Open Source Observer</a
+                >. Public goods funding deployments.
+            </li>
+        </ul>
 
-    <h3>Storage Providers</h3>
-    <p>
-        Storage Providers can be derived from the <a href="#deals">deals</a> dataset.
-        More information about providers can be collected in the following sources:
-    </p>
-    <ul>
-        <li>
-            Location using the different <a href="https://provider.quest/"
-                >provider.quest</a
-            > endpoints/datasets.
-        </li>
-    </ul>
+        <SectionHeading id="using-datasets" label="Using Datasets" />
 
-    <h3>Reputation Data</h3>
-    <p>
-        Reputation is both obtained from <a href="https://filrep.io/">FilRep</a>
-        (<a href="https://filrep.io/methodology">methodology</a>) and augmented
-        with custom metrics around deals. For example, what is the average
-        replication of a deal for the SP?
-    </p>
+        <p>
+            Every dataset in the <a href="/datasets">catalog</a> is published daily
+            as a Parquet file at <code>{baseUrl}/&lt;dataset&gt;.parquet</code>.
+            Any Parquet-capable tool can read it directly.
+        </p>
 
-    <h3>Energy Data</h3>
-    <p>
-        Energy data is available from <a href="https://filecoin.energy/"
-            >Filecoin Green</a
-        > (<a href="https://api.filecoin.energy/docs">Model API</a> and <a
-            href="https://sp-outputs-api.vercel.app/api-docs/"
-            >Green Scores API</a
-        >)
-    </p>
+        <h3>DuckDB</h3>
+        <pre><code>{`select date, onboarded_pibs, raw_power_pibs
+from '${baseUrl}/daily_network_metrics.parquet'
+order by date desc
+limit 7;`}</code></pre>
+        <p>
+            Works in the DuckDB CLI or in the browser with <a
+                href="https://sql-workbench.com/">SQL Workbench</a
+            >.
+        </p>
 
-    <h3>FVM</h3>
-    <p>Filecoin Virtual Machine data is trickier to get. Some sources:</p>
-    <ul>
-        <li>
-            Directly from the <a href="https://fvm.starboard.ventures/">FVM</a> dashboard.
-        </li>
-        <li>
-            Some metrics are available in the <a
-                href="https://docs.spacescope.io/version_history#v240-on-march-16-2023"
-                >Spacescope API</a
-            >
-        </li>
-    </ul>
+        <h3>Python</h3>
+        <pre><code>{`import polars as pl
 
-    <h3>Messages</h3>
-    <p>
-        A few teams across the ecosystem are indexing Filecoin Messages. The
-        most comprehensive source are <a href="https://beryx.zondax.ch/"
-            >Beryx</a
-        > and <a href="https://filinfo.io/docs">FilInfo</a>.
-    </p>
+df = pl.read_parquet("${baseUrl}/storage_providers.parquet")`}</code></pre>
 
-    <h3>Data Indexers</h3>
-    <p>
-        Besides the data sources mentioned above, there are a few data indexers
-        that provide data in a more structured way.
-    </p>
-    <ul>
-        <li>
-            <a href="https://dashboard.starboard.ventures/dashboard"
-                >Starboard</a
-            > - <a href="https://fvm.starboard.ventures/">FVM</a>
-        </li>
-        <li><a href="https://dev.storage/">Dev Storage</a></li>
-        <li><a href="https://beryx.zondax.ch/">Beryx</a></li>
-        <li><a href="https://spacegap.github.io">Spacegap</a></li>
-        <li><a href="https://filecoin.energy/">Filecoin Green</a></li>
-        <li><a href="https://filecoin.tools/">Filecoin CID Checker</a></li>
-        <li><a href="https://file.app/">File.app</a></li>
-        <li><a href="https://beryx.io/traces">Filecoin Traces</a></li>
-        <li>
-            <a href="https://beryx.io/rpc-providers">Filecoin RPC Providers</a>
-        </li>
-        <li><a href="https://explorer.glif.io/">Glif Explorer</a></li>
-        <li>
-            <a href="https://digitalmob.ro/">DMOB Messages Database</a> powering
-            <a href="https://filinfo.io/docs">FilInfo</a>
-        </li>
-        <li><a href="https://filrep.io/">Filrep</a></li>
-        <li>
-            <a href="https://filfox.info">FilFox</a> and <a
-                href="https://filfox.info/api">API</a
-            >
-        </li>
-        <li>
-            <a href="https://filscan.io">FilScan</a> and <a
-                href="https://api-v2.filscan.io/api">API</a
-            >
-        </li>
-        <li>
-            <a href="https://filutils.com/">Filutils</a> decoding message params
-            (<a
-                href="https://www.filutils.com/en/message/bafy2bzacec42jewhmgx73yxd7bndj6p7z5n3xibx47vex2woch66wbip434oa"
-                >example</a
-            >).
-        </li>
-        <li>
-            <a href="https://filecoin.blockscout.com/">Blockscout</a> and <a
-                href="https://filecoin.blockscout.com/api-docs">API</a
-            > for FEVM.
-        </li>
-    </ul>
+        <h3>JavaScript</h3>
+        <p>
+            <code>daily_network_metrics</code> is also available as JSON for
+            dashboards:
+        </p>
+        <pre><code>{`const res = await fetch("${baseUrl}/daily_network_metrics.json")
+const rows = await res.json()`}</code></pre>
 
-    <h3>JSON-RPC Endpoints</h3>
-    <p>
-        Nodes usually implement all the <a
-            href="https://docs.filecoin.io/reference/json-rpc"
-            >JSON-RPC methods</a
-        > needed to get the data.
-    </p>
-    <ul>
-        <li>Glif - <code>https://api.node.glif.io</code></li>
-        <li>
-            Zondax - <code>https://api.zondax.ch/fil/node/mainnet/rpc/v1</code>
-        </li>
-        <li>
-            Laconic - <code>https://fil-mainnet-1.rpc.laconic.com/rpc/v1</code>
-        </li>
-        <li>
-            Provider Quest - <code
-                >https://lotus.miner.report/mainnet_api/0/node/rpc/v0</code
-            >
-        </li>
-        <li>
-            More at <a href="https://docs.filecoin.io/networks/mainnet/rpcs"
-                >filecoin.io docs</a
-            >!
-        </li>
-        <li>
-            More at <a href="https://chainlist.org/chain/314">Chainlist</a>!
-        </li>
-    </ul>
+        <h3>AI Agents</h3>
+        <p>
+            Point your agent to <a href="/SKILL.md">SKILL.md</a> or <a
+                href="/llms.txt">llms.txt</a
+            > to find, query, and chart the datasets.
+        </p>
 
-    <h3>Code</h3>
-    <ul>
-        <li><a href="https://github.com/BlockScience">BlockScience</a></li>
-        <li>
-            <a href="https://github.com/protocol/filecoin-mecha-twin"
-                >Filecoin Mecha Twin</a
-            >
-        </li>
-        <li><a href="https://github.com/FilForge/pylotus-rpc/">PyLotus</a></li>
-    </ul>
+        <h3>Dashboards</h3>
+        <p>
+            <a href="/numbers">Filecoin In Numbers</a> and <a href="/revenue"
+                >Revenue</a
+            > are built on the same datasets. See the <a
+                href="https://github.com/davidgasquez/filecoin-data-portal"
+                >source code</a
+            >.
+        </p>
 
-    <SectionHeading id="using-datasets" label="Using Datasets" />
-    <p>
-        The Filecoin Data Portal publishes up to date dataset on a daily bases
-        as
-        <a href="/datasets">static Parquet files</a>. You can then use any tool
-        you want to explore and use these datasets! Let's go through some
-        examples.
-    </p>
+        <SectionHeading id="related-tools" label="Related Tools" />
 
-    <h3>Python</h3>
+        <ul>
+            <li><a href="https://filfox.info">Filfox</a>. Chain explorer.</li>
+            <li>
+                <a href="https://filecoin.blockscout.com/">Blockscout</a>. FEVM
+                explorer.
+            </li>
+            <li>
+                <a href="https://dashboard.starboard.ventures/dashboard"
+                    >Starboard</a
+                >. Network dashboards.
+            </li>
+            <li>
+                <a href="https://docs.filecoin.io/networks/mainnet/rpcs"
+                    >Public RPC endpoints</a
+                >.
+            </li>
+        </ul>
 
-    <p>
-        You can use the <code>pandas</code> library to read the Parquet files. You
-        can play with the datasets in Google Colab for free. Check this sample notebook.
-    </p>
-
-    <a
-        target="_blank"
-        href="https://colab.research.google.com/drive/1u0XAWi2wrnEOiEXFVrfYmt0M1qJXPxRt"
-    >
-        <img
-            src="https://colab.research.google.com/assets/colab-badge.svg"
-            alt="Open In Colab"
-        />
-    </a>
-
-    <h3>JavaScript</h3>
-
-    <p>
-        You can use the <a href="https://observablehq.com/@cmudig/duckdb-client"
-            ><code>duckdb</code> Obervable client</a
-        > library to read the Parquet files and run SQL queries on them. Check this
-        <a href="https://observablehq.com/@davidgasquez/fdp"
-            >sample Observable JS notebook</a
-        > to see how to explore and visualize the datasets.
-    </p>
-
-    <h3>Google Sheets</h3>
-
-    <p>
-        The pipelines that are executed to generate the datasets are also
-        pushing the data to Google Sheets. You can access the data directly from
-        these Google Sheets:
-    </p>
-    <ul>
-        <li>
-            <a
-                href="https://docs.google.com/spreadsheets/d/1uq9J_WTJO6kAvQlrqkqR8GHfQfh3SJ84OSj88Mff6vY"
-                >Filecoin Daily Metrics</a
-            >
-        </li>
-        <li>
-            <a
-                href="https://docs.google.com/spreadsheets/d/1hC5HwuiqQvQcVvV06n3SH0wKkZwbw20EufGYHSyENs0"
-                >Filecoin Storage Providers</a
-            >
-        </li>
-        <li>
-            <a
-                href="https://docs.google.com/spreadsheets/d/15xi39OheVJ-_WyI7sxwmvgMIVFkZN07NOYWLe5iKXnI"
-                >Filecoin Clients</a
-            >
-        </li>
-        <li>
-            <a
-                href="https://docs.google.com/spreadsheets/d/1uixeylC3pTeOkKh0L2fGsd7YKuyaA6Hse_fhWrm1BIA"
-                >Filecoin Allocators</a
-            >
-        </li>
-    </ul>
-
-    <p>
-        You can create a new personal Google Sheet and use the <a
-            href="https://support.google.com/docs/answer/3093340?hl=en"
-            ><code>IMPORTRANGE</code> function</a
-        > to read data from these sheets and be able to plot or add more transformations
-        on top.
-    </p>
-
-    <h3>BI Tools</h3>
-
-    <p>
-        Depending on the BI tool you are using, you can connect to the Parquet
-        files directly, use the Google Sheets as a data source, or you'll need
-        to load the data into a database like PostgreSQL or BigQuery. There are
-    </p>
-
-    <h3>Website dashboards</h3>
-
-    <p>
-        The portal website includes dashboard pages such as <a href="/numbers"
-            >Filecoin In Numbers</a
-        >, built directly on top of the same open datasets. You can check the <a
-            href="https://github.com/davidgasquez/filecoin-data-portal"
-            >source code on GitHub</a
-        > too.
-    </p>
-
-    <SectionHeading id="others-title" label="Others" />
-
-    <p>
-        Do you have any other tool you want to use to explore the datasets? <a
-            href="https://github.com/davidgasquez/filecoin-data-portal/issues/new"
-            >Reach out</a
-        > and let's explore how to use the datasets with your favorite tools!
-    </p>
+        <p>
+            Missing a source or tool? <a
+                href="https://github.com/davidgasquez/filecoin-data-portal/issues/new"
+                >Open an issue</a
+            >.
+        </p>
     </section>
 </Layout>
+
+<style>
+    p code {
+        overflow-wrap: anywhere;
+    }
+
+    pre {
+        margin: 0;
+        padding: var(--space-3);
+        overflow-x: auto;
+        border: 1px solid var(--color-border);
+        background: var(--color-bg-muted);
+    }
+
+    pre code {
+        background: none;
+        padding: 0;
+    }
+</style>
