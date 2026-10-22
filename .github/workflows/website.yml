@@ -48,9 +48,7 @@ jobs:
         run: npm ci --prefix web && npm run build --prefix web
 
       - name: Deploy
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
-          accountId: fbe814d4a37d3d3d7fcfeec0ab929ff6
-          wranglerVersion: "4.151.3"
-          command: deploy --config web/wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: fbe814d4a37d3d3d7fcfeec0ab929ff6
+        run: npx --yes wrangler@4.151.3 deploy --config web/wrangler.jsonc
