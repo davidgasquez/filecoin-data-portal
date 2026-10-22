@@ -150,6 +150,15 @@ collections:
     update: "if [ -d compliance-data-platform/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C compliance-data-platform pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/fidlabs/compliance-data-platform.git compliance-data-platform; fi"
     context:
       "": Compliance Data Platform backend, including client and allocator modeling, provider retrieval and bandwidth measurements, IPNI reporting, PoRep indexing, payment queries, API contracts, and database schemas.
+  hyperion:
+    path: .qmd/external
+    pattern: "{hyperion/{README.md,package.json,Dockerfile},hyperion/src/**/*.{ts,sql,json},hyperion/prisma/**/*.{prisma,sql,toml}}"
+    ignore:
+      - "hyperion/src/po-rep-indexer/abis/**"
+      - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
+    update: "if [ -d hyperion/.git ]; then GIT_LFS_SKIP_SMUDGE=1 git -C hyperion pull --ff-only; else GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/fidlabs/hyperion.git hyperion; fi"
+    context:
+      "": FIDLabs Hyperion backend for PoRep Market indexing, including provider and deal lifecycles, deal manifests, Filecoin Pay rails and payments, provider economics and storage statistics, IPNI reporting, API contracts, and database schemas.
   curio:
     path: .qmd/external
     pattern: "{curio/README.md,curio/go.mod,curio/documentation/en/**/*.md,curio/{market,pdp,pdpnode}/**/*.{go,sol,sql,md,json,toml},curio/tasks/{pdp,pdpv0,pay,piece,storage-market,indexing}/**/*.{go,sql,md},curio/harmony/harmonydb/**/*.{go,sql,md}}"
