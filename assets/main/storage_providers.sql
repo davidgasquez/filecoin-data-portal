@@ -5,7 +5,6 @@
 -- asset.depends = model.storage_provider_sector_lifecycle_daily
 -- asset.depends = model.storage_provider_block_rewards_daily
 -- asset.depends = model.storage_provider_market_deal_activity
--- asset.depends = model.verified_claims
 
 -- asset.column = storage_provider_id | Filecoin storage provider actor id address.
 -- asset.column = owner_id | Current owner actor id address.
@@ -31,23 +30,16 @@
 -- asset.column = quality_adjusted_power_tibs | Current quality adjusted power, in tebibytes.
 -- asset.column = has_power | Whether the provider currently has positive power.
 -- asset.column = has_sector_activity | Whether the provider has sector lifecycle activity.
--- asset.column = has_verified_claims | Whether the provider has successful verified claims.
 -- asset.column = has_market_deals | Whether the provider has market deal activity.
 -- asset.column = first_sector_activity_date | First date with sector lifecycle activity.
 -- asset.column = last_sector_activity_date | Most recent date with sector lifecycle activity.
--- asset.column = first_verified_claim_at | First successful verified claim timestamp.
--- asset.column = last_verified_claim_at | Most recent successful verified claim timestamp.
 -- asset.column = first_market_deal_start_at | First observed market deal start timestamp.
 -- asset.column = last_market_deal_start_at | Most recent market deal start timestamp.
--- asset.column = verified_claims | Total successful verified claims.
--- asset.column = verified_clients | Clients with at least one successful verified claim.
--- asset.column = verified_data_onboarded_tibs | Verified data successfully claimed, in tebibytes.
 -- asset.column = total_block_rewards_fil | Total block rewards allocated to the provider, in FIL.
 
 -- asset.not_null = storage_provider_id
 -- asset.not_null = has_power
 -- asset.not_null = has_sector_activity
--- asset.not_null = has_verified_claims
 -- asset.not_null = has_market_deals
 -- asset.unique = storage_provider_id
 
@@ -69,18 +61,6 @@ sector_activity as (
     from model.storage_provider_sector_lifecycle_daily
     group by 1
 ),
-verified_claim_activity as (
-    select
-        provider_id,
-        min(claim_at) as first_verified_claim_at,
-        max(claim_at) as last_verified_claim_at,
-        count(*) as verified_claims,
-        count(distinct client_id) as verified_clients,
-        sum(piece_size_tibs) as verified_data_onboarded_tibs,
-        true as has_verified_claims
-    from model.verified_claims
-    group by 1
-),
 reward_activity as (
     select
         provider_id,
@@ -98,9 +78,6 @@ market_deal_activity as (
 ),
 providers as (
     select distinct provider_id from model.storage_provider_sector_lifecycle_daily
-    union
-    select distinct provider_id
-    from model.verified_claims
     union
     select provider_id from current_power
     union
@@ -133,17 +110,11 @@ select
     current_power.quality_adjusted_power_tibs,
     coalesce(current_power.has_power, false) as has_power,
     coalesce(sector_activity.has_sector_activity, false) as has_sector_activity,
-    coalesce(verified_claim_activity.has_verified_claims, false) as has_verified_claims,
     coalesce(market_deal_activity.has_market_deals, false) as has_market_deals,
     sector_activity.first_sector_activity_date,
     sector_activity.last_sector_activity_date,
-    verified_claim_activity.first_verified_claim_at,
-    verified_claim_activity.last_verified_claim_at,
     market_deal_activity.first_market_deal_start_at,
     market_deal_activity.last_market_deal_start_at,
-    verified_claim_activity.verified_claims,
-    verified_claim_activity.verified_clients,
-    verified_claim_activity.verified_data_onboarded_tibs,
     coalesce(reward_activity.total_block_rewards_fil, 0)
         as total_block_rewards_fil
 from providers
@@ -153,10 +124,8 @@ left join current_power
     using (provider_id)
 left join sector_activity
     using (provider_id)
-left join verified_claim_activity
-    using (provider_id)
 left join market_deal_activity
     using (provider_id)
 left join reward_activity
     using (provider_id)
-order by last_verified_claim_at desc
+order by quality_adjusted_power_tibs desc nulls last, storage_provider_id

@@ -2,7 +2,6 @@
 
 -- asset.depends = model.daily_network_activity
 -- asset.depends = model.daily_sector_lifecycle
--- asset.depends = model.daily_verified_claims
 -- asset.depends = model.daily_filecoin_pay_activity
 -- asset.depends = model.daily_filecoin_pay_payment_run_rate
 -- asset.depends = model.warm_storage_daily_activity
@@ -59,10 +58,6 @@
 -- asset.column = fil_token_price_avg_usd | Average FIL price in USD.
 -- asset.column = fil_token_volume_usd | FIL trading volume in USD.
 -- asset.column = fil_token_market_cap_usd | FIL market capitalization in USD.
--- asset.column = verified_data_onboarded_pibs | Verified data claimed on the date, in pebibytes.
--- asset.column = verified_claims | Successful verified claims on the date.
--- asset.column = verified_clients | Clients with at least one successful verified claim on the date.
--- asset.column = verified_storage_providers | Providers with at least one successful verified claim on the date.
 -- asset.column = blocks_mined | Block headers mined on the date.
 -- asset.column = win_count | Winning proofs recorded on the date.
 -- asset.column = block_rewards_fil | Exact block rewards minted on the date, in FIL.
@@ -82,16 +77,7 @@
 -- asset.assert = abs(message_burn_fil - base_fee_burn_fil - overestimation_burn_fil) < 0.000001
 -- asset.assert = abs(total_gas_fee_fil - base_fee_burn_fil - overestimation_burn_fil - miner_tip_fil) < 0.000001
 
-with verified_claims as (
-    select
-        date,
-        sum(verified_data_onboarded_tibs) / 1024 as verified_data_onboarded_pibs,
-        sum(verified_claims) as verified_claims,
-        count(distinct client_id) as verified_clients,
-        count(distinct provider_id) as verified_storage_providers
-    from model.daily_verified_claims
-    group by 1
-), block_rewards as (
+with block_rewards as (
     select
         date,
         sum(blocks_mined) as blocks_mined,
@@ -121,8 +107,6 @@ with verified_claims as (
     select date from model.daily_filecoin_pay_activity
     union
     select date from model.daily_filecoin_pay_payment_run_rate
-    union
-    select date from verified_claims
     union
     select date from block_rewards
     union
@@ -221,11 +205,6 @@ select
     market_data.fil_token_price_avg_usd,
     market_data.fil_token_volume_usd,
     market_data.fil_token_market_cap_usd,
-    coalesce(verified_claims.verified_data_onboarded_pibs, 0)
-        as verified_data_onboarded_pibs,
-    coalesce(verified_claims.verified_claims, 0) as verified_claims,
-    coalesce(verified_claims.verified_clients, 0) as verified_clients,
-    coalesce(verified_claims.verified_storage_providers, 0) as verified_storage_providers,
     coalesce(block_rewards.blocks_mined, 0) as blocks_mined,
     coalesce(block_rewards.win_count, 0) as win_count,
     coalesce(block_rewards.block_rewards_fil, 0) as block_rewards_fil,
@@ -255,8 +234,6 @@ left join market_data
 left join model.daily_network_burn as network_burn
     using (date)
 left join raw.daily_network_economics as network_economics
-    using (date)
-left join verified_claims
     using (date)
 left join block_rewards
     using (date)
