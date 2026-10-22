@@ -1,4 +1,4 @@
--- asset.description = Filecoin Pay rail rate intervals.
+-- asset.description = Filecoin Pay rail rate intervals. Terminated rails keep streaming until their end epoch.
 
 -- asset.depends = model.filecoin_pay_rails
 -- asset.depends = raw.fevm_eth_logs_decoded
@@ -68,14 +68,20 @@ valid_change_points as (
         rails.operator,
         rails.validator,
         rails.is_arr_eligible,
-        case
-            when rails.terminated_block is null then null
-            else rails.terminated_block * 1000000 + rails.terminated_log_index
-        end as terminated_ordinal
+        rails.rail_end_ordinal
     from rate_change_points as change_points
-    join model.filecoin_pay_rails as rails using (rail_id)
-    where rails.terminated_block is null
-       or change_points.ordinal < rails.terminated_block * 1000000 + rails.terminated_log_index
+    join (
+        select
+            *,
+            -- Never before the termination itself, so snapshots taken before it stay unchanged
+            greatest(
+                terminated_block * 1000000 + terminated_log_index,
+                terminated_end_epoch * 1000000
+            ) as rail_end_ordinal
+        from model.filecoin_pay_rails
+    ) as rails using (rail_id)
+    where rails.rail_end_ordinal is null
+       or change_points.ordinal < rails.rail_end_ordinal
 ),
 ordered_intervals as (
     select
@@ -94,7 +100,7 @@ ordered_intervals as (
         log_index as start_log_index,
         ordinal as start_ordinal,
         lead(ordinal) over (partition by rail_id order by ordinal) as next_ordinal,
-        terminated_ordinal,
+        rail_end_ordinal,
         rate_wei_per_epoch
     from valid_change_points
 ),
@@ -114,13 +120,7 @@ intervals as (
         start_block,
         start_log_index,
         start_ordinal,
-        case
-            when terminated_ordinal is null and next_ordinal is null then null
-            when terminated_ordinal is null then next_ordinal
-            when next_ordinal is null then terminated_ordinal
-            when next_ordinal <= terminated_ordinal then next_ordinal
-            else terminated_ordinal
-        end as end_ordinal,
+        coalesce(next_ordinal, rail_end_ordinal) as end_ordinal,
         rate_wei_per_epoch
     from ordered_intervals
 )

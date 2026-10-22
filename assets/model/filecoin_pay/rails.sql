@@ -34,7 +34,7 @@
 with params as (
     select
         1598306400 as genesis_timestamp,
-        '0xa5f90bc2aa73a2e0bad4d7092a932644d5dd5d71' as dealbot_payer,
+        '0x8408502033c418e1bbc97ce9ac48e5528f371a9f' as fwss_operator,
         '0x56e53c5e7f27504b810494cc3b88b2aa0645a839' as storacha_operator,
         '0x9d4f07b948e87941a4bf4ab335d7a7d854843d75' as fil_one_operator
 ),
@@ -50,6 +50,13 @@ tokens as (
         'USDC.axl' as token_symbol,
         6 as token_decimals,
         true as is_stablecoin
+),
+dealbot_payers as (
+    select distinct lower(json_extract_string(args, '$.payer')) as payer
+    from raw.fevm_eth_logs_decoded
+    where contract_name = 'filecoin_warm_storage_service'
+      and event_name = 'DataSetCreated'
+      and list_contains(json_extract_string(args, '$.metadataKeys[*]'), 'dealbotDS')
 ),
 rail_created as (
     select
@@ -103,13 +110,14 @@ select
     case
         when created.operator = (select storacha_operator from params) then 'Storacha'
         when created.operator = (select fil_one_operator from params) then 'FIL One Storage'
-        else 'FWSS'
+        when created.operator = (select fwss_operator from params) then 'FWSS'
+        else 'Other'
     end as service,
     created.validator,
     created.service_fee_recipient,
     created.commission_rate_bps,
     coalesce(tokens.is_stablecoin, false)
-        and created.payer != (select dealbot_payer from params) as is_arr_eligible,
+        and created.payer not in (select payer from dealbot_payers) as is_arr_eligible,
     created.created_block,
     created.created_log_index,
     created.created_transaction_hash,
