@@ -3,7 +3,6 @@
 # asset.depends = model.storage_provider_power_daily
 # asset.depends = model.storage_provider_sector_lifecycle_daily
 # asset.depends = model.storage_provider_block_rewards_daily
-# asset.depends = model.verified_claims
 
 # asset.materialization = dataframe
 # asset.keep_existing_on_failure = true
@@ -165,8 +164,6 @@ def load_provider_ids() -> list[str]:
         select provider_id from model.storage_provider_power_daily
         union
         select provider_id from model.storage_provider_block_rewards_daily
-        union
-        select provider_id from model.verified_claims
         order by provider_id
     """
     with fdp.db_connection(read_only=True) as conn:
