@@ -55,3 +55,17 @@ Use QMD before `rg` when:
 - Searching for concepts. when you know *what* you need but not *where* it lives or what it's called
 
 Additionally, use `rg`/`grep` to explore the actual repository! Check and validate assumptions.
+
+## Commits and Pull Requests
+
+Use `<gitmoji> <short description>` for both commit subjects and PR titles. Use one actual emoji, an imperative verb, and no trailing period or `feat:`/`fix:` prefixes.
+
+Examples:
+
+- `🔧 Enable automatic garbage collection on tau`
+- `🐛 Fix Hyprlock authentication failure text color`
+- `📝 Document commit and pull request style`
+
+Keep branch names short and descriptive (`remove-user-model`)
+
+Keep PR descriptions to 1–3 sentences explaining the change and its reason. Add related issue links and brief validation or deployment notes when useful. Avoid repeating the title, listing changed files, boilerplate sections (Tests, How To Verify, ...), and filler.
