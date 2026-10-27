@@ -1,89 +1,58 @@
 ---
-type MetricFormat =
-  | "integer"
-  | "number"
-  | "pib"
-  | "fil"
-  | "mfil"
-  | "usd"
-  | "percent"
+import type { ChartConfig, DetailConfig, RangeValues } from "../numbers"
 
-type ChartConfig = {
-  y: string
-  format: MetricFormat
-  scale?: number
-  suffix?: string
-  series?: { label: string; y: string }[]
-}
-
-type Props = ChartConfig & {
+type Props = {
   id: string
   title: string
   description: string
-  details?: (ChartConfig & { title: string; description: string })[]
+  source: string | null
+  columns: string[]
+  config: ChartConfig
+  details?: DetailConfig[]
   summary: {
     value: string
     trend: string
-    rangeLabels: Record<"6m" | "1y" | "all", string>
-    sparklinePaths: Record<"6m" | "1y" | "all", string>
+    meta: string
+    stale: boolean
+    rangeLabels: RangeValues<string>
+    sparklinePaths: RangeValues<string>
     accessibleSummary: string
   }
 }
 
-const {
-  id,
-  title,
-  description,
-  details,
-  y,
-  format,
-  scale,
-  suffix,
-  series,
-  summary,
-} = Astro.props as Props
-
-const serializeChart = (config: ChartConfig) => JSON.stringify(config)
-const chartConfig = serializeChart({ y, format, scale, suffix, series })
+const { id, title, description, source, columns, config, details, summary } = Astro.props
 const tooltipId = `${id}-description`
 const panelId = `${id}-panel`
 const titleId = `${id}-title`
 const chartSummaryId = `${id}-chart-summary`
 ---
 
-<figure id={id} class="stat-card" data-stat-card data-chart={chartConfig}>
+<figure
+  id={id}
+  class:list={["stat-card", { "is-stale": summary.stale }]}
+  data-stat-card
+  data-chart={JSON.stringify(config)}
+  data-source={source}
+  data-columns={JSON.stringify(columns)}
+>
   <figcaption class="stat-card__header">
     <span id={titleId} class="stat-card__title" data-chart-title>{title}</span>
     <span class="stat-card__headline">{summary.value}</span>
     <span class="stat-card__tools">
       <span class="stat-card__info-wrap">
-        <button
-          type="button"
-          class="stat-card__info"
-          aria-label={`About ${title}`}
-          aria-describedby={tooltipId}
-        >
-          ?
-        </button>
+        <button type="button" class="stat-card__info" aria-label={`About ${title}`} aria-describedby={tooltipId}>?</button>
         <span class="stat-card__info-tooltip">
           <span id={tooltipId}>{description}</span>
-          <button
-            type="button"
-            class="stat-card__copy-prompt"
-            data-chart-copy-prompt
-            aria-label={`Copy agent prompt about ${title}`}
-          >
+          <span class="stat-card__source">
+            Source: {source ? <Fragment><a href={`/datasets#${source}`}>{source}</a>.{columns.join(", ")}</Fragment> : "Curated count."}
+          </span>
+          <button type="button" class="stat-card__copy-prompt" data-chart-copy-prompt aria-label={`Copy agent prompt about ${title}`}>
             Ask your agent
           </button>
           <span class="stat-card__prompt-status" data-chart-prompt-status role="status"></span>
         </span>
       </span>
-      <button
-        type="button"
-        class="stat-card__copy-link"
-        data-chart-copy-link
-        aria-label={`Copy link to ${title}`}
-      >
+      <button type="button" class="stat-card__copy-link" data-chart-copy-link aria-label={`Copy link to ${title}`}>
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
           <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -104,14 +73,9 @@ const chartSummaryId = `${id}-chart-summary`
   </figcaption>
 
   <strong class="stat-card__value">{summary.value}</strong>
+  <span class="stat-card__meta">{summary.meta}</span>
   <span class="stat-card__trend">{summary.trend}</span>
-  <svg
-    class="stat-card__sparkline"
-    viewBox="0 0 100 32"
-    preserveAspectRatio="none"
-    aria-hidden="true"
-    focusable="false"
-  >
+  <svg class="stat-card__sparkline" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true" focusable="false">
     <path
       data-chart-sparkline
       data-range-paths={JSON.stringify(summary.sparklinePaths)}
@@ -121,7 +85,7 @@ const chartSummaryId = `${id}-chart-summary`
   </svg>
 
   <div id={panelId} class="stat-card__panel" data-chart-panel hidden>
-    <p class="stat-card__description">{description}</p>
+    <p class="stat-card__description">{description} <span class="stat-card__meta">{summary.meta}.</span></p>
     <p
       id={chartSummaryId}
       class="visually-hidden"
@@ -131,34 +95,21 @@ const chartSummaryId = `${id}-chart-summary`
     >
       {summary.accessibleSummary} Daily trend: {summary.rangeLabels["1y"]}.
     </p>
-    <div
-      class="stat-card__chart"
-      data-chart-canvas
-      role="img"
-      aria-labelledby={titleId}
-      aria-describedby={chartSummaryId}
-    ></div>
+    <div class="stat-card__chart" data-chart-canvas role="img" aria-labelledby={titleId} aria-describedby={chartSummaryId}></div>
     <p class="stat-card__status" data-chart-status aria-live="polite"></p>
 
     {details && (
-      <div class="stat-card__details">
-        <div class="stat-card__detail-grid">
-          {details.map(({ title: detailTitle, description: detailDescription, ...config }) => (
-            <section class="stat-card__detail" data-detail-chart data-chart={serializeChart(config)}>
-              <header class="stat-card__detail-header">
-                <h3>{detailTitle}</h3>
-                <strong data-detail-value>—</strong>
-              </header>
-              <p>{detailDescription}</p>
-              <div
-                class="stat-card__detail-chart"
-                data-chart-canvas
-                role="img"
-                aria-label={`${detailTitle} daily trend`}
-              ></div>
-            </section>
-          ))}
-        </div>
+      <div class="stat-card__detail-grid">
+        {details.map(({ title: detailTitle, description: detailDescription, ...detail }) => (
+          <section class="stat-card__detail" data-detail-chart data-chart={JSON.stringify(detail)}>
+            <header class="stat-card__detail-header">
+              <h3>{detailTitle}</h3>
+              <strong data-detail-value>—</strong>
+            </header>
+            <p>{detailDescription}</p>
+            <div class="stat-card__detail-chart" data-chart-canvas role="img" aria-label={`${detailTitle} daily trend`}></div>
+          </section>
+        ))}
       </div>
     )}
   </div>

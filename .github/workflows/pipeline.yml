@@ -67,6 +67,9 @@ jobs:
           path: build/fdp-docs
           retention-days: 30
 
+      - name: Export public DuckDB
+        run: uv run fdp export --out build/fdp.duckdb
+
       - name: Publish to R2
         if: github.ref == 'refs/heads/main'
         run: uv run fdp publish r2
@@ -78,7 +81,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
         run: |
-          aws s3 cp fdp.duckdb "s3://$R2_BUCKET/fdp.duckdb" \
+          aws s3 cp build/fdp.duckdb "s3://$R2_BUCKET/fdp.duckdb" \
             --endpoint-url "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" \
             --region auto --no-progress --cache-control no-cache
 
@@ -92,6 +95,7 @@ jobs:
   google-sheets:
     name: Google Sheets
     needs: pipeline
+    if: github.ref == 'refs/heads/main'
     continue-on-error: true
     runs-on: ubuntu-latest
     env:

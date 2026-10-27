@@ -2,7 +2,9 @@
 
 - Write assets (`.py` and `.sql`) inside `assets/`
 - The first folder under `assets/` is the schema
-  - Remaining folders plus the file stem are joined with `_` to form the table name
+  - Remaining folders plus the file stem are joined with `_` to form the table name (`raw/riba/eth_logs.py` → `raw.riba_eth_logs`, `model/foc/providers.sql` → `model.foc_providers`)
+  - Keep `main` flat (`main/providers.sql` → `main.providers`)
+  - Table names must be unique per schema
 - Prefer SQL first, then Python with `asset.materialization = dataframe`, then Python with `asset.materialization = custom`
 - Asset header metadata is the only source of truth for asset semantics.
 
@@ -25,13 +27,14 @@
 - Inline tests (`asset.not_null`, `asset.unique`, `asset.assert`) are declared in the asset header and run against the materialized table
 - `asset.keep_existing_on_failure = true` requires the table to already exist; first materialization still fails if refresh fails
 - Leave a blank line between the different metadata sections (`description`, `materialization`, tests, ...)
-- Custom SQL tests live under `assets/` as `*.test.sql` files and are attached to assets by path
+- Custom SQL tests live next to their asset as `<asset file stem>__name.test.sql` (`model/foc/pieces__unique_piece.test.sql` → `model.foc_pieces`)
 - `uv run fdp materialize schema.table` refreshes only the selected assets by default
 - `uv run fdp materialize schema` refreshes all assets under `assets/schema/**`
-- `uv run fdp materialize schema.folder` refreshes all assets under `assets/schema/folder/**`
-- `uv run fdp materialize assets/schema/folder/asset.sql` refreshes exactly that asset
-- You can also pass asset folder paths like `assets/schema/folder`
-- Use `uv run fdp materialize --with-deps schema.table`, `uv run fdp materialize --with-deps schema.folder`, or `uv run fdp materialize --with-deps assets/schema/folder/asset.sql` to refresh their transitive dependency closure too
+- `uv run fdp materialize model.foc` refreshes all assets under `assets/model/foc/**`
+- `uv run fdp materialize assets/model/foc/providers.sql` refreshes exactly that asset
+- You can also pass asset folder paths like `assets/model/foc`
+- Use `uv run fdp materialize --with-deps schema.table`, `uv run fdp materialize --with-deps model.foc`, or `uv run fdp materialize --with-deps assets/model/foc/providers.sql` to refresh their transitive dependency closure too
+- Selectors fail when ambiguous (e.g. a folder named like a table in the same schema)
 
 ## Python assets
 

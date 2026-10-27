@@ -1,10 +1,12 @@
+import json
 import os
+import subprocess
 from dataclasses import dataclass
 
 import duckdb
 import httpx
 
-from fdp.assets import Asset
+from fdp.assets import Asset, main_assets
 
 R2_ACCESS_KEY_ID_ENV_VAR = "R2_ACCESS_KEY_ID"
 R2_SECRET_ACCESS_KEY_ENV_VAR = "R2_SECRET_ACCESS_KEY"
@@ -29,6 +31,8 @@ def publish(assets: list[Asset], conn: duckdb.DuckDBPyConnection) -> None:
     install_httpfs(conn)
     create_temporary_r2_secret(conn, config)
     publish_assets(conn, assets, config.bucket)
+    if {asset.key for asset in assets} == {asset.key for asset in main_assets()}:
+        prune_exports(config, {f"{asset.name}.parquet" for asset in assets})
     purge_cache(config)
 
 
@@ -57,6 +61,51 @@ def r2_config_from_env() -> R2Config:
         cloudflare_api_token=values[CLOUDFLARE_API_TOKEN_ENV_VAR],
         cloudflare_zone_id=values[CLOUDFLARE_ZONE_ID_ENV_VAR],
     )
+
+
+def prune_exports(config: R2Config, keep: set[str]) -> None:
+    output = aws(
+        config,
+        "s3api",
+        "list-objects-v2",
+        "--bucket",
+        config.bucket,
+        "--delimiter",
+        "/",
+        "--query",
+        "Contents[].Key",
+    )
+    stale = [
+        key
+        for key in json.loads(output) or []
+        if key.endswith(".parquet") and key not in keep
+    ]
+    for key in sorted(stale):
+        aws(config, "s3", "rm", f"s3://{config.bucket}/{key}")
+        print(f"Pruned stale export {key}", flush=True)
+
+
+def aws(config: R2Config, *args: str) -> str:
+    return subprocess.run(
+        [
+            "aws",
+            *args,
+            "--output",
+            "json",
+            "--region",
+            "auto",
+            "--endpoint-url",
+            f"https://{config.account_id}.r2.cloudflarestorage.com",
+        ],
+        env=os.environ
+        | {
+            "AWS_ACCESS_KEY_ID": config.access_key_id,
+            "AWS_SECRET_ACCESS_KEY": config.secret_access_key,
+        },
+        check=True,
+        stdout=subprocess.PIPE,
+        text=True,
+    ).stdout
 
 
 def purge_cache(config: R2Config) -> None:

@@ -25,6 +25,7 @@
             pkgs.python314
             pkgs.nodejs_22
             pkgs.gnumake
+            pkgs.awscli2
             # Keep on the same minor version as the Python duckdb package in uv.lock.
             pkgs.duckdb
             llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.qmd

@@ -1,613 +1,145 @@
 ---
 import dailyMetricsDataset from "../data/generated/filecoin-daily-metrics.json"
 import dailyMetricsUrl from "../data/generated/filecoin-daily-metrics.json?url"
+import snapshot from "../data/generated/numbers-snapshot.json"
 import SectionHeading from "../components/SectionHeading.astro"
 import StatCard from "../components/StatCard.astro"
 import Layout from "../layouts/Layout.astro"
+import {
+  DAY,
+  columnPoints,
+  formatAtto,
+  formatDate,
+  formatDecimal,
+  formatMetricValue,
+  parseDates,
+  periodLabels,
+  rangePoints,
+  ranges,
+  sparklinePath,
+  type DatasetRow,
+  type RangeValues,
+} from "../numbers"
+import { numbersSections, type NumbersMetric } from "../numbers-sections"
 
-type DatasetValue = string | number | null
-type DatasetRow = Record<string, DatasetValue>
-type MetricFormat =
-  | "integer"
-  | "number"
-  | "pib"
-  | "fil"
-  | "mfil"
-  | "usd"
-  | "percent"
-type ChartRange = "6m" | "1y" | "all"
-type RangeValues<T> = Record<ChartRange, T>
-type ChartPoint = [timestamp: number, value: number]
-type ChartConfig = {
-  y: string
-  format: MetricFormat
-  scale?: number
-  suffix?: string
-  series?: { label: string; y: string }[]
-}
-type NumbersMetric = ChartConfig & {
-  id: string
-  title: string
-  description: string
-  details?: (ChartConfig & { title: string; description: string })[]
-}
-type NumbersSection = {
-  id: string
-  title: string
-  columns: 2 | 3 | 4
-  charts: NumbersMetric[]
-}
-type MetricSummary = {
-  value: string
-  trend: string
-  rangeLabels: RangeValues<string>
-  sparklinePaths: RangeValues<string>
-  accessibleSummary: string
-}
+type Row = Record<string, string | number | boolean | null>
 
-const numbersSections: NumbersSection[] = [
-  {
-    id: "key-metrics",
-    title: "Ecosystem KPIs",
-    columns: 3,
-    charts: [
-      {
-        id: "filecoin-pay-gross-payment-volume-run-rate-usd",
-        title: "Filecoin Pay GPV Run Rate",
-        description: "Annualized gross stablecoin payment volume from active eligible recurring Filecoin Pay rails, including USDFC and USDC.axl, at day-end.",
-        y: "filecoin_pay_gross_payment_volume_run_rate_usd",
-        format: "usd",
-        series: [
-          { label: "USDFC", y: "filecoin_pay_gross_payment_volume_run_rate_usdfc_usd" },
-          { label: "USDC.axl", y: "filecoin_pay_gross_payment_volume_run_rate_usdc_axl_usd" },
-        ],
-      },
-      {
-        id: "revenue-coverage-ratio",
-        title: "Revenue Coverage Ratio",
-        description: "Trailing-365-day FIL burned divided by annual PGF deployments plus block reward issuance.",
-        y: "revenue_coverage_ratio",
-        format: "percent",
-        details: [
-          {
-            title: "Protocol Revenue",
-            description: "Total FIL burned over the trailing 365 days, valued at average FIL/USD price.",
-            y: "annual_protocol_revenue_usd",
-            format: "usd",
-          },
-          {
-            title: "PGF Deployments",
-            description: "Public goods funding deployments disbursed over the trailing 365 days.",
-            y: "annual_pgf_deployments_usd",
-            format: "usd",
-          },
-          {
-            title: "Block Rewards",
-            description: "Block reward issuance over the trailing 365 days.",
-            y: "annual_block_rewards_usd",
-            format: "usd",
-          },
-        ],
-      },
-      {
-        id: "high-profile-paying-clients",
-        title: "High-profile Paying Clients",
-        description: "Count of recognized paying clients using Filecoin products.",
-        y: "high_profile_paying_clients",
-        format: "number",
-      },
-    ],
-  },
-  {
-    id: "filecoin-onchain-cloud",
-    title: "Filecoin Onchain Cloud",
-    columns: 2,
-    charts: [
-      {
-        id: "foc-active-payers",
-        title: "Active Payers",
-        description: "Unique Filecoin Pay payer addresses with at least one active rail at day-end.",
-        y: "filecoin_pay_active_payers",
-        format: "integer",
-      },
-      {
-        id: "foc-active-operators",
-        title: "Active Operators",
-        description: "Unique Filecoin Pay operator addresses with at least one unterminated rail at day-end.",
-        y: "filecoin_pay_active_operators",
-        format: "integer",
-      },
-      {
-        id: "foc-active-rails",
-        title: "Active Rails",
-        description: "Filecoin Pay rails active at day-end.",
-        y: "filecoin_pay_active_rails",
-        format: "integer",
-      },
-      {
-        id: "foc-filecoin-pay-paid-usd",
-        title: "Filecoin Pay Paid",
-        description: "Gross stablecoin paid through Filecoin Pay rails per day, including USDFC and USDC.axl.",
-        y: "filecoin_pay_paid_usd",
-        format: "usd",
-      },
-      {
-        id: "foc-filecoin-pay-network-fee-arr-usd",
-        title: "Network Fee ARR",
-        description: "Annualized Filecoin Pay network fee revenue from active eligible recurring stablecoin rails at day-end.",
-        y: "filecoin_pay_network_fee_arr_usd",
-        format: "usd",
-      },
-      {
-        id: "foc-warm-storage-data",
-        title: "Warm Storage Data",
-        description: "Raw piece data stored in Filecoin Warm Storage Service datasets at day-end, counting every stored copy, in TiB.",
-        y: "warm_storage_stored_bytes",
-        format: "number",
-        scale: 2 ** 40,
-        suffix: " TiB",
-      },
-    ],
-  },
-  {
-    id: "power",
-    title: "Power",
-    columns: 4,
-    charts: [
-      {
-        id: "sector-onboarding",
-        title: "Onboarded Data",
-        description: "Raw sector data onboarded to the network per day.",
-        y: "onboarded_pibs",
-        format: "pib",
-      },
-      {
-        id: "sector-termination",
-        title: "Terminated Data",
-        description: "Raw sector data terminated from the network per day.",
-        y: "terminated_pibs",
-        format: "pib",
-      },
-      {
-        id: "raw-power",
-        title: "Raw Power",
-        description: "End-of-day raw storage power committed to the network.",
-        y: "raw_power_pibs",
-        format: "pib",
-      },
-      {
-        id: "quality-adjusted-power",
-        title: "Quality Adjusted Power",
-        description: "End-of-day quality-adjusted storage power committed to the network.",
-        y: "quality_adjusted_power_pibs",
-        format: "pib",
-      },
-    ],
-  },
-  {
-    id: "activity",
-    title: "Activity",
-    columns: 3,
-    charts: [
-      {
-        id: "all-transactions",
-        title: "Transactions",
-        description: "On-chain transactions included per day.",
-        y: "transactions",
-        format: "number",
-        scale: 1_000_000,
-        suffix: " M",
-      },
-      {
-        id: "total-value-fil",
-        title: "Value Transferred",
-        description: "FIL transferred by top-level messages per day.",
-        y: "total_value_fil",
-        format: "number",
-        scale: 1_000_000,
-        suffix: " M FIL",
-      },
-      {
-        id: "total-gas-used",
-        title: "Gas Used",
-        description: "Gas consumed by on-chain messages per day.",
-        y: "gas_used_millions",
-        format: "number",
-        scale: 1_000_000,
-        suffix: " T Gas",
-      },
-    ],
-  },
-  {
-    id: "protocol",
-    title: "Protocol",
-    columns: 2,
-    charts: [
-      {
-        id: "fil-burned",
-        title: "FIL Burned",
-        description: "FIL burned per day. Also known as network revenue.",
-        y: "protocol_revenue_fil",
-        format: "fil",
-      },
-      {
-        id: "protocol-revenue-usd",
-        title: "Protocol Revenue",
-        description: "FIL burned per day, valued at average FIL/USD price.",
-        y: "protocol_revenue_usd",
-        format: "usd",
-      },
-      {
-        id: "locked-fil",
-        title: "Locked FIL",
-        description: "End-of-day FIL locked in the network.",
-        y: "locked_fil",
-        format: "mfil",
-      },
-      {
-        id: "circulating-fil",
-        title: "Circulating FIL",
-        description: "End-of-day FIL circulating and tradeable in the economy.",
-        y: "circulating_fil",
-        format: "mfil",
-      },
-      {
-        id: "yearly-inflation-rate",
-        title: "Yearly Inflation Rate",
-        description: "Year-over-year change in circulating FIL.",
-        y: "yearly_inflation_rate",
-        format: "percent",
-      },
-      {
-        id: "block-rewards-fil",
-        title: "Block Rewards",
-        description: "FIL block rewards minted by the network per day.",
-        y: "block_rewards_fil",
-        format: "fil",
-      },
-      {
-        id: "total-gas-fees",
-        title: "Total Gas Fees",
-        description: "FIL paid in gas fees per day.",
-        y: "total_gas_fee_fil",
-        format: "fil",
-      },
-      {
-        id: "base-fee-burn",
-        title: "Base Fee Burn",
-        description: "FIL burned by message base fees per day.",
-        y: "base_fee_burn_fil",
-        format: "fil",
-      },
-      {
-        id: "overestimation-burn",
-        title: "Overestimation Burn",
-        description: "FIL burned by gas overestimation per day.",
-        y: "overestimation_burn_fil",
-        format: "fil",
-      },
-      {
-        id: "miner-tips",
-        title: "Miner Tips",
-        description: "FIL paid to miners as message tips per day.",
-        y: "miner_tip_fil",
-        format: "fil",
-      },
-      {
-        id: "storage-provider-penalties",
-        title: "Storage Provider Penalties",
-        description: "FIL penalties incurred by storage providers during message execution per day.",
-        y: "message_storage_provider_penalty_fil",
-        format: "fil",
-      },
-      {
-        id: "pledge-collateral",
-        title: "Pledge Collateral",
-        description: "End-of-day FIL locked as storage provider pledge collateral.",
-        y: "pledge_collateral_fil",
-        format: "mfil",
-      },
-      {
-        id: "locked-to-circulating-ratio",
-        title: "Locked to Circulating Ratio",
-        description: "Percentage of circulating FIL that is locked.",
-        y: "locked_to_circulating_ratio",
-        format: "percent",
-      },
-      {
-        id: "block-rewards-usd",
-        title: "Block Rewards Value",
-        description: "Block rewards minted per day, valued at average FIL/USD price.",
-        y: "block_rewards_usd",
-        format: "usd",
-      },
-      {
-        id: "mining-yield",
-        title: "Mining Yield",
-        description: "Annualized block rewards relative to locked FIL.",
-        y: "mining_yield",
-        format: "percent",
-      },
-      {
-        id: "reward-per-wincount",
-        title: "Reward per Wincount",
-        description: "Average FIL reward allocated per winning proof per day.",
-        y: "reward_per_wincount_fil",
-        format: "fil",
-      },
-    ],
-  },
-  {
-    id: "markets",
-    title: "Markets",
-    columns: 3,
-    charts: [
-      {
-        id: "fil-token-price",
-        title: "FIL Token Price",
-        description: "Average daily FIL token price in USD.",
-        y: "fil_token_price_avg_usd",
-        format: "usd",
-      },
-      {
-        id: "fil-token-volume",
-        title: "FIL Trading Volume",
-        description: "Reported daily FIL trading volume in USD.",
-        y: "fil_token_volume_usd",
-        format: "usd",
-        scale: 1_000_000,
-        suffix: "M",
-      },
-      {
-        id: "fil-token-market-cap",
-        title: "FIL Market Cap",
-        description: "Daily FIL market capitalization in USD.",
-        y: "fil_token_market_cap_usd",
-        format: "usd",
-        scale: 1_000_000_000,
-        suffix: "B",
-      },
-    ],
-  },
-]
+const rows = dailyMetricsDataset as DatasetRow[]
+if (rows.length === 0) throw new Error("Generated daily metrics dataset is empty")
+const dates = parseDates(rows)
+const today = new Date()
+const cutoff = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()) - DAY
 
-const numbersDatasetColumnNames = [
-  "date",
-  ...new Set(
-    numbersSections.flatMap((section) =>
-      section.charts.flatMap((chart) => [
-        chart.y,
-        ...(chart.series?.map((series) => series.y) ?? []),
-        ...(chart.details?.map((detail) => detail.y) ?? []),
-      ]),
-    ),
-  ),
-]
+function metricSummary(metric: NumbersMetric) {
+  const points = columnPoints(rows, dates, metric.y)
+  const ranged = Object.fromEntries(ranges.map((range) => [range, rangePoints(points, range)]))
+  const rangeLabels = Object.fromEntries(ranges.map((range) => {
+    const rangePoints = ranged[range]
+    return [range, rangePoints.length ? `${formatDate(rangePoints[0][0])}–${formatDate(rangePoints.at(-1)![0])}` : "No observations"]
+  })) as RangeValues<string>
+  const sparklinePaths = Object.fromEntries(ranges.map((range) => [range, sparklinePath(ranged[range])])) as RangeValues<string>
+  const period = periodLabels[metric.period]
 
-const dailyMetrics = dailyMetricsDataset as DatasetRow[]
-
-if (dailyMetrics.length === 0) {
-  throw new Error("Generated daily metrics dataset is empty")
-}
-
-for (const column of numbersDatasetColumnNames) {
-  if (!dailyMetrics.some((row) => Object.hasOwn(row, column))) {
-    throw new Error(`Generated daily metrics dataset has no ${column} column`)
-  }
-}
-
-const dates = dailyMetrics.map((row, index) => {
-  const rawDate = row.date
-  const timestamp = typeof rawDate === "number" ? rawDate : Date.parse(String(rawDate))
-
-  if (!Number.isFinite(timestamp)) {
-    throw new Error(`Generated daily metrics dataset has an invalid date at row ${index}`)
+  const observed = points.filter((point): point is [number, number] => point[1] != null)
+  if (observed.length === 0) {
+    return { value: "—", trend: "No observations", meta: period, stale: true, rangeLabels, sparklinePaths, accessibleSummary: "No observations are available." }
   }
 
-  return timestamp
-})
-const pointCache = new Map<string, ChartPoint[]>()
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-  timeZone: "UTC",
-})
-const ranges: ChartRange[] = ["6m", "1y", "all"]
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 2,
-})
-
-function formatDecimal(value: number, maximumFractionDigits: number): string {
-  return value.toLocaleString("en-US", { maximumFractionDigits })
-}
-
-function formatMetricValue(value: number, config: ChartConfig): string {
-  const scaledValue = value / (config.scale ?? 1)
-
-  if (config.format === "integer") {
-    return `${Math.round(scaledValue).toLocaleString("en-US")}${config.suffix ?? ""}`
+  const [latestAt, latest] = observed.at(-1)!
+  const lagDays = Math.round((cutoff - latestAt) / DAY)
+  const meta = `${period} · ${formatDate(latestAt)}${lagDays > 0 ? ` · ${lagDays}d behind` : ""}`
+  // Baseline is the observation exactly 30 UTC days earlier; missing or zero baselines show no change.
+  const previous = observed.find(([timestamp]) => timestamp === latestAt - 30 * DAY)
+  let trend = observed.length === 1 ? "Single observation" : "No 30d comparison"
+  if (previous && metric.format === "percent") {
+    const change = (latest - previous[1]) * 100
+    trend = `${change > 0 ? "▲ +" : change < 0 ? "▼ " : "■ "}${formatDecimal(change, 2)} pp 30d`
+  } else if (previous && previous[1] !== 0) {
+    const change = ((latest - previous[1]) / Math.abs(previous[1])) * 100
+    trend = `${change > 0 ? "▲ +" : change < 0 ? "▼ " : "■ "}${formatDecimal(change, 2)}% 30d`
   }
-
-  if (config.format === "mfil") {
-    return `${formatDecimal(scaledValue / 1_000_000, 2)} M FIL${config.suffix ?? ""}`
-  }
-
-  if (config.format === "usd") {
-    return `${currencyFormatter.format(scaledValue)}${config.suffix ?? ""}`
-  }
-
-  if (config.format === "percent") {
-    return `${formatDecimal(scaledValue * 100, 2)}%${config.suffix ?? ""}`
-  }
-
-  const unit = { number: "", pib: " PiB", fil: " FIL" }[config.format]
-  return `${formatDecimal(scaledValue, 2)}${unit}${config.suffix ?? ""}`
-}
-
-function rangeMetricPoints(points: ChartPoint[], range: ChartRange): ChartPoint[] {
-  if (range === "all" || points.length === 0) return points
-
-  const latest = new Date(points[points.length - 1][0])
-  const months = range === "6m" ? 6 : 12
-  const cutoff = Date.UTC(
-    latest.getUTCFullYear(),
-    latest.getUTCMonth() - months,
-    latest.getUTCDate(),
-  )
-
-  return points.filter(([timestamp]) => timestamp >= cutoff)
-}
-
-function formatDate(timestamp: number): string {
-  return dateFormatter.format(new Date(timestamp))
-}
-
-function metricPoints(metric: string): ChartPoint[] {
-  const cached = pointCache.get(metric)
-  if (cached) return cached
-
-  const points: ChartPoint[] = []
-  for (let index = 0; index < dailyMetrics.length; index++) {
-    const rawValue = dailyMetrics[index][metric]
-    if (rawValue === null || rawValue === undefined) continue
-
-    const value = typeof rawValue === "number" ? rawValue : Number(rawValue)
-    if (!Number.isFinite(value)) {
-      throw new Error(`Generated daily metrics column ${metric} has an invalid value at row ${index}`)
-    }
-
-    points.push([dates[index], value])
-  }
-
-  points.sort((left, right) => left[0] - right[0])
-  pointCache.set(metric, points)
-  return points
-}
-
-function samplePoints(points: ChartPoint[], limit = 120): ChartPoint[] {
-  if (points.length <= limit) return points
-
-  const sampled: ChartPoint[] = [points[0]]
-  const bucketCount = Math.floor((limit - 2) / 2)
-  const bucketSize = (points.length - 2) / bucketCount
-
-  for (let bucket = 0; bucket < bucketCount; bucket++) {
-    const start = 1 + Math.floor(bucket * bucketSize)
-    const end = Math.min(points.length - 1, 1 + Math.floor((bucket + 1) * bucketSize))
-    let minimumIndex = start
-    let maximumIndex = start
-
-    for (let index = start + 1; index < end; index++) {
-      if (points[index][1] < points[minimumIndex][1]) minimumIndex = index
-      if (points[index][1] > points[maximumIndex][1]) maximumIndex = index
-    }
-
-    sampled.push(points[Math.min(minimumIndex, maximumIndex)])
-    if (minimumIndex !== maximumIndex) sampled.push(points[Math.max(minimumIndex, maximumIndex)])
-  }
-
-  sampled.push(points[points.length - 1])
-  return sampled
-}
-
-function sparklinePath(points: ChartPoint[]): string {
-  const sampled = samplePoints(points)
-  if (sampled.length === 0) return ""
-  if (sampled.length === 1) return "M0 16 L100 16"
-
-  const firstTimestamp = sampled[0][0]
-  const timestampSpan = sampled[sampled.length - 1][0] - firstTimestamp
-  const minimum = Math.min(0, ...sampled.map(([, value]) => value))
-  const maximum = Math.max(0, ...sampled.map(([, value]) => value))
-  const valueSpan = maximum - minimum
-
-  return sampled.map(([timestamp, value], index) => {
-    const x = timestampSpan === 0 ? 0 : ((timestamp - firstTimestamp) / timestampSpan) * 100
-    const y = valueSpan === 0 ? 16 : 31 - ((value - minimum) / valueSpan) * 30
-    return `${index === 0 ? "M" : "L"}${x.toFixed(2)} ${y.toFixed(2)}`
-  }).join(" ")
-}
-
-function rangeLabel(points: ChartPoint[]): string {
-  if (points.length === 0) return "No observations"
-
-  const first = formatDate(points[0][0])
-  const last = formatDate(points[points.length - 1][0])
-  return first === last ? first : `${first}–${last}`
-}
-
-function metricSummary(metric: NumbersMetric): MetricSummary {
-  const points = metricPoints(metric.y)
-  const rangePoints = Object.fromEntries(
-    ranges.map((range) => [range, rangeMetricPoints(points, range)]),
-  ) as RangeValues<ChartPoint[]>
-  const rangeLabels = Object.fromEntries(
-    ranges.map((range) => [range, rangeLabel(rangePoints[range])]),
-  ) as RangeValues<string>
-  const sparklinePaths = Object.fromEntries(
-    ranges.map((range) => [range, sparklinePath(rangePoints[range])]),
-  ) as RangeValues<string>
-
-  if (points.length === 0) {
-    return {
-      value: "—",
-      trend: "No data",
-      rangeLabels,
-      sparklinePaths,
-      accessibleSummary: "No observations are available.",
-    }
-  }
-
-  const [latestTimestamp, latest] = points[points.length - 1]
-  const previous = points[Math.max(0, points.length - 31)][1]
-  const change = previous === 0 ? 0 : ((latest - previous) / previous) * 100
-  const direction = change > 0 ? "▲" : change < 0 ? "▼" : "■"
-  const sign = change > 0 ? "+" : ""
-  const trend = `${direction} ${sign}${formatDecimal(change, 2)}% 30d`
-  const trendDescription = change > 0
-    ? `up ${formatDecimal(Math.abs(change), 2)}% over 30 days`
-    : change < 0
-      ? `down ${formatDecimal(Math.abs(change), 2)}% over 30 days`
-      : "unchanged over 30 days"
   const value = formatMetricValue(latest, metric)
-  const latestDateLabel = formatDate(latestTimestamp)
 
   return {
     value,
     trend,
+    meta,
+    stale: lagDays > 0,
     rangeLabels,
     sparklinePaths,
-    accessibleSummary: `Latest value ${value} on ${latestDateLabel}; ${trendDescription}.`,
+    accessibleSummary: `Latest value ${value} (${period}) on ${formatDate(latestAt)}; ${trend}.`,
   }
 }
+
+// Provider comparison: counts summed over the generated window, rates from those counts.
+const providers = snapshot.providers as Row[]
+const windowEnds = snapshot.providerWindowEnds as Row
+const windowLabel = (end: unknown) => end == null
+  ? "no observations"
+  : `${new Date(Date.parse(String(end)) - (snapshot.providerWindowDays - 1) * DAY).toISOString().slice(0, 10)} to ${end}`
+const qualityChecks = [
+  ["Storage probes", "storage_successes", "storage_checks", windowEnds.storage_end],
+  ["Dealbot retrievals", "retrieval_successes", "retrieval_checks", windowEnds.retrieval_end],
+  ["Sampled retrievals", "sampled_retrieval_successes", "sampled_retrieval_checks", windowEnds.sampled_end],
+  ["Proving faults", "proving_periods_faulted", "proving_periods_closed", windowEnds.proving_end],
+] as const
+const qualityTotal: Row = Object.fromEntries([
+  ...qualityChecks.flatMap(([, numerator, denominator]) => [numerator, denominator]),
+  "sampled_retrieval_skipped",
+].map((column) => {
+    const values = providers.map((row) => row[column]).filter((value) => value != null)
+    return [column, values.length ? values.reduce((sum: number, value) => sum + Number(value), 0) : null]
+  }))
+
+function ratioCell(row: Row, numerator: string, denominator: string): string {
+  if (row[numerator] == null || row[denominator] == null) return "No observations"
+  const total = Number(row[denominator])
+  if (total === 0) return "0 / 0 (undefined)"
+  return `${formatDecimal((Number(row[numerator]) / total) * 100, 2)}% (${Number(row[numerator]).toLocaleString("en-US")} / ${total.toLocaleString("en-US")})`
+}
+
+// Solstice quarters: values as published; the page only labels them.
+const GENESIS = 1_598_306_400_000
+const blockTime = (block: unknown) => block == null ? "Unknown" : `${new Date(GENESIS + Number(block) * 30_000).toISOString().slice(0, 16).replace("T", " ")} UTC`
+const quarters = (snapshot.quarters as Row[]).map((quarter) => {
+  const asOf = Number(quarter.as_of_block)
+  const phase = quarter.as_of_block == null
+    ? "Unknown"
+    : asOf < Number(quarter.start_block) ? "Not started"
+      : asOf <= Number(quarter.end_block) ? "In quarter (partial)"
+        : asOf < Number(quarter.verification_start_block) ? "Posting window"
+          : !quarter.is_bound ? "Verification window" : "Bound"
+  const gate = Number(quarter.quarter) === 1
+    ? "Not gated (quarter 1)"
+    : quarter.gate_checked_at == null
+      ? "No gate check observed"
+      : `${quarter.gate_passed ? "Passed" : "Failed"} at ${String(quarter.gate_checked_at).slice(0, 10)} (${quarter.gate_steps} steps)`
+  return {
+    row: quarter,
+    phase,
+    gate,
+    threshold: Number(quarter.quarter) === 1 ? "None" : quarter.gate_checked_at == null ? "Not observed" : formatAtto(quarter.gate_threshold_atto_usd, "usd"),
+    shares: quarter.shares_submitted_at == null
+      ? "No SharesSubmitted event observed (all-zero submissions emit none)"
+      : `${String(quarter.shares_submitted_at).slice(0, 10)} · ${quarter.share_recipients} recipients · ${formatAtto(quarter.shares_total_atto_usd, "usd")}`,
+    orchestrators: (snapshot.orchestratorQuarters as Row[]).filter((row) => row.quarter === quarter.quarter),
+  }
+})
 ---
 
 <Layout
   title="Filecoin in Numbers | Filecoin Data Portal"
   description="Core Filecoin metrics with daily scorecards and interactive historical charts."
 >
-  <div
-    class="numbers-dashboard"
-    data-numbers-dashboard
-    data-chart-data-url={dailyMetricsUrl}
-  >
+  <div class="numbers-dashboard" data-numbers-dashboard data-chart-data-url={dailyMetricsUrl}>
     <div class="numbers-toolbar">
       <h1>Filecoin in Numbers</h1>
       <nav class="numbers-toc" aria-label="Numbers sections">
-        {
-          numbersSections.map((section, index) => (
-            <a
-              href={`#${section.id}`}
-              data-section-link={section.id}
-              aria-current={index === 0 ? "location" : undefined}
-            >
-              {section.title}
-            </a>
-          ))
-        }
+        {numbersSections.map((section, index) => (
+          <a href={`#${section.id}`} data-section-link={section.id} aria-current={index === 0 ? "location" : undefined}>
+            {section.title}
+          </a>
+        ))}
       </nav>
       <div class="numbers-toolbar__controls">
         <div class="chart-range-toggle" role="group" aria-label="Chart timeframe">
@@ -615,13 +147,7 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
           <button type="button" data-chart-range="1y" aria-pressed="true">1Y</button>
           <button type="button" data-chart-range="all" aria-pressed="false">All</button>
         </div>
-        <button
-          type="button"
-          class="numbers-expand-toggle"
-          data-expand-all
-          aria-label="Expand all charts"
-          aria-pressed="false"
-        >
+        <button type="button" class="numbers-expand-toggle" data-expand-all aria-label="Expand all charts" aria-pressed="false">
           Expand All
         </button>
       </div>
@@ -631,112 +157,176 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
       <p class="numbers-noscript">Scorecards show the latest values. Enable JavaScript to open historical charts and change their timeframe.</p>
     </noscript>
 
-    {
-      numbersSections.map((section) => (
-        <section
-          class="numbers-section"
-          aria-labelledby={section.id}
-          data-numbers-section={section.id}
-        >
+    {numbersSections.map((section) => (
+        <section class="numbers-section" aria-labelledby={section.id} data-numbers-section={section.id}>
           <SectionHeading id={section.id} label={section.title} class="numbers-section__legend" />
+          {section.groups.map((group) => (
+            <Fragment>
+              {group.title && <h3 class="numbers-group">{group.title}</h3>}
+              <div class={`stat-grid stat-grid--${section.columns}`}>
+                {group.charts.map((chart) => {
+                  const { id, title, description, period: _, source = "daily_network_metrics", columns, details, ...config } = chart
+                  const sourceColumns = columns ?? [config.y, ...(config.series?.map(({ y }) => y) ?? []), ...(details?.map(({ y }) => y) ?? [])]
+                  return <StatCard {id} {title} {description} {source} columns={sourceColumns} {config} {details} summary={metricSummary(chart)} />
+                })}
+              </div>
+            </Fragment>
+          ))}
 
-          <div class={`stat-grid stat-grid--${section.columns}`}>
-            {section.charts.map((chart) => (
-              <StatCard {...chart} summary={metricSummary(chart)} />
+          {section.id === "provider-quality" && (
+            <details class="numbers-table" id="provider-comparison">
+              <summary>Provider comparison · {snapshot.providerWindowDays}-day windows</summary>
+              <p>
+                Counts summed per provider over each check's displayed {snapshot.providerWindowDays}-day window; sources update independently. Rates are successes over attempts, never averaged. Storage and retrieval figures are Dealbot probes, not client traffic. Sampled retrieval skips are not attempts. Proving faults cover closed periods only.
+              </p>
+              <div class="numbers-table__scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Provider</th>
+                      {qualityChecks.map(([label, , , end]) => <th scope="col">{label}<span>{windowLabel(end)}</span></th>)}
+                      <th scope="col">Sampled skips<span>{windowLabel(windowEnds.sampled_end)}</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {providers.map((row) => (
+                      <tr>
+                        <th scope="row">{row.name ?? "Unknown"} <span>#{row.provider_id ?? "unrecorded"}</span></th>
+                        {qualityChecks.map(([, numerator, denominator]) => <td>{ratioCell(row, numerator, denominator)}</td>)}
+                        <td>{row.sampled_retrieval_skipped ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th scope="row">All providers</th>
+                      {qualityChecks.map(([, numerator, denominator]) => <td>{ratioCell(qualityTotal, numerator, denominator)}</td>)}
+                      <td>{qualityTotal.sampled_retrieval_skipped ?? "—"}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </details>
+          )}
+          {section.id === "solstice" && (
+          <Fragment>
+            {quarters.length > 1 && (
+              <p class="numbers-note">
+                <label> Quarter
+                  <select data-quarter-select>
+                    {quarters.map((quarter) => <option value={String(quarter.row.quarter)}>Q{quarter.row.quarter}</option>)}
+                  </select>
+                </label>
+              </p>
+            )}
+            {quarters.length === 0 && <p class="numbers-note">No Solstice quarters observed.</p>}
+            {quarters.map((quarter, quarterIndex) => (
+              <div class="numbers-table" data-quarter={String(quarter.row.quarter)} hidden={quarterIndex > 0}>
+                <dl class="numbers-facts">
+                  <div><dt>Quarter</dt><dd>Q{quarter.row.quarter} · blocks {quarter.row.start_block}–{quarter.row.end_block}</dd></div>
+                  <div><dt>Phase</dt><dd>{quarter.phase}</dd></div>
+                  <div><dt>Coverage</dt><dd>through block {quarter.row.as_of_block ?? "unknown"} ({blockTime(quarter.row.as_of_block)})</dd></div>
+                  <div><dt>Bound FPV</dt><dd>{quarter.row.is_bound ? formatAtto(quarter.row.bound_volume_atto_usd, "usd") : `Not bound (bound at block ${quarter.row.bound_block})`}</dd></div>
+                  <div><dt>Gate threshold</dt><dd>{quarter.threshold}</dd></div>
+                  <div><dt>Gate outcome</dt><dd>{quarter.gate}</dd></div>
+                  <div><dt>Shares</dt><dd>{quarter.shares}</dd></div>
+                </dl>
+                <div class="numbers-table__scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Orchestrator</th>
+                        <th scope="col">Calculated eligible FPV</th>
+                        <th scope="col">Latest reported</th>
+                        <th scope="col">Bound</th>
+                        <th scope="col">Pending FIL</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {quarter.orchestrators.map((row) => (
+                        <tr>
+                          <th scope="row"><code>{row.orchestrator}</code>{row.is_removed_in_quarter && <span> removed</span>}</th>
+                          <td>
+                            {formatAtto(row.volume_atto_usd, "usd")}
+                            <span>{row.is_complete ? "complete" : `partial, through block ${row.volume_as_of_block ?? "unknown"}`}</span>
+                          </td>
+                          <td>
+                            {row.reported_volume_atto_usd == null ? "Not reported" : formatAtto(row.reported_volume_atto_usd, "usd")}
+                            {Number(row.corrections) > 0 && <span>{row.corrections} corrections</span>}
+                          </td>
+                          <td>{row.is_bound ? formatAtto(row.bound_volume_atto_usd, "usd") : "Not bound"}</td>
+                          <td>{formatAtto(row.fil_pending_atto_fil, "fil")}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             ))}
-          </div>
+          </Fragment>
+          )}
         </section>
-      ))
-    }
+    ))}
   </div>
 
   <script>
-    type DatasetValue = string | number | null
-    type DatasetRow = Record<string, DatasetValue>
-    type ChartPoint = [timestamp: number, value: number]
-    type MetricFormat =
-      | "integer"
-      | "number"
-      | "pib"
-      | "fil"
-      | "mfil"
-      | "usd"
-      | "percent"
-    type ChartRange = "6m" | "1y" | "all"
-    type RangeValues<T> = Record<ChartRange, T>
-    type ChartConfig = {
-      y: string
-      format: MetricFormat
-      scale?: number
-      suffix?: string
-      series?: { label: string; y: string }[]
-    }
+    import {
+      columnPoints,
+      formatDate,
+      formatMetricValue,
+      parseDates,
+      rangePoints,
+      type ChartConfig,
+      type ChartPoint,
+      type ChartRange,
+      type DatasetRow,
+      type RangeValues,
+    } from "../numbers"
+
     type ChartRuntime = typeof import("echarts/core")
     type ChartInstance = ReturnType<ChartRuntime["init"]>
-
-    type DetailView = {
-      canvas: HTMLElement
-      value: HTMLElement
-      title: string
-      config: ChartConfig
-      chart?: ChartInstance
-    }
-
+    type DetailView = { canvas: HTMLElement; value: HTMLElement; title: string; config: ChartConfig; chart?: ChartInstance }
     type CardView = {
+      id: string
+      title: string
       node: HTMLElement
       panel: HTMLElement
       canvas: HTMLElement
+      toggle: HTMLButtonElement
+      status: HTMLElement
       copyLink: HTMLButtonElement
       copyPrompt: HTMLButtonElement
       linkStatus: HTMLElement
       promptStatus: HTMLElement
       copyResetTimer?: number
-      toggle: HTMLButtonElement
-      status: HTMLElement
       sparkline: SVGPathElement
       summary: HTMLElement
       summaryBase: string
       rangePaths: RangeValues<string>
       rangeLabels: RangeValues<string>
-      id: string
-      title: string
+      source: string
+      columns: string[]
       config: ChartConfig
       chart?: ChartInstance
       details: DetailView[]
     }
+    type TooltipParam = { axisValue?: unknown; seriesName?: string; value?: unknown }
+    type SectionView = { id: string; node: HTMLElement; link: HTMLAnchorElement }
 
-    type TooltipParam = {
-      axisValue?: unknown
-      seriesName?: string
-      value?: unknown
+    function required<T extends Element>(node: ParentNode, selector: string): T {
+      const element = node.querySelector<T>(selector)
+      if (!element) throw new Error(`Numbers page is missing ${selector}`)
+      return element
     }
 
-    type SectionView = {
-      id: string
-      node: HTMLElement
-      link: HTMLAnchorElement
-    }
-
-    const dashboard = document.querySelector<HTMLElement>("[data-numbers-dashboard]")
-    const cardNodes = Array.from(document.querySelectorAll<HTMLElement>("[data-stat-card]"))
-    const expandAllButton = requiredElement<HTMLButtonElement>(
-      document,
-      "[data-expand-all]",
-      "an expand all button",
-    )
-
-    if (!dashboard?.dataset.chartDataUrl) {
-      throw new Error("Numbers dashboard is missing its chart data URL")
-    }
-
-    if (cardNodes.length === 0) {
-      throw new Error("Numbers page has no metric cards")
-    }
-
+    const dashboard = required<HTMLElement>(document, "[data-numbers-dashboard]")
     const chartDataUrl = dashboard.dataset.chartDataUrl
-    const pointsByMetric = new Map<string, ChartPoint[]>()
+    if (!chartDataUrl) throw new Error("Numbers dashboard is missing its chart data URL")
+    const expandAllButton = required<HTMLButtonElement>(document, "[data-expand-all]")
+    const cardNodes = Array.from(document.querySelectorAll<HTMLElement>("[data-stat-card]"))
+    if (cardNodes.length === 0) throw new Error("Numbers page has no metric cards")
+
     const rootStyle = getComputedStyle(document.documentElement)
-    const bodyStyle = getComputedStyle(document.body)
     const colors = {
       background: rootStyle.getPropertyValue("--color-surface").trim(),
       border: rootStyle.getPropertyValue("--color-border").trim(),
@@ -744,160 +334,72 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
       text: rootStyle.getPropertyValue("--color-text").trim(),
       muted: rootStyle.getPropertyValue("--color-text-muted").trim(),
     }
-    const fontFamily = bodyStyle.fontFamily
+    const fontFamily = getComputedStyle(document.body).fontFamily
     const seriesColors = [colors.strong, colors.muted]
-    const tooltipDateFormatter = new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      timeZone: "UTC",
-    })
-    const axisDateFormatter = new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      year: "2-digit",
-      timeZone: "UTC",
-    })
-    const compactNumberFormatter = new Intl.NumberFormat("en-US", {
-      notation: "compact",
-      maximumFractionDigits: 1,
-    })
-    const scientificNumberFormatter = new Intl.NumberFormat("en-US", {
-      notation: "scientific",
-      maximumFractionDigits: 1,
-    })
-    const currencyFormatter = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 2,
-    })
+    const axisDateFormatter = new Intl.DateTimeFormat("en-US", { month: "short", year: "2-digit", timeZone: "UTC" })
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    const scrollBehavior = (): ScrollBehavior => reducedMotion ? "auto" : "smooth"
 
     let dataset: DatasetRow[] | undefined
     let dates: number[] = []
     let datasetPromise: Promise<void> | undefined
     let runtimePromise: Promise<ChartRuntime> | undefined
     let loadedRuntime: ChartRuntime | undefined
-    let currentRange = getInitialRange()
+    let currentRange = parseRange(new URL(window.location.href).searchParams.get("range")) ?? "1y"
+    const pointsByMetric = new Map<string, ChartPoint[]>()
     const expandedIds = new Set<string>()
     const cards = cardNodes.map(createCard)
 
-    function parseDataset(value: unknown): DatasetRow[] {
-      if (!Array.isArray(value)) {
-        throw new Error("Numbers dataset must be an array")
-      }
-
-      if (value.some((row) => row === null || typeof row !== "object" || Array.isArray(row))) {
-        throw new Error("Numbers dataset rows must be objects")
-      }
-
-      return value as DatasetRow[]
-    }
-
-    function parseDates(rows: DatasetRow[]): number[] {
-      return rows.map((row, index) => {
-        const rawDate = row.date
-        const timestamp = typeof rawDate === "number" ? rawDate : Date.parse(String(rawDate))
-
-        if (!Number.isFinite(timestamp)) {
-          throw new Error(`Numbers dataset has an invalid date at row ${index}`)
-        }
-
-        return timestamp
-      })
-    }
-
-    function parseJson<T>(source: string | undefined, label: string): T {
-      if (!source) throw new Error(`Metric card is missing ${label}`)
+    function json<T>(source: string | undefined): T {
+      if (!source) throw new Error("Metric card is missing serialized data")
       return JSON.parse(source) as T
     }
 
-    function requiredElement<T extends Element>(
-      node: ParentNode,
-      selector: string,
-      label: string,
-    ): T {
-      const element = node.querySelector<T>(selector)
-      if (!element) throw new Error(`Numbers page is missing ${label}`)
-      return element
-    }
-
     function createCard(node: HTMLElement): CardView {
-      const id = node.id
-      const title = requiredElement<HTMLElement>(node, "[data-chart-title]", "a chart title")
-        .textContent?.trim()
-
-      if (!id || !title) {
-        throw new Error("Metric card must have an id and title")
-      }
-
-      const panel = requiredElement<HTMLElement>(node, "[data-chart-panel]", "a chart panel")
-      const sparkline = requiredElement<SVGPathElement>(
-        node,
-        "[data-chart-sparkline]",
-        "a sparkline",
-      )
-      const summary = requiredElement<HTMLElement>(node, "[data-chart-summary]", "a chart summary")
-      const summaryBase = summary.dataset.summaryBase
-
-      if (!summaryBase) {
-        throw new Error(`Metric card ${id} is missing its accessible summary`)
-      }
-
-      const details = Array.from(node.querySelectorAll<HTMLElement>("[data-detail-chart]"))
-        .map((detailNode): DetailView => {
-          const detailTitle = requiredElement<HTMLElement>(
-            detailNode,
-            ".stat-card__detail-header h3",
-            "a detail title",
-          ).textContent?.trim()
-
-          if (!detailTitle) {
-            throw new Error(`Metric card ${id} has an empty detail title`)
-          }
-
-          return {
-            canvas: requiredElement(detailNode, "[data-chart-canvas]", "a detail chart"),
-            value: requiredElement(detailNode, "[data-detail-value]", "a detail value"),
-            title: detailTitle,
-            config: parseJson<ChartConfig>(detailNode.dataset.chart, "detail chart configuration"),
-          }
-        })
+      const title = required<HTMLElement>(node, "[data-chart-title]").textContent?.trim()
+      if (!node.id || !title) throw new Error("Metric card must have an id and title")
+      const panel = required<HTMLElement>(node, "[data-chart-panel]")
+      const sparkline = required<SVGPathElement>(node, "[data-chart-sparkline]")
+      const summary = required<HTMLElement>(node, "[data-chart-summary]")
 
       return {
+        id: node.id,
+        title,
         node,
         panel,
-        canvas: requiredElement(panel, ":scope > [data-chart-canvas]", "a chart"),
-        copyLink: requiredElement(node, "[data-chart-copy-link]", "a copy link button"),
-        copyPrompt: requiredElement(node, "[data-chart-copy-prompt]", "a copy prompt button"),
-        linkStatus: requiredElement(node, "[data-chart-link-status]", "a copy link status"),
-        promptStatus: requiredElement(node, "[data-chart-prompt-status]", "a copy prompt status"),
-        toggle: requiredElement(node, "[data-chart-toggle]", "an expand button"),
-        status: requiredElement(panel, "[data-chart-status]", "a chart status"),
+        canvas: required(panel, ":scope > [data-chart-canvas]"),
+        toggle: required(node, "[data-chart-toggle]"),
+        status: required(panel, "[data-chart-status]"),
+        copyLink: required(node, "[data-chart-copy-link]"),
+        copyPrompt: required(node, "[data-chart-copy-prompt]"),
+        linkStatus: required(node, "[data-chart-link-status]"),
+        promptStatus: required(node, "[data-chart-prompt-status]"),
         sparkline,
         summary,
-        summaryBase,
-        rangePaths: parseJson(sparkline.dataset.rangePaths, "sparkline paths"),
-        rangeLabels: parseJson(summary.dataset.rangeLabels, "range labels"),
-        id,
-        title,
-        config: parseJson(node.dataset.chart, "chart configuration"),
-        details,
+        summaryBase: summary.dataset.summaryBase ?? "",
+        rangePaths: json(sparkline.dataset.rangePaths),
+        rangeLabels: json(summary.dataset.rangeLabels),
+        source: node.dataset.source ?? "",
+        columns: json(node.dataset.columns),
+        config: json(node.dataset.chart),
+        details: Array.from(node.querySelectorAll<HTMLElement>("[data-detail-chart]")).map((detail) => ({
+          canvas: required(detail, "[data-chart-canvas]"),
+          value: required(detail, "[data-detail-value]"),
+          title: required<HTMLElement>(detail, "h3").textContent?.trim() ?? "",
+          config: json(detail.dataset.chart),
+        })),
       }
     }
 
     function loadDataset(): Promise<void> {
-      datasetPromise ??= fetch(chartDataUrl, {
-        headers: { Accept: "application/json" },
-      }).then(async (response) => {
-        if (!response.ok) {
-          throw new Error(`Numbers dataset request failed with ${response.status}`)
-        }
-
-        dataset = parseDataset(await response.json())
+      datasetPromise ??= fetch(chartDataUrl!, { headers: { Accept: "application/json" } }).then(async (response) => {
+        if (!response.ok) throw new Error(`Numbers dataset request failed with ${response.status}`)
+        const value: unknown = await response.json()
+        if (!Array.isArray(value)) throw new Error("Numbers dataset must be an array")
+        dataset = value as DatasetRow[]
         dates = parseDates(dataset)
         pointsByMetric.clear()
       })
-
       return datasetPromise
     }
 
@@ -907,136 +409,29 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
         // @ts-expect-error ECharts does not publish types for its tree-shakable side-effect modules.
         import("echarts/lib/chart/line"),
         // @ts-expect-error ECharts does not publish types for its tree-shakable side-effect modules.
+        import("echarts/lib/chart/bar"),
+        // @ts-expect-error ECharts does not publish types for its tree-shakable side-effect modules.
         import("echarts/lib/component/grid"),
         // @ts-expect-error ECharts does not publish types for its tree-shakable side-effect modules.
         import("echarts/lib/component/tooltip"),
         import("echarts/renderers"),
-      ]).then(([echarts, , , , { CanvasRenderer }]) => {
+      ]).then(([echarts, , , , , { CanvasRenderer }]) => {
         echarts.use([CanvasRenderer])
         loadedRuntime = echarts
         return echarts
       })
-
       return runtimePromise
     }
 
     function metricPoints(metric: string): ChartPoint[] {
-      const cached = pointsByMetric.get(metric)
-      if (cached) return cached
       if (!dataset) throw new Error("Numbers dataset has not loaded")
-      if (!dataset.some((row) => Object.hasOwn(row, metric))) {
-        throw new Error(`Numbers dataset has no ${metric} column`)
-      }
-
-      const points: ChartPoint[] = []
-      for (let index = 0; index < dataset.length; index++) {
-        const rawValue = dataset[index][metric]
-        if (rawValue === null || rawValue === undefined) continue
-
-        const value = typeof rawValue === "number" ? rawValue : Number(rawValue)
-        if (!Number.isFinite(value)) {
-          throw new Error(`Numbers dataset column ${metric} has an invalid value at row ${index}`)
-        }
-
-        points.push([dates[index], value])
-      }
-
-      points.sort((left, right) => left[0] - right[0])
-      pointsByMetric.set(metric, points)
+      let points = pointsByMetric.get(metric)
+      if (!points) pointsByMetric.set(metric, points = columnPoints(dataset, dates, metric))
       return points
     }
 
-    function rangeMetricPoints(points: ChartPoint[], range: ChartRange): ChartPoint[] {
-      if (range === "all" || points.length === 0) return points
-
-      const latest = new Date(points[points.length - 1][0])
-      const months = range === "6m" ? 6 : 12
-      const cutoff = Date.UTC(
-        latest.getUTCFullYear(),
-        latest.getUTCMonth() - months,
-        latest.getUTCDate(),
-      )
-
-      return points.filter(([timestamp]) => timestamp >= cutoff)
-    }
-
-    function formatDecimal(value: number, maximumFractionDigits: number): string {
-      return value.toLocaleString("en-US", { maximumFractionDigits })
-    }
-
-    function formatTickNumber(value: number): string {
-      const magnitude = Math.abs(value)
-
-      if ((magnitude > 0 && magnitude < 0.01) || magnitude >= 1_000_000_000_000_000) {
-        return scientificNumberFormatter.format(value)
-      }
-
-      return magnitude >= 1_000 ? compactNumberFormatter.format(value) : formatDecimal(value, 1)
-    }
-
-    function formatMetricValue(
-      value: number,
-      config: ChartConfig,
-      context: "headline" | "tick" | "tooltip",
-    ): string {
-      const scaledValue = value / (config.scale ?? 1)
-      const fractionDigits = context === "tick" ? 1 : 2
-
-      if (config.format === "integer") {
-        const formatted = context === "tick"
-          ? formatTickNumber(Math.round(scaledValue))
-          : Math.round(scaledValue).toLocaleString("en-US")
-        return `${formatted}${config.suffix ?? ""}`
-      }
-
-      if (config.format === "mfil") {
-        const valueInMillions = scaledValue / 1_000_000
-        const formatted = context === "tick"
-          ? formatTickNumber(valueInMillions)
-          : formatDecimal(valueInMillions, fractionDigits)
-        return `${formatted}${context === "tick" ? "M" : " M FIL"}${config.suffix ?? ""}`
-      }
-
-      if (config.format === "usd") {
-        if (context === "tick") {
-          const sign = scaledValue < 0 ? "-" : ""
-          return `${sign}$${formatTickNumber(Math.abs(scaledValue))}${config.suffix ?? ""}`
-        }
-
-        return `${currencyFormatter.format(scaledValue)}${config.suffix ?? ""}`
-      }
-
-      if (config.format === "percent") {
-        const percentage = scaledValue * 100
-        const formatted = context === "tick"
-          ? formatTickNumber(percentage)
-          : formatDecimal(percentage, 2)
-        return `${formatted}%${config.suffix ?? ""}`
-      }
-
-      const unit = { number: "", pib: " PiB", fil: " FIL" }[config.format]
-      const formatted = context === "tick"
-        ? formatTickNumber(scaledValue)
-        : formatDecimal(scaledValue, fractionDigits)
-      return `${formatted}${unit}${config.suffix ?? ""}`
-    }
-
     function escapeHtml(value: string): string {
-      return value.replace(
-        /[&<>"']/g,
-        (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!,
-      )
-    }
-
-    function tooltipValue(value: unknown): number {
-      const rawValue = Array.isArray(value) ? value[1] : value
-      const number = Number(rawValue)
-
-      if (!Number.isFinite(number)) {
-        throw new Error("Chart tooltip received an invalid value")
-      }
-
-      return number
+      return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!)
     }
 
     function formatTooltip(rawParams: unknown, config: ChartConfig, showSeriesNames: boolean): string {
@@ -1044,52 +439,40 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
         (value): value is TooltipParam => value !== null && typeof value === "object",
       )
       if (params.length === 0) return ""
-
-      const firstValue = params[0].value
-      const fallbackTimestamp = Array.isArray(firstValue) ? firstValue[0] : undefined
-      const timestamp = Number(params[0].axisValue ?? fallbackTimestamp)
-      const date = Number.isFinite(timestamp)
-        ? tooltipDateFormatter.format(new Date(timestamp))
-        : String(params[0].axisValue ?? "")
+      const first = params[0].value
+      const timestamp = Number(params[0].axisValue ?? (Array.isArray(first) ? first[0] : undefined))
       const values = params.map((param) => {
-        const value = formatMetricValue(tooltipValue(param.value), config, "tooltip")
+        const raw = Array.isArray(param.value) ? param.value[1] : param.value
+        const value = raw == null ? "No observation" : formatMetricValue(Number(raw), config)
         return showSeriesNames ? `${escapeHtml(param.seriesName ?? "Value")} ${value}` : value
       })
-
-      return [`<strong>${escapeHtml(date)}</strong>`, ...values].join("<br>")
+      return [`<strong>${escapeHtml(formatDate(timestamp))}</strong>`, ...values].join("<br>")
     }
 
     function buildOption(title: string, config: ChartConfig, expanded: boolean) {
-      const seriesConfig = expanded && config.series?.length
-        ? config.series
-        : [{ label: title, y: config.y }]
+      const seriesConfig = expanded && config.series?.length ? config.series : [{ label: title, y: config.y }]
       const directLabels = expanded && seriesConfig.length > 1
-      const series = seriesConfig.map(({ label, y }, index) => ({
-        name: label,
-        type: "line" as const,
-        data: rangeMetricPoints(metricPoints(y), currentRange),
-        showSymbol: false,
-        symbol: "circle",
-        symbolSize: 6,
-        sampling: "lttb" as const,
-        lineStyle: {
-          color: seriesColors[index % seriesColors.length],
-          type: index === 0 ? "solid" as const : "dashed" as const,
-          width: 1.5,
-        },
-        itemStyle: {
-          color: colors.background,
-          borderColor: seriesColors[index % seriesColors.length],
-        },
-        endLabel: {
-          show: directLabels,
-          formatter: "{a}",
-          color: seriesColors[index % seriesColors.length],
-          fontFamily,
-          fontSize: 10,
-          distance: 4,
-        },
-      }))
+      const series = seriesConfig.map(({ label, y }, index) => {
+        const color = seriesColors[index % seriesColors.length]
+        const data = rangePoints(metricPoints(y), currentRange)
+        // Isolated observations need a marker, otherwise gaps hide them.
+        const isolated = data.some(([, value], i) => value != null && data[i - 1]?.[1] == null && data[i + 1]?.[1] == null)
+        return config.kind === "bar"
+          ? { name: label, type: "bar" as const, data, barMaxWidth: 6, itemStyle: { color } }
+          : {
+            name: label,
+            type: "line" as const,
+            data,
+            step: config.kind === "step" ? "end" as const : undefined,
+            connectNulls: false,
+            showSymbol: isolated,
+            symbol: "circle",
+            symbolSize: 6,
+            lineStyle: { color, type: index === 0 ? "solid" as const : "dashed" as const, width: 1.5 },
+            itemStyle: { color: colors.background, borderColor: color },
+            endLabel: { show: directLabels, formatter: "{a}", color, fontFamily, fontSize: 10, distance: 4 },
+          }
+      })
 
       return {
         animation: false,
@@ -1114,7 +497,6 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
         xAxis: {
           type: "time" as const,
           show: expanded,
-          boundaryGap: false,
           axisLine: { show: false },
           axisTick: { show: false },
           axisLabel: {
@@ -1129,46 +511,33 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
         yAxis: {
           type: "value" as const,
           show: expanded,
+          min: config.bounded ? 0 : undefined,
+          max: config.bounded ? 1 : undefined,
           axisLine: { show: false },
           axisTick: { show: false },
-          axisLabel: {
-            color: colors.muted,
-            fontFamily,
-            fontSize: 10,
-            formatter: (value: number) => formatMetricValue(value, config, "tick"),
-          },
+          axisLabel: { color: colors.muted, fontFamily, fontSize: 10, formatter: (value: number) => formatMetricValue(value, config, true) },
           splitLine: { lineStyle: { color: colors.border, type: "dashed" as const, width: 0.5 } },
         },
         series,
       }
     }
 
-    function renderDetail(detail: DetailView, runtime: ChartRuntime): void {
-      const points = rangeMetricPoints(metricPoints(detail.config.y), currentRange)
-      detail.value.textContent = points.length
-        ? formatMetricValue(points[points.length - 1][1], detail.config, "headline")
-        : "—"
-      detail.chart ??= runtime.init(detail.canvas, null, { renderer: "canvas" })
-      detail.chart.setOption(buildOption(detail.title, detail.config, false), { notMerge: true })
-    }
-
     function renderCard(card: CardView, runtime: ChartRuntime): void {
       if (!expandedIds.has(card.id)) return
-
       card.chart ??= runtime.init(card.canvas, null, { renderer: "canvas" })
       card.chart.setOption(buildOption(card.title, card.config, true), { notMerge: true })
-      for (const detail of card.details) renderDetail(detail, runtime)
-    }
 
-    function renderExpandedCards(): void {
-      if (!loadedRuntime || !dataset) return
-      for (const card of cards) renderCard(card, loadedRuntime)
+      for (const detail of card.details) {
+        const latest = rangePoints(metricPoints(detail.config.y), currentRange).findLast(([, value]) => value != null)
+        detail.value.textContent = latest ? `${formatMetricValue(latest[1]!, detail.config)} · ${formatDate(latest[0])}` : "—"
+        detail.chart ??= runtime.init(detail.canvas, null, { renderer: "canvas" })
+        detail.chart.setOption(buildOption(detail.title, detail.config, false), { notMerge: true })
+      }
     }
 
     function disposeCard(card: CardView): void {
       card.chart?.dispose()
       card.chart = undefined
-
       for (const detail of card.details) {
         detail.chart?.dispose()
         detail.chart = undefined
@@ -1191,213 +560,110 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
         card.toggle.setAttribute("aria-label", `${expanded ? "Collapse" : "Expand"} ${card.title}`)
         card.toggle.textContent = expanded ? "−" : "+"
       }
-
       const allExpanded = expandedIds.size === cards.length
       expandAllButton.setAttribute("aria-pressed", String(allExpanded))
       expandAllButton.setAttribute("aria-label", `${allExpanded ? "Collapse" : "Expand"} all charts`)
       expandAllButton.textContent = allExpanded ? "Collapse All" : "Expand All"
     }
 
-    async function setExpanded(
-      cardId: string,
-      expanded: boolean,
-      behavior: ScrollBehavior = reducedMotion ? "auto" : "smooth",
-    ): Promise<void> {
-      const card = cards.find(({ id }) => id === cardId)
-      if (!card || expandedIds.has(cardId) === expanded) return
-
-      if (!expanded) {
-        expandedIds.delete(cardId)
-        syncExpandedState()
-        disposeCard(card)
-        return
-      }
-
-      expandedIds.add(cardId)
+    async function expand(targets: CardView[], scrollTo?: { id: string; behavior: ScrollBehavior }): Promise<void> {
+      for (const card of targets) expandedIds.add(card.id)
       syncExpandedState()
-      card.node.setAttribute("aria-busy", "true")
-      card.toggle.disabled = true
-      card.status.textContent = "Loading historical data…"
-
-      requestAnimationFrame(() => scrollToCard(cardId, behavior))
-
-      try {
-        const [, runtime] = await Promise.all([loadDataset(), loadChartRuntime()])
-        if (!expandedIds.has(cardId)) return
-
-        renderCard(card, runtime)
-        card.status.textContent = ""
-        requestAnimationFrame(resizeCharts)
-      } catch (error) {
-        card.status.textContent = "Historical chart unavailable."
-        throw error
-      } finally {
-        card.node.removeAttribute("aria-busy")
-        card.toggle.disabled = false
-      }
-    }
-
-    function requestExpanded(
-      cardId: string,
-      expanded: boolean,
-      behavior?: ScrollBehavior,
-    ): void {
-      void setExpanded(cardId, expanded, behavior).catch((error: unknown) => {
-        console.error(error)
-      })
-    }
-
-    async function setAllExpanded(expanded: boolean): Promise<void> {
-      if (expanded === (expandedIds.size === cards.length)) return
-
-      if (!expanded) {
-        expandedIds.clear()
-        syncExpandedState()
-        for (const card of cards) disposeCard(card)
-        return
-      }
-
-      const newCards = cards.filter(({ id }) => !expandedIds.has(id))
-      for (const card of newCards) expandedIds.add(card.id)
-      syncExpandedState()
-      expandAllButton.disabled = true
-
-      for (const card of newCards) {
+      for (const card of targets) {
         card.node.setAttribute("aria-busy", "true")
         card.toggle.disabled = true
         card.status.textContent = "Loading historical data…"
       }
+      if (scrollTo) requestAnimationFrame(() => scrollToCard(scrollTo.id, scrollTo.behavior))
 
       try {
         const [, runtime] = await Promise.all([loadDataset(), loadChartRuntime()])
-        for (const card of cards) renderCard(card, runtime)
-        for (const card of newCards) card.status.textContent = ""
+        for (const card of targets) {
+          renderCard(card, runtime)
+          card.status.textContent = ""
+        }
         requestAnimationFrame(resizeCharts)
       } catch (error) {
-        for (const card of newCards) card.status.textContent = "Historical chart unavailable."
+        for (const card of targets) card.status.textContent = "Historical chart unavailable."
         throw error
       } finally {
-        expandAllButton.disabled = false
-        for (const card of newCards) {
+        for (const card of targets) {
           card.node.removeAttribute("aria-busy")
           card.toggle.disabled = false
         }
       }
     }
 
-    function requestAllExpanded(expanded: boolean): void {
-      void setAllExpanded(expanded).catch((error: unknown) => {
-        console.error(error)
-      })
+    function collapse(targets: CardView[]): void {
+      for (const card of targets) {
+        expandedIds.delete(card.id)
+        disposeCard(card)
+      }
+      syncExpandedState()
     }
 
-    function resetCopyFeedback(card: CardView): void {
-      card.linkStatus.textContent = ""
-      card.promptStatus.textContent = ""
-      card.copyLink.classList.remove("is-copied")
-      card.copyLink.setAttribute("aria-label", `Copy link to ${card.title}`)
-      card.copyPrompt.classList.remove("is-copied")
-      card.copyPrompt.setAttribute("aria-label", `Copy agent prompt about ${card.title}`)
+    function setExpanded(cardId: string, expanded: boolean, behavior = scrollBehavior()): void {
+      const card = cards.find(({ id }) => id === cardId)
+      if (!card || expandedIds.has(cardId) === expanded) return
+      if (!expanded) return collapse([card])
+      void expand([card], { id: cardId, behavior }).catch(console.error)
     }
 
-    function showCopyFeedback(
-      card: CardView,
-      button: HTMLButtonElement,
-      status: HTMLElement,
-      message: string,
-      copied: boolean,
-    ): void {
+    function setAllExpanded(expanded: boolean): void {
+      if (!expanded) return collapse(cards)
+      expandAllButton.disabled = true
+      void expand(cards.filter(({ id }) => !expandedIds.has(id)))
+        .catch(console.error)
+        .finally(() => { expandAllButton.disabled = false })
+    }
+
+    function showCopyFeedback(card: CardView, button: HTMLButtonElement, status: HTMLElement, message: string, copied: boolean): void {
       if (card.copyResetTimer) window.clearTimeout(card.copyResetTimer)
-      resetCopyFeedback(card)
-
+      const reset = () => {
+        card.linkStatus.textContent = ""
+        card.promptStatus.textContent = ""
+        card.copyLink.classList.remove("is-copied")
+        card.copyLink.setAttribute("aria-label", `Copy link to ${card.title}`)
+        card.copyPrompt.classList.remove("is-copied")
+        card.copyPrompt.setAttribute("aria-label", `Copy agent prompt about ${card.title}`)
+      }
+      reset()
       status.textContent = message
       button.classList.toggle("is-copied", copied)
       button.setAttribute("aria-label", message)
-      card.copyResetTimer = window.setTimeout(() => {
-        resetCopyFeedback(card)
-        card.copyResetTimer = undefined
-      }, 4_000)
+      card.copyResetTimer = window.setTimeout(reset, 4_000)
     }
 
-    function cardUrl(card: CardView): URL {
+    function cardUrl(card: CardView): string {
       const url = new URL(window.location.href)
       url.hash = card.id
-      return url
+      return url.toString()
     }
 
-    async function copyCardLink(card: CardView): Promise<void> {
-      if (typeof navigator.clipboard?.writeText !== "function") {
-        throw new Error("Clipboard API is unavailable")
-      }
-
-      await navigator.clipboard.writeText(cardUrl(card).toString())
-      showCopyFeedback(
-        card,
-        card.copyLink,
-        card.linkStatus,
-        `Link copied for ${card.title}`,
-        true,
-      )
+    function copy(card: CardView, text: string, button: HTMLButtonElement, status: HTMLElement, success: string, failure: string): void {
+      const write = typeof navigator.clipboard?.writeText === "function"
+        ? navigator.clipboard.writeText(text)
+        : Promise.reject(new Error("Clipboard API is unavailable"))
+      void write
+        .then(() => showCopyFeedback(card, button, status, success, true))
+        .catch((error: unknown) => {
+          showCopyFeedback(card, button, status, failure, false)
+          console.error(error)
+        })
     }
 
-    function requestCopyCardLink(card: CardView): void {
-      void copyCardLink(card).catch((error: unknown) => {
-        showCopyFeedback(
-          card,
-          card.copyLink,
-          card.linkStatus,
-          `Could not copy link to ${card.title}`,
-          false,
-        )
-        console.error(error)
-      })
+    function promptFor(card: CardView): string {
+      const source = card.source
+        ? `Source columns: ${card.columns.map((column) => `${card.source}.${column}`).join(", ")}.`
+        : "Source: curated count, maintained in the dashboard."
+      return `Read https://filecoindataportal.xyz/SKILL.md and get the definition, model and upstream assets, and data sample for the "${card.title}" chart at ${cardUrl(card)}. ${source} Then answer the following question:\n\n`
     }
 
-    async function copyCardPrompt(card: CardView): Promise<void> {
-      if (typeof navigator.clipboard?.writeText !== "function") {
-        throw new Error("Clipboard API is unavailable")
-      }
-
-      const columns = [...new Set([
-        card.config.y,
-        ...(card.config.series?.map(({ y }) => y) ?? []),
-        ...card.details.map(({ config }) => config.y),
-      ])]
-      const source = columns.map((column) => `daily_network_metrics.${column}`).join(", ")
-      const prompt = `Read https://filecoindataportal.xyz/SKILL.md and get the definition, model and upstream assets, and data sample for the "${card.title}" chart at ${cardUrl(card)}. Source columns: ${source}. Then answer the following question:\n\n`
-
-      await navigator.clipboard.writeText(prompt)
-      showCopyFeedback(
-        card,
-        card.copyPrompt,
-        card.promptStatus,
-        "Copied! Paste it into your agent.",
-        true,
-      )
-    }
-
-    function requestCopyCardPrompt(card: CardView): void {
-      void copyCardPrompt(card).catch((error: unknown) => {
-        showCopyFeedback(
-          card,
-          card.copyPrompt,
-          card.promptStatus,
-          `Could not copy prompt for ${card.title}`,
-          false,
-        )
-        console.error(error)
-      })
-    }
-
-    function parseRange(value: string | null): ChartRange | null {
+    function parseRange(value: string | null | undefined): ChartRange | null {
       return value === "6m" || value === "1y" || value === "all" ? value : null
     }
 
-    function getInitialRange(): ChartRange {
-      return parseRange(new URL(window.location.href).searchParams.get("range")) ?? "1y"
-    }
-
-    function getLinkedCardId(): string | null {
+    function linkedCardId(): string | null {
       const id = window.location.hash.slice(1)
       return cardNodes.some((node) => node.id === id) ? id : null
     }
@@ -1406,106 +672,94 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
       for (const button of document.querySelectorAll<HTMLButtonElement>("[data-chart-range]")) {
         button.setAttribute("aria-pressed", String(button.dataset.chartRange === currentRange))
       }
-
       for (const card of cards) {
-        const rangeLabel = card.rangeLabels[currentRange]
         card.sparkline.setAttribute("d", card.rangePaths[currentRange])
-        card.summary.textContent = `${card.summaryBase} Daily trend: ${rangeLabel}.`
+        card.summary.textContent = `${card.summaryBase} Daily trend: ${card.rangeLabels[currentRange]}.`
       }
-
       const url = new URL(window.location.href)
       if (currentRange === "1y") url.searchParams.delete("range")
       else url.searchParams.set("range", currentRange)
       history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`)
     }
 
-    function scrollToCard(cardId: string, behavior: ScrollBehavior = "smooth"): void {
-      const card = cards.find(({ id }) => id === cardId)
+    function scrollToCard(cardId: string, behavior: ScrollBehavior): void {
+      const node = document.getElementById(cardId)
       const toolbar = document.querySelector<HTMLElement>(".numbers-toolbar")
-      if (!card) return
-
-      const offset = (toolbar?.getBoundingClientRect().height ?? 0) + 16
-      const top = window.scrollY + card.node.getBoundingClientRect().top - offset
+      if (!node) return
+      const top = window.scrollY + node.getBoundingClientRect().top - (toolbar?.getBoundingClientRect().height ?? 0) - 16
       window.scrollTo({ top: Math.max(0, top), behavior })
     }
+
+    for (const button of document.querySelectorAll<HTMLButtonElement>("[data-chart-range]")) {
+      button.addEventListener("click", () => {
+        const range = parseRange(button.dataset.chartRange)
+        if (!range || range === currentRange) return
+        currentRange = range
+        updateRangeState()
+        if (loadedRuntime && dataset) for (const card of cards) renderCard(card, loadedRuntime)
+      })
+    }
+
+    expandAllButton.addEventListener("click", () => setAllExpanded(expandedIds.size !== cards.length))
+
+    for (const card of cards) {
+      card.toggle.addEventListener("click", () => setExpanded(card.id, !expandedIds.has(card.id)))
+      card.copyLink.addEventListener("click", () => {
+        copy(card, cardUrl(card), card.copyLink, card.linkStatus, `Link copied for ${card.title}`, `Could not copy link to ${card.title}`)
+      })
+      card.copyPrompt.addEventListener("click", () => {
+        copy(card, promptFor(card), card.copyPrompt, card.promptStatus, "Copied! Paste it into your agent.", `Could not copy prompt for ${card.title}`)
+      })
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || expandedIds.size === 0) return
+      const focused = document.activeElement?.closest<HTMLElement>("[data-stat-card]")
+      const cardId = focused && expandedIds.has(focused.id) ? focused.id : [...expandedIds].at(-1)
+      if (cardId) setExpanded(cardId, false)
+    })
+
+    window.addEventListener("hashchange", () => {
+      const cardId = linkedCardId()
+      if (!cardId) return
+      setExpanded(cardId, true)
+      requestAnimationFrame(() => scrollToCard(cardId, scrollBehavior()))
+    })
+
+    // Anchor offsets follow the wrapping sticky toolbar.
+    const toolbar = required<HTMLElement>(document, ".numbers-toolbar")
+    new ResizeObserver(() => {
+      document.documentElement.style.setProperty("--numbers-toolbar-height", `${toolbar.offsetHeight + 16}px`)
+    }).observe(toolbar)
+
+    window.addEventListener("resize", resizeCharts)
+
+    const quarterSelect = document.querySelector<HTMLSelectElement>("[data-quarter-select]")
+    quarterSelect?.addEventListener("change", () => {
+      for (const node of document.querySelectorAll<HTMLElement>("[data-quarter]")) {
+        node.hidden = node.dataset.quarter !== quarterSelect.value
+      }
+    })
+
+    const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-numbers-section]")).map((node): SectionView => {
+      const id = node.dataset.numbersSection
+      const link = id ? document.querySelector<HTMLAnchorElement>(`[data-section-link="${CSS.escape(id)}"]`) : null
+      if (!id || !link) throw new Error("Numbers section is missing its navigation link")
+      return { id, node, link }
+    })
 
     function setActiveSection(section: SectionView): void {
       for (const candidate of sections) {
         if (candidate === section) candidate.link.setAttribute("aria-current", "location")
         else candidate.link.removeAttribute("aria-current")
       }
-
       const nav = section.link.parentElement
       if (!nav) return
-
       const left = section.link.offsetLeft
       const right = left + section.link.offsetWidth
-      if (left < nav.scrollLeft) nav.scrollTo({ left, behavior: reducedMotion ? "auto" : "smooth" })
-      else if (right > nav.scrollLeft + nav.clientWidth) {
-        nav.scrollTo({ left: right - nav.clientWidth, behavior: reducedMotion ? "auto" : "smooth" })
-      }
+      if (left < nav.scrollLeft) nav.scrollTo({ left, behavior: scrollBehavior() })
+      else if (right > nav.scrollLeft + nav.clientWidth) nav.scrollTo({ left: right - nav.clientWidth, behavior: scrollBehavior() })
     }
-
-    for (const button of document.querySelectorAll<HTMLButtonElement>("[data-chart-range]")) {
-      button.addEventListener("click", () => {
-        const range = parseRange(button.dataset.chartRange ?? null)
-        if (!range || range === currentRange) return
-
-        currentRange = range
-        updateRangeState()
-        renderExpandedCards()
-      })
-    }
-
-    expandAllButton.addEventListener("click", () => {
-      requestAllExpanded(expandedIds.size !== cards.length)
-    })
-
-    for (const card of cards) {
-      card.toggle.addEventListener("click", () => {
-        requestExpanded(card.id, !expandedIds.has(card.id))
-      })
-
-      card.copyLink.addEventListener("click", () => {
-        requestCopyCardLink(card)
-      })
-
-      card.copyPrompt.addEventListener("click", () => {
-        requestCopyCardPrompt(card)
-      })
-    }
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape" || expandedIds.size === 0) return
-
-      const focusedNode = document.activeElement?.closest<HTMLElement>("[data-stat-card]")
-      const focusedCard = cards.find(({ node }) => node === focusedNode)
-      const cardId = focusedCard && expandedIds.has(focusedCard.id)
-        ? focusedCard.id
-        : [...expandedIds].at(-1)
-      if (cardId) requestExpanded(cardId, false)
-    })
-
-    window.addEventListener("hashchange", () => {
-      const cardId = getLinkedCardId()
-      if (!cardId) return
-
-      requestExpanded(cardId, true)
-      requestAnimationFrame(() => scrollToCard(cardId, reducedMotion ? "auto" : "smooth"))
-    })
-
-    window.addEventListener("resize", resizeCharts)
-
-    const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-numbers-section]"))
-      .map((node): SectionView => {
-        const id = node.dataset.numbersSection
-        const link = id
-          ? document.querySelector<HTMLAnchorElement>(`[data-section-link="${CSS.escape(id)}"]`)
-          : null
-
-        if (!id || !link) throw new Error("Numbers section is missing its navigation link")
-        return { id, node, link }
-      })
 
     const visibleSections = new Set<string>()
     const sectionObserver = new IntersectionObserver((entries) => {
@@ -1515,28 +769,21 @@ function metricSummary(metric: NumbersMetric): MetricSummary {
         if (entry.isIntersecting) visibleSections.add(id)
         else visibleSections.delete(id)
       }
-
-      const atPageEnd = Math.ceil(window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight - 2
-      if (atPageEnd) {
-        const lastSection = sections.at(-1)
-        if (lastSection) setActiveSection(lastSection)
+      if (Math.ceil(window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight - 2) {
+        const last = sections.at(-1)
+        if (last) setActiveSection(last)
         return
       }
-
       const active = sections
         .filter(({ id }) => visibleSections.has(id))
         .sort((left, right) => Math.abs(left.node.getBoundingClientRect().top) - Math.abs(right.node.getBoundingClientRect().top))[0]
       if (active) setActiveSection(active)
     }, { rootMargin: "-20% 0px -70% 0px" })
-
     for (const section of sections) sectionObserver.observe(section.node)
 
     updateRangeState()
     syncExpandedState()
-
-    const linkedCardId = getLinkedCardId()
-    if (linkedCardId) {
-      requestExpanded(linkedCardId, true, "auto")
-    }
+    const initialCardId = linkedCardId()
+    if (initialCardId) setExpanded(initialCardId, true, "auto")
   </script>
 </Layout>
