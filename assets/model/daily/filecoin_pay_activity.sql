@@ -7,11 +7,13 @@
 -- asset.column = date | UTC date.
 -- asset.column = active_payers | Payers with at least one active rail at end of day.
 -- asset.column = active_rails | Active rails at end of day.
+-- asset.column = active_operators | Operators with at least one unterminated rail at end of day.
 -- asset.column = filecoin_pay_paid_usd | Gross stablecoin paid through Filecoin Pay rails on the date, assuming tagged stablecoins at $1.
 
 -- asset.not_null = date
 -- asset.not_null = active_payers
 -- asset.not_null = active_rails
+-- asset.not_null = active_operators
 -- asset.not_null = filecoin_pay_paid_usd
 -- asset.unique = date
 
@@ -26,6 +28,7 @@ with days as (
     select
         rail_id,
         payer,
+        operator,
         created_block * 1000000 + created_log_index as created_ordinal,
         case
             when terminated_block is null then null
@@ -61,7 +64,8 @@ with days as (
     select
         days.date,
         count(distinct rails.payer) as active_payers,
-        count(distinct rails.rail_id) as active_rails
+        count(distinct rails.rail_id) as active_rails,
+        count(distinct rails.operator) as active_operators
     from days
     left join rails
         on rails.created_ordinal <= days.checkpoint_ordinal
@@ -72,6 +76,7 @@ select
     active_counts.date,
     active_counts.active_payers,
     active_counts.active_rails,
+    active_counts.active_operators,
     coalesce(daily_payments.filecoin_pay_paid_usd, 0) as filecoin_pay_paid_usd
 from active_counts
 left join daily_payments using (date)

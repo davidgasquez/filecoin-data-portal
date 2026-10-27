@@ -5,6 +5,7 @@
 -- asset.depends = model.daily_filecoin_pay_activity
 -- asset.depends = model.daily_filecoin_pay_payment_run_rate
 -- asset.depends = model.warm_storage_daily_activity
+-- asset.depends = model.warm_storage_daily_data
 -- asset.depends = model.storage_provider_power_daily
 -- asset.depends = model.network_block_rewards_by_height
 -- asset.depends = raw.coincodex_filecoin_market_data
@@ -46,11 +47,13 @@
 -- asset.column = pledge_collateral_fil | End-of-day total pledge collateral locked by storage providers, in FIL.
 -- asset.column = filecoin_pay_active_payers | Payers with at least one active Filecoin Pay rail at end of day.
 -- asset.column = filecoin_pay_active_rails | Active Filecoin Pay rails at end of day.
+-- asset.column = filecoin_pay_active_operators | Operators with at least one unterminated Filecoin Pay rail at end of day.
 -- asset.column = filecoin_pay_paid_usd | Gross stablecoin paid through Filecoin Pay rails on the date, assuming tagged stablecoins at $1.
 -- asset.column = active_payers | Payers with at least one active chargeable warm storage dataset.
 -- asset.column = active_datasets | Active chargeable warm storage datasets.
 -- asset.column = new_payers | Payers whose first chargeable warm storage dataset started billing on the date.
 -- asset.column = new_datasets | Warm storage datasets whose billing started on the date.
+-- asset.column = warm_storage_stored_bytes | End-of-day raw payload bytes of pieces stored in warm storage datasets, counting every stored copy.
 -- asset.column = filecoin_pay_gross_payment_volume_run_rate_usd | End-of-day annualized gross stablecoin payment volume run-rate from active eligible recurring Filecoin Pay rails.
 -- asset.column = filecoin_pay_gross_payment_volume_run_rate_usdfc_usd | End-of-day annualized gross USDFC payment volume run-rate from active eligible recurring Filecoin Pay rails.
 -- asset.column = filecoin_pay_gross_payment_volume_run_rate_usdc_axl_usd | End-of-day annualized gross USDC.axl payment volume run-rate from active eligible recurring Filecoin Pay rails.
@@ -103,6 +106,8 @@ with block_rewards as (
     group by 1
 ), source_dates as (
     select date from model.warm_storage_daily_activity
+    union
+    select date from model.warm_storage_daily_data
     union
     select date from model.daily_filecoin_pay_activity
     union
@@ -189,11 +194,13 @@ select
         as pledge_collateral_fil,
     coalesce(pay_activity.active_payers, 0) as filecoin_pay_active_payers,
     coalesce(pay_activity.active_rails, 0) as filecoin_pay_active_rails,
+    coalesce(pay_activity.active_operators, 0) as filecoin_pay_active_operators,
     coalesce(pay_activity.filecoin_pay_paid_usd, 0) as filecoin_pay_paid_usd,
     coalesce(warm_storage.active_payers, 0) as active_payers,
     coalesce(warm_storage.active_datasets, 0) as active_datasets,
     coalesce(warm_storage.new_payers, 0) as new_payers,
     coalesce(warm_storage.new_datasets, 0) as new_datasets,
+    coalesce(warm_storage_data.stored_bytes, 0) as warm_storage_stored_bytes,
     coalesce(pay_run_rate.filecoin_pay_gross_payment_volume_run_rate_usd, 0)
         as filecoin_pay_gross_payment_volume_run_rate_usd,
     coalesce(pay_run_rate.filecoin_pay_gross_payment_volume_run_rate_usdfc_usd, 0)
@@ -222,6 +229,8 @@ select
     pgf_deployments.annual_pgf_deployments_usd
 from dates
 left join model.warm_storage_daily_activity as warm_storage
+    using (date)
+left join model.warm_storage_daily_data as warm_storage_data
     using (date)
 left join model.daily_filecoin_pay_activity as pay_activity
     using (date)
