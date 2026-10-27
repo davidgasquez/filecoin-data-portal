@@ -15,6 +15,7 @@
 # asset.column = source_etag | Source partition ETag; a changed ETag reloads it.
 
 import datetime as dt
+import time
 
 import httpx
 
@@ -53,6 +54,15 @@ def daily_logs_select(url: str, day: dt.date) -> str:
             date '{day}' as file_date
         from logs
     """
+
+
+def head(client: httpx.Client, url: str) -> httpx.Response:
+    for attempt in range(4):
+        try:
+            return client.head(url)
+        except httpx.TransportError:
+            time.sleep(2**attempt)
+    return client.head(url)
 
 
 def loaded_etags() -> dict[dt.date, str]:
@@ -99,7 +109,7 @@ def eth_logs() -> None:
             day = START_DATE
             while day <= latest_day:
                 url = build_url(day)
-                resp = client.head(url)
+                resp = head(client, url)
                 if resp.status_code != 404:
                     resp.raise_for_status()
                     # Weak and strong forms differ only by encoding negotiation.
