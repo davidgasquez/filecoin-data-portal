@@ -236,8 +236,6 @@ def custom_sql_test_identity(path: Path, assets_root: Path) -> tuple[str, str]:
             f"Data test path must include a schema folder under assets: {path}"
         )
 
-    schema = relative_path.parts[0]
-    validate_identifier(schema, "schema", path)
     asset_name, separator, test_name = path.name.removesuffix(".test.sql").partition(
         "__"
     )
@@ -246,11 +244,11 @@ def custom_sql_test_identity(path: Path, assets_root: Path) -> tuple[str, str]:
             f"Invalid data test file name '{path}'. Expected asset__name.test.sql"
         )
 
-    validate_identifier(asset_name, "table", path)
     validate_identifier(test_name, "test", path)
-    asset_key = f"{schema}.{asset_name}"
-    validate_asset_reference(asset_key, path)
-    return asset_key, test_name
+    schema, name = asset_identity_from_path(
+        path.with_name(f"{asset_name}.sql"), assets_root
+    )
+    return f"{schema}.{name}", test_name
 
 
 def read_custom_sql_test_query(path: Path) -> str:
@@ -595,7 +593,10 @@ def index_assets(assets: Iterable[Asset]) -> dict[str, Asset]:
     indexed: dict[str, Asset] = {}
     for asset in assets:
         if asset.key in indexed:
-            raise ValueError(f"Duplicate asset key: {asset.key}")
+            raise ValueError(
+                f"Duplicate asset key {asset.key}: "
+                f"{indexed[asset.key].path} and {asset.path}"
+            )
         indexed[asset.key] = asset
     return indexed
 

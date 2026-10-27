@@ -119,7 +119,7 @@ limit 7;`}</code></pre>
             <pre><code>{`import polars as pl
 
 df = pl.read_parquet(
-    "${baseUrl}/storage_providers.parquet"
+    "${baseUrl}/miners.parquet"
 )`}</code></pre>
 
             <h3>JavaScript</h3>
@@ -139,9 +139,7 @@ const rows = await (await fetch(url)).json()`}</code></pre>
 
             <h3>Dashboards</h3>
             <p>
-                <a href="/numbers">Filecoin In Numbers</a> and <a href="/revenue"
-                    >Revenue</a
-                > are built on the same datasets. See the <a
+                <a href="/numbers">Filecoin In Numbers</a> is built on the same datasets. See the <a
                     href="https://github.com/davidgasquez/filecoin-data-portal"
                     >source code</a
                 >.

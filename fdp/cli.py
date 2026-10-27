@@ -3,6 +3,7 @@ import argparse
 from fdp.api import db_connection, find_project_root
 from fdp.assets import check_assets, discover_assets
 from fdp.docs import generate_docs
+from fdp.export import export
 from fdp.materialize import materialize
 from fdp.publish import available_targets, publish
 from fdp.show import show_asset
@@ -37,6 +38,10 @@ def _list_assets(_: argparse.Namespace) -> None:
 
 def _docs(args: argparse.Namespace) -> None:
     generate_docs(args.out, sample_rows=args.sample_rows)
+
+
+def _export(args: argparse.Namespace) -> None:
+    print(export(args.out))
 
 
 def _status(_: argparse.Namespace) -> None:
@@ -82,9 +87,9 @@ def main() -> None:
         help="Refresh assets in DuckDB.",
         description=(
             "Refresh assets in DuckDB. Selectors can be exact asset keys like "
-            "'raw.some_asset', asset folders like 'main' and 'main.daily', "
+            "'raw.riba_eth_logs', asset folders like 'main' and 'model.foc', "
             "or asset file/folder paths like "
-            "'assets/main/daily/storage_providers_metrics.sql'. With explicit "
+            "'assets/main/daily_miner_metrics.sql'. With explicit "
             "selectors, refreshes only those assets by default. Use "
             "--with-deps to refresh transitive dependencies too. With no "
             "selectors, refreshes everything."
@@ -96,8 +101,8 @@ def main() -> None:
         metavar="SELECTOR",
         help=(
             "Asset keys, asset folders, or asset file/folder paths to "
-            "refresh. Examples: 'main', 'main.daily', 'raw.some_asset', "
-            "'assets/main/daily/storage_providers_metrics.sql'. Defaults to "
+            "refresh. Examples: 'main', 'model.foc', 'raw.riba_eth_logs', "
+            "'assets/main/daily_miner_metrics.sql'. Defaults to "
             "all assets."
         ),
     )
@@ -151,6 +156,16 @@ def main() -> None:
     )
     docs_parser.set_defaults(func=_docs)
 
+    export_parser = subparsers.add_parser(
+        "export",
+        help="Export main tables to a standalone DuckDB file.",
+    )
+    export_parser.add_argument(
+        "--out",
+        help="Output DuckDB path. Defaults to <project>/build/fdp.duckdb.",
+    )
+    export_parser.set_defaults(func=_export)
+
     test_parser = subparsers.add_parser(
         "test",
         help="Run data tests against already materialized assets.",
@@ -171,9 +186,9 @@ def main() -> None:
         help="Publish materialized main tables to a target.",
         description=(
             "Publish materialized main tables to a target. Selectors can be "
-            "exact asset keys like 'main.some_asset', asset folders like "
-            "'main' and 'main.daily', or asset file/folder paths like "
-            "'assets/main/daily/storage_providers_metrics.sql'. With no "
+            "exact asset keys like 'main.providers', the 'main' folder, "
+            "or asset file paths like "
+            "'assets/main/daily_miner_metrics.sql'. With no "
             "selectors, publishes all main assets."
         ),
     )
@@ -188,9 +203,9 @@ def main() -> None:
         metavar="SELECTOR",
         help=(
             "Main asset keys, asset folders, or asset file/folder paths to "
-            "publish. Examples: 'main', 'main.daily', "
-            "'main.daily_storage_providers_metrics', "
-            "'assets/main/daily/storage_providers_metrics.sql'. Defaults to "
+            "publish. Examples: 'main', "
+            "'main.daily_miner_metrics', "
+            "'assets/main/daily_miner_metrics.sql'. Defaults to "
             "all main assets."
         ),
     )

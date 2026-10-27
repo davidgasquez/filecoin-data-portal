@@ -23,11 +23,12 @@ run:
 
 restore:
 	@set -eu; \
+	test -n "$${SNAPSHOT_URL:-}" || { echo "Set SNAPSHOT_URL to a full-state fdp.duckdb (raw/model/main)." >&2; exit 1; }; \
 	test ! -e fdp.duckdb.wal || { echo "Stop FDP and checkpoint fdp.duckdb before restoring." >&2; exit 1; }; \
 	tmp=$$(mktemp ./fdp.duckdb.XXXXXX); \
 	trap 'rm -f "$$tmp"' EXIT; \
-	curl --fail --location "$${SNAPSHOT_URL:-https://data.filecoindataportal.xyz/fdp.duckdb}" --output "$$tmp"; \
-	uv run python -c 'import duckdb, sys; duckdb.connect(sys.argv[1], read_only=True).close()' "$$tmp"; \
+	curl --fail --location "$$SNAPSHOT_URL" --output "$$tmp"; \
+	uv run python -c 'import duckdb, sys; c = duckdb.connect(sys.argv[1], read_only=True); s = {r[0] for r in c.sql("select distinct schema_name from duckdb_tables()").fetchall()}; sys.exit(None if {"raw", "model"} <= s else "Snapshot lacks raw/model tables; not a full-state DuckDB.")' "$$tmp"; \
 	test ! -e fdp.duckdb.wal || { echo "Stop FDP and checkpoint fdp.duckdb before restoring." >&2; exit 1; }; \
 	mv "$$tmp" fdp.duckdb
 

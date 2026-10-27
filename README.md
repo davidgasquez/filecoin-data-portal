@@ -27,20 +27,21 @@ The `fdp/` folder contains the CLI and lightweight orchestrator while the `asset
 - `uv run fdp check`
 - `uv run fdp materialize`
 - `uv run fdp materialize main`
-- `uv run fdp materialize main.daily`
-- `uv run fdp materialize raw.some_asset`
-- `uv run fdp materialize assets/main/daily/filecoin_pay_operators_metrics.sql`
-- `uv run fdp materialize --with-deps main.daily`
-- `uv run fdp materialize --with-deps raw.some_asset`
+- `uv run fdp materialize model.foc`
+- `uv run fdp materialize raw.riba_eth_logs`
+- `uv run fdp materialize assets/main/daily_operator_metrics.sql`
+- `uv run fdp materialize --with-deps model.foc`
+- `uv run fdp materialize --with-deps main.daily_miner_metrics`
 - `uv run fdp status`
 - `uv run fdp prune`
 - `uv run fdp docs`
 - `uv run fdp test`
+- `uv run fdp export`
 - `uv run fdp publish r2`
-- `uv run fdp publish r2 assets/main/daily/filecoin_pay_operators_metrics.sql`
+- `uv run fdp publish r2 assets/main/daily_operator_metrics.sql`
 - `uv run fdp publish gsheet`
-- `uv run fdp show raw.daily_network_activity_by_method`
-- `uv run fdp query "select * from raw.daily_network_activity_by_method limit 10"`
+- `uv run fdp show main.providers`
+- `uv run fdp query "select * from main.daily_network_metrics limit 10"`
 
 FDP detects the project root from the nearest parent containing `assets/`. By default, DuckDB lives at `<project>/fdp.duckdb` and `fdp docs` writes to `<project>/build/docs`.
 
@@ -49,7 +50,7 @@ Selectors can be asset keys, folder selectors, or asset file/folder paths under 
 
 ## ⚙️ Development
 
-You can run the Filecoin Data Portal anywhere using `uv`. On Nix, `nix develop` (or `direnv allow` with [nix-direnv](https://github.com/nix-community/nix-direnv)) loads a pinned shell with `uv`, Python, DuckDB, Node, and `qmd`. Run `nix flake update` to refresh it.
+You can run the Filecoin Data Portal anywhere using `uv`. On Nix, `nix develop` (or `direnv allow` with [nix-direnv](https://github.com/nix-community/nix-direnv)) loads a pinned shell with `uv`, Python, DuckDB, Node, the AWS CLI, and `qmd`. Run `nix flake update` to refresh it.
 
 You'll need the following secrets in your environment:
 
@@ -62,8 +63,10 @@ You'll need the following secrets in your environment:
 - `CLOUDFLARE_ZONE_ID` (`d301192e601454a9cf7a87b4cd6ee243`)
 - `FDP_GSHEET_SPREADSHEET_ID`
 
-`uv run fdp publish r2` writes one Parquet file per `main.*` table to R2 and serves JSON for browser use at `https://data.filecoindataportal.xyz/daily_network_metrics.json`.
-After uploading, it purges the dataset host's edge cache before the website rebuilds.
+`uv run fdp publish r2` writes one Parquet file per `main.*` table to R2, deletes stale root Parquet files after a full publish (needs `aws` CLI), and serves JSON for browser use at `https://data.filecoindataportal.xyz/daily_network_metrics.json`.
+`uv run fdp export` copies only `main.*` tables (with comments) into a fresh standalone DuckDB file at `build/fdp.duckdb` (or `--out`), replacing it atomically on success; the pipeline uploads that file to `https://data.filecoindataportal.xyz/fdp.duckdb`. Use DuckDB 1.5.5 or newer; older readers are not validated.
+CI caches the full working state (`raw`/`model`/`main`) separately. `make restore SNAPSHOT_URL=...` replaces the local `fdp.duckdb` with a full-state file and rejects main-only downloads like the public one.
+After uploading, `fdp publish r2` purges the dataset host's edge cache before the website rebuilds.
 `uv run fdp publish gsheet` syncs one worksheet per `main.*` table to a Google spreadsheet and removes stale worksheets.
 Share the target spreadsheet with the Google service account from `ENCODED_GOOGLE_APPLICATION_CREDENTIALS`.
 
