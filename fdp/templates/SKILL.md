@@ -13,6 +13,8 @@ The Filecoin Data Portal publishes:
 
 For metric definitions or derivation questions, read the docs and also the relevant models code on GitHub and follow links as upstream as reasonable.
 
+For upstream APIs, indexers, RPC endpoints, and measurement tools, read [Filecoin data sources](https://raw.githubusercontent.com/davidgasquez/filecoin-data-portal/refs/heads/main/docs/data-sources.md).
+
 ## Dataset Catalog
 
 {{ dataset_catalog }}
