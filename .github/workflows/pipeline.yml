@@ -26,10 +26,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.3.2
         with:
           enable-cache: false
 
@@ -44,16 +44,6 @@ jobs:
 
       - name: Run data tests
         run: uv run fdp test
-
-      - name: Generate FDP docs
-        run: uv run fdp docs --out build/fdp-docs
-
-      - name: Upload FDP docs
-        uses: actions/upload-artifact@v4
-        with:
-          name: fdp-docs
-          path: build/fdp-docs
-          retention-days: 30
 
       - name: Export public DuckDB
         run: uv run fdp export --out build/fdp.duckdb

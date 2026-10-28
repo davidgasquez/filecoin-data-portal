@@ -6,18 +6,14 @@ collections:
     path: .
     pattern: "{**/*.{md,mdx,py,sql,ts,tsx,js,mjs,astro,css,json,jsonc,toml,yml,yaml,nix,sh},**/Makefile,web/public/_headers}"
     ignore:
-      - "web/src/data/generated/**"
-      - "web/public/assets/**"
       - "**/{package-lock.json,npm-shrinkwrap.json,pnpm-lock.yaml,bun.lock}"
-      - "web/src/content/dataset-docs/**"
-      - "web/public/SKILL.md"
     context:
       "": FDP authored code and documentation for a minimal Filecoin open data platform.
       "assets/raw/": FDP source-shaped extracts and source-level aggregations; check upstream schemas and extraction semantics.
       "assets/model/": FDP reusable entities and derived facts; primary business-logic layer for downstream datasets.
       "assets/main/": FDP public dataset contracts; follow model dependencies for business logic and derivations.
       "fdp/": FDP orchestration, resources, materialization, publishing, and asset tooling; not Filecoin protocol rules.
-      "web/": FDP website and build tooling; dataset pages are generated from asset documentation.
+      "web/": FDP website; pages query the published DuckDB snapshot at build time.
   builtin-actors:
     path: .qmd/external
     pattern: "{builtin-actors/**/*.{md,rs,sol,fe,eas,sh,toml,yml,yaml,json},builtin-actors/**/Makefile,builtin-actors/**/Dockerfile}"

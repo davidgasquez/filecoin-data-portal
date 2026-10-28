@@ -1,30 +1,67 @@
 ---
-import type { ChartConfig, DetailConfig, RangeValues } from "../numbers"
+import { daily, dates } from "../numbers-data"
+import { DAY, columnPoints, formatDate, formatDecimal, formatMetricValue, periodLabels, rangePoints, ranges, sparklinePath, type RangeValues } from "../numbers"
+import type { NumbersMetric } from "../numbers-sections"
 
-type Props = {
-  id: string
-  title: string
-  description: string
-  source: string | null
-  columns: string[]
-  config: ChartConfig
-  details?: DetailConfig[]
-  summary: {
-    value: string
-    trend: string
-    meta: string
-    stale: boolean
-    rangeLabels: RangeValues<string>
-    sparklinePaths: RangeValues<string>
-    accessibleSummary: string
+type Props = { chart: NumbersMetric }
+
+const { chart } = Astro.props
+const { id, title, description, period: _, source = "daily_network_metrics", columns: sourceColumns, details, ...config } = chart
+const columns = sourceColumns ?? [config.y, ...(config.series?.map(({ y }) => y) ?? []), ...(details?.map(({ y }) => y) ?? [])]
+const today = new Date()
+const cutoff = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()) - DAY
+
+function metricSummary(metric: NumbersMetric) {
+  const points = columnPoints(daily, dates, metric.y)
+  const ranged = Object.fromEntries(ranges.map((range) => [range, rangePoints(points, range)]))
+  const rangeLabels = Object.fromEntries(ranges.map((range) => {
+    const rangePoints = ranged[range]
+    return [range, rangePoints.length ? `${formatDate(rangePoints[0][0])}–${formatDate(rangePoints.at(-1)![0])}` : "No observations"]
+  })) as RangeValues<string>
+  const sparklinePaths = Object.fromEntries(ranges.map((range) => [range, sparklinePath(ranged[range])])) as RangeValues<string>
+  const period = periodLabels[metric.period]
+
+  const observed = points.filter((point): point is [number, number] => point[1] != null)
+  if (observed.length === 0) {
+    return { value: "—", trend: "No observations", meta: period, stale: true, rangeLabels, sparklinePaths, accessibleSummary: "No observations are available." }
+  }
+
+  const [latestAt, latest] = observed.at(-1)!
+  const lagDays = Math.round((cutoff - latestAt) / DAY)
+  const meta = `${period} · ${formatDate(latestAt)}${lagDays > 0 ? ` · ${lagDays}d behind` : ""}`
+  // Baseline is the observation exactly 30 UTC days earlier; missing or zero baselines show no change.
+  const previous = observed.find(([timestamp]) => timestamp === latestAt - 30 * DAY)
+  let trend = observed.length === 1 ? "Single observation" : "No 30d comparison"
+  if (previous && metric.format === "percent") {
+    const change = (latest - previous[1]) * 100
+    trend = `${change > 0 ? "▲ +" : change < 0 ? "▼ " : "■ "}${formatDecimal(change, 2)} pp 30d`
+  } else if (previous && previous[1] !== 0) {
+    const change = ((latest - previous[1]) / Math.abs(previous[1])) * 100
+    trend = `${change > 0 ? "▲ +" : change < 0 ? "▼ " : "■ "}${formatDecimal(change, 2)}% 30d`
+  }
+  const value = formatMetricValue(latest, metric)
+
+  return {
+    value,
+    trend,
+    meta,
+    stale: lagDays > 0,
+    rangeLabels,
+    sparklinePaths,
+    accessibleSummary: `Latest value ${value} (${period}) on ${formatDate(latestAt)}; ${trend}.`,
   }
 }
 
-const { id, title, description, source, columns, config, details, summary } = Astro.props
+const summary = metricSummary(chart)
 const tooltipId = `${id}-description`
 const panelId = `${id}-panel`
 const titleId = `${id}-title`
 const chartSummaryId = `${id}-chart-summary`
+const chartUrl = new URL(`/numbers#${id}`, Astro.site).href
+const sourceText = source
+  ? `Source columns: ${columns.map((column) => `${source}.${column}`).join(", ")}.`
+  : "Source: curated count, maintained in the dashboard."
+const prompt = `Read https://filecoindataportal.xyz/SKILL.md and get the definition, model and upstream assets, and data sample for the "${title}" chart at ${chartUrl}. ${sourceText} Then answer the following question:\n\n`
 ---
 
 <figure
@@ -32,8 +69,6 @@ const chartSummaryId = `${id}-chart-summary`
   class:list={["stat-card", { "is-stale": summary.stale }]}
   data-stat-card
   data-chart={JSON.stringify(config)}
-  data-source={source}
-  data-columns={JSON.stringify(columns)}
 >
   <figcaption class="stat-card__header">
     <span id={titleId} class="stat-card__title" data-chart-title>{title}</span>
@@ -46,19 +81,17 @@ const chartSummaryId = `${id}-chart-summary`
           <span class="stat-card__source">
             Source: {source ? <Fragment><a href={`/datasets#${source}`}>{source}</a>.{columns.join(", ")}</Fragment> : "Curated count."}
           </span>
-          <button type="button" class="stat-card__copy-prompt" data-chart-copy-prompt aria-label={`Copy agent prompt about ${title}`}>
+          <button type="button" class="stat-card__copy-prompt" data-copy={prompt} aria-label={`Copy agent prompt about ${title}`}>
             Ask your agent
           </button>
-          <span class="stat-card__prompt-status" data-chart-prompt-status role="status"></span>
         </span>
       </span>
-      <button type="button" class="stat-card__copy-link" data-chart-copy-link aria-label={`Copy link to ${title}`}>
+      <button type="button" class="stat-card__copy-link" data-chart-copy-link data-copy={chartUrl} data-copy-icon aria-label={`Copy link to ${title}`}>
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
           <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
         </svg>
       </button>
-      <span class="visually-hidden" data-chart-link-status role="status"></span>
     </span>
     <button
       type="button"

@@ -21,10 +21,6 @@ def default_db_path() -> Path:
     return find_project_root() / "fdp.duckdb"
 
 
-def default_docs_path() -> Path:
-    return find_project_root() / "build" / "docs"
-
-
 @contextmanager
 def db_connection(
     db_path: Path | str | None = None,

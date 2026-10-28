@@ -21,16 +21,18 @@ For upstream APIs, indexers, RPC endpoints, and measurement tools, read [Filecoi
 
 ## Answering Questions with Data
 
-1. Read the relevant dataset docs and columns.
-2. Inspect asset code when definitions or derivations are unclear. Clone `https://github.com/davidgasquez/filecoin-data-portal` into a temporary directory if useful.
+1. Read the relevant dataset docs.
+2. Inspect asset code when definitions or assumptions are unclear. Clone `https://github.com/davidgasquez/filecoin-data-portal` into a temporary directory if useful.
 3. Choose the smallest dataset set that can answer the question.
-4. Query canonical parquet URLs directly: `{{ public_datasets_base_url }}/<dataset>.parquet`
+4. Query canonical parquet URLs directly: `https://data.filecoindataportal.xyz/<dataset>.parquet`.
 5. Inspect schema, types, and sample rows before final SQL.
 6. Answer concisely with datasets used, assumptions, caveats, and source links.
 
 ## Querying Datasets
 
 Use the simplest available local tool. Prefer `duckdb`, but do not assume it exists or is installed. Check the environment first, then use DuckDB, Python, Node.js, or another installed parquet-capable tool. You might need to use inline node or Python scripts or even download a temporary DuckDB binary and run from that.
+
+You attach the whole database with  `attach 'https://data.filecoindataportal.xyz/fdp.duckdb' as fdp (read_only); use fdp; show tables;` to speed things up!
 
 Ask a clarification question only if the relevant dataset or metric remains ambiguous.
 
@@ -40,7 +42,7 @@ Ask a clarification question only if the relevant dataset or metric remains ambi
 2. Mention and link the relevant datasets used and display `filecoindataportal.xyz` as the source.
 3. Serve it locally and share the URL.
 
-For live dashboards, load `{{ public_datasets_base_url }}/daily_network_metrics.json` directly from the HTML.
+For live dashboards, load `https://data.filecoindataportal.xyz/daily_network_metrics.json` directly from the HTML.
 
 ## Feedback
 

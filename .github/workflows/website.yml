@@ -23,30 +23,24 @@ jobs:
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
-      actions: read
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
-      - name: Download FDP docs
-        env:
-          GH_TOKEN: ${{ github.token }}
-          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
-        run: |
-          run_id="${WORKFLOW_RUN_ID:-$(gh run list --workflow pipeline.yml --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')}"
-          gh run download "$run_id" --name fdp-docs --dir web/.generated/fdp-docs/raw
-
-      - name: Install Node.js
-        uses: actions/setup-node@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
         with:
-          node-version: 22.12.0
+          node-version: 24
 
       - name: Build
-        run: npm ci --prefix web && npm run build --prefix web
+        working-directory: web
+        run: npm ci && npm run build && npm run check
 
       - name: Deploy
+        if: github.ref == 'refs/heads/main'
+        working-directory: web
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: fbe814d4a37d3d3d7fcfeec0ab929ff6
-        run: npx --yes wrangler@4.151.3 deploy --config web/wrangler.jsonc
+        run: npm run deploy

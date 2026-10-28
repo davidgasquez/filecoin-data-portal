@@ -36,11 +36,11 @@ import Layout from "../layouts/Layout.astro"
       to use it:
     </p>
     <div class="prompt-block">
-      <pre><code id="prompt-text">Read <a href="https://filecoindataportal.xyz/SKILL.md" target="_blank" rel="noopener noreferrer" class="prompt-url">https://filecoindataportal.xyz/SKILL.md</a> and tell me which providers onboarded more data last week</code></pre>
+      <pre><code>Read <a href="https://filecoindataportal.xyz/SKILL.md" target="_blank" rel="noopener noreferrer" class="prompt-url">https://filecoindataportal.xyz/SKILL.md</a> and tell me which providers onboarded more data last week</code></pre>
       <button
         class="prompt-copy"
         aria-label="Copy prompt to clipboard"
-        data-copy-target="prompt-text"
+        data-copy="Read https://filecoindataportal.xyz/SKILL.md and tell me which providers onboarded more data last week"
       >Copy</button>
     </div>
     <p class="prompt-hint">
@@ -54,11 +54,10 @@ import Layout from "../layouts/Layout.astro"
   <section class="content-flow" aria-labelledby="dashboards-title">
     <SectionHeading id="dashboards-title" label="Dashboards" />
     <p>
-      Multiple public dashboards powered by the same open datasets.
+      Explore the network through dashboards powered by these datasets.
     </p>
     <ul>
       <li><a href="/numbers">Filecoin In Numbers</a> — core network metrics with a rich chart set.</li>
-      <li><a href="https://filecoin-project.github.io/filecoin-storage-providers-market/" target="_blank" rel="noopener noreferrer">Storage Providers Market</a> — market between Clients and Providers.</li>
     </ul>
   </section>
 
@@ -134,9 +133,15 @@ import Layout from "../layouts/Layout.astro"
     cursor: pointer;
   }
 
-  .prompt-copy:hover {
+  .prompt-copy:hover:not(.is-copied) {
     background: var(--color-bg);
     color: var(--color-text);
+  }
+
+  .prompt-copy.is-copied {
+    padding-inline: 0;
+    text-transform: none;
+    letter-spacing: 0;
   }
 
   .prompt-hint {
@@ -150,14 +155,6 @@ import Layout from "../layouts/Layout.astro"
 </style>
 
 <script>
-  const btn = document.querySelector<HTMLButtonElement>(".prompt-copy")
-  if (btn) {
-    btn.addEventListener("click", async () => {
-      const target = document.getElementById(btn.dataset.copyTarget!)
-      if (!target) return
-      await navigator.clipboard.writeText(target.textContent!.trim())
-      btn.textContent = "Copied!"
-      setTimeout(() => (btn.textContent = "Copy"), 1500)
-    })
-  }
+  import { copyButtons } from "../clipboard"
+  copyButtons()
 </script>

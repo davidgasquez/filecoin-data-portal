@@ -23,7 +23,7 @@
           packages = [
             pkgs.uv
             pkgs.python314
-            pkgs.nodejs_22
+            pkgs.nodejs_24
             pkgs.gnumake
             pkgs.awscli2
             llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.qmd

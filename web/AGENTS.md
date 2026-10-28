@@ -7,5 +7,5 @@
 - Only hydrate where needed (Astro islands).
 - Keep things fast. Load only required data, render charts appropiately, ...
 - Follow a neo-brutalist design. Minimal, monochrome, monospace fonts, high contrast, sharp rectangles, utilitarian layout.
-- Consult [Astro docs](https://docs.astro.build/llms.txt) when needed.
-- Verify after making changes! Run `npx astro check` and `npm run build`, if you made aesthetic changes, make screenshots and check them.
+- Workflow: `npm run dev`, `npm run build`, `npm run preview` (Cloudflare runtime), `npm run deploy`.
+- Use `FDP_DB=../fdp.duckdb npm run dev` to preview local tables.

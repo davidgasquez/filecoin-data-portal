@@ -1,33 +1,26 @@
 {
   "name": "filecoindataportal.xyz",
+  "private": true,
   "type": "module",
-  "version": "0.0.0",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=24"
   },
   "scripts": {
     "dev": "astro dev",
-    "generate:data": "tsx ./scripts/generate-daily-metrics.ts",
-    "generate:fdp-docs": "cd .. && uv run fdp docs --out web/.generated/fdp-docs/raw && npm run stage:fdp-docs --prefix web",
-    "generate:local-data": "mkdir -p .generated/data && cd .. && uv run fdp query \"$(cat web/scripts/export-local-data.sql)\"",
-    "stage:fdp-docs": "tsx ./scripts/stage-fdp-docs.ts",
-    "predev": "FDP_DATA_URL=.generated/data npm run generate:data && npm run stage:fdp-docs",
-    "check": "astro check",
-    "precheck": "npm run generate:data && npm run stage:fdp-docs",
-    "prebuild": "npm run generate:data && npm run stage:fdp-docs",
     "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "check": "astro check",
+    "preview": "wrangler dev",
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "@duckdb/node-api": "^2.0.0-r.1",
-    "astro": "^6.1.5",
+    "astro": "^7.4.2",
     "echarts": "^6.1.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.8",
-    "@types/node": "^25.4.0",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "@astrojs/check": "^0.9.12",
+    "@types/node": "^24.19.2",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.154.0"
   }
 }

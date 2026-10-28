@@ -21,7 +21,7 @@ const baseUrl = "https://data.filecoindataportal.xyz"
             <a href="#related-tools">Related Tools</a>
         </nav>
 
-        <section aria-labelledby="sources-title">
+        <section id="sources" aria-labelledby="sources-title">
             <SectionHeading id="sources-title" label="Data Sources" />
 
             <p>
@@ -91,10 +91,30 @@ const baseUrl = "https://data.filecoindataportal.xyz"
                     </dt>
                     <dd>Public goods funding deployments.</dd>
                 </div>
+                <div>
+                    <dt><a href="https://api.filecoin.io/docs">Filecoin API</a></dt>
+                    <dd>Current Warm Storage data sets and Filecoin Pay rails.</dd>
+                </div>
+                <div>
+                    <dt><a href="https://probelab.io/filecoin/foc/">ProbeLab / Dealbot</a></dt>
+                    <dd>Storage, retrieval, and pull checks. These are probe observations, not all client traffic.</dd>
+                </div>
+                <div>
+                    <dt><a href="https://defillama.com/chain/filecoin">DefiLlama</a></dt>
+                    <dd>DeFi TVL, USDFC supply, and GLIF iFIL yield, dated by snapshot time.</dd>
+                </div>
+                <div>
+                    <dt><a href="https://filecoin.blockscout.com/">Blockscout traces</a></dt>
+                    <dd>Fee-auction calls used to value FIL in quarterly Filecoin Pay Volume.</dd>
+                </div>
             </dl>
+            <p>
+                The <a href="https://github.com/davidgasquez/filecoin-data-portal/blob/main/docs/data-sources.md">Filecoin data sources guide</a>
+                compares additional APIs, indexers, and RPC endpoints, including access details and limits.
+            </p>
         </section>
 
-        <section aria-labelledby="using-datasets">
+        <section id="usage" aria-labelledby="using-datasets">
             <SectionHeading id="using-datasets" label="Using Datasets" />
 
             <p>
@@ -103,6 +123,11 @@ const baseUrl = "https://data.filecoindataportal.xyz"
                 directly from:
             </p>
             <pre><code>{`${baseUrl}/<dataset>.parquet`}</code></pre>
+            <p>
+                Dates are UTC. Units and definitions are documented for each column.
+                Null values mean unavailable or undefined, not zero; gaps in the
+                source archive leave dependent metrics unavailable.
+            </p>
 
             <h3>DuckDB</h3>
             <p>
@@ -130,7 +155,13 @@ df = pl.read_parquet(
             <pre><code>{`const url = "${baseUrl}/daily_network_metrics.json"
 const rows = await (await fetch(url)).json()`}</code></pre>
 
-            <h3>AI agents</h3>
+            <h3>Whole database</h3>
+            <p>All public tables are available in one DuckDB file, for DuckDB 2.0 or newer:</p>
+            <pre><code>{`attach '${baseUrl}/fdp.duckdb' as fdp (read_only);
+use fdp;
+show tables;`}</code></pre>
+
+            <h3 id="agents">AI agents</h3>
             <p>
                 Point your agent to <a href="/SKILL.md">SKILL.md</a> or <a
                     href="/llms.txt">llms.txt</a

@@ -1,20 +1,50 @@
 ---
+import { Font } from "astro:assets"
 import "../styles.css"
-import Head from "../components/Head.astro"
 
 interface Props {
   title?: string
   description?: string
-  image?: string
-  canonicalUrl?: string
 }
 
-const {
-  title = "Filecoin Data Portal",
-  description = "Open Data Platform for the Filecoin ecosystem.",
-  image = "/banner.png",
-  canonicalUrl = Astro.url.pathname,
-} = Astro.props
+const siteDescription = "Open data platform for the Filecoin ecosystem."
+const { title = "Filecoin Data Portal", description = siteDescription } = Astro.props
+
+const site = Astro.site!.href
+const pathname = Astro.url.pathname.replace(/(index)?\.html$/, "")
+const url = new URL(pathname, site).href
+const maintainerId = `${site}#maintainer`
+
+const jsonData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${site}#website`,
+      name: "Filecoin Data Portal",
+      description: siteDescription,
+      url: site,
+      creator: { "@id": maintainerId },
+    },
+    {
+      "@type": "DataCatalog",
+      "@id": `${site}#catalog`,
+      name: "Filecoin Data Portal datasets",
+      description: "Open Filecoin datasets published as Parquet files and updated daily.",
+      url: `${site}datasets`,
+      license: "https://creativecommons.org/public-domain/cc0/",
+      isAccessibleForFree: true,
+      creator: { "@id": maintainerId },
+    },
+    {
+      "@type": "Person",
+      "@id": maintainerId,
+      name: "David Gasquez",
+      url: "https://davidgasquez.com/",
+      sameAs: ["https://github.com/davidgasquez"],
+    },
+  ],
+}
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -28,12 +58,28 @@ const navItems = [
 <!doctype html>
 <html lang="en">
   <head>
-    <Head
-      title={title}
-      description={description}
-      image={image}
-      canonicalUrl={canonicalUrl}
-    />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="author" content="David Gasquez" />
+    <meta name="description" content={description} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={url} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={url} />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonData)} />
+
+    <Font cssVariable="--font-monospace" preload />
   </head>
 
   <body>

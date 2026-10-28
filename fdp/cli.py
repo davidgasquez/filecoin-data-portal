@@ -2,7 +2,6 @@ import argparse
 
 from fdp.api import db_connection, find_project_root
 from fdp.assets import check_assets, discover_assets
-from fdp.docs import generate_docs
 from fdp.export import export
 from fdp.materialize import materialize
 from fdp.publish import available_targets, publish
@@ -34,10 +33,6 @@ def _list_assets(_: argparse.Namespace) -> None:
         for index, dependency in enumerate(asset.depends):
             connector = "└─" if index == len(asset.depends) - 1 else "├─"
             print(f"  {connector} {dependency}")
-
-
-def _docs(args: argparse.Namespace) -> None:
-    generate_docs(args.out, sample_rows=args.sample_rows)
 
 
 def _export(args: argparse.Namespace) -> None:
@@ -139,22 +134,6 @@ def main() -> None:
         help="Drop materialized DuckDB tables with no matching asset file.",
     )
     prune_parser.set_defaults(func=_prune)
-
-    docs_parser = subparsers.add_parser(
-        "docs",
-        help="Generate markdown docs for main tables and the FDP skill.",
-    )
-    docs_parser.add_argument(
-        "--out",
-        help="Output directory. Defaults to <project>/build/docs.",
-    )
-    docs_parser.add_argument(
-        "--sample-rows",
-        type=int,
-        default=10,
-        help="Number of sample rows per asset.",
-    )
-    docs_parser.set_defaults(func=_docs)
 
     export_parser = subparsers.add_parser(
         "export",

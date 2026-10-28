@@ -9,8 +9,7 @@ export type NumbersMetric = ChartConfig & {
   columns?: string[]
   details?: DetailConfig[]
 }
-export type NumbersGroup = { title?: string; charts: NumbersMetric[] }
-export type NumbersSection = { id: string; title: string; columns: 2 | 3 | 4; groups: NumbersGroup[] }
+type NumbersSection = { id: string; title: string; columns: 2 | 3 | 4; groups: { title?: string; charts: NumbersMetric[] }[] }
 
 const quality = (
   id: string,
