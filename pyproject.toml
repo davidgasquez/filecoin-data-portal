@@ -10,7 +10,6 @@ dependencies = [
     "google-auth>=2.62.0",
     "google-cloud-bigquery>=3.46.2",
     "google-cloud-bigquery-storage>=2.43.0",
-    "gspread>=6.2.1",
     "httpx>=0.28.1",
     "multiaddr>=0.2.0",
     "polars>=2.1.0",

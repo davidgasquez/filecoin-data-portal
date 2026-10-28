@@ -39,7 +39,6 @@ The `fdp/` folder contains the CLI and lightweight orchestrator while the `asset
 - `uv run fdp export`
 - `uv run fdp publish r2`
 - `uv run fdp publish r2 assets/main/daily_operator_metrics.sql`
-- `uv run fdp publish gsheet`
 - `uv run fdp show main.providers`
 - `uv run fdp query "select * from main.daily_network_metrics limit 10"`
 
@@ -61,14 +60,11 @@ You'll need the following secrets in your environment:
 - `R2_BUCKET`
 - `CLOUDFLARE_API_TOKEN` (requires Cache Purge permission for `filecoindataportal.xyz`)
 - `CLOUDFLARE_ZONE_ID` (`d301192e601454a9cf7a87b4cd6ee243`)
-- `FDP_GSHEET_SPREADSHEET_ID`
 
 `uv run fdp publish r2` writes one Parquet file per `main.*` table to R2, deletes stale root Parquet files after a full publish (needs `aws` CLI), and serves JSON for browser use at `https://data.filecoindataportal.xyz/daily_network_metrics.json`.
 `uv run fdp export` copies only `main.*` tables (with comments) into a fresh standalone DuckDB file at `build/fdp.duckdb` (or `--out`), replacing it atomically on success; the pipeline uploads that file to `https://data.filecoindataportal.xyz/fdp.duckdb`. Use DuckDB 2.0 or newer; the file uses the native 2 storage format.
 `make restore SNAPSHOT_URL=...` replaces the local `fdp.duckdb` with a full-state file and rejects main-only downloads like the public one.
 After uploading, `fdp publish r2` purges the dataset host's edge cache before the website rebuilds.
-`uv run fdp publish gsheet` syncs one worksheet per `main.*` table to a Google spreadsheet and removes stale worksheets.
-Share the target spreadsheet with the Google service account from `ENCODED_GOOGLE_APPLICATION_CREDENTIALS`.
 
 For local development, load them explicitly with `uv run --env-file .env ...`.
 

@@ -16,7 +16,6 @@ check: lint
 
 publish:
 	uv run fdp publish r2
-	uv run fdp publish gsheet
 
 run:
 	$(FDP) materialize
