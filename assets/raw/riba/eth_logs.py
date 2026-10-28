@@ -15,9 +15,13 @@
 # asset.column = source_etag | Source partition ETag; a changed ETag reloads it.
 
 import datetime as dt
+import shutil
+import tempfile
 import time
+from pathlib import Path
 
 import httpx
+import pyarrow as pa
 
 import fdp
 from fdp.api import table_exists
@@ -32,11 +36,11 @@ def build_url(day: dt.date) -> str:
     return f"{BASE_URL}/{day:%Y/%m/%d}/eth_getBlockReceipts.v1.r1.ndjson.brotli"
 
 
-def daily_logs_select(url: str, day: dt.date) -> str:
+def daily_logs_select(path: Path, day: dt.date) -> str:
     return f"""
         with receipts as (
             select unnest(result) as receipt
-            from read_ndjson_auto('{url}')
+            from read_ndjson_auto('{path}')
             where result is not null
         ), logs as (
             select unnest(receipt.logs) as log
@@ -69,6 +73,31 @@ def head(client: httpx.Client, url: str) -> httpx.Response:
     return client.head(url)
 
 
+def download(client: httpx.Client, url: str, path: Path) -> tuple[str, str]:
+    # Fetch the smaller stored Brotli object instead of a decompressed HTTP stream.
+    for attempt in range(5):
+        if attempt:
+            time.sleep(2**attempt)
+        last = attempt == 4
+        try:
+            with client.stream("GET", url, headers={"Accept-Encoding": "br"}) as resp:
+                if resp.status_code in RETRY_STATUSES and not last:
+                    continue
+                resp.raise_for_status()
+                encoding = resp.headers.get("content-encoding", "identity")
+                if encoding not in {"br", "identity"}:
+                    raise ValueError(f"Unexpected RIBA encoding {encoding} for {url}")
+                with path.open("wb") as f:
+                    for chunk in resp.iter_raw():
+                        f.write(chunk)
+                etag = resp.headers["etag"].removeprefix("W/").strip('"')
+                return encoding, etag
+        except httpx.TransportError:
+            if last:
+                raise
+    raise AssertionError
+
+
 def loaded_etags() -> dict[dt.date, str]:
     with fdp.db_connection() as conn:
         if not table_exists(conn, "raw", "riba_eth_logs"):
@@ -80,10 +109,21 @@ def loaded_etags() -> dict[dt.date, str]:
     return dict(rows)
 
 
-def replace_partition(conn, url: str, day: dt.date, etag: str) -> None:
+def replace_partition(conn, client: httpx.Client, url: str, day: dt.date) -> None:
     print(f"Loading RIBA eth logs for {day}", flush=True)
-    select_sql = daily_logs_select(url, day)
-    conn.execute(f"create or replace temp table riba_partition as {select_sql}")
+    with tempfile.TemporaryDirectory() as tmp:
+        body, ndjson = Path(tmp, "logs.body"), Path(tmp, "logs.ndjson")
+        encoding, etag = download(client, url, body)
+        if encoding == "br":
+            with (
+                pa.input_stream(str(body), compression="brotli") as src,
+                ndjson.open("wb") as dst,
+            ):
+                shutil.copyfileobj(src, dst)
+        else:
+            body.rename(ndjson)
+        select_sql = daily_logs_select(ndjson, day)
+        conn.execute(f"create or replace temp table riba_partition as {select_sql}")
     # Daily mainnet partitions always have logs; empty means a broken source file.
     if conn.execute("select count(*) from riba_partition").fetchone()[0] == 0:
         raise ValueError(f"Empty RIBA partition for {day}")
@@ -108,14 +148,8 @@ def eth_logs() -> None:
 
     with fdp.db_connection() as conn:
         conn.execute("create schema if not exists raw")
-        conn.execute("install httpfs; load httpfs")
-        # Retry stalled partition GETs for minutes, not hours (jittered sleeps <=20s).
-        conn.execute(
-            "set http_retries = 6; set http_retry_wait_ms = 5000; "
-            "set http_retry_backoff = 2"
-        )
 
-        with httpx.Client(follow_redirects=True, timeout=10) as client:
+        with httpx.Client(follow_redirects=True, timeout=30) as client:
             day = START_DATE
             while day <= latest_day:
                 url = build_url(day)
@@ -125,5 +159,5 @@ def eth_logs() -> None:
                     # Weak and strong forms differ only by encoding negotiation.
                     etag = resp.headers["etag"].removeprefix("W/").strip('"')
                     if loaded.get(day) != etag:
-                        replace_partition(conn, url, day, etag)
+                        replace_partition(conn, client, url, day)
                 day += dt.timedelta(days=1)
