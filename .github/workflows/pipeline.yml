@@ -28,25 +28,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Restore DuckDB cache
-        uses: actions/cache/restore@v5
-        with:
-          path: fdp.duckdb
-          key: duckdb-${{ github.ref_name }}-${{ github.run_id }}
-          restore-keys: |
-            duckdb-${{ github.ref_name }}-
-            duckdb-main-
-
       - name: Setup uv
         uses: astral-sh/setup-uv@v7
         with:
-          enable-cache: true
+          enable-cache: false
 
       - name: Check assets
         run: uv run fdp check
-
-      - name: Prune tables
-        run: uv run fdp prune
 
       - name: Materialize
         run: uv run fdp materialize
@@ -85,12 +73,12 @@ jobs:
             --endpoint-url "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" \
             --region auto --no-progress --cache-control no-cache
 
-      - name: Save DuckDB cache
-        if: success()
-        uses: actions/cache/save@v5
+      - name: Upload public DuckDB
+        uses: actions/upload-artifact@v4
         with:
-          path: fdp.duckdb
-          key: duckdb-${{ github.ref_name }}-${{ github.run_id }}
+          name: fdp-duckdb
+          path: build/fdp.duckdb
+          retention-days: 1
 
   google-sheets:
     name: Google Sheets
@@ -105,17 +93,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Restore DuckDB cache
-        uses: actions/cache/restore@v5
+      - name: Download public DuckDB
+        uses: actions/download-artifact@v4
         with:
-          path: fdp.duckdb
-          key: duckdb-${{ github.ref_name }}-${{ github.run_id }}
-          fail-on-cache-miss: true
+          name: fdp-duckdb
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v7
         with:
-          enable-cache: true
+          enable-cache: false
 
       - name: Publish to Google Sheets
         run: uv run fdp publish gsheet

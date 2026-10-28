@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Iterator
+from collections.abc import Generator, Iterable
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Protocol
@@ -30,7 +30,7 @@ def db_connection(
     db_path: Path | str | None = None,
     *,
     read_only: bool = False,
-) -> Iterator[duckdb.DuckDBPyConnection]:
+) -> Generator[duckdb.DuckDBPyConnection]:
     path = default_db_path() if db_path is None else Path(db_path)
     with duckdb.connect(path, read_only=read_only) as conn:
         yield conn
@@ -52,8 +52,7 @@ def sql(
 
 def table(name: str, *, db_path: Path | str | None = None) -> pl.DataFrame:
     with db_connection(db_path, read_only=True) as conn:
-        arrow_table = conn.execute(f"select * from {name}").fetch_arrow_table()
-    return pl.DataFrame(arrow_table)
+        return conn.sql(f"select * from {name}").pl()
 
 
 def table_exists(
@@ -65,8 +64,8 @@ def table_exists(
         "select 1 from information_schema.tables "
         "where table_schema = ? and table_name = ? limit 1",
         [schema, name],
-    ).fetchone()
-    return row is not None
+    ).fetchall()
+    return bool(row)
 
 
 class TableAsset(Protocol):
