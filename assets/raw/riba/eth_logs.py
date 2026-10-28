@@ -25,6 +25,7 @@ from fdp.api import table_exists
 BASE_URL = "https://chain.data.riba.plus/fil/mainnet/daily"
 START_DATE = dt.date(2025, 8, 1)
 TABLE = "raw.riba_eth_logs"
+RETRY_STATUSES = {408, 429, 500, 502, 503, 504}
 
 
 def build_url(day: dt.date) -> str:
@@ -59,9 +60,12 @@ def daily_logs_select(url: str, day: dt.date) -> str:
 def head(client: httpx.Client, url: str) -> httpx.Response:
     for attempt in range(4):
         try:
-            return client.head(url)
+            resp = client.head(url)
+            if resp.status_code not in RETRY_STATUSES:
+                return resp
         except httpx.TransportError:
-            time.sleep(2**attempt)
+            pass
+        time.sleep(2**attempt)
     return client.head(url)
 
 
@@ -77,6 +81,7 @@ def loaded_etags() -> dict[dt.date, str]:
 
 
 def replace_partition(conn, url: str, day: dt.date, etag: str) -> None:
+    print(f"Loading RIBA eth logs for {day}", flush=True)
     select_sql = daily_logs_select(url, day)
     conn.execute(f"create or replace temp table riba_partition as {select_sql}")
     # Daily mainnet partitions always have logs; empty means a broken source file.
@@ -104,6 +109,11 @@ def eth_logs() -> None:
     with fdp.db_connection() as conn:
         conn.execute("create schema if not exists raw")
         conn.execute("install httpfs; load httpfs")
+        # Retry stalled partition GETs for minutes, not hours (jittered sleeps <=20s).
+        conn.execute(
+            "set http_retries = 6; set http_retry_wait_ms = 5000; "
+            "set http_retry_backoff = 2"
+        )
 
         with httpx.Client(follow_redirects=True, timeout=10) as client:
             day = START_DATE
