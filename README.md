@@ -3,74 +3,74 @@
 
   # Filecoin Data Portal
 
-  Open, minimal, local-first Data Platform for the Filecoin Ecosystem.
+  Open datasets for the Filecoin ecosystem, built from open source code and published daily.
 
-  ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/davidgasquez/filecoin-data-portal/pipeline.yml?style=flat-square)
-  ![GitHub](https://img.shields.io/github/license/davidgasquez/filecoin-data-portal?style=flat-square)
-  ![GitHub Repo stars](https://img.shields.io/github/stars/davidgasquez/filecoin-data-portal?style=flat-square)
-</div>
+  [Website](https://filecoindataportal.xyz) · [Datasets](https://filecoindataportal.xyz/datasets) · [Docs](https://filecoindataportal.xyz/docs) · [SKILL.md](https://filecoindataportal.xyz/SKILL.md)
 
-- Open source code producing open datasets in open formats using public infrastructure.
-- Runs on a laptop, server, or CI runner without any lock-ins.
-
-<div align="center">
-  <a href="https://drips.network/app/projects/github/davidgasquez/filecoin-data-portal">
-    <img src="https://filecoin.drips.network/api/embed/project/https%3A%2F%2Fgithub.com%2Fdavidgasquez%2Ffilecoin-data-portal/support.png?background=light&style=drips&text=project&stat=none" alt="Support filecoin-data-portal on drips.network" height="21">
-  </a>
+  ![Build](https://img.shields.io/github/actions/workflow/status/davidgasquez/filecoin-data-portal/pipeline.yml?style=flat-square)
+  ![License](https://img.shields.io/github/license/davidgasquez/filecoin-data-portal?style=flat-square)
+  ![Stars](https://img.shields.io/github/stars/davidgasquez/filecoin-data-portal?style=flat-square)
 </div>
 
 ## 🚀 Quickstart
 
-The `fdp/` folder contains the CLI and lightweight orchestrator while the `assets/` folder hosts data assets and custom SQL data tests. The environment is assumed to be already loaded (you can autoload it running `uv` with `--env-file .env`).
+Every dataset is a Parquet file, rebuilt daily. Browse them at [filecoindataportal.xyz/datasets](https://filecoindataportal.xyz/datasets).
 
-- `uv run fdp list`
-- `uv run fdp check`
-- `uv run fdp materialize`
-- `uv run fdp materialize main`
-- `uv run fdp materialize model.foc`
-- `uv run fdp materialize raw.riba_eth_logs`
-- `uv run fdp materialize assets/main/daily_operator_metrics.sql`
-- `uv run fdp materialize --with-deps model.foc`
-- `uv run fdp materialize --with-deps main.daily_miner_metrics`
-- `uv run fdp status`
-- `uv run fdp prune`
-- `uv run fdp docs`
-- `uv run fdp test`
-- `uv run fdp export`
-- `uv run fdp publish r2`
-- `uv run fdp publish r2 assets/main/daily_operator_metrics.sql`
-- `uv run fdp show main.providers`
-- `uv run fdp query "select * from main.daily_network_metrics limit 10"`
+```
+https://data.filecoindataportal.xyz/<dataset>.parquet
+```
 
-FDP detects the project root from the nearest parent containing `assets/`. By default, DuckDB lives at `<project>/fdp.duckdb` and `fdp docs` writes to `<project>/build/docs`.
+Query them with any Parquet reader. With [DuckDB](https://duckdb.org/) (or [SQL Workbench](https://sql-workbench.com/) in the browser):
 
-When you pass explicit selectors to `fdp materialize`, FDP refreshes only the matched assets by default and expects their dependencies to already be materialized.
-Selectors can be asset keys, folder selectors, or asset file/folder paths under `assets/`. Use `--with-deps` to refresh the full dependency closure.
+```sql
+select date, onboarded_pibs
+from 'https://data.filecoindataportal.xyz/daily_network_metrics.parquet'
+order by date desc
+limit 10;
+```
+
+With Python:
+
+```python
+import polars as pl
+
+pl.read_parquet("https://data.filecoindataportal.xyz/miners.parquet")
+```
+
+Or get everything at once in a single DuckDB file (DuckDB 2.0+):
+
+```sql
+attach 'https://data.filecoindataportal.xyz/fdp.duckdb' as fdp (read_only);
+```
+
+### 🤖 Agents
+
+Point your agent to [`SKILL.md`](https://filecoindataportal.xyz/SKILL.md). It lists every dataset and explains how to query them.
 
 ## ⚙️ Development
 
-You can run the Filecoin Data Portal anywhere using `uv`. On Nix, `nix develop` (or `direnv allow` with [nix-direnv](https://github.com/nix-community/nix-direnv)) loads a pinned shell with `uv`, Python, Node, the AWS CLI, and `qmd`. Use `uv run fdp query` for SQL. Run `nix flake update` to refresh it.
+Runs anywhere with `uv`. On Nix, `nix develop` gives a pinned shell with all the tools.
 
-You'll need the following secrets in your environment:
+- `uv run fdp list`: list assets
+- `uv run fdp materialize`: materialize all assets
+- `uv run fdp materialize main.providers`: materialize one asset (add `--with-deps` to refresh its dependencies)
+- `uv run fdp query "select * from main.providers limit 10"`: query the local database
+- `make check`: lint and validate assets
+- `make test`: run data tests
+- `make publish`: publish datasets to R2
+- `make restore SNAPSHOT_URL=...`: replace local `fdp.duckdb` with a full-state snapshot
 
-- `ENCODED_GOOGLE_APPLICATION_CREDENTIALS` (base64-encoded Google service account JSON)
-- `R2_ACCESS_KEY_ID`
-- `R2_SECRET_ACCESS_KEY`
-- `R2_ACCOUNT_ID`
-- `R2_BUCKET`
-- `CLOUDFLARE_API_TOKEN` (requires Cache Purge permission for `filecoindataportal.xyz`)
-- `CLOUDFLARE_ZONE_ID` (`d301192e601454a9cf7a87b4cd6ee243`)
+Secrets live in `.env` (load with `uv run --env-file .env ...`):
 
-`uv run fdp publish r2` writes one Parquet file per `main.*` table to R2, deletes stale root Parquet files after a full publish (needs `aws` CLI), and serves JSON for browser use at `https://data.filecoindataportal.xyz/daily_network_metrics.json`.
-`uv run fdp export` copies only `main.*` tables (with comments) into a fresh standalone DuckDB file at `build/fdp.duckdb` (or `--out`), replacing it atomically on success; the pipeline uploads that file to `https://data.filecoindataportal.xyz/fdp.duckdb`. Use DuckDB 2.0 or newer; the file uses the native 2 storage format.
-`make restore SNAPSHOT_URL=...` replaces the local `fdp.duckdb` with a full-state file and rejects main-only downloads like the public one.
-After uploading, `fdp publish r2` purges the dataset host's edge cache before the website rebuilds.
-
-For local development, load them explicitly with `uv run --env-file .env ...`.
-
-## 🗃️ Historical State
-
-Previous dashboard apps and the older pipeline stack were removed in [`ab4c667`](https://github.com/davidgasquez/filecoin-data-portal/commit/ab4c667d6c1e11970bc3dfce5ad5740a0ab5ef2d). To explore the repository as it was before the cleanup, browse [`822793d`](https://github.com/davidgasquez/filecoin-data-portal/tree/822793d36f7e474e5cf9258322f6f60d5d434684).
+```bash
+ENCODED_GOOGLE_APPLICATION_CREDENTIALS= # base64 Google service account JSON
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_ACCOUNT_ID=
+R2_BUCKET=
+CLOUDFLARE_API_TOKEN= # needs Cache Purge on filecoindataportal.xyz
+CLOUDFLARE_ZONE_ID=d301192e601454a9cf7a87b4cd6ee243
+```
 
 ## 📃 Disclaimer
 
