@@ -75,13 +75,8 @@
 -- asset.column = defi_protocol_tvl_usd_json | DefiLlama Filecoin TVL by protocol slug, in USD, including liquid staking. Snapshot dated by DefiLlama.
 -- asset.column = glif_tvl_fil | GLIF Filecoin TVL from DefiLlama, including borrower collateral, in FIL. Snapshot dated by DefiLlama.
 -- asset.column = glif_tvl_usd | GLIF Filecoin TVL from DefiLlama, including borrower collateral, in USD. Snapshot dated by DefiLlama.
--- asset.column = glif_pool_assets_fil | End-of-day GLIF Infinity Pool total assets, in FIL.
--- asset.column = glif_borrowed_fil | End-of-day FIL borrowed from the GLIF Infinity Pool.
--- asset.column = glif_available_liquidity_fil | End-of-day FIL borrowable from the GLIF Infinity Pool.
--- asset.column = glif_utilization | End-of-day GLIF borrowed FIL divided by pool total assets.
 -- asset.column = ifil_base_apy | GLIF iFIL annualized base yield from DefiLlama, as a fraction. Latest observation on the date.
 -- asset.column = usdfc_supply | DefiLlama USDFC circulating supply, in tokens. Snapshot dated by DefiLlama.
--- asset.column = usdc_axl_supply | End-of-day axlUSDC total supply on Filecoin, in tokens.
 -- asset.column = blocks_mined | Block headers mined on the date.
 -- asset.column = win_count | Winning proofs recorded on the date.
 -- asset.column = minted_rewards_fil | Block rewards minted on the date across miner, service, and emission burn allocations, in FIL. Null when any tipset reward is unobservable.
@@ -259,13 +254,8 @@ select
     defi.defi_protocol_tvl_usd_json,
     defi.glif_tvl_fil,
     defi.glif_tvl_usd,
-    defi.glif_pool_assets_fil,
-    defi.glif_borrowed_fil,
-    defi.glif_available_liquidity_fil,
-    defi.glif_utilization,
     defi.ifil_base_apy,
     defi.usdfc_supply,
-    defi.usdc_axl_supply,
     block_rewards.blocks_mined as blocks_mined,
     block_rewards.win_count as win_count,
     block_rewards.minted_rewards_fil,

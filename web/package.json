@@ -20,7 +20,7 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@duckdb/node-api": "^1.5.0-r.1",
+    "@duckdb/node-api": "^2.0.0-r.1",
     "astro": "^6.1.5",
     "echarts": "^6.1.0"
   },

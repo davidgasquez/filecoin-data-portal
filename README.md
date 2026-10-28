@@ -50,7 +50,7 @@ Selectors can be asset keys, folder selectors, or asset file/folder paths under 
 
 ## ⚙️ Development
 
-You can run the Filecoin Data Portal anywhere using `uv`. On Nix, `nix develop` (or `direnv allow` with [nix-direnv](https://github.com/nix-community/nix-direnv)) loads a pinned shell with `uv`, Python, DuckDB, Node, the AWS CLI, and `qmd`. Run `nix flake update` to refresh it.
+You can run the Filecoin Data Portal anywhere using `uv`. On Nix, `nix develop` (or `direnv allow` with [nix-direnv](https://github.com/nix-community/nix-direnv)) loads a pinned shell with `uv`, Python, Node, the AWS CLI, and `qmd`. Use `uv run fdp query` for SQL. Run `nix flake update` to refresh it.
 
 You'll need the following secrets in your environment:
 
@@ -64,8 +64,8 @@ You'll need the following secrets in your environment:
 - `FDP_GSHEET_SPREADSHEET_ID`
 
 `uv run fdp publish r2` writes one Parquet file per `main.*` table to R2, deletes stale root Parquet files after a full publish (needs `aws` CLI), and serves JSON for browser use at `https://data.filecoindataportal.xyz/daily_network_metrics.json`.
-`uv run fdp export` copies only `main.*` tables (with comments) into a fresh standalone DuckDB file at `build/fdp.duckdb` (or `--out`), replacing it atomically on success; the pipeline uploads that file to `https://data.filecoindataportal.xyz/fdp.duckdb`. Use DuckDB 1.5.5 or newer; older readers are not validated.
-CI caches the full working state (`raw`/`model`/`main`) separately. `make restore SNAPSHOT_URL=...` replaces the local `fdp.duckdb` with a full-state file and rejects main-only downloads like the public one.
+`uv run fdp export` copies only `main.*` tables (with comments) into a fresh standalone DuckDB file at `build/fdp.duckdb` (or `--out`), replacing it atomically on success; the pipeline uploads that file to `https://data.filecoindataportal.xyz/fdp.duckdb`. Use DuckDB 2.0 or newer; the file uses the native 2 storage format.
+`make restore SNAPSHOT_URL=...` replaces the local `fdp.duckdb` with a full-state file and rejects main-only downloads like the public one.
 After uploading, `fdp publish r2` purges the dataset host's edge cache before the website rebuilds.
 `uv run fdp publish gsheet` syncs one worksheet per `main.*` table to a Google spreadsheet and removes stale worksheets.
 Share the target spreadsheet with the Google service account from `ENCODED_GOOGLE_APPLICATION_CREDENTIALS`.
