@@ -1,59 +1,87 @@
 ---
-import Layout from "../layouts/Layout.astro"
-import { cell, datasets } from "../datasets"
+import Layout from '../layouts/Layout.astro'
+import { builtAt, datasets } from '../data'
 
-const queryUrl = (url: string) => `https://sql-workbench.com/#queries=v0,select-*-from-'${encodeURIComponent(url)}'-limit-10~`
+const count = (n: number) => n.toLocaleString('en-US')
+const plural = (n: number, word: string) => `${count(n)} ${word}${n === 1 ? '' : 's'}`
+const observed = ({ coverage }: (typeof datasets)[number]) =>
+  coverage?.start ? `${coverage.start} to ${coverage.end}` : `View built ${builtAt}`
 ---
 
-<Layout title="Datasets | Filecoin Data Portal" description="The Filecoin Data Portal datasets, one click away.">
-  <section class="page-header" aria-labelledby="datasets-title">
-    <h1 id="datasets-title">Datasets</h1>
-    <p>The Filecoin Data Portal datasets, one click away.</p>
-  </section>
+<Layout title="Datasets" description="Search Filecoin datasets by name, description, or column.">
+  <header class="page-head">
+    <h1>Datasets</h1>
+    <p>{datasets.length} public tables, each a Parquet file you can query directly. Search names, descriptions, and columns. <a href="/datasets.md">Catalog as Markdown</a>.</p>
+  </header>
 
-  <div class="datasets-layout">
-    <nav class="datasets-nav" aria-label="Dataset navigation">
-      <h2>Datasets</h2>
-      <ul>
-        {datasets.map(({ id }) => <li><a href={`#${id}`}>{id}</a></li>)}
-      </ul>
-    </nav>
-    <div class="datasets-content">
-      {datasets.map(({ id, description, url, codeUrl, columns, sample }) => (
-        <section class="dataset-entry" id={id} aria-labelledby={`${id}-title`}>
-          <header>
-            <div>
-              <h2 id={`${id}-title`}><a href={`#${id}`}>{id}</a></h2>
-              <p>{description}</p>
-            </div>
-            <div class="dataset-entry__actions">
-              <a href={url} class="btn btn--primary">Download</a>
-              <a href={queryUrl(url)} class="btn" target="_blank" rel="noopener noreferrer">Query</a>
-              <a href={codeUrl} class="btn" target="_blank" rel="noopener noreferrer">Code</a>
-            </div>
-          </header>
-          <div class="dataset-markdown">
-            <details class="dataset-section dataset-section--columns">
-              <summary>Columns</summary>
-              <table tabindex="0" aria-label={`${id} columns`}>
-                <thead><tr><th scope="col">name</th><th scope="col">description</th></tr></thead>
-                <tbody>
-                  {columns.map(({ name, description }) => <tr><td><code>{name}</code></td><td>{description}</td></tr>)}
-                </tbody>
-              </table>
-            </details>
-            <details class="dataset-section dataset-section--sample">
-              <summary>Sample</summary>
-              <table tabindex="0" aria-label={`${id} sample rows`}>
-                <thead><tr>{columns.map(({ name }) => <th scope="col">{name}</th>)}</tr></thead>
-                <tbody>
-                  {sample.map(row => <tr>{columns.map(({ name }) => <td>{cell(row[name])}</td>)}</tr>)}
-                </tbody>
-              </table>
-            </details>
-          </div>
-        </section>
-      ))}
-    </div>
-  </div>
+  <form class="search" role="search" action="/datasets">
+    <label for="q">Search datasets and columns</label>
+    <input id="q" name="q" type="search" autocomplete="off" spellcheck="false" placeholder="e.g. onboarded, provider_id, fees…" />
+    <p class="meta" id="count" role="status">{plural(datasets.length, 'dataset')}</p>
+    <noscript><p class="meta">Search needs JavaScript. All datasets remain listed below.</p></noscript>
+  </form>
+
+  <ol class="catalog" aria-label="Datasets">
+    {datasets.map((dataset) => (
+      <li
+        id={dataset.id}
+        data-text={[dataset.id, dataset.title, dataset.description].join(' ').toLowerCase()}
+        data-columns={JSON.stringify(dataset.columns.map(({ name, description }) => [name, description.toLowerCase()]))}
+      >
+        <h2><a href={`/datasets/${dataset.id}`}>{dataset.title}</a></h2>
+        <p class="catalog-id mono meta">{dataset.id}</p>
+        <p class="catalog-desc">{dataset.description || 'No description.'}</p>
+        <p class="catalog-stats meta">
+          ≈ {plural(dataset.rows, 'row')} · {plural(dataset.columns.length, 'column')}<br />
+          {observed(dataset)}
+        </p>
+        <p class="catalog-match meta"></p>
+      </li>
+    ))}
+  </ol>
+  <p class="empty" hidden>No dataset or column matches “<span></span>”. <a href="/datasets">Clear the search</a>.</p>
 </Layout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('.search')!
+  const input = form.querySelector('input')!
+  const status = document.querySelector('#count')!
+  const empty = document.querySelector<HTMLElement>('.empty')!
+  const items = [...document.querySelectorAll<HTMLLIElement>('.catalog li')].map((item) => ({
+    item,
+    text: item.dataset.text!,
+    columns: JSON.parse(item.dataset.columns!) as [string, string][],
+    match: item.querySelector('.catalog-match')!,
+  }))
+
+  // Every term must appear in the dataset text or one of its columns (name or description).
+  function filter(query: string) {
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean)
+    let shown = 0
+    for (const { item, text, columns, match } of items) {
+      const hits = terms.length ? columns.filter(([name, description]) => terms.some((term) => name.includes(term) || description.includes(term))) : []
+      const visible = terms.every((term) => text.includes(term) || hits.some(([name, description]) => name.includes(term) || description.includes(term)))
+      item.hidden = !visible
+      match.textContent = visible && hits.length ? `Columns: ${hits.slice(0, 6).map(([name]) => name).join(', ')}${hits.length > 6 ? ` +${hits.length - 6}` : ''}` : ''
+      if (visible) shown++
+    }
+    status.textContent = terms.length ? `${shown} of ${items.length} datasets` : `${items.length} datasets`
+    empty.hidden = shown > 0
+    empty.querySelector('span')!.textContent = query.trim()
+  }
+
+  const fromUrl = () => {
+    input.value = new URLSearchParams(location.search).get('q') ?? ''
+    filter(input.value)
+  }
+  const toUrl = () => {
+    const url = new URL(location.href)
+    input.value.trim() ? url.searchParams.set('q', input.value.trim()) : url.searchParams.delete('q')
+    history.replaceState(null, '', url)
+  }
+
+  input.addEventListener('input', () => { filter(input.value); toUrl() })
+  form.addEventListener('submit', (event) => { event.preventDefault(); filter(input.value); toUrl() })
+  addEventListener('popstate', fromUrl)
+  fromUrl()
+</script>

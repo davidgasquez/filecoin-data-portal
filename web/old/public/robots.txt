@@ -1,0 +1,3 @@
+# Archived site. Crawling stays allowed so crawlers see the noindex meta tag and X-Robots-Tag header.
+User-agent: *
+Allow: /

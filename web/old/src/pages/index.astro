@@ -1,0 +1,163 @@
+---
+import SectionHeading from "../components/SectionHeading.astro"
+import Layout from "../layouts/Layout.astro"
+
+const skillUrl = new URL("/SKILL.md", Astro.site).href
+const prompt = `Read ${skillUrl} and tell me which providers onboarded more data last week`
+---
+
+<Layout
+  title="Filecoin Data Portal"
+  description="Frozen archive of the previous Filecoin Data Portal, with links to live dataset downloads."
+>
+  <section class="page-header" aria-labelledby="home-title">
+    <h1 id="home-title">Filecoin Data Portal</h1>
+    <p>
+      Open data platform for the Filecoin ecosystem.
+    </p>
+  </section>
+
+  <section class="content-flow" aria-labelledby="data-title">
+    <SectionHeading id="data-title" label="Data" />
+    <p>
+      Archived views of open Parquet datasets covering network metrics, storage
+      providers, deals, Filecoin Pay, and more.
+    </p>
+    <p>
+      <a href="/datasets" class="section-link">Browse datasets →</a><br />
+      <a href="/docs" class="section-link">Read documentation →</a>
+    </p>
+  </section>
+
+  <section class="hero-prompt" aria-labelledby="quickstart-title">
+    <SectionHeading id="quickstart-title" label="Quickstart" />
+    <p>
+      Check the <a href="/datasets">datasets</a> page or ask your agent
+      (<a href="https://ampcode.com" target="_blank" rel="noopener noreferrer">Amp</a>,
+      <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer">ChatGPT</a>,
+      <a href="https://claude.ai" target="_blank" rel="noopener noreferrer">Claude</a>, ...)
+      to use it:
+    </p>
+    <div class="prompt-block">
+      <pre><code>Read <a href={skillUrl} target="_blank" rel="noopener noreferrer" class="prompt-url">{skillUrl}</a> and tell me which providers onboarded more data last week</code></pre>
+      <button
+        class="prompt-copy"
+        aria-label="Copy prompt to clipboard"
+        data-copy={prompt}
+      >Copy</button>
+    </div>
+    <p class="prompt-hint">
+      The <a href="/llms.txt">llms.txt</a> index and <a href="/SKILL.md"
+        >SKILL.md</a
+      > instructions teach agents how to find, query, and visualize all available
+      datasets.
+    </p>
+  </section>
+
+  <section class="content-flow" aria-labelledby="dashboards-title">
+    <SectionHeading id="dashboards-title" label="Dashboards" />
+    <p>
+      Explore the network through dashboards powered by these datasets.
+    </p>
+    <ul>
+      <li><a href="/numbers">Filecoin In Numbers</a> — core network metrics with a rich chart set.</li>
+    </ul>
+  </section>
+
+  <section class="content-flow" aria-labelledby="source-title">
+    <SectionHeading id="source-title" label="Source" />
+    <p>
+      Everything is open source. Assets, pipelines, and this website live in a
+      single repository.
+    </p>
+    <a
+      href="https://github.com/davidgasquez/filecoin-data-portal"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="section-link"
+    >View on GitHub →</a>
+  </section>
+</Layout>
+
+<style>
+  .hero-prompt,
+  .content-flow,
+  .page-header {
+    max-inline-size: 40rem;
+    margin-inline: auto;
+    margin-block-end: var(--space-7);
+  }
+
+  .prompt-block {
+    position: relative;
+    border: 2px solid var(--color-border-strong);
+    padding: var(--space-4);
+    padding-inline-end: 5rem;
+    background: var(--color-bg-muted);
+    margin-block: var(--space-4);
+  }
+
+  .prompt-block pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .prompt-block code {
+    background: none;
+    padding: 0;
+  }
+
+  .prompt-url {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    font-weight: 700;
+  }
+
+  .prompt-url:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  .prompt-copy {
+    position: absolute;
+    inset-block-start: var(--space-2);
+    inset-inline-end: var(--space-2);
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-text);
+    color: var(--color-bg);
+    padding: var(--space-1) var(--space-3);
+    font: inherit;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+
+  .prompt-copy:hover:not(.is-copied) {
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  .prompt-copy.is-copied {
+    padding-inline: 0;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .prompt-hint {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  .section-link {
+    font-weight: 700;
+  }
+</style>
+
+<script>
+  import { copyButtons } from "../clipboard"
+  copyButtons()
+</script>

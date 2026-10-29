@@ -1,0 +1,40 @@
+---
+import { declaredMetrics } from '../sections'
+import { repoUrl } from '../data'
+interface Props { id: string; headingLevel?: 3 | 4 }
+const { id, headingLevel = 3 } = Astro.props
+const metric = declaredMetrics.find(item => item.id === id)!
+const Heading = `h${headingLevel}` as 'h3' | 'h4'
+---
+<div class="metric declared-metric" id={metric.id} data-primary-metric={metric.y}>
+  <figure class="chart" id={metric.y} data-metric={metric.y} data-declared-value={metric.value}>
+    <div class="chart-heading">
+      <details class="metric-info">
+        <summary><Heading>{metric.title}</Heading><span class="meta">Info</span></summary>
+        <div class="metric-info-body">
+          <p>{metric.description}</p>
+          <p>This is the legacy page’s declared zero, not a measured daily count. No client registry, dated observations, or historical series are available. The flat zero line stays constant in every range.</p>
+          <p class="meta">Source: <a href={`${repoUrl}/blob/7793d6eeb848f0c38676858ff9a147f0ecce7779/web/src/numbers-data.ts#L29`}>legacy Numbers configuration</a>, which supplies a hardcoded zero.</p>
+          <p class="meta chart-link">Link <a href={`#${metric.id}`}>#{metric.id}</a> <button class="button" type="button" data-copy-link={metric.id} aria-label={`Copy link to ${metric.title}`} hidden>Copy link</button><span role="status"></span></p>
+        </div>
+      </details>
+      <span class="chart-value">{metric.value}</span>
+    </div>
+    <svg class="declared-line" viewBox="0 0 640 144" preserveAspectRatio="none" role="img" aria-label={`${metric.title}: constant ${metric.value}, declared rather than measured history`}>
+      <path class="series" d="M3,140H637" stroke-width="1.8" vector-effect="non-scaling-stroke" />
+    </svg>
+    <p class="meta">Declared value · no dated history</p>
+  </figure>
+</div>
+<style>
+  .chart-heading { position: relative; }
+  .metric-info { min-width: 0; flex: 1; }
+  .metric-info > summary { display: block; min-height: 1.75rem; padding-top: 0.1875rem; width: fit-content; color: var(--fg); }
+  .metric-info > summary > :is(h3, h4) { display: inline; }
+  .metric-info > summary > .meta { margin-left: 0.5rem; white-space: nowrap; }
+  .metric-info > summary::before { content: none; }
+  .metric-info :is(h3, h4) { text-decoration: underline dotted var(--rule-strong); text-underline-offset: 0.25em; }
+  .metric-info-body { position: absolute; z-index: 4; inset: 100% 0 auto; padding: 0.875rem; background: var(--bg); border: 1px solid var(--rule-strong); font-size: 0.875rem; }
+  .metric-info-body > * + * { margin-top: 0.5rem; }
+  .declared-line { margin: 0; }
+</style>

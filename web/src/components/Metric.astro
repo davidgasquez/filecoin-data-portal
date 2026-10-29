@@ -1,0 +1,35 @@
+---
+import Plot from './Plot.astro'
+import { title } from '../metrics.mjs'
+import type { NumbersMetric } from '../sections'
+// `negative`: a second flow on the same axis below zero (terminated under onboarded). Both stay separate source columns.
+// Anchors: the wrapper keeps the legacy metric id (#raw-power); figures keep column ids (#raw_power_pibs). The combined pair also answers to the negative's id and column.
+interface Props { metric?: NumbersMetric; negative?: NumbersMetric; column?: string; label?: string; focal?: boolean; note?: string; headingLevel?: 3 | 4 }
+const { metric, negative, column, label, focal = false, note, headingLevel = 3 } = Astro.props as Props
+const key = metric?.y ?? column!
+const heading = metric?.title ?? label ?? title(key)
+const series = metric?.series?.find(entry => entry.y === key)?.label ?? heading
+const name = label ?? (negative ? `${heading} and ${negative.title.toLowerCase()}` : heading)
+const source = metric?.source ?? 'daily_network_metrics'
+const related = [metric, negative].flatMap((item) => [
+  ...(item?.series ?? []).filter(entry => entry.y !== item!.y).map((entry) => ({ column: entry.y, label: `${item!.title} · ${entry.label}`, description: undefined, chartKind: undefined })),
+  ...(item?.details ?? []).map((entry) => ({ column: entry.y, label: entry.title, description: entry.description, chartKind: entry.kind })),
+])
+---
+<div class="metric" id={metric?.id} data-primary-metric={key}>
+  {negative && [negative.id, negative.y].map(id => <span class="anchor-alias" {id}></span>)}
+  <Plot column={key} label={name} slug={metric?.id} seriesLabel={series} {focal} {note} {source} {headingLevel} columns={metric?.columns} description={metric?.description}
+    negative={negative && { column: negative.y, label: negative.title, description: negative.description }} />
+  {related.length > 0 && <details class="metric-related">
+    <summary>Related measures <span class="meta">{related.length}</span></summary>
+    <div class="related-plots">{related.map((item) => <Plot {...item} {source} headingLevel={(headingLevel + 1) as 4 | 5} />)}</div>
+  </details>}
+</div>
+<style>
+  .metric { position: relative; min-width: 0; }
+  /* Extra anchors for the combined chart: zero-size, out of flow. */
+  .anchor-alias { position: absolute; top: 0; left: 0; }
+  .metric-related { margin-top: 0.5rem; }
+  .metric-related > summary { min-height: 1.75rem; }
+  .related-plots { display: grid; gap: 1.25rem; padding-block: 0.875rem; }
+</style>

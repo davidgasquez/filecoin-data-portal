@@ -1,205 +1,176 @@
 ---
-import { orchestratorQuarters, providers, providerWindowDays, providerWindowEnds as windowEnds, quarters as serviceQuarters } from "../numbers-data"
-import StatCard from "../components/StatCard.astro"
-import SectionHeading from "../components/SectionHeading.astro"
-import Layout from "../layouts/Layout.astro"
-import "../numbers.css"
-import { DAY, formatAtto, formatDecimal, type DatasetRow } from "../numbers"
-import { numbersSections } from "../numbers-sections"
+import Layout from '../layouts/Layout.astro'
+import Metric from '../components/Metric.astro'
+import Comparison from '../components/Comparison.astro'
+import DeclaredMetric from '../components/DeclaredMetric.astro'
+import { sections } from '../sections'
+import { daily, network, quality, providers, quarters, orchestrators } from '../data'
+import { latest, series, format, kind, title, number, windowTotal, qualityWindow, atto } from '../metrics.mjs'
+import { chart } from '../charts.mjs'
 
-// Provider comparison: counts summed over the generated window, rates from those counts.
-const windowLabel = (end: unknown) => end == null
-  ? "no observations"
-  : `${new Date(Date.parse(String(end)) - (providerWindowDays - 1) * DAY).toISOString().slice(0, 10)} to ${end}`
-const qualityChecks = [
-  ["Storage probes", "storage_successes", "storage_checks", windowEnds.storage_end],
-  ["Dealbot retrievals", "retrieval_successes", "retrieval_checks", windowEnds.retrieval_end],
-  ["Sampled retrievals", "sampled_retrieval_successes", "sampled_retrieval_checks", windowEnds.sampled_end],
-  ["Proving faults", "proving_periods_faulted", "proving_periods_closed", windowEnds.proving_end],
-] as const
-const qualityTotal: DatasetRow = Object.fromEntries([
-  ...qualityChecks.flatMap(([, numerator, denominator]) => [numerator, denominator]),
-  "sampled_retrieval_skipped",
-].map((column) => {
-    const values = providers.map((row) => row[column]).filter((value) => value != null)
-    return [column, values.length ? values.reduce((sum: number, value) => sum + Number(value), 0) : null]
-  }))
+const checks = [
+  ['Storage probes', 'storage_successes', 'storage_checks'],
+  ['Dealbot retrievals', 'retrieval_successes', 'retrieval_checks'],
+  ['Sampled piece retrievals', 'sampled_retrieval_successes', 'sampled_retrieval_checks'],
+  ['Proving faults', 'proving_periods_faulted', 'proving_periods_closed'],
+].map(([label, numerator, denominator]) => ({ label, ...qualityWindow(quality, providers, numerator, denominator) }))
+const sampled = checks[2]
+const attempted = sampled.rows.filter((row) => row.attempts > 0)
+const selected = [...attempted].sort((a, b) => b.attempts - a.attempts).slice(0, 10).sort((a, b) => a.rate - b.rate)
+const percent = (value: number | null) => value == null ? 'Not observed' : new Intl.NumberFormat('en', { style: 'percent', maximumFractionDigits: 2 }).format(value)
+const count = (value: number) => new Intl.NumberFormat('en').format(value)
+// Dots encode position, not length: crop the shared axis to the nearest 5% below the lowest selected rate.
+const axisMin = selected.length ? Math.min(0.95, Math.floor(Math.min(...selected.map((row) => row.rate)) * 20) / 20) : 0
+const at = (rate: number) => `left:${((rate - axisMin) / (1 - axisMin) * 100).toFixed(2)}%`
+const ticks = [0, 1, 2, 3, 4, 5].map((i) => axisMin + (1 - axisMin) * i / 5)
+const pooled = sampled.attempts ? sampled.successes / sampled.attempts : null
+const showPooled = pooled != null && pooled >= axisMin
 
-function ratioCell(row: DatasetRow, numerator: string, denominator: string): string {
-  if (row[numerator] == null || row[denominator] == null) return "No observations"
-  const total = Number(row[denominator])
-  if (total === 0) return "0 / 0 (undefined)"
-  return `${formatDecimal((Number(row[numerator]) / total) * 100, 2)}% (${Number(row[numerator]).toLocaleString("en-US")} / ${total.toLocaleString("en-US")})`
-}
+const onboarded = windowTotal(daily, 'onboarded_pibs')
+const removed = windowTotal(daily, 'removed_pibs')
+const burn = latest(daily, 'burn_coverage_ratio')
+const burnRow = daily.find((row) => row.date === burn?.date)
+const rewardRow = daily.findLast((row) => ['minted_rewards_fil', 'miner_rewards_fil', 'service_rewards_fil', 'emission_burn_fil'].every((key) => number(row[key]) != null))
 
-// Solstice quarters: values as published; the page only labels them.
-const GENESIS = 1_598_306_400_000
-const blockTime = (block: unknown) => block == null ? "Unknown" : `${new Date(GENESIS + Number(block) * 30_000).toISOString().slice(0, 16).replace("T", " ")} UTC`
-const quarters = serviceQuarters.map((quarter) => {
-  const asOf = Number(quarter.as_of_block)
-  const phase = quarter.as_of_block == null
-    ? "Unknown"
-    : asOf < Number(quarter.start_block) ? "Not started"
-      : asOf <= Number(quarter.end_block) ? "In quarter (partial)"
-        : asOf < Number(quarter.verification_start_block) ? "Posting window"
-          : !quarter.is_bound ? "Verification window" : "Bound"
-  const gate = Number(quarter.quarter) === 1
-    ? "Not gated (quarter 1)"
-    : quarter.gate_checked_at == null
-      ? "No gate check observed"
-      : `${quarter.gate_passed ? "Passed" : "Failed"} at ${String(quarter.gate_checked_at).slice(0, 10)} (${quarter.gate_steps} steps)`
-  return {
-    row: quarter,
-    phase,
-    gate,
-    threshold: Number(quarter.quarter) === 1 ? "None" : quarter.gate_checked_at == null ? "Not observed" : formatAtto(quarter.gate_threshold_atto_usd, "usd"),
-    shares: quarter.shares_submitted_at == null
-      ? "No SharesSubmitted event observed (all-zero submissions emit none)"
-      : `${String(quarter.shares_submitted_at).slice(0, 10)} · ${quarter.share_recipients} recipients · ${formatAtto(quarter.shares_total_atto_usd, "usd")}`,
-    orchestrators: orchestratorQuarters.filter((row) => row.quarter === quarter.quarter),
-  }
-})
+// Solstice: values as published; the page only labels them. Atto amounts stay exact BigInt until display rounding.
+const blockTime = (block: unknown) => block == null ? 'unknown time' : new Date(1_598_306_400_000 + Number(block) * 30_000).toISOString().slice(0, 16).replace('T', ' ')
+const usd = (value: unknown) => value == null ? 'Unknown' : `$${atto(value)}`
+const fil = (value: unknown) => value == null ? 'Unknown' : `${atto(value, 4)} FIL`
+const phase = (q: (typeof quarters)[number]) => q.as_of_block == null ? 'Unknown'
+  : Number(q.as_of_block) < Number(q.start_block) ? 'Not started'
+  : Number(q.as_of_block) <= Number(q.end_block) ? 'In quarter, partial'
+  : Number(q.as_of_block) < Number(q.verification_start_block) ? 'Posting window'
+  : q.is_bound ? 'Bound' : 'Verification window'
+const gate = (q: (typeof quarters)[number]) => Number(q.quarter) === 1 ? 'Not gated'
+  : q.gate_checked_at == null ? 'Not observed'
+  : `${q.gate_passed ? 'Passed' : 'Failed'} ${String(q.gate_checked_at).slice(0, 10)} · ${usd(q.gate_threshold_atto_usd)} threshold`
+
+const auditColumns = network.columns.filter((column) => column.name !== 'date' && !column.name.endsWith('_json'))
+const solsticeAfter = sections.some((section) => section.id === 'provider-quality') ? 'provider-quality' : sections.at(-1)?.id
+const toc = sections.flatMap((section) => [[section.id, section.title], ...(section.id === solsticeAfter ? [['solstice', 'Solstice']] : [])])
 ---
-
-<Layout
-  title="Filecoin in Numbers | Filecoin Data Portal"
-  description="Core Filecoin metrics with daily scorecards and interactive historical charts."
->
-  <div class="numbers-dashboard" data-numbers-dashboard data-chart-data-url="/numbers.json">
-    <div class="numbers-toolbar">
-      <h1>Filecoin in Numbers</h1>
-      <nav class="numbers-toc" aria-label="Numbers sections">
-        {numbersSections.map((section, index) => (
-          <a href={`#${section.id}`} data-section-link={section.id} aria-current={index === 0 ? "location" : undefined}>
-            {section.title}
-          </a>
-        ))}
+<Layout title="Filecoin in numbers" description="Daily Filecoin network, storage, payments, provider, and token metrics with sources.">
+  <div class="numbers">
+  <header class="numbers-head"><h1>Filecoin in numbers</h1></header>
+  <div class="numbers-toolbar">
+    <nav class="section-nav" aria-label="Sections" data-section-nav>
+      {toc.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}<a href="#all-metrics">All metrics</a>
+    </nav>
+    <details class="section-menu">
+      <summary>Sections <span aria-hidden="true">⌄</span></summary>
+      <nav aria-label="Sections" data-section-nav>
+        {toc.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}<a href="#all-metrics">All metrics</a>
       </nav>
-      <div class="numbers-toolbar__controls">
-        <div class="chart-range-toggle" role="group" aria-label="Chart timeframe">
-          <button type="button" data-chart-range="6m" aria-pressed="false">6M</button>
-          <button type="button" data-chart-range="1y" aria-pressed="true">1Y</button>
-          <button type="button" data-chart-range="all" aria-pressed="false">All</button>
-        </div>
-        <button type="button" class="numbers-expand-toggle" data-expand-all aria-label="Expand all charts" aria-pressed="false">
-          Expand All
-        </button>
-      </div>
-    </div>
-
-    <noscript>
-      <p class="numbers-noscript">Scorecards show the latest values. Enable JavaScript to open historical charts and change their timeframe.</p>
-    </noscript>
-
-    {numbersSections.map((section) => (
-        <section class="numbers-section" aria-labelledby={section.id} data-numbers-section={section.id}>
-          <SectionHeading id={section.id} label={section.title} class="numbers-section__legend" />
-          {section.groups.map((group) => (
-            <Fragment>
-              {group.title && <h3 class="numbers-group">{group.title}</h3>}
-              <div class={`stat-grid stat-grid--${section.columns}`}>
-                {group.charts.map((chart) => <StatCard {chart} />)}
-              </div>
-            </Fragment>
-          ))}
-
-          {section.id === "provider-quality" && (
-            <details class="numbers-table" id="provider-comparison">
-              <summary>Provider comparison · {providerWindowDays}-day windows</summary>
-              <p>
-                Counts summed per provider over each check's displayed {providerWindowDays}-day window; sources update independently. Rates are successes over attempts, never averaged. Storage and retrieval figures are Dealbot probes, not client traffic. Sampled retrieval skips are not attempts. Proving faults cover closed periods only.
-              </p>
-              <div class="numbers-table__scroll" role="region" aria-label="Provider comparison" tabindex="0">
-                <table>
-                  <thead>
-                    <tr>
-                      <th scope="col">Provider</th>
-                      {qualityChecks.map(([label, , , end]) => <th scope="col">{label}<span>{windowLabel(end)}</span></th>)}
-                      <th scope="col">Sampled skips<span>{windowLabel(windowEnds.sampled_end)}</span></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {providers.map((row) => (
-                      <tr>
-                        <th scope="row">{row.name ?? "Unknown"} <span>#{row.provider_id ?? "unrecorded"}</span></th>
-                        {qualityChecks.map(([, numerator, denominator]) => <td>{ratioCell(row, numerator, denominator)}</td>)}
-                        <td>{row.sampled_retrieval_skipped ?? "—"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <th scope="row">All providers</th>
-                      {qualityChecks.map(([, numerator, denominator]) => <td>{ratioCell(qualityTotal, numerator, denominator)}</td>)}
-                      <td>{qualityTotal.sampled_retrieval_skipped ?? "—"}</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </details>
-          )}
-          {section.id === "solstice" && (
-          <Fragment>
-            {quarters.length > 1 && (
-              <p class="numbers-note">
-                <label> Quarter
-                  <select data-quarter-select>
-                    {quarters.map((quarter) => <option value={String(quarter.row.quarter)}>Q{quarter.row.quarter}</option>)}
-                  </select>
-                </label>
-              </p>
-            )}
-            {quarters.length === 0 && <p class="numbers-note">No Solstice quarters observed.</p>}
-            {quarters.map((quarter, quarterIndex) => (
-              <div class="numbers-table" id={`solstice-q${quarter.row.quarter}`} data-quarter={String(quarter.row.quarter)} hidden={quarterIndex > 0}>
-                <dl class="numbers-facts">
-                  <div><dt>Quarter</dt><dd>Q{quarter.row.quarter} · blocks {quarter.row.start_block}–{quarter.row.end_block}</dd></div>
-                  <div><dt>Phase</dt><dd>{quarter.phase}</dd></div>
-                  <div><dt>Coverage</dt><dd>through block {quarter.row.as_of_block ?? "unknown"} ({blockTime(quarter.row.as_of_block)})</dd></div>
-                  <div><dt>Bound FPV</dt><dd>{quarter.row.is_bound ? formatAtto(quarter.row.bound_volume_atto_usd, "usd") : `Not bound (bound at block ${quarter.row.bound_block})`}</dd></div>
-                  <div><dt>Gate threshold</dt><dd>{quarter.threshold}</dd></div>
-                  <div><dt>Gate outcome</dt><dd>{quarter.gate}</dd></div>
-                  <div><dt>Shares</dt><dd>{quarter.shares}</dd></div>
-                </dl>
-                <div class="numbers-table__scroll" role="region" aria-label={`Q${quarter.row.quarter} orchestrators`} tabindex="0">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th scope="col">Orchestrator</th>
-                        <th scope="col">Calculated eligible FPV</th>
-                        <th scope="col">Latest reported</th>
-                        <th scope="col">Bound</th>
-                        <th scope="col">Pending FIL</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {quarter.orchestrators.map((row) => (
-                        <tr>
-                          <th scope="row"><code>{row.orchestrator}</code>{row.is_removed_in_quarter && <span> removed</span>}</th>
-                          <td>
-                            {formatAtto(row.volume_atto_usd, "usd")}
-                            <span>{row.is_complete ? "complete" : `partial, through block ${row.volume_as_of_block ?? "unknown"}`}</span>
-                          </td>
-                          <td>
-                            {row.reported_volume_atto_usd == null ? "Not reported" : formatAtto(row.reported_volume_atto_usd, "usd")}
-                            {Number(row.corrections) > 0 && <span>{row.corrections} corrections</span>}
-                          </td>
-                          <td>{row.is_bound ? formatAtto(row.bound_volume_atto_usd, "usd") : "Not bound"}</td>
-                          <td>{formatAtto(row.fil_pending_atto_fil, "fil")}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
-          </Fragment>
-          )}
-        </section>
-    ))}
+    </details>
+    <fieldset class="chart-range" data-chart-range hidden aria-describedby="range-scope">
+      <legend class="sr">Chart history</legend>
+      {[['6m', '6m'], ['1y', '1y'], ['all', 'All']].map(([value, label]) => <label><input type="radio" name="numbers-range" value={value} checked={value === '6m'} /><span>{label}</span></label>)}
+    </fieldset>
+    <p class="range-status meta" data-range-status role="status" hidden></p>
+    <span class="sr" id="range-scope">Time-series history, ending at each chart’s last observation. Comparisons retain their stated windows; the metric ledger always shows full history.</span>
   </div>
 
-  <script>
-    import "../numbers-client"
-  </script>
+  {sections.map((section) => <Fragment>
+    <section class="board" id={section.id} aria-labelledby={`${section.id}-title`}>
+      <h2 id={`${section.id}-title`}>{section.title}</h2>
+      {section.groups.map((group, index) => <div class="board-group">
+        {group.title && <h3 class="group-title">{group.title}</h3>}
+        <div class="chart-grid">
+          {group.charts.filter(metric => metric.y !== 'terminated_pibs').map(metric => metric.source === null
+            ? <DeclaredMetric id={metric.id} headingLevel={group.title ? 4 : 3} />
+            : <Metric metric={metric} label={metric.y === 'onboarded_pibs' ? 'Onboarded & terminated' : undefined} negative={metric.y === 'onboarded_pibs' ? group.charts.find(item => item.y === 'terminated_pibs') : undefined} headingLevel={group.title ? 4 : 3} />)}
+          {index === section.groups.length - 1 && section.id === 'power' && <Fragment>
+            <Comparison label="Onboarded vs removed, 30 days" rows={[
+              { label: 'Onboarded', value: onboarded.count ? onboarded.value : null, column: 'onboarded_pibs' },
+              { label: 'Removed', value: removed.count ? removed.value : null, column: 'removed_pibs' },
+            ]} note={`Onboarded ${onboarded.start} → ${onboarded.end} (${onboarded.count}/30 days); removed ${removed.start} → ${removed.end} (${removed.count}/30 days). Removed includes expired and terminated.`} />
+          </Fragment>}
+          {index === section.groups.length - 1 && section.id === 'protocol' && <Fragment>
+            <Comparison label="Trailing-year burn and spending" rows={[
+              { label: 'Non-emission burn', value: burnRow?.annual_non_emission_burn_usd, column: 'value_usd' },
+              { label: 'Distributed rewards', value: burnRow?.annual_distributed_rewards_usd, column: 'value_usd' },
+              { label: 'Public goods funding', value: burnRow?.annual_pgf_deployments_usd, column: 'value_usd' },
+            ]} note={`${burn?.date ?? 'Not observed'} · burn and rewards cover ${burnRow?.annual_coverage_days ?? 'unknown'}/365 complete days. Independent amounts, not shares.`} />
+            <Comparison label="Where minted rewards go" rows={[
+              { label: 'Miner rewards', value: rewardRow?.miner_rewards_fil, column: 'value_fil' },
+              { label: 'Service rewards', value: rewardRow?.service_rewards_fil, column: 'value_fil' },
+              { label: 'Emission burn', value: rewardRow?.emission_burn_fil, column: 'value_fil' },
+            ]} note={`${rewardRow?.date ?? 'Not observed'} · of ${format(rewardRow?.minted_rewards_fil, 'minted_rewards_fil')} minted that day.`} />
+          </Fragment>}
+        </div>
+      </div>)}
+
+      {section.id === 'provider-quality' && <div class="board-group">
+        <h3 class="group-title">By provider</h3>
+        <figure class="dot-plot">
+          <figcaption class="meta">Sampled piece retrieval success, {sampled.start} → {sampled.end}. The {selected.length} providers with the most attempts; skips excluded. Axis starts at {percent(axisMin)}, read dot position.{showPooled && ` Tall rule: pooled rate across all ${attempted.length} providers, ${percent(pooled)}.`}</figcaption>
+          <div class="provider-list"><div class="dot-axis meta" aria-hidden="true"><span>Provider</span><span class="dot-ends"><span>{percent(axisMin)}</span><span>100%</span></span><span>Successes / attempts</span></div>
+          {selected.length ? selected.map((row) => <div class="provider-row">
+            <span>{row.name}<span class="meta mono"> #{row.id}</span></span>
+            <span class="dot-track" role="img" aria-label={`${row.name}: ${percent(row.rate)}`}>{ticks.map((tick) => <i style={at(tick)} />)}{showPooled && <b style={at(pooled!)} />}<span class="dot" style={at(row.rate)} /></span>
+            <span class="numeric">{percent(row.rate)} <span class="meta">{count(row.successes)} / {count(row.attempts)}</span></span>
+          </div>) : <p>No sampled retrieval attempts observed.</p>}
+          </div>
+        </figure>
+        <details class="audit" id="provider-comparison"><summary>All providers, all four checks (30 days)</summary>
+          <p class="meta">Pooled rates divide total successes (or faults) by total attempts (or closed periods), not averages of provider rates. Synthetic probes, not client traffic. <a href="/datasets/daily_provider_quality">Definitions &amp; source</a>.</p>
+          <div class="check-grid">{checks.map((check) => <section>
+            <h4>{check.label}</h4>
+            <p class="meta">{check.start ?? 'Unknown'} → {check.end ?? 'unknown'} · pooled {percent(check.attempts ? check.successes / check.attempts : null)}</p>
+            <div class="table-scroll" tabindex="0" role="region" aria-label={`${check.label} by provider`}><table>
+              <thead><tr><th scope="col">Provider</th><th scope="col" class="numeric">Rate</th><th scope="col" class="numeric">{check.label === 'Proving faults' ? 'Faulted / closed' : 'Successes / attempts'}</th></tr></thead>
+              <tbody>{check.rows.map((row) => <tr><th scope="row">{row.name} <span class="mono meta">#{row.id}</span></th><td class="numeric">{percent(row.rate)}</td><td class="numeric">{count(row.successes)} / {count(row.attempts)}</td></tr>)}</tbody>
+            </table></div>
+          </section>)}</div>
+        </details>
+      </div>}
+
+    </section>
+
+    {section.id === solsticeAfter && <section class="board" id="solstice" aria-labelledby="solstice-title">
+      <h2 id="solstice-title">Solstice</h2>
+      <p class="meta board-note">Quarterly payment volume as observed onchain; provisional until bound. Amounts are exact atto values rounded for display. <a href="/datasets/service_quarters">Definitions &amp; source</a>.</p>
+      {quarters.length ? <div class="table-scroll" tabindex="0" role="region" aria-label="Solstice quarters"><table class="solstice">
+        <thead><tr><th scope="col">Quarter</th><th scope="col">Phase</th><th scope="col">Observed through</th><th scope="col" class="numeric">Bound volume</th><th scope="col">Gate</th><th scope="col">Shares</th></tr></thead>
+        <tbody>{quarters.map((q) => <tr id={`solstice-q${q.quarter}`}>
+          <th scope="row">Q{q.quarter} <span class="mono meta">{q.start_block}–{q.end_block}</span></th>
+          <td>{phase(q)}</td>
+          <td class="mono">{q.as_of_block == null ? 'Unknown' : <Fragment>block {q.as_of_block}<span class="meta block-time">{blockTime(q.as_of_block)} UTC</span></Fragment>}</td>
+          <td class="numeric">{q.is_bound ? usd(q.bound_volume_atto_usd) : <span class="null">Not bound</span>}</td>
+          <td>{gate(q)}</td>
+          <td>{q.shares_submitted_at == null ? <span class="null">No event (all-zero submissions emit none)</span> : `${usd(q.shares_total_atto_usd)} · ${q.share_recipients} recipients`}</td>
+        </tr>)}</tbody>
+      </table></div> : <p>No quarters observed.</p>}
+      {orchestrators.length > 0 && <details class="audit"><summary>Orchestrators by quarter</summary>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Solstice orchestrators"><table class="solstice">
+          <thead><tr><th scope="col">Quarter</th><th scope="col">Orchestrator</th><th scope="col" class="numeric">Calculated volume</th><th scope="col">Coverage</th><th scope="col" class="numeric">Reported</th><th scope="col" class="numeric">Bound</th><th scope="col" class="numeric">Pending FIL</th></tr></thead>
+          <tbody>{orchestrators.map((o) => <tr>
+            <td>Q{o.quarter}</td>
+            <th scope="row" class="mono">{o.orchestrator}{o.is_removed_in_quarter && <span class="meta"> removed</span>}</th>
+            <td class="numeric">{usd(o.volume_atto_usd)}</td>
+            <td>{o.is_complete ? 'Complete' : <span class="null">Partial · block {o.volume_as_of_block ?? 'unknown'}</span>}</td>
+            <td class="numeric">{o.reported_volume_atto_usd == null ? <span class="null">Not reported</span> : usd(o.reported_volume_atto_usd)}{Number(o.corrections) > 0 && <span class="meta"> · {o.corrections} corrections</span>}</td>
+            <td class="numeric">{o.is_bound ? usd(o.bound_volume_atto_usd) : <span class="null">Not bound</span>}</td>
+            <td class="numeric">{fil(o.fil_pending_atto_fil)}</td>
+          </tr>)}</tbody>
+        </table></div>
+      </details>}
+    </section>}
+  </Fragment>)}
+
+  <section class="board" id="all-metrics" aria-labelledby="all-metrics-title">
+    <h2 id="all-metrics-title">All network metrics</h2>
+    <p class="meta board-note">Every column of <a href="/datasets/daily_network_metrics">daily_network_metrics</a>: latest non-null value, its date, and full history. Missing is never zero. FIL shown to at most 6 decimals. Early burn-coverage history has partial trailing-year windows; compare with annual coverage days. <a href="/numbers-history.json">All plotted history (JSON)</a>.</p>
+    <details class="audit"><summary>Inspect all {auditColumns.length} network metrics</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="All network metrics"><table class="metric-ledger"><caption class="sr">Daily network metrics: latest known values and full-history miniatures</caption><thead><tr><th scope="col">Metric &amp; definition</th><th scope="col" class="numeric">Latest</th><th scope="col">Date (UTC)</th><th scope="col">History</th></tr></thead><tbody>
+        {auditColumns.map((column) => { const value = latest(daily, column.name); return <tr><th scope="row"><details><summary>{title(column.name)}</summary><p>{column.description}</p><a class="mono source-link" href={`/datasets/daily_network_metrics#${column.name}`}>{column.name}</a></details></th><td class="numeric">{format(value?.value, column.name, false)}</td><td class="mono">{value?.date ?? 'Not observed'}</td><td class="spark" set:html={chart(series(daily, column.name, 0), column.name, kind(column.name), { mini: true })} /></tr> })}
+      </tbody></table></div>
+    </details>
+  </section>
+  </div>
 </Layout>
+<script>
+  import '../numbers-ranges'
+  import '../numbers-nav'
+  import '../numbers-links'
+</script>

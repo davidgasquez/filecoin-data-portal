@@ -1,12 +1,17 @@
 name: Website
 
+# Builds and tests web/ against the published snapshot. Deploys:
+# - preview: push or dispatch on portal-migration -> isolated filecoindataportal-preview (workers.dev)
+# - production: main AND vars.FDP_PRODUCTION_DEPLOY == 'true' -> apex (--env production)
+# Anything else only builds and tests. web/old (archive) is excluded and never rebuilt here.
+
 on:
   workflow_dispatch: {}
   push:
-    branches:
-      - main
+    branches: [main, portal-migration]
     paths:
       - "web/**"
+      - "!web/old/**"
       - ".github/workflows/website.yml"
   workflow_run:
     workflows: ["Pipeline"]
@@ -20,27 +25,75 @@ concurrency:
 jobs:
   website:
     name: Website
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      PREVIEW: ${{ github.event_name != 'workflow_run' && github.ref == 'refs/heads/portal-migration' }}
+      PRODUCTION: ${{ github.ref == 'refs/heads/main' && vars.FDP_PRODUCTION_DEPLOY == 'true' }}
+    defaults:
+      run:
+        working-directory: web
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
           node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v10.3.2
+        with:
+          enable-cache: false
+
+      - name: Download published snapshot
+        run: |
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/fdp.duckdb" https://data.filecoindataportal.xyz/fdp.duckdb
+          echo "FDP_DB=$RUNNER_TEMP/fdp.duckdb" >> "$GITHUB_ENV"
+          {
+            echo "commit: $GITHUB_SHA"
+            echo "snapshot: $(sha256sum "$RUNNER_TEMP/fdp.duckdb" | cut -d' ' -f1) $(stat -c %s "$RUNNER_TEMP/fdp.duckdb") bytes"
+            echo "preview: $PREVIEW, production: $PRODUCTION"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Install
+        run: npm ci
+
+      - name: Configure preview origin
+        if: env.PREVIEW == 'true'
+        run: |
+          echo 'SITE_URL=https://filecoindataportal-preview.davidgasquez.workers.dev' >> "$GITHUB_ENV"
+          echo 'ARCHIVE_URL=https://filecoindataportal-old.davidgasquez.workers.dev' >> "$GITHUB_ENV"
+
+      - name: Check and unit tests
+        run: npm run check && npm test && npm run test:foc
 
       - name: Build
-        working-directory: web
-        run: npm ci && npm run build && npm run check
+        run: npm run build
 
-      - name: Deploy
-        if: github.ref == 'refs/heads/main'
-        working-directory: web
+      - name: Static site tests
+        run: npm run test:site
+
+      - name: Deploy preview
+        if: env.PREVIEW == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: fbe814d4a37d3d3d7fcfeec0ab929ff6
-        run: npm run deploy
+        run: npm run deploy:preview
+
+      - name: Deploy production
+        if: env.PRODUCTION == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
+          FDP_PRODUCTION_DEPLOY: ${{ vars.FDP_PRODUCTION_DEPLOY }}
+        run: npm run deploy:production
+
+      - name: Smoke-test deployed site
+        if: env.PREVIEW == 'true' || env.PRODUCTION == 'true'
+        run: BASE_URL="${SITE_URL:-https://filecoindataportal.xyz}" npm run test:http

@@ -1,13 +1,32 @@
+// Default target is the isolated preview Worker on workers.dev. It never touches the apex.
+// Production is only `--env production` via `npm run deploy:production` (gated, see scripts/deploy.mjs).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "filecoindataportal",
+  "name": "filecoindataportal-preview",
+  "account_id": "fbe814d4a37d3d3d7fcfeec0ab929ff6",
   "compatibility_date": "2026-10-28",
-  "workers_dev": false,
+  "workers_dev": true,
   "preview_urls": false,
   "assets": {
     "directory": "./dist",
     "html_handling": "drop-trailing-slash",
     "not_found_handling": "404-page"
   },
-  "routes": [{ "pattern": "filecoindataportal.xyz", "custom_domain": true }]
+  "env": {
+    "production": {
+      // Mirrors the live apex Worker: both the custom domain and the zone route exist; keep both.
+      "name": "filecoindataportal",
+      "workers_dev": false,
+      "preview_urls": false,
+      "assets": {
+        "directory": "./dist",
+        "html_handling": "drop-trailing-slash",
+        "not_found_handling": "404-page"
+      },
+      "routes": [
+        { "pattern": "filecoindataportal.xyz", "custom_domain": true },
+        { "pattern": "filecoindataportal.xyz/*", "zone_name": "filecoindataportal.xyz" }
+      ]
+    }
+  }
 }

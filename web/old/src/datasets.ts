@@ -29,7 +29,7 @@ export const datasets: Dataset[] = await Promise.all(tables.map(async (table) =>
     description: String(table.description ?? ""),
     rows: Number(table.rows),
     url: `${dataUrl}/${id}.parquet`,
-    codeUrl: `https://github.com/davidgasquez/filecoin-data-portal/blob/main/assets/main/${id}.sql`,
+    codeUrl: `https://github.com/davidgasquez/filecoin-data-portal/blob/d952d8896567695765db4607aa2f74d8f03bcfef/assets/main/${id}.sql`,
     columns,
     sample: await query(`SELECT * FROM main."${id}" LIMIT 10`),
   }

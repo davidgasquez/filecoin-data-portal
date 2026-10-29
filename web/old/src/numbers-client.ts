@@ -119,10 +119,9 @@ function option({ title, config, expanded }: Chart) {
         showSymbol: isolated,
         symbol: "circle",
         symbolSize: 6,
-        lineStyle: { color: stroke, type: (["solid", "dashed", "dotted"] as const)[index % 3], width: 1.5 },
+        lineStyle: { color: stroke, type: index === 0 ? "solid" as const : "dashed" as const, width: 1.5 },
         itemStyle: { color: colors.background, borderColor: stroke },
-        endLabel: { show: labelled, formatter: "{a}", color: stroke, fontFamily, fontSize: 10, distance: 4, width: 126, overflow: "break" as const, lineHeight: 12 },
-        labelLayout: { moveOverlap: "shiftY" as const },
+        endLabel: { show: labelled, formatter: "{a}", color: stroke, fontFamily, fontSize: 10, distance: 4 },
       }
   })
   const axis = { axisLine: { show: false }, axisTick: { show: false } }
@@ -130,7 +129,7 @@ function option({ title, config, expanded }: Chart) {
     animation: false,
     useUTC: true,
     textStyle: { color: colors.text, fontFamily },
-    grid: expanded ? { left: 8, right: labelled ? 140 : 28, top: 8, bottom: 26, containLabel: true } : { left: 2, right: 2, top: 3, bottom: 3 },
+    grid: expanded ? { left: 8, right: labelled ? 88 : 28, top: 8, bottom: 26, containLabel: true } : { left: 2, right: 2, top: 3, bottom: 3 },
     tooltip: {
       trigger: "axis" as const,
       confine: true,

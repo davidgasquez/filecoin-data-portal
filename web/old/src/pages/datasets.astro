@@ -1,0 +1,59 @@
+---
+import Layout from "../layouts/Layout.astro"
+import { cell, datasets } from "../datasets"
+
+const queryUrl = (url: string) => `https://sql-workbench.com/#queries=v0,select-*-from-'${encodeURIComponent(url)}'-limit-10~`
+---
+
+<Layout title="Datasets | Filecoin Data Portal" description="The Filecoin Data Portal datasets, one click away.">
+  <section class="page-header" aria-labelledby="datasets-title">
+    <h1 id="datasets-title">Datasets</h1>
+    <p>The Filecoin Data Portal datasets, one click away.</p>
+  </section>
+
+  <div class="datasets-layout">
+    <nav class="datasets-nav" aria-label="Dataset navigation">
+      <h2>Datasets</h2>
+      <ul>
+        {datasets.map(({ id }) => <li><a href={`#${id}`}>{id}</a></li>)}
+      </ul>
+    </nav>
+    <div class="datasets-content">
+      {datasets.map(({ id, description, url, codeUrl, columns, sample }) => (
+        <section class="dataset-entry" id={id} aria-labelledby={`${id}-title`}>
+          <header>
+            <div>
+              <h2 id={`${id}-title`}><a href={`#${id}`}>{id}</a></h2>
+              <p>{description}</p>
+            </div>
+            <div class="dataset-entry__actions">
+              <a href={url} class="btn btn--primary">Download</a>
+              <a href={queryUrl(url)} class="btn" target="_blank" rel="noopener noreferrer">Query</a>
+              <a href={codeUrl} class="btn" target="_blank" rel="noopener noreferrer">Code</a>
+            </div>
+          </header>
+          <div class="dataset-markdown">
+            <details class="dataset-section dataset-section--columns">
+              <summary>Columns</summary>
+              <table tabindex="0" aria-label={`${id} columns`}>
+                <thead><tr><th scope="col">name</th><th scope="col">description</th></tr></thead>
+                <tbody>
+                  {columns.map(({ name, description }) => <tr><td><code>{name}</code></td><td>{description}</td></tr>)}
+                </tbody>
+              </table>
+            </details>
+            <details class="dataset-section dataset-section--sample">
+              <summary>Sample</summary>
+              <table tabindex="0" aria-label={`${id} sample rows`}>
+                <thead><tr>{columns.map(({ name }) => <th scope="col">{name}</th>)}</tr></thead>
+                <tbody>
+                  {sample.map(row => <tr>{columns.map(({ name }) => <td>{cell(row[name])}</td>)}</tr>)}
+                </tbody>
+              </table>
+            </details>
+          </div>
+        </section>
+      ))}
+    </div>
+  </div>
+</Layout>

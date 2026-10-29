@@ -13,7 +13,8 @@ collections:
       "assets/model/": FDP reusable entities and derived facts; primary business-logic layer for downstream datasets.
       "assets/main/": FDP public dataset contracts; follow model dependencies for business logic and derivations.
       "fdp/": FDP orchestration, resources, materialization, publishing, and asset tooling; not Filecoin protocol rules.
-      "web/": FDP website; pages query the published DuckDB snapshot at build time.
+      "web/": FDP website; pages query the published DuckDB snapshot at build time. Agent instructions are authored in web/public/SKILL.md and llms.txt.
+      "web/old/": Frozen archive of the previous FDP website; not the current site, routes, or contracts.
   builtin-actors:
     path: .qmd/external
     pattern: "{builtin-actors/**/*.{md,rs,sol,fe,eas,sh,toml,yml,yaml,json},builtin-actors/**/Makefile,builtin-actors/**/Dockerfile}"

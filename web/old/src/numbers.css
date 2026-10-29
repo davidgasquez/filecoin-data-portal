@@ -176,45 +176,36 @@
     color: var(--color-bg);
   }
 
-  .stat-grid,
-  .stat-card__detail-grid {
-    --chart-columns: 1;
-    display: flex;
-    flex-wrap: wrap;
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr;
     gap: var(--space-4);
-  }
-
-  /* Keep the preferred column count; grow incomplete rows to fill the width. */
-  .stat-card,
-  .stat-card__detail {
-    flex: 1 1 calc((100% - (var(--chart-columns) - 1) * var(--space-4)) / var(--chart-columns));
-    min-inline-size: 0;
   }
 
   @media (min-width: 36rem) {
     .stat-grid {
-      --chart-columns: 2;
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 
   @media (min-width: 64rem) {
     .stat-grid {
-      --chart-columns: 4;
+      grid-template-columns: repeat(4, 1fr);
     }
 
     .stat-grid--2 {
-      --chart-columns: 2;
+      grid-template-columns: repeat(2, 1fr);
     }
 
     .stat-grid--3 {
-      --chart-columns: 3;
+      grid-template-columns: repeat(3, 1fr);
     }
   }
 
   .stat-card {
     margin: 0;
     scroll-margin-block-start: var(--numbers-toolbar-height, 7rem);
-    min-block-size: 9.5rem;
+    min-block-size: 10.75rem;
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--color-border);
     background: var(--color-surface);
@@ -410,7 +401,7 @@
   }
 
   .stat-card.is-expanded {
-    flex-basis: 100%;
+    grid-column: 1 / -1;
     min-block-size: 0;
     padding: var(--space-4);
     border-color: var(--color-border-strong);
@@ -474,13 +465,20 @@
   }
 
   .stat-card__detail-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
     margin-block-start: var(--space-3);
   }
 
   @media (min-width: 48rem) {
     .stat-card__detail-grid {
-      --chart-columns: 3;
+      grid-template-columns: repeat(3, 1fr);
     }
+  }
+
+  .stat-card__detail {
+    min-inline-size: 0;
   }
 
   .stat-card__detail-header {
@@ -524,6 +522,10 @@
   .stat-card.is-stale .stat-card__meta {
     color: var(--color-text);
     font-weight: 700;
+  }
+
+  .stat-card.is-expanded > .stat-card__meta {
+    display: none;
   }
 
   .stat-card__source {

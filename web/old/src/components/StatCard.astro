@@ -1,4 +1,5 @@
 ---
+import { archivedOn } from "../archive"
 import { daily, dates } from "../numbers-data"
 import { DAY, columnPoints, formatDate, formatDecimal, formatMetricValue, periodLabels, rangePoints, ranges, sparklinePath, type RangeValues } from "../numbers"
 import type { NumbersMetric } from "../numbers-sections"
@@ -7,9 +8,8 @@ type Props = { chart: NumbersMetric }
 
 const { chart } = Astro.props
 const { id, title, description, period: _, source = "daily_network_metrics", columns: sourceColumns, details, ...config } = chart
-const columns = sourceColumns ?? [...new Set([config.y, ...(config.series?.map(({ y }) => y) ?? []), ...(details?.map(({ y }) => y) ?? [])])]
-const today = new Date()
-const cutoff = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()) - DAY
+const columns = sourceColumns ?? [config.y, ...(config.series?.map(({ y }) => y) ?? []), ...(details?.map(({ y }) => y) ?? [])]
+const cutoff = Date.parse(archivedOn) - DAY
 
 function metricSummary(metric: NumbersMetric) {
   const points = columnPoints(daily, dates, metric.y)
@@ -54,7 +54,6 @@ function metricSummary(metric: NumbersMetric) {
 
 const summary = metricSummary(chart)
 const tooltipId = `${id}-description`
-const observationId = `${id}-observation`
 const panelId = `${id}-panel`
 const titleId = `${id}-title`
 const chartSummaryId = `${id}-chart-summary`
@@ -62,7 +61,7 @@ const chartUrl = new URL(`/numbers#${id}`, Astro.site).href
 const sourceText = source
   ? `Source columns: ${columns.map((column) => `${source}.${column}`).join(", ")}.`
   : "Source: curated count, maintained in the dashboard."
-const prompt = `Read https://filecoindataportal.xyz/SKILL.md and get the definition, model and upstream assets, and data sample for the "${title}" chart at ${chartUrl}. ${sourceText} Then answer the following question:\n\n`
+const prompt = `Read ${new URL("/SKILL.md", Astro.site).href} and get the definition, model and upstream assets, and data sample for the "${title}" chart at ${chartUrl}. ${sourceText} Then answer the following question:\n\n`
 ---
 
 <figure
@@ -76,10 +75,9 @@ const prompt = `Read https://filecoindataportal.xyz/SKILL.md and get the definit
     <span class="stat-card__headline">{summary.value}</span>
     <span class="stat-card__tools">
       <span class="stat-card__info-wrap">
-        <button type="button" class="stat-card__info" aria-label={`About ${title}`} aria-describedby={`${tooltipId} ${observationId}`}>?</button>
+        <button type="button" class="stat-card__info" aria-label={`About ${title}`} aria-describedby={tooltipId}>?</button>
         <span class="stat-card__info-tooltip">
           <span id={tooltipId}>{description}</span>
-          <span id={observationId} class="stat-card__meta">{summary.meta}</span>
           <span class="stat-card__source">
             Source: {source ? <Fragment><a href={`/datasets#${source}`}>{source}</a>.{columns.join(", ")}</Fragment> : "Curated count."}
           </span>
@@ -108,6 +106,7 @@ const prompt = `Read https://filecoindataportal.xyz/SKILL.md and get the definit
   </figcaption>
 
   <strong class="stat-card__value">{summary.value}</strong>
+  <span class="stat-card__meta">{summary.meta}</span>
   <span class="stat-card__trend">{summary.trend}</span>
   <svg class="stat-card__sparkline" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true" focusable="false">
     <path
@@ -119,7 +118,7 @@ const prompt = `Read https://filecoindataportal.xyz/SKILL.md and get the definit
   </svg>
 
   <div id={panelId} class="stat-card__panel" data-chart-panel hidden>
-    <p class="stat-card__description">{description}</p>
+    <p class="stat-card__description">{description} <span class="stat-card__meta">{summary.meta}.</span></p>
     <p
       id={chartSummaryId}
       class="visually-hidden"

@@ -1,130 +1,42 @@
 ---
-import SectionHeading from "../components/SectionHeading.astro"
-import Layout from "../layouts/Layout.astro"
+import Layout from '../layouts/Layout.astro'
+import { repoUrl } from '../data'
+
+const archiveUrl = process.env.ARCHIVE_URL || 'https://old.filecoindataportal.xyz'
 ---
 
-<Layout
-  title="About | Filecoin Data Portal"
-  description="Background, licensing, and usage details for Filecoin Data Portal datasets."
->
-  <section class="page-header" aria-labelledby="about-title">
-    <h1 id="about-title">About</h1>
-    <p>
-      The Filecoin Data Portal is an open and local friendly data platform that
-      unifies Filecoin data from diverse sources, on chain and off chain. Its pipelines and transformations are maintained in the
-      <a href="https://github.com/davidgasquez/filecoin-data-portal">project repository</a>.
-    </p>
+<Layout title="About" description="Who maintains the Filecoin Data Portal, how it is funded and updated, and the terms for its code and datasets.">
+  <header class="page-head compact">
+    <h1>About</h1>
+    <p>The Filecoin Data Portal is an open, local-friendly data platform that unifies Filecoin data from on-chain and off-chain sources into free daily datasets. Pipelines, transformations, and this site are maintained in the <a href={repoUrl}>project repository</a>.</p>
+  </header>
+
+  <section class="block" aria-labelledby="maintainer">
+    <h2 id="maintainer">Who is behind it</h2>
+    <p>The project is maintained by <a href="https://davidgasquez.com/">David Gasquez</a>, thanks to <a href="https://protocol.ai/blog/pl-past-present-future/">Protocol Labs blue funds</a> and <a href="https://www.fil-retropgf.io/">Filecoin Retroactive Public Goods Funding</a> programs.</p>
   </section>
 
-  <section class="about-faq" aria-labelledby="faq-title">
-    <SectionHeading id="faq-title" label="FAQ" />
+  <section class="block" aria-labelledby="updates">
+    <h2 id="updates">Updates</h2>
+    <p>Datasets rebuild once a day in GitHub Actions; <a href={`${repoUrl}/actions`}>every run and its logs</a> are public. Daily tables end at UTC yesterday at the latest, and sources update on different schedules. Get the files from the <a href="/datasets">dataset catalog</a> or see the <a href="/docs">docs</a>. Need something else? <a href={`${repoUrl}/issues/new`}>Open an issue</a>.</p>
+  </section>
 
-    <div class="faq-item">
-      <h3>How much do these datasets cost</h3>
-      <p>
-        All datasets are free to use. They are available to anyone at no cost
-        without warranties or guarantees of any kind, either expressed or
-        implied. By using these datasets, you agree that you do so at your own
-        risk.
-      </p>
-    </div>
+  <section class="block" aria-labelledby="usage">
+    <h2 id="usage">Who uses it</h2>
+    <ul>
+      <li><a href="/numbers">Filecoin in numbers</a>, on this site.</li>
+      <li><a href="https://www.reppo.ai/models">Reppo storage provider reputation models</a>.</li>
+    </ul>
+  </section>
 
-    <div class="faq-item">
-      <h3>Are there restrictions on how these datasets can be used</h3>
-      <p>
-        Datasets can be used without restriction. They are released under a
-        <a href="https://creativecommons.org/public-domain/cc0/"
-          >CC0 license into the public domain</a
-        >.
-      </p>
-    </div>
+  <section class="block" aria-labelledby="terms">
+    <h2 id="terms">License and disclaimer</h2>
+    <p>The datasets are free to use without restriction, released into the public domain under <a href="https://creativecommons.org/public-domain/cc0/">CC0</a>. The code that builds them and this site is under the <a href={`${repoUrl}/blob/main/LICENSE`}>MIT license</a>.</p>
+    <p>Everything is provided as is, without warranties or guarantees of any kind, expressed or implied. You use the datasets at your own risk.</p>
+  </section>
 
-    <div class="faq-item">
-      <h3>Who is using these datasets</h3>
-      <p>
-        Datasets produced by the Filecoin Data Portal are used by a wide range of
-        organizations and individuals. Example use cases include the following.
-      </p>
-      <ul>
-        <li>
-          <a href="/numbers">Filecoin In Numbers</a>.
-        </li>
-        <li>
-          <a href="https://www.reppo.ai/models"
-            >Reppo Storage Provider reputation models</a
-          >.
-        </li>
-      </ul>
-    </div>
-
-    <div class="faq-item">
-      <h3>How does the data get updated</h3>
-      <p>
-        Data updates daily via GitHub Actions. You can review
-        <a href="https://github.com/davidgasquez/filecoin-data-portal/actions"
-          >all runs and logs in the repository</a
-        >.
-      </p>
-    </div>
-
-    <div class="faq-item">
-      <h3>How can I get the data</h3>
-      <p>
-        Data is available in multiple formats. Go to the <a href="/datasets"
-          >datasets page</a
-        > and select the format that suits your needs. If you need more,
-        <a href="https://github.com/davidgasquez/filecoin-data-portal/issues/new"
-          >open an issue</a
-        > and we can help.
-      </p>
-    </div>
-
-    <div class="faq-item">
-      <h3>Who is behind this project</h3>
-      <p>
-        This project is maintained by <a href="https://davidgasquez.com/"
-          >David Gasquez</a
-        > thanks to
-        <a href="https://protocol.ai/blog/pl-past-present-future/"
-          >Protocol Labs blue funds</a
-        > and
-        <a href="https://www.fil-retropgf.io/"
-          >Filecoin Retroactive Public Goods Funding</a
-        > programs.
-      </p>
-    </div>
+  <section class="block" aria-labelledby="previous">
+    <h2 id="previous">Previous site</h2>
+    <p>The earlier version of this site is kept as a frozen archive at <a href={archiveUrl}>{archiveUrl.replace(/^https?:\/\//, '')}</a>. It is no longer updated; the archive shows the dates its pages cover. Current numbers and datasets are here.</p>
   </section>
 </Layout>
-
-<style>
-  .page-header,
-  .about-faq {
-    max-inline-size: 40rem;
-    margin-inline: auto;
-  }
-
-  .faq-item {
-    border-block-end: 1px solid var(--color-border);
-    padding-block: var(--space-4);
-  }
-
-  .faq-item:last-child {
-    border-block-end: none;
-  }
-
-  .faq-item h3 {
-    margin-block: 0 var(--space-2);
-  }
-
-  .faq-item p {
-    margin-block: 0;
-  }
-
-  .faq-item ul {
-    margin-block: var(--space-2) 0;
-  }
-
-  .faq-item li + li {
-    margin-block-start: var(--space-1);
-  }
-</style>

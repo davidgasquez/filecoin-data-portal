@@ -1,0 +1,93 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { builtAt, datasets, repoUrl, type Dataset } from '../../data'
+
+export const getStaticPaths = () => datasets.map((dataset) => ({ params: { id: dataset.id }, props: { dataset } }))
+
+const { dataset } = Astro.props as { dataset: Dataset }
+const { id, title, description, rows, url, codeUrl, columns, sample, key, sources, coverage } = dataset
+const sql = `select *\nfrom '${url}'\nlimit 10;`
+const numeric = /^(TINYINT|SMALLINT|INTEGER|BIGINT|HUGEINT|U\w*INT|FLOAT|DOUBLE|REAL|DECIMAL)/i
+const isNumeric = new Set(columns.filter(({ type }) => numeric.test(type)).map(({ name }) => name))
+// Values arrive as JSON-safe strings or numbers; atto quantities stay exact strings.
+const cell = (value: unknown) => typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value)
+---
+
+<Layout title={title} description={description || `Columns, sample, and Parquet access for ${id}.`}>
+  <header class="page-head compact">
+    <p class="crumbs meta"><a href={`/datasets#${id}`}>Datasets</a> / {id}</p>
+    <h1>{title}</h1>
+    <p>{description || 'No description.'}</p>
+    <div class="actions">
+      <a class="button primary" href={url}>Download Parquet</a>
+      <a class="button" href={codeUrl}>Asset code</a>
+      <a class="button" href={`/datasets/${id}.md`}>Markdown</a>
+    </div>
+  </header>
+
+  <div class="duo">
+  <section class="block" aria-labelledby="shape">
+    <h2 id="shape">Shape</h2>
+    <dl class="facts wide">
+      <div><dt>Table</dt><dd class="mono">{id}</dd></div>
+      <div><dt>Rows ≈</dt><dd>{rows.toLocaleString('en-US')} · {columns.length} columns · local snapshot</dd></div>
+      <div><dt>Grain</dt><dd>{key.length ? <span class="mono">{key.join(', ')}</span> : 'Key not declared'}</dd></div>
+      <div>
+        <dt>Observed, UTC</dt>
+        <dd>{coverage?.start ? <Fragment><span class="mono">{coverage.start} → {coverage.end}</span> <span class="meta">first and last day; days may be missing</span></Fragment> : `Not date-indexed · view built ${builtAt}`}</dd>
+      </div>
+      <div>
+        <dt>Raw sources</dt>
+        <dd>{sources.length ? <span class="mono">{sources.join(', ')}</span> : 'None declared'} · <a href={`${repoUrl}/tree/main/assets/raw`}>raw assets</a></dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="block" aria-labelledby="query">
+    <h2 id="query">Query</h2>
+    <div class="copy">
+      <div class="copy-head">
+        <span class="meta">DuckDB, reads the published file</span>
+        <button class="button" type="button" data-copy={sql} aria-live="polite" hidden>Copy SQL</button>
+      </div>
+      <pre tabindex="0" role="region" aria-label={`${id} query`}><code>{sql}</code></pre>
+    </div>
+    <p class="meta">The published file is rebuilt daily; counts and sample here come from the local snapshot built {builtAt}.</p>
+  </section>
+  </div>
+
+  <section class="block schema" aria-labelledby="columns">
+    <h2 id="columns">Columns</h2>
+    <div class="table-scroll" tabindex="0" role="region" aria-label={`${id} columns`}>
+      <table class="columns">
+        <caption class="sr">{id} column definitions</caption>
+        <thead><tr><th scope="col">Name</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead>
+        <tbody>
+          {columns.map(({ name, type, description }) => (
+            <tr id={name}><td class="mono">{name}</td><td class="mono meta">{type}</td><td>{description || <span class="null">No description</span>}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  {sample.length > 0 && (
+    <section class="block" aria-labelledby="sample">
+      <h2 id="sample">Sample</h2>
+      <p class="meta">{sample.length} rows from the local snapshot{coverage ? ', latest first' : ''}, exactly as stored.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label={`${id} sample rows`}>
+        <table>
+          <caption class="sr">{id} sample rows</caption>
+          <thead><tr>{columns.map(({ name }) => <th scope="col" class={isNumeric.has(name) ? 'numeric' : undefined}>{name}</th>)}</tr></thead>
+          <tbody>
+            {sample.map((row) => (
+              <tr>{columns.map(({ name }) => row[name] == null
+                ? <td class:list={['null', { numeric: isNumeric.has(name) }]}>null</td>
+                : <td class:list={['mono', { numeric: isNumeric.has(name) }]}>{cell(row[name])}</td>)}</tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )}
+</Layout>

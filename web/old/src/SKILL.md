@@ -22,7 +22,7 @@ For upstream APIs, indexers, RPC endpoints, and measurement tools, read [Filecoi
 ## Answering Questions with Data
 
 1. Read the relevant dataset docs.
-2. Inspect asset code when definitions or assumptions are unclear. Clone `https://github.com/davidgasquez/filecoin-data-portal` into a temporary directory if useful.
+2. Inspect asset code when definitions or assumptions are unclear. Clone `https://github.com/davidgasquez/filecoin-data-portal` into a temporary directory if useful. Check out revision `d952d8896567695765db4607aa2f74d8f03bcfef` for this archived snapshot.
 3. Choose the smallest dataset set that can answer the question.
 4. Query canonical parquet URLs directly: `https://data.filecoindataportal.xyz/<dataset>.parquet`.
 5. Inspect schema, types, and sample rows before final SQL.
