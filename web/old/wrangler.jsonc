@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Default: workers.dev preview only (https://filecoindataportal-old.davidgasquez.workers.dev).
+  "name": "filecoindataportal-old",
+  "account_id": "fbe814d4a37d3d3d7fcfeec0ab929ff6",
+  "compatibility_date": "2026-10-28",
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "drop-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "env": {
+    // Opt-in only: `npm run deploy:production` binds old.filecoindataportal.xyz to the same Worker. Never the apex.
+    "production": {
+      "name": "filecoindataportal-old",
+      "workers_dev": true,
+      "preview_urls": false,
+      "routes": [{ "pattern": "old.filecoindataportal.xyz", "custom_domain": true }]
+    }
+  }
+}

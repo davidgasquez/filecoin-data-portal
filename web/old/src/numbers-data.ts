@@ -1,8 +1,9 @@
+import { archivedOn } from "./archive"
 import { query } from "./db"
 import { parseDates } from "./numbers"
 import { numbersSections } from "./numbers-sections"
 
-const beforeToday = "date < current_date"
+const beforeToday = `date < DATE '${archivedOn}'`
 export const providerWindowDays = 30
 
 // Only the columns charts use, from the section config.

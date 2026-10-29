@@ -1,4 +1,16 @@
-import type { ChartConfig, DetailConfig, Period } from "./numbers"
+// Metric inventory carried over from the previous site (web/src/numbers-sections.ts at 7793d6e).
+type MetricFormat = "integer" | "number" | "pib" | "fil" | "mfil" | "usd" | "percent"
+type ChartConfig = {
+  y: string
+  format: MetricFormat
+  scale?: number
+  suffix?: string
+  kind?: "line" | "bar" | "step"
+  bounded?: boolean
+  series?: { label: string; y: string }[]
+}
+type DetailConfig = ChartConfig & { title: string; description: string }
+type Period = "day" | "eod" | "avg" | "pooled" | "snapshot" | "runRate" | "annualized" | "yoy" | "trailing"
 
 export type NumbersMetric = ChartConfig & {
   id: string

@@ -45,7 +45,7 @@ attach 'https://data.filecoindataportal.xyz/fdp.duckdb' as fdp (read_only);
 
 ### 🤖 Agents
 
-Point your agent to [`SKILL.md`](https://filecoindataportal.xyz/SKILL.md). It lists every dataset and explains how to query them.
+Point your agent to [`SKILL.md`](https://filecoindataportal.xyz/SKILL.md). It explains how to choose, query, and interpret datasets, and links the Markdown dataset catalog.
 
 ## ⚙️ Development
 

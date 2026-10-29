@@ -1,0 +1,29 @@
+{
+  "name": "old.filecoindataportal.xyz",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "TZ=UTC astro dev",
+    "build": "TZ=UTC astro build",
+    "postbuild": "node scripts/postbuild.mjs",
+    "check": "astro check",
+    "test": "node --test tests/*.mjs",
+    "preview": "wrangler dev",
+    "deploy": "node scripts/deploy.mjs preview",
+    "deploy:production": "node scripts/deploy.mjs production"
+  },
+  "dependencies": {
+    "@duckdb/node-api": "^2.0.0-r.1",
+    "astro": "^7.4.2",
+    "echarts": "^6.1.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@types/node": "^24.19.2",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.154.0"
+  }
+}

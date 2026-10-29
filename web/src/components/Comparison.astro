@@ -1,0 +1,16 @@
+---
+import { format, number, displayNumber } from '../metrics.mjs'
+interface Props { label: string; rows: { label: string; value: unknown; column: string }[]; note?: string }
+const { label, rows: rawRows, note } = Astro.props as Props
+const rows = rawRows.map((row) => ({ ...row, value: displayNumber(row.value, row.column) }))
+const max = Math.max(0, ...rows.map((row) => number(row.value) ?? 0))
+---
+<figure class="comparison" aria-label={label}>
+  <h3>{label}</h3>
+  {rows.map((row) => <div class="comparison-row">
+    <span class="comparison-label">{row.label}</span>
+    <span class="comparison-track" aria-hidden="true"><span class="comparison-fill" style={`width:${max ? Math.max(0, number(row.value) ?? 0) / max * 100 : 0}%`}></span></span>
+    <span class="comparison-value numeric">{format(row.value, row.column)}</span>
+  </div>)}
+  {note && <figcaption class="meta">{note}</figcaption>}
+</figure>

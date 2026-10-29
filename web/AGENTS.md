@@ -1,11 +1,16 @@
-# Web Guidelines
+# Web
 
-- Fully static site served via Cloudflare Workers Static Assets.
-- Use semantic HTML and keep things vanilla when possible. No react or other frameworks.
-- Use modern CSS.
-- Keep accesibility in mind.
-- Only hydrate where needed (Astro islands).
-- Keep things fast. Load only required data, render charts appropiately, ...
-- Follow a neo-brutalist design. Minimal, monochrome, monospace fonts, high contrast, sharp rectangles, utilitarian layout.
-- Workflow: `npm run dev`, `npm run build`, `npm run preview` (Cloudflare runtime), `npm run deploy`.
-- Use `FDP_DB=../fdp.duckdb npm run dev` to preview local tables.
+- Production site, migrating from the previous app archived in `old/` (separate package; never import from it).
+- Current boundary: preview deployments only. Switching the apex domain requires explicit user approval. Do not modify pipelines or data models.
+- Astro static HTML, vanilla CSS, small progressive-enhancement scripts. No React, ECharts, Tailwind, or UI framework.
+- Editorial data atlas: continuous monochrome canvas, IBM Plex Sans and Mono, typography-led hierarchy, sharp controls, sparse rules. No card grid, ornamental icons, gradients, or animation. A small light/dark toggle follows the system until a choice is saved.
+- Data is evidence: source, observation date, population, units, denominator, missingness and partial coverage remain visible. UTC yesterday is the latest allowed daily date.
+- Never equate Filecoin Pay volume with storage-only revenue or divide warm storage by raw network power. Different populations.
+- Flow = bars; state = lines/steps; comparison = aligned bars/dots; exact lookup = tables. Bars start at zero. Missing days break lines. No dual axes.
+- `/` is the portal landing page; `/numbers` holds all sourced charts and the full metric ledger. Reuse the v1 metric inventory. The explicitly requested high-profile-clients zero is declared, not a fabricated dated series.
+- Use full grouped numbers, not K/M/B abbreviations. Headlines and hover use the same concise precision; the audit retains more decimals. Integrate definitions and sources into chart-title disclosures, not repetitive scale rows. Numbers time-series history defaults to 6 months, with 1 year and all-history options; labelled fixed-window comparisons stay fixed.
+- Native HTML controls and disclosures, visible focus, responsive light/dark views. Hover also works with touch and arrow keys. Everything essential works without JavaScript.
+- `/foc` is an integrated explorer with real, pre-rendered entity routes, not an iframe or JS-only app. Its intermediate `.foc/` data is generated locally from a read-only snapshot; do not copy publishing workflows from the prototype. Keep preparation idempotent: unchanged inputs must not rewrite imported JSON or trigger dev reload loops.
+- Explorer aggregates must not add different native tokens. Keep stablecoin-at-par totals separate from native rail amounts, API snapshot timestamps separate from daily event coverage, and exact Solstice atto strings separate from display rounding.
+- Validate with `npm run check`, `npm test`, `npm run test:foc`, `npm run build`, and `npm run test:site`, plus actual desktop/mobile interaction checks.
+- Design rationale and guideline summary live in README.md. Keep authored code small and avoid framework-like abstractions.

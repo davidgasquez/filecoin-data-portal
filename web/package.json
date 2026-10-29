@@ -1,21 +1,32 @@
 {
-  "name": "filecoindataportal.xyz",
+  "name": "filecoin-data-portal-web",
   "private": true,
   "type": "module",
   "engines": {
     "node": ">=24"
   },
   "scripts": {
-    "dev": "astro dev",
+    "foc:data": "uv run scripts/foc.py",
+    "predev": "npm run foc:data",
+    "prebuild": "npm run foc:data",
+    "precheck": "npm run foc:data",
+    "dev": "astro dev --host 127.0.0.1 --port 4322",
     "build": "astro build",
+    "postbuild": "node scripts/postbuild.mjs",
+    "build:preview": "SITE_URL=https://filecoindataportal-preview.davidgasquez.workers.dev ARCHIVE_URL=https://filecoindataportal-old.davidgasquez.workers.dev npm run build",
     "check": "astro check",
-    "preview": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "preview": "astro preview --host 127.0.0.1 --port 4322",
+    "test": "node --test tests/*.test.mjs",
+    "test:foc": "uv run tests/foc_data_test.py",
+    "test:site": "node --test tests/site.mjs tests/*-site.mjs",
+    "test:http": "node --test tests/http.mjs",
+    "deploy": "node scripts/deploy.mjs preview",
+    "deploy:preview": "node scripts/deploy.mjs preview",
+    "deploy:production": "node scripts/deploy.mjs production"
   },
   "dependencies": {
     "@duckdb/node-api": "^2.0.0-r.1",
-    "astro": "^7.4.2",
-    "echarts": "^6.1.0"
+    "astro": "^7.4.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",

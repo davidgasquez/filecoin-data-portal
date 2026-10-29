@@ -1,20 +1,23 @@
 # Filecoin Data Portal
 
-> Open Filecoin datasets published as Parquet files and updated daily.
+> Open Filecoin datasets, published as Parquet files and rebuilt daily.
 
-## When to use
+Read the agent instructions before answering data questions.
 
-Use the Filecoin Data Portal when you need to query, analyze, explain, chart, or understand Filecoin datasets and metrics, including how those metrics are derived. Start with the agent instructions before answering data questions.
+## Agents
 
-## Agent resources
+- [SKILL.md](/SKILL.md): How to choose, query, and interpret datasets.
+- [Markdown catalog](/datasets.md): Every dataset, linking a Markdown page per dataset at `/datasets/<dataset>.md` with columns, units, coverage, and sources.
 
-- [Agent instructions](https://filecoindataportal.xyz/SKILL.md): How to choose, inspect, and query datasets.
-- [Dataset catalog](https://filecoindataportal.xyz/datasets): Available datasets, schemas, samples, downloads, and source code.
-- [Dataset documentation](https://filecoindataportal.xyz/assets/daily_network_metrics.md): Markdown documentation is also available under `/assets/<dataset>.md` for every dataset listed in the agent instructions.
-- [Documentation](https://filecoindataportal.xyz/docs): Data sources and usage examples.
+## Site
+
+- [Datasets](/datasets): Searchable catalog with schemas, samples, and downloads.
+- [Numbers](/numbers): Sourced charts and the full metric ledger.
+- [Docs](/docs): Query examples and caveats.
+- [About](/about): Maintainer, funding, licensing, and the previous site.
 
 ## Project
 
-- [About](https://filecoindataportal.xyz/about): Licensing, updates, and maintainers.
-- [Source code](https://github.com/davidgasquez/filecoin-data-portal): Data pipelines, models, tests, and website.
-- [Report an issue](https://github.com/davidgasquez/filecoin-data-portal/issues/new): Report incorrect, unclear, stale, or missing data.
+- [Source code](https://github.com/davidgasquez/filecoin-data-portal): Pipelines, models, tests, and website.
+- [Data sources](https://github.com/davidgasquez/filecoin-data-portal/blob/main/docs/data-sources.md): Upstream APIs, indexers, and RPC endpoints.
+- [Report an issue](https://github.com/davidgasquez/filecoin-data-portal/issues/new): Incorrect, unclear, stale, or missing data.
