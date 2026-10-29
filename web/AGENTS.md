@@ -1,7 +1,7 @@
 # Web
 
-- Production site, migrating from the previous app archived in `old/` (separate package; never import from it).
-- Current boundary: preview deployments only. Switching the apex domain requires explicit user approval. Do not modify pipelines or data models.
+- Production site, with the previous app archived in `old/` (separate package; never import from it).
+- Manual deployment defaults to preview. Production changes require explicit approval and a validated public snapshot. Keep data publishing independent; do not modify pipelines or data models as part of web work.
 - Astro static HTML, vanilla CSS, small progressive-enhancement scripts. No React, ECharts, Tailwind, or UI framework.
 - Editorial data atlas: continuous monochrome canvas, IBM Plex Sans and Mono, typography-led hierarchy, sharp controls, sparse rules. No card grid, ornamental icons, gradients, or animation. A small light/dark toggle follows the system until a choice is saved.
 - Data is evidence: source, observation date, population, units, denominator, missingness and partial coverage remain visible. UTC yesterday is the latest allowed daily date.

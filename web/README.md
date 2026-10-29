@@ -2,7 +2,7 @@
 
 Static Astro pages, build-time DuckDB, SVG charts, vanilla CSS, and small progressive-enhancement scripts. No browser database, runtime API, UI framework, or shared package with the independent [previous site](old/README.md).
 
-**Release boundary:** preview deployment is authorized. The apex switch still requires explicit approval; the production CI gate remains unset. Data assets, models, publishing, and `data.filecoindataportal.xyz` are unchanged.
+**Release boundary:** manual production deployments require explicit approval and the guarded commands below. Data publishing is a separate lifecycle; website builds only consume the published snapshot. The archive stays frozen and is never rebuilt by daily CI.
 
 ## Develop and check
 
@@ -71,17 +71,17 @@ Bare `npm run deploy` targets only preview. The deploy wrapper rejects target/co
 
 `.github/workflows/website.yml` downloads one snapshot, records its checksum, checks/builds/tests it, and deploys preview only from `portal-migration`. Main pushes and successful main Pipeline runs can deploy production only when repository variable `FDP_PRODUCTION_DEPLOY` is `true`. Archive-only changes do not trigger it; the archive is never rebuilt daily.
 
-### Current data prerequisite
+### Published snapshot contract
 
-The public snapshot published **2026-10-28 20:16:33 UTC**, SHA-256 `e624e3fb2e6549a107ec75ccd1d17fe9f8635f522469d5dad768ddc4f1619e67`, predates the four `pdp_*` columns added in `7793d6e`. Previews honestly show those metrics as unavailable and explain the missing source columns; they do not borrow local values or invent zero/history. **A production build rejects this incomplete schema.** Recheck the next normally published snapshot before cutover; this website migration does not run or change data publishing.
+Production builds require every stored metric source column, including `pdp_registered_bytes`, `pdp_replicated_bytes`, `pdp_replication_coverage`, and `pdp_unique_bytes` in `daily_network_metrics`. Previews explain missing columns and show unavailable metrics without borrowing local values or inventing zero/history. **Production builds reject incomplete schemas.** After an independently authorized data refresh, export and publish through the data pipeline, then download and identify the public snapshot before building the website.
 
-### Approved cutover checklist
+### Production release and rollback
 
-Keep this branch unmerged until a fresh public snapshot passes the production build. A disabled deploy gate does not skip schema validation; merging earlier would make main's Website runs fail safely.
+Before merging schema-dependent website changes, ensure a fresh public snapshot passes the production build. A disabled deploy gate does not skip schema validation.
 
 1. Validate a fresh public snapshot and the complete production-origin build, including browser/header/404/deeplink checks. Keep the archive snapshot identified in `old/README.md` frozen.
 2. Record the then-current production Worker version and retain candidate artifacts. The daily job may have changed the version since preflight.
-3. Publish the archive domain first and verify noindex, frozen dates in its agent resources, downloads and the current-site footer link. Do not add a notice banner.
+3. For the initial migration, publish the archive domain first and verify noindex, frozen dates in its agent resources, downloads and the current-site footer link. Leave it untouched on subsequent daily releases. Do not add a notice banner.
 4. Deploy to the existing apex Worker without moving its bindings. Smoke-test, then enable normal production CI only after success.
 5. Before rollback, pause production CI by clearing its gate. Roll back the same Worker to the recorded version; Worker versions include static assets, not external datasets. Check routes and assets again.
 
