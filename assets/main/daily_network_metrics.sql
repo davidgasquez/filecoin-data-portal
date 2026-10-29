@@ -6,6 +6,7 @@
 -- asset.depends = model.pay_daily_payment_run_rate
 -- asset.depends = model.foc_daily_storage_activity
 -- asset.depends = model.foc_daily_storage_data
+-- asset.depends = model.foc_daily_pdp_replication
 -- asset.depends = model.network_daily_miner_power
 -- asset.depends = model.network_daily_block_rewards
 -- asset.depends = raw.coincodex_market_data
@@ -64,6 +65,10 @@
 -- asset.column = warm_storage_new_billing_payers | Payers whose first warm storage data set started billing on the date.
 -- asset.column = warm_storage_new_billing_data_sets | Warm storage data sets whose billing started on the date.
 -- asset.column = warm_storage_stored_bytes | End-of-day raw payload bytes of pieces stored in warm storage datasets, counting every stored copy.
+-- asset.column = pdp_registered_bytes | End-of-day raw payload bytes registered in all PDP data sets, counting every piece entry including copies. Registered inventory, not proof freshness.
+-- asset.column = pdp_unique_bytes | End-of-day raw payload bytes registered in all PDP data sets, counting each unique PieceCID once regardless of copies.
+-- asset.column = pdp_replicated_bytes | End-of-day raw payload bytes of unique PieceCIDs registered with 2+ distinct storage providers. A subset of pdp_unique_bytes, counted once.
+-- asset.column = pdp_replication_coverage | End-of-day share of unique PieceCID bytes registered in PDP data sets with 2+ distinct storage providers. Registered inventory, not proof freshness.
 -- asset.column = filecoin_pay_gross_payment_volume_run_rate_usd | End-of-day annualized gross stablecoin payment volume run-rate from active eligible recurring Filecoin Pay rails.
 -- asset.column = filecoin_pay_gross_payment_volume_run_rate_usdfc_usd | End-of-day annualized gross USDFC payment volume run-rate from active eligible recurring Filecoin Pay rails.
 -- asset.column = filecoin_pay_gross_payment_volume_run_rate_usdc_axl_usd | End-of-day annualized gross USDC.axl payment volume run-rate from active eligible recurring Filecoin Pay rails.
@@ -129,6 +134,8 @@ with block_rewards as (
     select date from model.foc_daily_storage_activity
     union
     select date from model.foc_daily_storage_data
+    union
+    select date from model.foc_daily_pdp_replication
     union
     select date from model.pay_daily_activity
     union
@@ -239,6 +246,10 @@ select
     warm_storage.new_billing_payers as warm_storage_new_billing_payers,
     warm_storage.new_billing_data_sets as warm_storage_new_billing_data_sets,
     warm_storage_data.stored_bytes as warm_storage_stored_bytes,
+    pdp_replication.registered_bytes as pdp_registered_bytes,
+    pdp_replication.unique_bytes as pdp_unique_bytes,
+    pdp_replication.replicated_bytes as pdp_replicated_bytes,
+    pdp_replication.replication_coverage as pdp_replication_coverage,
     pay_run_rate.filecoin_pay_gross_payment_volume_run_rate_usd
         as filecoin_pay_gross_payment_volume_run_rate_usd,
     pay_run_rate.filecoin_pay_gross_payment_volume_run_rate_usdfc_usd
@@ -281,6 +292,8 @@ from dates
 left join model.foc_daily_storage_activity as warm_storage
     using (date)
 left join model.foc_daily_storage_data as warm_storage_data
+    using (date)
+left join model.foc_daily_pdp_replication as pdp_replication
     using (date)
 left join model.pay_daily_activity as pay_activity
     using (date)

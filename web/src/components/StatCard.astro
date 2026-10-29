@@ -7,7 +7,7 @@ type Props = { chart: NumbersMetric }
 
 const { chart } = Astro.props
 const { id, title, description, period: _, source = "daily_network_metrics", columns: sourceColumns, details, ...config } = chart
-const columns = sourceColumns ?? [config.y, ...(config.series?.map(({ y }) => y) ?? []), ...(details?.map(({ y }) => y) ?? [])]
+const columns = sourceColumns ?? [...new Set([config.y, ...(config.series?.map(({ y }) => y) ?? []), ...(details?.map(({ y }) => y) ?? [])])]
 const today = new Date()
 const cutoff = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()) - DAY
 
@@ -54,6 +54,7 @@ function metricSummary(metric: NumbersMetric) {
 
 const summary = metricSummary(chart)
 const tooltipId = `${id}-description`
+const observationId = `${id}-observation`
 const panelId = `${id}-panel`
 const titleId = `${id}-title`
 const chartSummaryId = `${id}-chart-summary`
@@ -75,9 +76,10 @@ const prompt = `Read https://filecoindataportal.xyz/SKILL.md and get the definit
     <span class="stat-card__headline">{summary.value}</span>
     <span class="stat-card__tools">
       <span class="stat-card__info-wrap">
-        <button type="button" class="stat-card__info" aria-label={`About ${title}`} aria-describedby={tooltipId}>?</button>
+        <button type="button" class="stat-card__info" aria-label={`About ${title}`} aria-describedby={`${tooltipId} ${observationId}`}>?</button>
         <span class="stat-card__info-tooltip">
           <span id={tooltipId}>{description}</span>
+          <span id={observationId} class="stat-card__meta">{summary.meta}</span>
           <span class="stat-card__source">
             Source: {source ? <Fragment><a href={`/datasets#${source}`}>{source}</a>.{columns.join(", ")}</Fragment> : "Curated count."}
           </span>
@@ -106,7 +108,6 @@ const prompt = `Read https://filecoindataportal.xyz/SKILL.md and get the definit
   </figcaption>
 
   <strong class="stat-card__value">{summary.value}</strong>
-  <span class="stat-card__meta">{summary.meta}</span>
   <span class="stat-card__trend">{summary.trend}</span>
   <svg class="stat-card__sparkline" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true" focusable="false">
     <path
@@ -118,7 +119,7 @@ const prompt = `Read https://filecoindataportal.xyz/SKILL.md and get the definit
   </svg>
 
   <div id={panelId} class="stat-card__panel" data-chart-panel hidden>
-    <p class="stat-card__description">{description} <span class="stat-card__meta">{summary.meta}.</span></p>
+    <p class="stat-card__description">{description}</p>
     <p
       id={chartSummaryId}
       class="visually-hidden"
