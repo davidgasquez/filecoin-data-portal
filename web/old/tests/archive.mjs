@@ -29,17 +29,15 @@ test("every page is noindex, canonical to the archive origin, and links to the c
     assert.match(html, /<meta name="robots" content="noindex">/, page)
     const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)[1]
     assert.ok(canonical.startsWith(`${site}/`), `${page}: ${canonical}`)
-    assert.match(html, /<aside class="archive-notice" aria-label="Archive notice">/, page)
-    assert.match(html, /<a href="https:\/\/filecoindataportal\.xyz">Go to the current Filecoin Data Portal/, page)
-    assert.match(html, /frozen on <time datetime="\d{4}-\d{2}-\d{2}">/, page)
+    assert.doesNotMatch(html, /archive-notice|aria-label="Archive notice"/, page)
+    assert.match(html, /<footer[\s\S]*?<a href="https:\/\/filecoindataportal\.xyz">Current site<\/a>/, page)
   }
   assert.match(read("_headers"), /^\/\*\n(?:  .+\n)*  X-Robots-Tag: noindex$/m)
   assert.doesNotMatch(read("robots.txt"), /Sitemap: https:\/\/filecoindataportal\.xyz/)
 })
 
 test("archive date and observation date are distinct and honest", () => {
-  const html = read("index.html")
-  const [, archived, observed] = html.match(/frozen on <time datetime="([\d-]+)">[\s\S]*?observations through <time datetime="([\d-]+)">/)
+  const [, archived, observed] = read("SKILL.md").match(/frozen on ([\d-]+) with observations through ([\d-]+)/)
   const daily = JSON.parse(read("numbers.json"))
   assert.equal(daily.at(-1).date, observed)
   assert.ok(observed < archived, `${observed} < ${archived}`)

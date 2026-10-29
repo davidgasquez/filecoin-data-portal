@@ -81,7 +81,7 @@ Keep this branch unmerged until a fresh public snapshot passes the production bu
 
 1. Validate a fresh public snapshot and the complete production-origin build, including browser/header/404/deeplink checks. Keep the archive snapshot identified in `old/README.md` frozen.
 2. Record the then-current production Worker version and retain candidate artifacts. The daily job may have changed the version since preflight.
-3. Publish the archive domain first and verify its notice, noindex, dates, downloads and link back.
+3. Publish the archive domain first and verify noindex, frozen dates in its agent resources, downloads and the current-site footer link. Do not add a notice banner.
 4. Deploy to the existing apex Worker without moving its bindings. Smoke-test, then enable normal production CI only after success.
 5. Before rollback, pause production CI by clearing its gate. Roll back the same Worker to the recorded version; Worker versions include static assets, not external datasets. Check routes and assets again.
 

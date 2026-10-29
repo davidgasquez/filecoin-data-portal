@@ -209,27 +209,6 @@
   .site-footer p {
     margin: 0;
   }
-
-  .archive-notice {
-    inline-size: var(--container-width);
-    margin: var(--space-4) auto 0;
-    border: 2px solid var(--color-border-strong);
-    background: var(--color-surface);
-    padding: var(--space-3) var(--space-4);
-    font-size: 0.9rem;
-  }
-
-  .archive-notice p {
-    margin: 0;
-  }
-
-  .archive-notice p + p {
-    margin-block-start: var(--space-2);
-  }
-
-  .archive-notice a {
-    font-weight: 700;
-  }
 }
 
 @layer components {

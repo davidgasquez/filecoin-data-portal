@@ -1,7 +1,7 @@
 ---
 import { Font } from "astro:assets"
 import "../styles.css"
-import { archivedOn, currentSiteUrl, observedThrough } from "../archive"
+import { currentSiteUrl } from "../archive"
 
 interface Props {
   title?: string
@@ -87,14 +87,6 @@ const navItems = [
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    <aside class="archive-notice" aria-label="Archive notice">
-      <p>
-        <strong>Archived site.</strong> This is the previous Filecoin Data Portal, frozen on <time datetime={archivedOn}>{archivedOn}</time> (UTC) with observations through <time datetime={observedThrough}>{observedThrough}</time>, and no longer updated.
-        Pages, numbers, schemas, and samples are frozen; dataset download links point to the live data host and may be newer.
-      </p>
-      <p><a href={currentSiteUrl}>Go to the current Filecoin Data Portal →</a></p>
-    </aside>
-
     <header class="site-header">
       <a
         class="site-logo-link"
@@ -125,7 +117,7 @@ const navItems = [
 
     <footer class="site-footer">
       <p>
-        <a href="https://davidgasquez.com/">Reach out</a> or explore the
+        <a href={currentSiteUrl}>Current site</a> · <a href="https://davidgasquez.com/">Reach out</a> or explore the
         <a href="https://github.com/davidgasquez/filecoin-data-portal">project code</a>.
       </p>
     </footer>

@@ -1,13 +1,13 @@
 # Filecoin Data Portal archive
 
-Frozen copy of the previous site. Every page shows an archive notice linking to https://filecoindataportal.xyz and is noindex.
+Frozen copy of the previous site, without a notice banner. Every page is noindex and links to https://filecoindataportal.xyz in the footer. Snapshot dates and provenance remain in the agent resources.
 Pages and data are frozen; Parquet download links still point to `data.filecoindataportal.xyz`, which keeps updating.
 
 ## Snapshot
 
 | parameter | value |
 |---|---|
-| source | `d952d88` web app (what production served), plus archive notice/noindex/origin changes |
+| source | `d952d88` web app (what production served), plus archive provenance/noindex/origin changes |
 | database | `https://data.filecoindataportal.xyz/fdp.duckdb` as published 2026-10-28 20:16:33 UTC (223,621,120 bytes) |
 | sha256 | `e624e3fb2e6549a107ec75ccd1d17fe9f8635f522469d5dad768ddc4f1619e67` |
 | `ARCHIVE_DATE` | `2026-10-28` (default in `src/archive.ts`, replaces "today"; observations end 2026-10-27) |
