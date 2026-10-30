@@ -14,8 +14,8 @@ const cell = (value: unknown) => typeof value === 'object' && value !== null ? J
 ---
 
 <Layout title={title} description={description || `Columns, sample, and Parquet access for ${id}.`}>
-  <header class="page-head compact">
-    <p class="crumbs meta"><a href={`/datasets#${id}`}>Datasets</a> / {id}</p>
+  <header class="page-head">
+    <nav class="crumbs meta" aria-label="Breadcrumb"><a href={`/datasets#${id}`}>Datasets</a> / <span aria-current="page">{id}</span></nav>
     <h1>{title}</h1>
     <p>{description || 'No description.'}</p>
     <div class="actions">
@@ -48,7 +48,7 @@ const cell = (value: unknown) => typeof value === 'object' && value !== null ? J
     <div class="copy">
       <div class="copy-head">
         <span class="meta">DuckDB, reads the published file</span>
-        <button class="button" type="button" data-copy={sql} aria-live="polite" hidden>Copy SQL</button>
+        <button class="button" type="button" data-copy={sql} hidden>Copy SQL</button>
       </div>
       <pre tabindex="0" role="region" aria-label={`${id} query`}><code>{sql}</code></pre>
     </div>

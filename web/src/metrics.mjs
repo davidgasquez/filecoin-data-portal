@@ -22,16 +22,24 @@ export function unit(key) {
   if (key === 'usdfc_supply') return { scale: 1, suffix: ' USDFC' }
   return { scale: 1, suffix: '' }
 }
-export function format(value, key = '', concise = true) {
+// One precision per column wherever it appears: chart headlines and hover are concise, audits keep 6 decimals.
+// Concise amounts of at least $1 keep cents; smaller ones keep 3 significant digits rather than rounding to zero.
+export function format(value, key = '', concise = true, u = unit(key)) {
   const n = displayNumber(value, key)
   if (n == null) return 'Not observed'
-  const u = unit(key)
+  const scaled = n / u.scale, cents = concise && u.prefix === '$' && Math.abs(scaled) >= 1
   const formatted = new Intl.NumberFormat('en', {
     notation: 'standard',
-    ...(Math.abs(n / u.scale) < 1 ? { maximumSignificantDigits: concise ? 3 : 6 } : { maximumFractionDigits: concise ? 2 : 6 }),
-  }).format(n / u.scale)
-  return `${u.prefix ?? ''}${formatted}${u.suffix}`
+    ...(cents ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : Math.abs(scaled) < 1 ? { maximumSignificantDigits: concise ? 3 : 6 } : { maximumFractionDigits: concise ? 2 : 6 }),
+  }).format(u.prefix ? Math.abs(scaled) : scaled)
+  return `${u.prefix && scaled < 0 ? '-' : ''}${u.prefix ?? ''}${formatted}${u.suffix}`
 }
+export const percent = (value, concise = true) => format(value, '', concise, { scale: 0.01, suffix: '%' })
+export const grouped = (n) => new Intl.NumberFormat('en').format(n)
+export const plural = (n, word, many = `${word}s`) => `${grouped(n)} ${n === 1 ? word : many}`
+// Mainnet epochs are 30 s apart from genesis (unix seconds). `YYYY-MM-DD HH:MM` UTC, or null when unknown.
+export const GENESIS = 1_598_306_400
+export const epochTime = (epoch) => number(epoch) == null ? null : new Date((GENESIS + Number(epoch) * 30) * 1000).toISOString().slice(0, 16).replace('T', ' ')
 export function latest(rows, key) {
   const row = rows.findLast((row) => number(row[key]) != null)
   return row ? { date: String(row.date), value: number(row[key]) } : null

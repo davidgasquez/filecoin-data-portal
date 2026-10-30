@@ -5,7 +5,8 @@ import Comparison from '../components/Comparison.astro'
 import DeclaredMetric from '../components/DeclaredMetric.astro'
 import { sections } from '../sections'
 import { daily, network, quality, providers, quarters, orchestrators } from '../data'
-import { latest, series, format, kind, title, number, windowTotal, qualityWindow, atto } from '../metrics.mjs'
+import { latest, series, format, kind, title, number, windowTotal, qualityWindow, atto, percent, grouped as count, epochTime } from '../metrics.mjs'
+import * as quarter from '../solstice.mjs'
 import { chart } from '../charts.mjs'
 
 const checks = [
@@ -17,8 +18,6 @@ const checks = [
 const sampled = checks[2]
 const attempted = sampled.rows.filter((row) => row.attempts > 0)
 const selected = [...attempted].sort((a, b) => b.attempts - a.attempts).slice(0, 10).sort((a, b) => a.rate - b.rate)
-const percent = (value: number | null) => value == null ? 'Not observed' : new Intl.NumberFormat('en', { style: 'percent', maximumFractionDigits: 2 }).format(value)
-const count = (value: number) => new Intl.NumberFormat('en').format(value)
 // Dots encode position, not length: crop the shared axis to the nearest 5% below the lowest selected rate.
 const axisMin = selected.length ? Math.min(0.95, Math.floor(Math.min(...selected.map((row) => row.rate)) * 20) / 20) : 0
 const at = (rate: number) => `left:${((rate - axisMin) / (1 - axisMin) * 100).toFixed(2)}%`
@@ -33,42 +32,48 @@ const burnRow = daily.find((row) => row.date === burn?.date)
 const rewardRow = daily.findLast((row) => ['minted_rewards_fil', 'miner_rewards_fil', 'service_rewards_fil', 'emission_burn_fil'].every((key) => number(row[key]) != null))
 
 // Solstice: values as published; the page only labels them. Atto amounts stay exact BigInt until display rounding.
-const blockTime = (block: unknown) => block == null ? 'unknown time' : new Date(1_598_306_400_000 + Number(block) * 30_000).toISOString().slice(0, 16).replace('T', ' ')
-const usd = (value: unknown) => value == null ? 'Unknown' : `$${atto(value)}`
+const usd = (value: unknown) => quarter.usd(value) ?? 'Unknown'
 const fil = (value: unknown) => value == null ? 'Unknown' : `${atto(value, 4)} FIL`
-const phase = (q: (typeof quarters)[number]) => q.as_of_block == null ? 'Unknown'
-  : Number(q.as_of_block) < Number(q.start_block) ? 'Not started'
-  : Number(q.as_of_block) <= Number(q.end_block) ? 'In quarter, partial'
-  : Number(q.as_of_block) < Number(q.verification_start_block) ? 'Posting window'
-  : q.is_bound ? 'Bound' : 'Verification window'
-const gate = (q: (typeof quarters)[number]) => Number(q.quarter) === 1 ? 'Not gated'
-  : q.gate_checked_at == null ? 'Not observed'
-  : `${q.gate_passed ? 'Passed' : 'Failed'} ${String(q.gate_checked_at).slice(0, 10)} · ${usd(q.gate_threshold_atto_usd)} threshold`
+const gate = (q: (typeof quarters)[number]) => {
+  const state = quarter.gate(q)
+  return state == null ? 'Not observed' : Number(q.quarter) === 1 ? state
+    : `${state} ${String(q.gate_checked_at).slice(0, 10)} · ${usd(q.gate_threshold_atto_usd)} threshold`
+}
 
 const auditColumns = network.columns.filter((column) => column.name !== 'date' && !column.name.endsWith('_json'))
 const solsticeAfter = sections.some((section) => section.id === 'provider-quality') ? 'provider-quality' : sections.at(-1)?.id
-const toc = sections.flatMap((section) => [[section.id, section.title], ...(section.id === solsticeAfter ? [['solstice', 'Solstice']] : [])])
+// The sections in page order with short hints: listed as the introduction's contents and as the header's Numbers menu.
+const hints: Record<string, string> = {
+  'key-metrics': 'Pay run rate, burn coverage',
+  'filecoin-onchain-cloud': 'Payments, warm storage, PDP',
+  'provider-quality': 'Probes, retrievals, faults',
+  solstice: 'Quarterly payment volume',
+  power: 'Onboarding, network power',
+  activity: 'Transactions, value, gas',
+  protocol: 'Burn, supply, rewards, fees',
+  markets: 'FIL price, volume, DeFi',
+  'all-metrics': 'Every column, full history',
+}
+const contents = [...sections.flatMap((section) => [[section.id, section.title], ...(section.id === solsticeAfter ? [['solstice', 'Solstice']] : [])]), ['all-metrics', 'All metrics']]
+  .map(([id, title]) => ({ id, title, hint: hints[id] }))
 ---
-<Layout title="Filecoin in numbers" description="Daily Filecoin network, storage, payments, provider, and token metrics with sources.">
+<Layout title="Filecoin in numbers" description="Daily Filecoin network, storage, payments, provider, and token metrics with sources." sections={contents}>
   <div class="numbers">
-  <header class="numbers-head"><h1>Filecoin in numbers</h1></header>
-  <div class="numbers-toolbar">
-    <nav class="section-nav" aria-label="Sections" data-section-nav>
-      {toc.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}<a href="#all-metrics">All metrics</a>
+  <header class="numbers-head" id="contents">
+    <div class="numbers-intro">
+      <h1>Filecoin in numbers</h1>
+      <p class="numbers-lede">Daily network, storage, payment, provider and token metrics. Every chart carries its definition, source and last observed day.</p>
+      <fieldset class="chart-range" data-chart-range hidden aria-describedby="range-scope">
+        <legend class="meta">Chart history</legend>
+        <span class="range-options">{[['6m', '6m'], ['1y', '1y'], ['all', 'All']].map(([value, label]) => <label><input type="radio" name="numbers-range" value={value} checked={value === '6m'} /><span>{label}</span></label>)}</span>
+      </fieldset>
+      <p class="range-status meta" data-range-status role="status" hidden></p>
+      <span class="sr" id="range-scope">Time-series history, ending at each chart’s last observation. Comparisons retain their stated windows; the metric ledger always shows full history.</span>
+    </div>
+    <nav class="numbers-toc" aria-label="Contents">
+      <ol>{contents.map(({ id, title, hint }) => <li><a href={`#${id}`}><span>{title}</span> <span class="meta">{hint}</span></a></li>)}</ol>
     </nav>
-    <details class="section-menu">
-      <summary>Sections <span aria-hidden="true">⌄</span></summary>
-      <nav aria-label="Sections" data-section-nav>
-        {toc.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}<a href="#all-metrics">All metrics</a>
-      </nav>
-    </details>
-    <fieldset class="chart-range" data-chart-range hidden aria-describedby="range-scope">
-      <legend class="sr">Chart history</legend>
-      {[['6m', '6m'], ['1y', '1y'], ['all', 'All']].map(([value, label]) => <label><input type="radio" name="numbers-range" value={value} checked={value === '6m'} /><span>{label}</span></label>)}
-    </fieldset>
-    <p class="range-status meta" data-range-status role="status" hidden></p>
-    <span class="sr" id="range-scope">Time-series history, ending at each chart’s last observation. Comparisons retain their stated windows; the metric ledger always shows full history.</span>
-  </div>
+  </header>
 
   {sections.map((section) => <Fragment>
     <section class="board" id={section.id} aria-labelledby={`${section.id}-title`}>
@@ -134,8 +139,8 @@ const toc = sections.flatMap((section) => [[section.id, section.title], ...(sect
         <thead><tr><th scope="col">Quarter</th><th scope="col">Phase</th><th scope="col">Observed through</th><th scope="col" class="numeric">Bound volume</th><th scope="col">Gate</th><th scope="col">Shares</th></tr></thead>
         <tbody>{quarters.map((q) => <tr id={`solstice-q${q.quarter}`}>
           <th scope="row">Q{q.quarter} <span class="mono meta">{q.start_block}–{q.end_block}</span></th>
-          <td>{phase(q)}</td>
-          <td class="mono">{q.as_of_block == null ? 'Unknown' : <Fragment>block {q.as_of_block}<span class="meta block-time">{blockTime(q.as_of_block)} UTC</span></Fragment>}</td>
+          <td>{quarter.phase(q)}</td>
+          <td class="mono">{q.as_of_block == null ? 'Unknown' : <Fragment>block {q.as_of_block}<span class="meta block-time">{epochTime(q.as_of_block) ?? 'unknown time'} UTC</span></Fragment>}</td>
           <td class="numeric">{q.is_bound ? usd(q.bound_volume_atto_usd) : <span class="null">Not bound</span>}</td>
           <td>{gate(q)}</td>
           <td>{q.shares_submitted_at == null ? <span class="null">No event (all-zero submissions emit none)</span> : `${usd(q.shares_total_atto_usd)} · ${q.share_recipients} recipients`}</td>

@@ -7,6 +7,8 @@ import { missingMetricSources } from './schema'
 
 export const repoUrl = 'https://github.com/davidgasquez/filecoin-data-portal'
 export const dataUrl = 'https://data.filecoindataportal.xyz'
+// Top-level sections: the site header, and the explorer's portal menu.
+export const portal = [['/numbers', 'Numbers'], ['/foc', 'Onchain Cloud'], ['/datasets', 'Datasets'], ['/docs', 'Docs']]
 export const builtAt = new Date().toISOString().slice(0, 10)
 export type Row = Record<string, string | number | boolean | null>
 export type Column = { name: string; type: string; description: string }

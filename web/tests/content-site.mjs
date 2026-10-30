@@ -45,12 +45,13 @@ test('about keeps maintainer, funding, scoped licenses, and the archive link', (
   assert.doesNotMatch(about, /local experiment/i)
 })
 
-test('footer credits the author and links docs, about, llms.txt, the archive, and the repo', () => {
+test('footer credits the author and keeps secondary links without repeating Docs', () => {
   for (const html of [home, docs, about]) {
     const html_ = footer(html)
     assert.match(html_, /Built by <a[^>]+href="https:\/\/davidgasquez\.com\/"[^>]*>David Gasquez<\/a>/)
     assert.match(html_, /blob\/main\/LICENSE"[^>]*>MIT license<\/a>/)
-    for (const [href, label] of [['/docs', 'Docs'], ['/about', 'About'], ['/llms.txt', 'llms.txt'], [archive, 'Previous site']]) {
+    assert.doesNotMatch(html_, /href="\/docs"/)
+    for (const [href, label] of [['/about', 'About'], ['/llms.txt', 'llms.txt'], [archive, 'Previous site']]) {
       assert.match(html_, new RegExp(`<a href="${escape(href)}"[^>]*>${escape(label)}</a>`))
     }
     assert.match(html_, /href="https:\/\/github\.com\/davidgasquez\/filecoin-data-portal\/issues"/)

@@ -35,6 +35,7 @@ test('catalog and every dataset have Markdown at the build origin', () => {
 
 test('catalog and detail pages link Markdown; catalog entries keep unique dataset anchors', () => {
   assert.match(catalogHtml, /href="\/datasets\.md"/)
+  assert.match(catalogHtml, /href="\/datasets" aria-current="page">Datasets<\/a>/)
   const pageIds = [...catalogHtml.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1])
   assert.equal(pageIds.length, new Set(pageIds).size, 'unique IDs')
   for (const id of ids) {
@@ -42,6 +43,10 @@ test('catalog and detail pages link Markdown; catalog entries keep unique datase
     const page = read(`datasets/${id}/index.html`)
     assert.ok(page.includes(`href="/datasets/${id}.md"`), `${id} links Markdown`)
     assert.ok(page.includes(`href="/datasets#${id}"`), `${id} returns to its catalog entry`)
+    assert.match(page, /href="\/datasets" aria-current="true">Datasets<\/a>/)
+    const crumbs = page.match(/<nav\b[^>]*aria-label="Breadcrumb"[^>]*>([\s\S]*?)<\/nav>/)?.[1]
+    assert.ok(crumbs?.includes(`href="/datasets#${id}"`))
+    assert.ok(crumbs.includes(`<span aria-current="page">${id}</span>`))
   }
 })
 

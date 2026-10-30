@@ -25,16 +25,18 @@ npm test
 npm run test:foc
 npm run build
 npm run test:site
-npm run preview # serves dist on 4322; stop dev first
+npm run preview # serves dist on 4322; stop dev first, or append -- --port 4323
 ```
+
+Astro 7 backgrounds preview when run by an agent. Use `npx astro preview status` / `stop` to manage that server; an existing preview keeps its original port. Pass `--ignore-lock` for a separate foreground preview.
 
 Static tests take `SITE_URL` and `ARCHIVE_URL` matching the build; `SITE_DIST` can select another output directory. Browser review must also cover desktop/mobile, light/dark, keyboard/touch, copying, range URLs and Back/Forward, entity relationships, and no JavaScript. Inspect actual screenshots, not just automated accessibility results.
 
 ## Public surface
 
 - `/`: lineage diagram, query/agent entry points, six dated headlines, dataset discovery.
-- `/numbers`: the carried-over metric inventory, related charts, and the full ledger. `/numbers-history.json` is static wider-history data, not a runtime API.
-- `/foc`: overview and entity/relationship pages, all pre-rendered. Filtering, sorting, search and paging enhance complete HTML tables.
+- `/numbers`: the carried-over metric inventory, related charts, and the full ledger. It opens like a report: title, chart history and numbered contents scroll away; the pinned header's Numbers menu reaches every section further down. `/numbers-history.json` is static wider-history data, not a runtime API.
+- `/foc`: overview and entity/relationship pages, all pre-rendered. Its one header replaces the site navigation: the seven explorer sections (inside a menu naming the current section on narrow screens), an "Onchain Cloud" menu out to the rest of the portal, and entity search. Entity pages mark their list as the parent. Filtering, sorting, search and paging enhance complete HTML tables. Explorer navigation swaps pages without animation; other sections load normally. Marked internal links receive native prefetch hints on hover/focus, not touch or constrained connections. Browsers without hint support navigate normally.
 - `/datasets` and `/datasets/<id>`: description, grain, coverage, sources, schema and samples. Their `.md` counterparts use the same `Dataset` objects and exact values.
 - `/docs`, `/about`, authored `/SKILL.md` and `/llms.txt`, and generated `/sitemap.xml`.
 

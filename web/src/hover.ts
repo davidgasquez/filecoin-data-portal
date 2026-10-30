@@ -1,8 +1,15 @@
 import { format, shiftDate } from './metrics.mjs'
 import { indexAt, xAt, yAt } from './charts.mjs'
+import { onPage } from './interactions'
 
 let dismissActive: (() => void) | undefined
-for (const plot of document.querySelectorAll<HTMLElement>('[data-chart]')) {
+// Listeners live on each page's plots, which a /foc swap discards with the old body.
+onPage(() => {
+  dismissActive = undefined
+  for (const plot of document.querySelectorAll<HTMLElement>('[data-chart]')) setup(plot)
+})
+
+function setup(plot: HTMLElement) {
   // Decode lazily: closed related measures need no work until inspected. Range redraws replace the payload.
   const cache: Record<string, { raw?: string; values: (number | null)[] }> = { values: { values: [] }, negativeValues: { values: [] } }
   const decode = (name: 'values' | 'negativeValues') => {
@@ -60,14 +67,3 @@ for (const plot of document.querySelectorAll<HTMLElement>('[data-chart]')) {
     event.preventDefault(); show(next, true)
   })
 }
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') document.querySelectorAll<HTMLDetailsElement>('.metric-info[open]').forEach((info) => {
-    if (info.contains(document.activeElement)) info.querySelector('summary')?.focus()
-    info.open = false
-  })
-})
-document.addEventListener('click', (event) => {
-  document.querySelectorAll<HTMLDetailsElement>('.metric-info[open]').forEach((info) => {
-    if (!info.contains(event.target as Node)) info.open = false
-  })
-})

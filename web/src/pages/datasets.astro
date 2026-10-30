@@ -1,9 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import { builtAt, datasets } from '../data'
+import { plural } from '../metrics.mjs'
 
-const count = (n: number) => n.toLocaleString('en-US')
-const plural = (n: number, word: string) => `${count(n)} ${word}${n === 1 ? '' : 's'}`
 const observed = ({ coverage }: (typeof datasets)[number]) =>
   coverage?.start ? `${coverage.start} to ${coverage.end}` : `View built ${builtAt}`
 ---
@@ -43,6 +42,7 @@ const observed = ({ coverage }: (typeof datasets)[number]) =>
 </Layout>
 
 <script>
+  import { grouped, plural } from '../metrics.mjs'
   const form = document.querySelector<HTMLFormElement>('.search')!
   const input = form.querySelector('input')!
   const status = document.querySelector('#count')!
@@ -65,7 +65,7 @@ const observed = ({ coverage }: (typeof datasets)[number]) =>
       match.textContent = visible && hits.length ? `Columns: ${hits.slice(0, 6).map(([name]) => name).join(', ')}${hits.length > 6 ? ` +${hits.length - 6}` : ''}` : ''
       if (visible) shown++
     }
-    status.textContent = terms.length ? `${shown} of ${items.length} datasets` : `${items.length} datasets`
+    status.textContent = terms.length ? `${grouped(shown)} of ${plural(items.length, 'dataset')}` : plural(items.length, 'dataset')
     empty.hidden = shown > 0
     empty.querySelector('span')!.textContent = query.trim()
   }

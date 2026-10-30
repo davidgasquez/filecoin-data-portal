@@ -1,11 +1,10 @@
 // Server-side HTML atoms for /foc. Pure functions over exporter JSON; client.ts only enhances.
 import { chart } from '../charts.mjs'
-import { shiftDate } from '../metrics.mjs'
+import { GENESIS, format, number, plural, shiftDate } from '../metrics.mjs'
 import { labels as labelData, routes, coverage } from './data'
 
 export type Row = Record<string, any>
 export const BLOCKSCOUT = 'https://filecoin.blockscout.com'
-export const GENESIS = 1_598_306_400 // mainnet genesis, unix seconds; 30 s epochs
 export const STABLE = new Set(['USDFC', 'USDC.axl'])
 export const ZERO = '0x0000000000000000000000000000000000000000'
 export const USDFC = '0x80b98d3aa09ffff255c3ba4a241111ff1262f045'
@@ -22,12 +21,15 @@ const routeUrl = (route: string) => built.has(route) ? url(route) : null
 export const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
 export const NA = '<span class="null" title="Not observed">—</span>'
 const nf = (o: Intl.NumberFormatOptions) => new Intl.NumberFormat('en-US', o)
-const F = { int: nf({ maximumFractionDigits: 0 }), d2: nf({ minimumFractionDigits: 2, maximumFractionDigits: 2 }), s3: nf({ maximumSignificantDigits: 3 }), d1: nf({ maximumFractionDigits: 1 }) }
-export const isNum = (v: unknown) => v != null && v !== '' && Number.isFinite(Number(v))
-export const num = (v: unknown) => isNum(v) ? Number(v) : null
+const F = { int: nf({ maximumFractionDigits: 0 }), d2: nf({ minimumFractionDigits: 2, maximumFractionDigits: 2 }), s3: nf({ maximumSignificantDigits: 3 }) }
+export const num = (v: unknown): number | null => number(v)
+export const isNum = (v: unknown) => num(v) != null
 export const sum = (rows: Row[], f: (r: Row) => unknown) => rows.reduce((a, r) => a + (num(f(r)) ?? 0), 0)
 export const count = (v: unknown) => isNum(v) ? F.int.format(Number(v)) : NA
-export const plural = (n: number, word: string, many = `${word}s`) => `${F.int.format(n)} ${n === 1 ? word : many}`
+export { plural }
+// A network or quality column exactly as /numbers and chart hover show it (unit and precision from the key).
+// Headlines may summarize differently (totals, pooled windows); the caption says so.
+export const metric = (v: unknown, key: string) => isNum(v) ? format(v, key) : NA
 const amount = (a: number) => a >= 0.1 ? F.d2.format(a) : F.s3.format(a)
 export function usd(v: unknown) {
   if (!isNum(v)) return NA
@@ -51,7 +53,6 @@ export function bytes(v: unknown) {
   while (n >= 1024 && i < u.length - 1) { n /= 1024; i++ }
   return `${F.d2.format(n).replace(/\.00$/, '')} ${u[i]}`
 }
-export const ms = (v: unknown) => !isNum(v) ? NA : Number(v) >= 1000 ? `${F.d2.format(Number(v) / 1000)} s` : `${F.int.format(Number(v))} ms`
 const iso = (ts: number) => new Date(ts * 1000).toISOString()
 export const date = (ts: unknown) => isNum(ts) ? `<time datetime="${iso(Number(ts))}" title="${iso(Number(ts)).slice(0, 16).replace('T', ' ')} UTC">${iso(Number(ts)).slice(0, 10)}</time>` : NA
 export const day = (ts: unknown) => isNum(ts) ? iso(Number(ts)).slice(0, 10) : NA
@@ -68,12 +69,12 @@ export const isStable = (r: Row) => r.stable ?? STABLE.has(r.token_symbol)
 
 // ---------------------------------------------------------------- atoms
 
-export const copy = (text: string, what = 'address') => `<button class="button foc-copy" type="button" data-copy="${esc(text)}" aria-label="Copy ${esc(what)}" aria-live="polite" hidden>Copy</button>`
+export const copy = (text: string, what = 'address') => `<button class="button foc-copy" type="button" data-copy="${esc(text)}" aria-label="Copy ${esc(what)}" hidden>Copy</button>`
 export const ext = (href: string, text = 'Blockscout') => `<a class="foc-ext" href="${esc(href)}" rel="noopener">${esc(text)} ↗</a>`
 export const blockscout = (a: string) => ext(`${BLOCKSCOUT}/address/${a}`)
 export const txLink = (tx?: string, text?: string) => tx ? `<a class="mono" href="${BLOCKSCOUT}/tx/${esc(tx)}" title="${esc(tx)}" rel="noopener">${esc(text ?? short(tx))}</a>` : NA
 export const tag = (text: string) => `<span class="tag">${esc(text)}</span>`
-const link = (href: string | null, html: string, title?: string, cls = '') => href ? `<a${cls ? ` class="${cls}"` : ''} href="${href}"${title ? ` title="${esc(title)}"` : ''}>${html}</a>` : cls || title ? `<span${cls ? ` class="${cls}"` : ''}${title ? ` title="${esc(title)}"` : ''}>${html}</span>` : html
+const link = (href: string | null, html: string, title?: string, cls = '') => href ? `<a${cls ? ` class="${cls}"` : ''} href="${href}" data-astro-prefetch="hover"${title ? ` title="${esc(title)}"` : ''}>${html}</a>` : cls || title ? `<span${cls ? ` class="${cls}"` : ''}${title ? ` title="${esc(title)}"` : ''}>${html}</span>` : html
 export const safeUrl = (u?: string) => /^https?:\/\//i.test(u || '') ? u! : null
 
 // An address with its known label, linking to the most specific generated page.
@@ -283,7 +284,8 @@ export function paySection(daily: Row | null | undefined, latest: Row[] | null |
   const total = (daily?.v ?? []).reduce((a: number, v: unknown) => a + (num(v) ?? 0), 0)
   const events = (daily?.n ?? []).reduce((a: number, v: unknown) => a + (num(v) ?? 0), 0)
   const known = (daily?.v ?? []).some(isNum)
-  const fmt = !known ? NA : key.endsWith("_usd") ? usd(total) : amt(total, unit)
+  // Headline is the window total, at the chart's own precision; native tokens keep their unit.
+  const fmt = !known ? NA : key.endsWith('_usd') ? metric(total, key) : amt(total, unit)
   const summary = sub || (events ? `${plural(events, 'payment event')} totalling ${fmt}, ${daily!.d[0]} to ${daily!.d.at(-1)} (UTC). ${unit === 'stablecoin' ? 'Stablecoins only, at face value. ' : ''}Days without events are gaps.` : 'No payment events recorded.')
   const chartHtml = pts.length ? plot({ title: `Daily ${title.toLowerCase()}`, value: fmt, key, kind: 'bar', pts }) : ''
   const list = latest?.length ? `<h3 class="foc-h3">Latest ${plural(latest.length, 'event')}</h3>${payTable(latest, { hide, prefix: `${id}-pay` })}` : ''

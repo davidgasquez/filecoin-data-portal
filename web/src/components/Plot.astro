@@ -53,17 +53,6 @@ const negativeDefinition = negative && (negative.description ?? define(negative.
 </figure>
 <script>import '../hover'</script>
 <style>
-  .chart-heading { position: relative; }
-  .metric-info { min-width: 0; flex: 1; }
-  /* Inline flow: Info follows the last word of a wrapped title instead of drifting to the edge. */
-  .metric-info > summary { display: block; min-height: 1.75rem; padding-top: 0.1875rem; width: fit-content; color: var(--fg); }
-  .metric-info > summary > :is(h3, h4, h5) { display: inline; }
-  .metric-info > summary > .meta { margin-left: 0.5rem; white-space: nowrap; }
-  .metric-info > summary::before { content: none; }
-  .metric-info > summary :is(h3, h4, h5) { text-decoration: underline dotted var(--rule-strong); text-underline-offset: 0.25em; }
-  .metric-info > summary:hover :is(h3, h4, h5) { text-decoration-color: currentColor; }
-  .metric-info-body { position: absolute; z-index: 4; inset: 100% 0 auto; padding: 0.875rem; background: var(--bg); border: 1px solid var(--rule-strong); font-size: 0.875rem; }
-  .metric-info-body .meta { overflow-wrap: anywhere; }
   /* Below the dates, so the combined plot starts level with its row. */
   .chart-legend { margin-top: 0.25rem; }
 </style>

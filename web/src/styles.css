@@ -22,7 +22,7 @@
 
 /* Base */
 *, *::before, *::after { box-sizing: border-box; }
-html { background: var(--bg); color: var(--fg); -webkit-text-size-adjust: 100%; scroll-padding-top: 3.5rem; }
+html { background: var(--bg); color: var(--fg); -webkit-text-size-adjust: 100%; scroll-padding-top: 1rem; }
 body {
   margin: 0;
   min-height: 100vh;
@@ -49,7 +49,9 @@ a:hover { text-decoration-color: currentColor; }
 :focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 ::selection { background: var(--fg); color: var(--bg); }
 button, a, summary, input { touch-action: manipulation; }
-[id] { scroll-margin-top: 3.5rem; }
+/* Small targets in dense rows keep their size; an invisible overlay extends the hit area to 2rem. */
+:is(.foc-copy, .metric-ledger summary) { position: relative; }
+:is(.foc-copy, .metric-ledger summary)::after { content: ""; position: absolute; inset: min(0px, (100% - 2rem) / 2) 0; }
 
 .shell { width: 100%; max-width: var(--width); margin-inline: auto; padding-inline: var(--pad); }
 .skip { position: absolute; left: var(--pad); top: -4rem; padding: 0.5rem 0.75rem; background: var(--fg); color: var(--bg); z-index: 10; }
@@ -59,8 +61,8 @@ button, a, summary, input { touch-action: manipulation; }
 /* Small text roles */
 .meta { font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; color: var(--muted); letter-spacing: 0.01em; }
 .numeric { font-variant-numeric: tabular-nums; text-align: right; }
-.source-link { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
-.source-link:hover { color: var(--fg); }
+.source-link, .foc-ext, .foc-more { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+:is(.source-link, .foc-ext, .foc-more, .crumbs a):hover { color: var(--fg); }
 .null { color: var(--muted); }
 
 /* Header and footer */
@@ -84,10 +86,18 @@ button, a, summary, input { touch-action: manipulation; }
 /* Page heads */
 .page-head { padding-block: clamp(1.5rem, 4vw, 2.75rem) 1.25rem; }
 .page-head > * { max-width: 46rem; }
-.page-head h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); line-height: 1.05; letter-spacing: -0.03em; overflow-wrap: anywhere; }
+.page-head h1, .numbers-head h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); line-height: 1.05; letter-spacing: -0.03em; overflow-wrap: anywhere; }
 .page-head h1 + p { margin-top: 0.75rem; font-size: clamp(1rem, 1.4vw, 1.125rem); line-height: 1.45; color: var(--muted); }
 .crumbs { margin-bottom: 0.75rem; }
 .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+
+/* Ruled sections: strong rule above, then heading and body */
+.home-block, .block, .foc-section, .foc-hero { padding-block: 1.25rem 1.75rem; border-top: 1px solid var(--rule-strong); }
+:is(.home-block, .block) > * + * { margin-top: 0.75rem; }
+.home-block h2, .board > h2, .block > h2, .foc-sh h2 { font-size: 1.25rem; line-height: 1.2; letter-spacing: -0.015em; }
+:is(.home-block, .catalog) h2 a { text-decoration: none; }
+:is(.home-block, .catalog) h2 a:hover { text-decoration: underline 1px currentColor; }
+.group-title, .check-grid h4, .foc-h3 { font-family: var(--sans); font-size: 0.9375rem; font-weight: 500; color: var(--muted); }
 
 /* Home */
 .hero { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: 2.5rem clamp(2rem, 5vw, 4.5rem); padding-block: clamp(2.5rem, 7vw, 5rem) clamp(2rem, 5vw, 3.5rem); }
@@ -118,24 +128,20 @@ button, a, summary, input { touch-action: manipulation; }
 .flow-spark svg { width: 100%; max-width: 12rem; height: 1.5rem; overflow: visible; }
 .home-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 0 var(--gap); }
 .home-grid > * { min-width: 0; }
-.home-block { padding-block: 1.25rem 1.75rem; border-top: 1px solid var(--rule-strong); }
-.home-block > * + * { margin-top: 0.75rem; }
 .home-block > .quickstart-path { margin-top: 1rem; }
 .home-block > .quickstart-path + .quickstart-path { margin-top: 2rem; }
 .quickstart-path > * + * { margin-top: 0.75rem; }
 .quickstart-path > h3 { font-size: 1rem; line-height: 1.35; }
 .quickstart-path > h3 + * { margin-top: 0.5rem; }
-.home-block h2, .board > h2, .block > h2 { font-size: 1.25rem; line-height: 1.2; letter-spacing: -0.015em; }
-.home-block h2 a { text-decoration: none; }
 .home-block h2 a::after { content: " →"; color: var(--muted); }
-.home-block h2 a:hover { text-decoration: underline 1px currentColor; }
-.prompt { position: relative; }
+.prompt { position: relative; padding-bottom: 1.25rem; }
+.prompt [data-copy-status] { position: absolute; bottom: 0; left: 0; }
+[data-copy-status]:not(:empty) { margin-inline-end: 0.375rem; }
 .prompt pre { padding-inline-end: 5.5rem; white-space: pre-wrap; font-size: 0.875rem; border-inline-start: 2px solid var(--fg); }
 .prompt pre a { font-weight: 500; text-decoration-color: currentColor; }
 .prompt .button { position: absolute; top: 0.5rem; right: 0.5rem; min-height: 2rem; }
-.home-facts { grid-template-columns: minmax(0, 1fr) auto; }
-.home-facts dd { font-size: 1.125rem; line-height: 1.5rem; }
-.home-facts dd .meta { display: block; line-height: 1.2; }
+:is(.home-facts, .foc-facts) dd { font-size: 1.125rem; line-height: 1.5rem; }
+:is(.home-facts, .foc-facts) dd .meta { display: block; line-height: 1.25; }
 .home-facts dt a { color: var(--fg); }
 .home-block.home-data { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 1rem var(--gap); }
 .home-data > * { min-width: 0; }
@@ -147,53 +153,75 @@ button, a, summary, input { touch-action: manipulation; }
 .home-tables dd { display: flex; flex-wrap: wrap; gap: 0 1rem; font-size: 0.8125rem; line-height: 1.85; }
 .home-tables a { overflow-wrap: anywhere; }
 
-/* Numbers */
-.numbers [id] { scroll-margin-top: 0; }
-/* Chart deeplink targets: a little air below the sticky toolbar (html scroll-padding clears the bar itself). */
-.numbers :is(.metric, .chart, .anchor-alias, .audit, tr)[id] { scroll-margin-top: 1rem; }
+/* Numbers: the one site header stays pinned and its Numbers item opens the section menu. */
+html:has(.nav-menu) { --numbers-offset: 4.75rem; scroll-padding-top: var(--numbers-offset); }
+.site-header:has(.nav-menu) { position: sticky; top: 0; z-index: 7; background: var(--bg); }
+@media (width > 56rem) {
+  .site-nav:has(.nav-menu) { justify-self: stretch; }
+  .nav-menu { margin-inline: auto; }
+}
+.nav-menu { position: relative; }
+.nav-menu > summary { gap: 0.375rem; padding-inline: 0.625rem; font: 400 0.9375rem var(--sans); color: var(--fg); }
+.nav-menu > summary::before, .nav-menu[open] > summary::before { content: none; }
+.nav-menu > summary[aria-current] > :first-child { text-decoration: underline 1px currentColor; text-underline-offset: 0.4em; }
+/* The menu stays centred between the brand and other links; long context stays on one line. */
+.nav-current { flex: none; max-width: clamp(6rem, 13vw, 11rem); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+.nav-current:empty { display: none; }
+/* The panel's top edge sits on the header rule; a short viewport scrolls the panel. */
+.nav-menu > nav { position: absolute; top: calc(100% + 0.625rem); left: 0; display: grid; width: max-content; min-width: max(14rem, 100%); max-width: calc(100vw - 2 * var(--pad)); max-height: calc(100dvh - var(--numbers-offset)); overflow-y: auto; padding-block: 0.375rem; background: var(--bg); border: 1px solid var(--rule-strong); font: 400 0.8125rem/1.3 var(--mono); }
+.nav-menu > nav a { display: flex; align-items: center; min-height: 2.25rem; padding: 0.25rem 1rem; font-size: 0.8125rem; color: var(--muted); text-decoration: none; }
+.nav-menu > nav a:first-child { margin-bottom: 0.375rem; border-bottom: 1px solid var(--rule); }
+.nav-menu > nav a:hover, .nav-menu > nav a[aria-current] { color: var(--fg); }
+.nav-menu > nav a[aria-current] { box-shadow: inset 2px 0 var(--fg); text-decoration: none; }
+.nav-menu > nav a:focus-visible { outline-offset: -2px; }
+/* The page opens like a report: title and chart history beside a numbered contents list, all scrolling away. */
+.numbers-head { display: grid; grid-template-columns: minmax(15rem, 1fr) minmax(0, 2.5fr); gap: 1.5rem var(--gap); align-items: start; padding-block: clamp(1.5rem, 4vw, 2.75rem) var(--space); border-bottom: 1px solid var(--rule-strong); }
+.numbers-lede { max-width: 26rem; margin-top: 0.75rem; color: var(--muted); }
+.numbers-intro .chart-range { display: block; margin-top: 1.25rem; border: 0; }
+.numbers-toc ol { list-style: none; columns: 3 13rem; column-gap: var(--gap); counter-reset: toc; }
+.numbers-toc li { break-inside: avoid; counter-increment: toc; }
+.numbers-toc a { display: grid; grid-template-columns: 2rem minmax(0, 1fr); padding-block: 0.3125rem; text-decoration: none; }
+.numbers-toc a::before { content: counter(toc, decimal-leading-zero); grid-row: span 2; font: 400 0.75rem/1.6rem var(--mono); color: var(--muted); }
+.numbers-toc a > span:first-child { font-weight: 500; line-height: 1.6rem; }
+.numbers-toc a:hover > span:first-child { text-decoration: underline 1px currentColor; text-underline-offset: 0.22em; }
+.chart-range legend { margin-bottom: 0.375rem; padding: 0; }
+.range-options { display: flex; width: fit-content; border: 1px solid var(--rule-strong); font: 400 0.75rem var(--mono); }
+.chart-range[aria-busy="true"] { cursor: progress; }
+.chart-range label > span { min-width: 2.75rem; min-height: 2rem; padding-inline: 0.5rem; }
+.range-status { margin-top: 0.5rem; }
 .chart-link { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; }
 .chart-link .button { min-height: 2rem; padding-inline: 0.625rem; }
-.numbers-head { padding-block: clamp(1.25rem, 3vw, 2rem) 0.875rem; }
-.numbers-head h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); line-height: 1.05; letter-spacing: -0.03em; }
-.numbers-toolbar { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; min-height: 3rem; background: var(--bg); border-bottom: 1px solid var(--rule); }
-.section-nav { display: flex; flex-wrap: wrap; gap: 0 1rem; min-width: 0; font-family: var(--mono); font-size: 0.75rem; }
-[data-section-nav] a { display: inline-flex; align-items: center; min-height: 2.5rem; color: var(--muted); text-decoration: none; }
-[data-section-nav] a:hover, [data-section-nav] a[aria-current] { color: var(--fg); }
-[data-section-nav] a[aria-current] { text-decoration: underline 1px currentColor; text-underline-offset: 0.4em; }
-.section-menu { display: none; }
-.section-menu > summary { min-height: 2.5rem; color: var(--fg); }
-.section-menu > summary::before { content: none; }
-.section-menu > summary > span { margin-left: 0.5rem; }
-.section-menu nav { position: absolute; top: 100%; left: 0; display: grid; width: min(22rem, 100%); max-height: 65dvh; overflow-y: auto; padding: 0.375rem 0.875rem; background: var(--bg); border: 1px solid var(--rule-strong); font: 400 0.8125rem var(--mono); }
-.chart-range { display: flex; flex: none; gap: 0; margin: 0; padding: 0; border: 1px solid var(--rule-strong); font: 400 0.75rem var(--mono); }
-.chart-range label { position: relative; cursor: pointer; }
-.chart-range[aria-busy="true"] { cursor: progress; }
-.range-status { position: absolute; top: 100%; right: 0; max-width: min(100%, 26rem); padding: 0.5rem 0.75rem; border: 1px solid var(--rule-strong); background: var(--bg); }
-.chart-range input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
-.chart-range span { display: inline-flex; align-items: center; justify-content: center; min-width: 2.75rem; min-height: 2rem; padding-inline: 0.5rem; }
-.chart-range input:checked + span { background: var(--fg); color: var(--bg); }
-.chart-range input:focus-visible + span { outline: 2px solid var(--fg); outline-offset: 3px; }
 /* Each row shares its available width, including the incomplete last row. */
 .numbers .chart-grid { display: flex; flex-wrap: wrap; gap: 2rem clamp(1.5rem, 4vw, 3.5rem); }
 /* One left-anchored unit per chart: title, latest value, plot. Nothing sits at the gutter, so a value never pairs with the next title, and full-width titles keep plot tops level. */
 .numbers .chart-heading { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 0; margin-bottom: 0; }
 .numbers .chart-heading .chart-value { line-height: 1.15; }
-.numbers .chart-grid > * { flex: 1 1 20rem; border-top: 0; padding-top: 0; }
+.numbers .chart-grid > * { flex: 1 1 20rem; }
 .board { padding-block: 1.25rem var(--space); }
 .board + .board { border-top: 1px solid var(--rule-strong); }
 .board > h2 { margin-bottom: 0.875rem; }
 .board-note { max-width: 56rem; margin-block: -0.5rem 1rem; }
 .board-group + .board-group { margin-top: 1.75rem; }
-.group-title, .check-grid h4 { margin-bottom: 0.625rem; font-family: var(--sans); font-size: 0.9375rem; font-weight: 500; color: var(--muted); }
-/* Compact chart grid: rule above each item, no cards */
-.chart-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem var(--gap); align-items: start; }
-.chart-grid > * { min-width: 0; padding-top: 0.625rem; border-top: 1px solid var(--rule); }
+.group-title, .check-grid h4 { margin-bottom: 0.625rem; }
+/* Chart grid: whitespace between charts, no rules or cards */
+.chart-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem var(--gap); align-items: start; }
+.chart-grid > * { min-width: 0; }
 .board .audit { margin-top: 1.25rem; }
 
 /* Charts */
-.chart-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 0.75rem; margin-bottom: 0.25rem; }
+.chart-heading { position: relative; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 0.75rem; margin-bottom: 0.25rem; }
 .chart-heading > * { min-width: 0; }
-.chart-heading :is(h3, h4, h5) { font-size: 0.9375rem; line-height: 1.35; }
+.chart-heading :is(h3, h4, h5), .comparison > h3 { font-size: 0.9375rem; line-height: 1.35; }
+/* Title + Info disclosure (hover.ts closes it on Escape). Inline flow: Info follows the last word of a wrapped title. */
+.metric-info { min-width: 0; flex: 1; }
+.metric-info > summary { display: block; width: fit-content; min-height: 2rem; padding-top: 0.1875rem; color: var(--fg); }
+.metric-info > summary::before, .metric-info[open] > summary::before { content: none; }
+.metric-info > summary > :is(h2, h3, h4, h5) { display: inline; text-decoration: underline dotted var(--rule-strong); text-underline-offset: 0.25em; }
+.metric-info > summary:hover > :is(h2, h3, h4, h5) { text-decoration-color: currentColor; }
+.metric-info > summary > .meta { margin-left: 0.5rem; white-space: nowrap; }
+.metric-info-body { position: absolute; z-index: 4; inset: 100% 0 auto; max-width: 36rem; padding: 0.875rem; background: var(--bg); border: 1px solid var(--rule-strong); font-size: 0.875rem; }
+.metric-info-body > * + * { margin-top: 0.5rem; }
+.metric-info-body .meta { overflow-wrap: anywhere; }
 .chart-value { font-size: 1.375rem; line-height: 1.2; letter-spacing: -0.015em; font-variant-numeric: tabular-nums; }
 /* SVG marks: geometry and stroke widths come from charts.mjs, colour from here */
 .chart svg { width: 100%; height: 112px; overflow: visible; margin-block: 0.25rem; }
@@ -206,13 +234,10 @@ button, a, summary, input { touch-action: manipulation; }
 .chart .bars.accent { fill: var(--accent); }
 .chart .gridline { stroke: var(--rule-strong); }
 .chart .dot { fill: none; stroke: var(--fg); }
-.chart .muted { stroke: var(--rule-strong); }
 .chart .series.accent { stroke: var(--accent); }
 .chart .dot.accent { stroke: var(--accent); }
 .chart-dates { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 1rem; }
 .chart figcaption { margin-top: 0.25rem; font-size: 0.8125rem; color: var(--muted); }
-.chart details > :not(summary) { font-size: 0.875rem; }
-.chart details > summary { min-height: 1.75rem; }
 
 /* Hover and keyboard inspection (hover.ts toggles hidden and positions) */
 .chart-interactive { position: relative; touch-action: pan-y; cursor: crosshair; }
@@ -227,7 +252,7 @@ button, a, summary, input { touch-action: manipulation; }
 /* Aligned comparison bars */
 .comparison { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr) max-content; gap: 0.5rem 0.75rem; align-content: start; }
 .comparison > :is(h3, figcaption) { grid-column: 1 / -1; }
-.comparison > h3 { font-size: 0.9375rem; line-height: 1.35; margin-bottom: 0.25rem; }
+.comparison > h3 { margin-bottom: 0.25rem; }
 .comparison-row { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; gap: 0.25rem 0.75rem; }
 .comparison-row > * { min-width: 0; }
 .comparison-label { font-size: 0.875rem; }
@@ -308,6 +333,17 @@ summary :is(h2, h3, h4, h5) { font-family: var(--sans); }
 .button:hover { border-color: var(--fg); }
 .button.primary { background: var(--fg); border-color: var(--fg); color: var(--bg); }
 .button.primary:hover { background: color-mix(in oklab, var(--fg) 82%, var(--bg)); }
+/* Search inputs: normal on the catalog, compact in the explorer */
+input[type="search"] { width: 100%; min-height: 2.75rem; padding: 0 0.875rem; border: 1px solid var(--rule-strong); border-radius: 0; background: var(--bg); color: var(--fg); font: 400 1.0625rem var(--sans); }
+input[type="search"]::placeholder { color: var(--muted); opacity: 1; }
+:is(.foc-search, .foc-filter) input { min-height: 2.5rem; padding-inline: 0.75rem; font-size: 0.9375rem; }
+/* Segmented native radios: the input covers its label, the span shows state */
+:is(.chart-range, .foc-seg) { display: flex; min-width: 0; margin: 0; padding: 0; }
+:is(.chart-range, .foc-seg) label { position: relative; display: inline-flex; cursor: pointer; }
+:is(.chart-range, .foc-seg) input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+:is(.chart-range, .foc-seg) label > span { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; white-space: nowrap; }
+:is(.chart-range, .foc-seg) input:checked + span { background: var(--fg); color: var(--bg); }
+:is(.chart-range, .foc-seg) input:focus-visible + span { outline: 2px solid var(--fg); outline-offset: 2px; }
 .copy { min-width: 0; }
 .copy-head { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 0.375rem; }
 pre { margin: 0; padding: 0.875rem 1rem; background: var(--tint); overflow-x: auto; font-size: 0.8125rem; line-height: 1.6; tab-size: 2; }
@@ -317,16 +353,11 @@ pre code { font-size: inherit; }
 /* Catalog */
 .search { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0.375rem 1rem; max-width: 52rem; padding-bottom: 1.25rem; }
 .search label { grid-column: 1 / -1; font-weight: 500; }
-.search input { width: 100%; min-height: 2.75rem; padding: 0 0.875rem; border: 1px solid var(--rule-strong); border-radius: 0; background: transparent; color: var(--fg); font: 400 1.0625rem var(--sans); }
-.search input:focus { border-color: var(--fg); outline: 1px solid var(--fg); outline-offset: 0; }
-.search input::placeholder { color: var(--muted); opacity: 1; }
 .search noscript { grid-column: 1 / -1; }
 .catalog { list-style: none; border-top: 1px solid var(--rule-strong); }
 .catalog li { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0.125rem var(--gap); padding-block: 0.75rem; border-bottom: 1px solid var(--rule); }
 .catalog li > * { min-width: 0; margin: 0; }
 .catalog h2 { grid-column: 1 / span 4; font-size: 1rem; line-height: 1.35; }
-.catalog h2 a { text-decoration: none; }
-.catalog h2 a:hover { text-decoration: underline 1px currentColor; }
 .catalog .catalog-id { grid-column: 1 / span 4; grid-row: 2; overflow-wrap: anywhere; }
 .catalog .catalog-desc { grid-column: 5 / span 5; grid-row: 1 / span 3; font-size: 0.9375rem; color: var(--muted); }
 .catalog .catalog-stats { grid-column: 10 / span 3; grid-row: 1 / span 2; text-align: right; }
@@ -335,8 +366,6 @@ pre code { font-size: inherit; }
 .empty { padding-block: 1.5rem; }
 
 /* Prose blocks (guide, dataset pages): heading above body, no side column */
-.block { padding-block: 1.25rem 1.75rem; border-top: 1px solid var(--rule-strong); }
-.block > * + * { margin-top: 0.75rem; }
 .block > p, .block > ul { max-width: 52rem; }
 .block ul { padding-inline-start: 1.1rem; }
 .block li + li { margin-top: 0.375rem; }
@@ -353,10 +382,10 @@ pre code { font-size: inherit; }
   .flow { max-width: 52rem; }
 }
 /* Tablet */
+/* The Numbers contents moves under the introduction. */
 @media (max-width: 64rem) {
-  .numbers .section-nav { display: none; }
-  .section-menu { display: block; }
   .chart-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .numbers-head { grid-template-columns: minmax(0, 1fr); }
 }
 /* Narrow screens: stack */
 @media (max-width: 56rem) {
@@ -364,6 +393,8 @@ pre code { font-size: inherit; }
   .site-header { grid-template-columns: minmax(0, 1fr) auto; column-gap: 0.5rem; }
   .site-nav { grid-column: 1 / -1; grid-row: 2; justify-self: start; margin-inline-start: -0.625rem; }
   .theme-toggle { grid-column: 2; grid-row: 1; }
+  /* Two header rows: anchors land below both. */
+  html:has(.nav-menu) { --numbers-offset: 7.5rem; }
   .catalog h2, .catalog .catalog-id, .catalog .catalog-desc, .catalog .catalog-stats, .catalog .catalog-match { grid-column: 1 / -1; grid-row: auto; text-align: left; }
   .catalog .catalog-desc { margin-top: 0.25rem; }
   .provider-row, .dot-axis { grid-template-columns: minmax(0, 1fr) minmax(4.5rem, 1fr) 9rem; gap: 0.75rem; }
@@ -383,6 +414,10 @@ pre code { font-size: inherit; }
   .flow-chart a { padding-block: 0.25rem; }
   .flow-spark { grid-row: 1; }
   .chart-grid { grid-template-columns: minmax(0, 1fr); }
+  /* Phones: two compact columns of titles; hints would push every chart below the fold. */
+  .numbers-toc ol { columns: 2; column-gap: 1rem; }
+  .numbers-toc a { grid-template-columns: 1.75rem minmax(0, 1fr); }
+  .numbers-toc .meta { display: none; }
 }
 @media (max-width: 36rem) {
   .site-header { gap: 0; padding-block: 0.25rem; }
@@ -390,7 +425,10 @@ pre code { font-size: inherit; }
   .brand svg { width: 24px; height: 24px; }
   .site-nav { margin-inline: -0.5rem 0; gap: 0; }
   .site-nav a { padding-inline: 0.5rem; }
-  .section-nav { gap: 0 0.875rem; font-size: 0.75rem; }
+  html:has(.nav-menu) { --numbers-offset: 6.5rem; }
+  .nav-menu > summary { padding-inline: 0.5rem; }
+  .nav-menu > nav { top: calc(100% + 0.25rem); }
+  .nav-current { display: none; }
   .comparison { grid-template-columns: minmax(0, 1fr) max-content; }
   .comparison-label { grid-column: 1 / -1; white-space: normal; }
   .provider-row, .dot-axis { grid-template-columns: minmax(0, 1fr) minmax(4rem, 0.8fr) 6.25rem; }
@@ -398,6 +436,11 @@ pre code { font-size: inherit; }
   .dot-axis { font-size: 0.6875rem; }
   .search { grid-template-columns: minmax(0, 1fr); }
 }
+@media (max-width: 22rem) {
+  .site-nav:has(.nav-menu) { margin-inline-start: -0.25rem; }
+  .site-nav:has(.nav-menu) > a, .nav-menu > summary { padding-inline: 0.25rem; font-size: 0.875rem; }
+}
 @media print {
-  .site-nav, .numbers-toolbar, .theme-toggle, .skip, .search, .button { display: none; }
+  .site-nav, .chart-range, .theme-toggle, .skip, .search, .button { display: none; }
+  .site-header:has(.nav-menu) { position: static; }
 }
