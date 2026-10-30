@@ -1,8 +1,9 @@
 name: Website
 
-# Builds and tests web/ against the published snapshot. Deploys:
-# - preview: push or dispatch on portal-migration -> isolated filecoindataportal-preview (workers.dev)
-# - production: main AND vars.FDP_PRODUCTION_DEPLOY == 'true' -> apex (--env production)
+# Builds and tests both static sites in web/ (portal in dist/, Onchain Cloud explorer in dist-foc/)
+# against one published snapshot. Deploys both:
+# - preview: push or dispatch on portal-migration -> isolated portal and explorer preview Workers (workers.dev)
+# - production: main AND vars.FDP_PRODUCTION_DEPLOY == 'true' -> apex and foc.filecoindataportal.xyz
 # Anything else only builds and tests. web/old (archive) is excluded and never rebuilt here.
 
 on:
@@ -70,13 +71,14 @@ jobs:
         if: env.PREVIEW == 'true'
         run: |
           echo 'SITE_URL=https://filecoindataportal-preview.davidgasquez.workers.dev' >> "$GITHUB_ENV"
+          echo 'FOC_URL=https://filecoindataportal-foc-preview.davidgasquez.workers.dev' >> "$GITHUB_ENV"
           echo 'ARCHIVE_URL=https://filecoindataportal-old.davidgasquez.workers.dev' >> "$GITHUB_ENV"
 
       - name: Check and unit tests
         run: npm run check && npm test && npm run test:foc
 
       - name: Build
-        run: npm run build
+        run: npm run build && npm run build:foc
 
       - name: Static site tests
         run: npm run test:site
@@ -85,15 +87,17 @@ jobs:
         if: env.PREVIEW == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
-        run: npm run deploy:preview
+        run: FDP_SITE=foc npm run deploy:preview && npm run deploy:preview
 
       - name: Deploy production
         if: env.PRODUCTION == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
           FDP_PRODUCTION_DEPLOY: ${{ vars.FDP_PRODUCTION_DEPLOY }}
-        run: npm run deploy:production
+        run: FDP_SITE=foc npm run deploy:production && npm run deploy:production
 
       - name: Smoke-test deployed site
         if: env.PREVIEW == 'true' || env.PRODUCTION == 'true'
-        run: BASE_URL="${SITE_URL:-https://filecoindataportal.xyz}" npm run test:http
+        run: |
+          BASE_URL="${SITE_URL:-https://filecoindataportal.xyz}" npm run test:http
+          BASE_URL="${FOC_URL:-https://foc.filecoindataportal.xyz}" FDP_SITE=foc npm run test:http

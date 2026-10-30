@@ -35,6 +35,7 @@ test('catalog and every dataset have Markdown at the build origin', () => {
 
 test('catalog and detail pages link Markdown; catalog entries keep unique dataset anchors', () => {
   assert.match(catalogHtml, /href="\/datasets\.md"/)
+  assert.match(catalogHtml, /href="\/datasets" aria-current="page">Datasets<\/a>/)
   const pageIds = [...catalogHtml.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1])
   assert.equal(pageIds.length, new Set(pageIds).size, 'unique IDs')
   for (const id of ids) {
@@ -42,6 +43,10 @@ test('catalog and detail pages link Markdown; catalog entries keep unique datase
     const page = read(`datasets/${id}/index.html`)
     assert.ok(page.includes(`href="/datasets/${id}.md"`), `${id} links Markdown`)
     assert.ok(page.includes(`href="/datasets#${id}"`), `${id} returns to its catalog entry`)
+    assert.match(page, /href="\/datasets" aria-current="true">Datasets<\/a>/)
+    const crumbs = page.match(/<nav\b[^>]*aria-label="Breadcrumb"[^>]*>([\s\S]*?)<\/nav>/)?.[1]
+    assert.ok(crumbs?.includes(`href="/datasets#${id}"`))
+    assert.ok(crumbs.includes(`<span aria-current="page">${id}</span>`))
   }
 })
 
@@ -50,12 +55,12 @@ test('sitemap lists canonical HTML routes once, at the build origin', () => {
   assert.match(xml, /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/)
   const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])
   assert.equal(locs.length, new Set(locs).size, 'no duplicates')
-  for (const path of ['/', '/numbers', '/datasets', '/docs', '/about', '/foc', '/foc/providers']) assert.ok(locs.includes(new URL(path, origin).href), path)
+  for (const path of ['/', '/numbers', '/datasets', '/docs', '/about']) assert.ok(locs.includes(new URL(path, origin).href), path)
   for (const id of ids) assert.ok(locs.includes(`${origin}/datasets/${id}`), id)
   for (const loc of locs) {
     const url = new URL(loc)
     assert.equal(url.origin, origin)
-    assert.doesNotMatch(url.pathname, /\.(?:json|md|xml|txt)$|^\/(?:guide|404|assets)(?:\/|$)/)
+    assert.doesNotMatch(url.pathname, /\.(?:json|md|xml|txt)$|^\/(?:guide|404|assets|foc|providers|rails|clients|operators|solstice|provider|dataset|rail|address)(?:\/|$)/)
     assert.ok(existsSync(join(dist, decodeURIComponent(url.pathname), 'index.html')), `built: ${url.pathname}`)
   }
 })

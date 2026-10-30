@@ -1,7 +1,7 @@
 // Run after `npm run build`; checks actual HTML, not just the metric inventory.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { sections } from '../src/sections.ts'
 import { numbersSections } from '../src/numbers-sections.ts'
@@ -9,6 +9,7 @@ import { numbersSections } from '../src/numbers-sections.ts'
 const dist = resolve(process.env.SITE_DIST ?? 'dist')
 const site = process.env.SITE_URL ?? 'https://filecoindataportal.xyz'
 const archive = process.env.ARCHIVE_URL ?? 'https://old.filecoindataportal.xyz'
+const foc = new URL(process.env.FOC_URL || 'https://foc.filecoindataportal.xyz').origin
 const page = await readFile(resolve(dist, 'numbers/index.html'), 'utf8')
 const home = await readFile(resolve(dist, 'index.html'), 'utf8')
 const primary = sections.flatMap((section) => section.groups.flatMap((group) => group.charts))
@@ -22,11 +23,19 @@ test('landing and Numbers are distinct routes with the portal identity', () => {
 })
 test('homepage actions and dataset copy stay concise without counts or the diagram caption', () => {
   assert.match(home, /<a[^>]+class="button primary"[^>]+href="\/datasets"[^>]*>Datasets<\/a>/)
-  assert.match(home, /<a[^>]+class="button"[^>]+href="\/numbers"[^>]*>Dashboard<\/a>/)
+  assert.match(home, /<a[^>]+class="button"[^>]+href="\/numbers"[^>]*>Numbers<\/a>/)
   assert.match(home, /href="\/datasets"[^>]*>more datasets<\/a>/)
   assert.match(home, /Public tables, each a Parquet file you can query directly\./)
   assert.doesNotMatch(home, /\d+ (?:public tables|more tables)|How the portal is built|flow-caption|Browse datasets|Read the numbers/)
   assert.match(home, /<figure[^>]+class="flow"[^>]+aria-label="[^"]+"/)
+})
+test('the portal does not advertise the explorer', async () => {
+  for (const file of await readdir(dist, { recursive: true })) {
+    if (!/\.(html|md|txt|xml)$/.test(file)) continue
+    const html = await readFile(resolve(dist, file), 'utf8')
+    assert.ok(!html.includes(foc), `${file}: no explorer origin`)
+    assert.doesNotMatch(html, /href="\/foc(?:[\/#?"])/, file)
+  }
 })
 test('Get Answers offers one agent instruction and a formatted SQL alternative', () => {
   assert.match(home, /<h2[^>]+id="quickstart"[^>]*>Get Answers<\/h2>/)
@@ -131,11 +140,41 @@ test('static history matches every rendered series, including the negative compa
     }
   }
 })
-test('history controls, compact navigation and pre-paint theme preference are present', () => {
-  assert.match(page, /data-chart-range/)
-  for (const value of ['6m', '1y', 'all']) assert.match(page, new RegExp(`name="numbers-range" value="${value}"`))
+test('history controls, the two section navigations and pre-paint theme preference are present', () => {
+  assert.doesNotMatch(page, /numbers-rail|numbers-main|to-contents/)
+  // Exactly one chart-history control, inside the introduction that also holds the contents.
+  const head = page.match(/<header class="numbers-head" id="contents">[\s\S]*?<\/header>/)?.[0]
+  assert.ok(head, 'The introduction holds the contents and chart history')
+  assert.equal([...page.matchAll(/data-chart-range/g)].length, 1)
+  assert.match(head, /data-chart-range/)
+  assert.match(page, /<legend[^>]*>Chart history<\/legend>/)
+  assert.match(page, /data-range-status[^>]*role="status"|role="status"[^>]*data-range-status/)
+  for (const value of ['6m', '1y', 'all']) assert.equal([...page.matchAll(new RegExp(`name="numbers-range" value="${value}"`, 'g'))].length, 1)
   assert.doesNotMatch(page, /Hover or focus a chart for daily values/)
-  assert.match(page, /class="section-menu"/)
+  // The primary header's Numbers item is a native disclosure with progressive section context.
+  const header = page.match(/<header class="site-header[\s\S]*?<\/header>/)[0]
+  assert.match(header, /<details class="nav-menu"><summary aria-current="page"><span>Numbers<\/span><span class="nav-current" data-section-current><\/span><span aria-hidden="true">▾<\/span><\/summary>/)
+  const navs = [...page.matchAll(/<nav\b[^>]*\bdata-section-nav\b[^>]*>([\s\S]*?)<\/nav>/g)]
+  assert.equal(navs.length, 1)
+  assert.ok(header.includes(navs[0][0]), 'The section menu lives in the site header')
+  assert.doesNotMatch(home, /nav-menu/)
+  // The portal's primary navigation: three sections, no explorer link or client router.
+  for (const html of [home, page]) {
+    const primary = html.match(/<nav class="site-nav" aria-label="Primary">([\s\S]*?)<\/nav>\s*<button class="theme-toggle"/)?.[1]
+    assert.deepEqual([...primary.matchAll(/<(?:a href="([^"#]+)"|summary)/g)].map(match => match[1] ?? '/numbers'), ['/numbers', '/datasets', '/docs'])
+    assert.doesNotMatch(html, /foc-menu|foc-search|name="astro-view-transitions-enabled"/)
+  }
+  // Both presentations link the same sections in page order; the menu adds a way back to the contents.
+  const order = [...page.matchAll(/<section class="board" id="([^"]+)"/g)].map(match => match[1])
+  const hrefs = html => [...html.matchAll(/href="#([^"]+)"/g)].map(match => match[1])
+  const toc = head.match(/<nav class="numbers-toc" aria-label="Contents">[\s\S]*?<\/nav>/)[0]
+  assert.deepEqual(hrefs(toc), order, 'Contents follow page order')
+  assert.deepEqual(hrefs(navs[0][1]), ['contents', ...order], 'The menu matches the contents')
+  assert.deepEqual([...order].sort(), [...sections.map(section => section.id), 'solstice', 'all-metrics'].sort())
+  const labels = html => [...html.matchAll(/<a href="#[^"]+">(?:<span>)?([^<]+)/g)].map(match => match[1])
+  assert.deepEqual(labels(toc), labels(navs[0][1]).slice(1), 'Same labels in both places')
+  assert.equal([...toc.matchAll(/<span class="meta">[^<]+<\/span>/g)].length, order.length, 'Every contents entry has a hint')
+  assert.doesNotMatch(page, /aria-current="location"/, 'Static HTML marks no current section')
   assert.match(home, /data-theme-toggle/)
   assert.ok(home.indexOf('fdp-theme') < home.indexOf('<body>'), 'Saved theme applies before the body paints')
 })

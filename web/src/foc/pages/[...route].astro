@@ -1,0 +1,51 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { portal, portalHref } from '../../site.mjs'
+import { routes, readFoc, type FocRoute } from '../data.ts'
+import { render } from '../pages.ts'
+import { resetIds, url } from '../ui.ts'
+import '../foc.css'
+
+export function getStaticPaths() {
+  return routes.map((entry) => ({ params: { route: entry.route }, props: { entry } }))
+}
+const { entry } = Astro.props as { entry: FocRoute }
+resetIds()
+const page = render[entry.kind](readFoc(entry.file))
+const current = ({ provider: 'providers', dataset: 'datasets', rail: 'rails', address: 'clients' } as Record<string, string>)[entry.kind] ?? entry.kind
+const nav = [['overview', 'Overview'], ['providers', 'Providers'], ['datasets', 'Storage data sets'], ['rails', 'Rails'], ['clients', 'Clients'], ['operators', 'Operators'], ['solstice', 'Solstice']]
+  .map(([kind, label]) => ({ href: url(kind === 'overview' ? '' : kind), label, current: kind === current ? (kind === entry.kind ? 'page' as const : 'true' as const) : undefined }))
+// One explorer header: a portal menu (holding the sections on narrow screens), the sections, and search.
+// Entity pages belong to their list, so the menu names the parent section.
+const section = nav.find(link => link.current)!.label
+// Portal destinations (on the portal origin). Hints keep portal Datasets distinct from storage data sets.
+const exits = [[portalHref('/'), 'Filecoin Data Portal'], ...portal]
+const hints: Record<string, string> = { 'Filecoin Data Portal': 'filecoindataportal.xyz', Numbers: 'Network charts', 'Filecoin Onchain Cloud': 'This explorer', Datasets: 'Public table catalog', Docs: 'Query the data' }
+---
+<Layout title={entry.kind === 'overview' ? page.title : `${page.title} · Filecoin Onchain Cloud`} description={page.description}>
+  <details class="foc-menu" slot="nav">
+    <summary><span>Filecoin Onchain Cloud</span><span class="foc-menu-current">{section}</span><span aria-hidden="true">▾</span></summary>
+    <div class="foc-menu-panel">
+      <nav class="foc-menu-explorer" aria-label="Filecoin Onchain Cloud">
+        {nav.map(link => <a href={link.href} data-astro-prefetch="hover" aria-current={link.current}>{link.label}</a>)}
+      </nav>
+      <nav aria-label="Portal">
+        {exits.map(([href, label]) => <a href={href} aria-current={href === url() ? (entry.kind === 'overview' ? 'page' : 'true') : undefined}>{label}<span class="meta">{hints[label]}</span></a>)}
+      </nav>
+    </div>
+  </details>
+  <nav class="foc-nav" aria-label="Filecoin Onchain Cloud" slot="nav">
+    {nav.map(link => <a href={link.href} data-astro-prefetch="hover" aria-current={link.current}>{link.label}</a>)}
+  </nav>
+  <form class="foc-search" role="search" action={url()} slot="nav" hidden>
+    <label class="sr" for="foc-q">Search providers, ids and addresses</label>
+    <input id="foc-q" type="search" role="combobox" aria-expanded="false" aria-controls="foc-results" aria-autocomplete="list" placeholder="Provider, id or 0x address" autocomplete="off" spellcheck="false" />
+    <kbd class="meta" aria-hidden="true">/</kbd>
+    <div id="foc-results" role="listbox" aria-label="Search results" hidden></div>
+    <p class="foc-no-results meta" role="status" hidden></p>
+  </form>
+  <div class="foc">
+    <Fragment set:html={page.html} />
+  </div>
+</Layout>
+<script>import '../client'</script>

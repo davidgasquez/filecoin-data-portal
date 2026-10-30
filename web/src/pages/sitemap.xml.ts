@@ -1,13 +1,10 @@
 import type { APIRoute } from 'astro'
 import { datasets } from '../data'
-import { routes } from '../foc/data'
 
-// Canonical HTML pages only: no JSON, Markdown, 404, or archive paths. FOC comes from the same
-// route list that pre-renders its pages, so every listed entity page exists in the build.
+// Canonical portal HTML pages only: no JSON, Markdown, 404, archive or explorer paths (the explorer has its own).
 const pages = [
   '/', '/numbers', '/datasets', '/docs', '/about',
   ...datasets.map(({ id }) => `/datasets/${encodeURIComponent(id)}`),
-  ...routes.map(({ route }) => route ? `/foc/${route}` : '/foc'),
 ]
 const xml = (value: string) => value.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 

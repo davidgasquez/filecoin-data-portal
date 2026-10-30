@@ -1,11 +1,14 @@
-// One render function per /foc route kind. Each returns static HTML for the page body.
+// One render function per explorer route kind. Each returns static HTML for the page body.
 import { chart } from '../charts.mjs'
-import { atto, shiftDate } from '../metrics.mjs'
+import { atto, epochTime, format, shiftDate } from '../metrics.mjs'
+import { definition } from '../sections'
+import * as quarter from '../solstice.mjs'
+import { portalHref } from '../site.mjs'
 import { readFoc, coverage as covered } from './data'
 import {
-  type Row, BLOCKSCOUT, ZERO, NA, esc, num, sum, count, plural, usd, amt, pct, bytes, ms, date, dateTime, epochTs, days, short, pname, lastVal, isStable,
+  type Row, BLOCKSCOUT, ZERO, NA, esc, num, sum, count, plural, usd, amt, pct, metric, bytes, date, day, dateTime, epochTs, days, short, pname, lastVal, isStable,
   copy, ext, blockscout, txLink, tag, safeUrl, addr, dsLink, railLink, provLink, dsStatus, railState, provStatus, provState, flag, label,
-  head, section, more, figures, kv, empty, sources, points, plot, table, dsTable, railTable, payTable, paySection, col, url, zeroMuted,
+  head, section, more, figures, kv, empty, sources, points, plot, table, dsTable, railTable, payTable, paySection, col, url, catalog, zeroMuted,
 } from './ui'
 
 export type Page = { title: string; description: string; html: string }
@@ -21,9 +24,9 @@ export function overview(o: Row): Page {
   const dates: string[] = s.date ?? []
   const at = (k: string) => { const [v, i] = lastVal(s[k]); return { v, date: dates[i] } }
   const net = (k: string) => points(dates, s[k])
-  const rr = at('run_rate')
+  const RR = 'filecoin_pay_gross_payment_volume_run_rate_usd', rr = at('run_rate')
   const before = rr.date ? num(s.run_rate?.[dates.indexOf(shiftDate(rr.date, -30))]) : null
-  const delta = rr.v != null && before != null ? `${rr.v >= before ? '+' : '−'}${usd(Math.abs(rr.v - before))}${before ? ` (${rr.v >= before ? '+' : '−'}${Math.abs((rr.v - before) / before * 100).toFixed(1)}%)` : ''} since ${shiftDate(rr.date!, -30)}` : 'No 30-day comparison observed'
+  const delta = rr.v != null && before != null ? `${rr.v >= before ? '+' : '−'}${format(Math.abs(rr.v - before), RR)}${before ? ` (${rr.v >= before ? '+' : '−'}${Math.abs((rr.v - before) / before * 100).toFixed(1)}%)` : ''} since ${shiftDate(rr.date!, -30)}` : 'No 30-day comparison observed'
   const ops: Row[] = optional('operators.json') ?? []
   const top = [...ops].sort((a, b) => (num(b.run_rate) ?? 0) - (num(a.run_rate) ?? 0))[0]
   const dealbots = (optional('clients.json') ?? []).filter((r: Row) => r.dealbot).length
@@ -42,31 +45,31 @@ export function overview(o: Row): Page {
     <figure class="chart foc-hero-chart">
       <div class="foc-hero-lead">
         <details class="metric-info"><summary><h2 id="run-rate-title">Annualized Filecoin Pay run rate</h2><span class="meta">Info</span></summary>
-          <div class="metric-info-body"><p>Gross stablecoin payment rate of active, recurring, eligible rails, annualized. Excludes Dealbot. Covers every operator, so it is payment volume, not storage-only revenue.</p><p class="meta">Source: <a href="/datasets/daily_network_metrics#filecoin_pay_gross_payment_volume_run_rate_usd">daily_network_metrics</a> · filecoin_pay_gross_payment_volume_run_rate_usd</p></div></details>
-        <p class="foc-big">${usd(rr.v)}</p>
+          <div class="metric-info-body"><p>${definition(RR)} Excludes Dealbot. Covers every operator, so it is payment volume, not storage-only revenue.</p><p class="meta">Source: <a href="${catalog('daily_network_metrics', RR)}">daily_network_metrics</a> · filecoin_pay_gross_payment_volume_run_rate_usd</p></div></details>
+        <p class="foc-big">${metric(rr.v, RR)}</p>
         <p class="meta">${rr.date ? `${rr.date} (UTC) · ${delta}` : 'Not observed'}</p>
       </div>
-      ${chart(net('run_rate'), 'filecoin_pay_gross_payment_volume_run_rate_usd', 'line', { label: 'Annualized Filecoin Pay run rate', interactive: true })}
+      ${chart(net('run_rate'), RR, 'line', { label: 'Annualized Filecoin Pay run rate', interactive: true })}
     </figure>
     <div class="foc-hero-side">
       <dl class="facts foc-facts">
-        ${fact('Network fee ARR', usd(fee.v), fee.date && `Annualized Filecoin Pay fees · ${fee.date}`)}
-        ${fact('Stablecoin paid', usd(c.paid_total), `All time · ${count(c.payments)} payment events, all tokens`)}
-        ${fact('Billing data sets', count(billing.v), `${count(c.data_sets)} created · ${billing.date ?? 'not observed'}`)}
-        ${fact('Billing clients', count(payers.v), `${count(c.payers)} payer addresses in total · ${payers.date ?? 'not observed'}`)}
-        ${fact('Warm storage data (including copies)', bytes(stored.v), `Raw bytes, every copy · ${stored.date ?? 'not observed'}`)}
-        ${fact('Active rails', count(rails.v), `${count(c.rails)} rails · ${count(c.operators)} operators · ${rails.date ?? 'not observed'}`)}
+        ${fact('Network fee ARR', metric(fee.v, 'filecoin_pay_network_fee_arr_usd'), fee.date && `Annualized Filecoin Pay fees · ${fee.date}`)}
+        ${fact('Stablecoin paid', metric(c.paid_total, 'filecoin_pay_paid_usd'), `All time · ${count(c.payments)} payment events, all tokens`)}
+        ${fact('Billing data sets', metric(billing.v, 'warm_storage_billing_data_sets'), `${count(c.data_sets)} created · ${billing.date ?? 'not observed'}`)}
+        ${fact('Billing clients', metric(payers.v, 'warm_storage_billing_payers'), `${count(c.payers)} payer addresses in total · ${payers.date ?? 'not observed'}`)}
+        ${fact('Warm storage data (including copies)', metric(stored.v, 'warm_storage_stored_bytes'), `Raw bytes, every copy · ${stored.date ?? 'not observed'}`)}
+        ${fact('Active rails', metric(rails.v, 'filecoin_pay_active_rails'), `${count(c.rails)} rails · ${count(c.operators)} operators · ${rails.date ?? 'not observed'}`)}
       </dl>
     </div>
   </section>`
 
   const grid = `<div class="chart-grid foc-grid">
-    ${plot({ title: 'Paid through Filecoin Pay', value: usd(c.paid_total), key: 'filecoin_pay_paid_usd', kind: 'bar', pts: net('paid'), info: 'Daily gross stablecoin payments settled or paid one-time. Headline is the all-time stablecoin total.', source: 'daily_network_metrics', column: 'filecoin_pay_paid_usd' })}
-    ${plot({ title: 'New billing data sets', value: count(at('new_data_sets').v), key: 'warm_storage_new_billing_data_sets', kind: 'bar', pts: net('new_data_sets'), info: 'Data sets whose billing started that day. Headline is the latest day.', source: 'daily_network_metrics', column: 'warm_storage_new_billing_data_sets' })}
-    ${plot({ title: 'Billing data sets', value: count(billing.v), key: 'warm_storage_billing_data_sets', kind: 'step', pts: net('billing_data_sets'), info: 'Data sets billing at a positive PDP rail rate at the end of the day.', source: 'daily_network_metrics', column: 'warm_storage_billing_data_sets' })}
-    ${plot({ title: 'Warm storage data (including copies)', value: bytes(stored.v), key: 'warm_storage_stored_bytes', kind: 'step', pts: net('stored_bytes'), info: 'Raw payload bytes across warm storage data sets, counting every stored copy, including non-billing copies.', source: 'daily_network_metrics', column: 'warm_storage_stored_bytes' })}
-    ${plot({ title: 'Active payers', value: count(at('active_payers').v), key: 'filecoin_pay_active_payers', kind: 'step', pts: net('active_payers'), info: 'Payers with at least one unterminated rail at the end of the day, whether or not it is billing.', source: 'daily_network_metrics', column: 'filecoin_pay_active_payers' })}
-    ${plot({ title: 'Active rails', value: count(rails.v), key: 'filecoin_pay_active_rails', kind: 'step', pts: net('active_rails'), info: 'Unterminated Filecoin Pay rails at the end of the day, whether or not they are billing.', source: 'daily_network_metrics', column: 'filecoin_pay_active_rails' })}
+    ${plot({ title: 'Paid through Filecoin Pay', value: metric(c.paid_total, 'filecoin_pay_paid_usd'), key: 'filecoin_pay_paid_usd', kind: 'bar', pts: net('paid'), info: `${definition('filecoin_pay_paid_usd')} Settlements and one-time payments. Headline is the all-time stablecoin total.`, source: 'daily_network_metrics', column: 'filecoin_pay_paid_usd' })}
+    ${plot({ title: 'New billing data sets', value: metric(at('new_data_sets').v, 'warm_storage_new_billing_data_sets'), key: 'warm_storage_new_billing_data_sets', kind: 'bar', pts: net('new_data_sets'), info: 'Data sets whose billing started that day. Headline is the latest day.', source: 'daily_network_metrics', column: 'warm_storage_new_billing_data_sets' })}
+    ${plot({ title: 'Billing data sets', value: metric(billing.v, 'warm_storage_billing_data_sets'), key: 'warm_storage_billing_data_sets', kind: 'step', pts: net('billing_data_sets'), info: definition('warm_storage_billing_data_sets'), source: 'daily_network_metrics', column: 'warm_storage_billing_data_sets' })}
+    ${plot({ title: 'Warm storage data (including copies)', value: metric(stored.v, 'warm_storage_stored_bytes'), key: 'warm_storage_stored_bytes', kind: 'step', pts: net('stored_bytes'), info: `${definition('warm_storage_stored_bytes')} Includes non-billing copies.`, source: 'daily_network_metrics', column: 'warm_storage_stored_bytes' })}
+    ${plot({ title: 'Active payers', value: metric(at('active_payers').v, 'filecoin_pay_active_payers'), key: 'filecoin_pay_active_payers', kind: 'step', pts: net('active_payers'), info: definition('filecoin_pay_active_payers'), source: 'daily_network_metrics', column: 'filecoin_pay_active_payers' })}
+    ${plot({ title: 'Active rails', value: metric(rails.v, 'filecoin_pay_active_rails'), key: 'filecoin_pay_active_rails', kind: 'step', pts: net('active_rails'), info: definition('filecoin_pay_active_rails'), source: 'daily_network_metrics', column: 'filecoin_pay_active_rails' })}
   </div>`
 
   const topProviders = table({
@@ -110,7 +113,7 @@ export function providers(rows: Row[]): Page {
   return {
     title: 'Storage providers',
     description: 'PDP storage providers: status, location, data sets, payments and 30-day quality checks.',
-    html: `${head({ crumbs: [['Onchain Cloud', url()], ['Providers']], title: 'Storage providers', lede: `${count(rows.length - removed)} registered PDP providers (plus ${count(removed)} removed); ${count(approved)} approved for Filecoin Warm Storage. Quality spans ${quarterSpan(q?.end)}: storage and retrieval pool Dealbot probes, not client traffic; faults measure onchain proving periods.` })}
+    html: `${head({ title: 'Storage providers', lede: `${count(rows.length - removed)} registered PDP providers (plus ${count(removed)} removed); ${count(approved)} approved for Filecoin Warm Storage. Quality spans ${quarterSpan(q?.end)}: storage and retrieval pool Dealbot probes, not client traffic; faults measure onchain proving periods.` })}
     ${table({
       caption: 'Storage providers', rows, prefix: '', page: 100, href: (r) => url(`provider/${r.id}`),
       filter: { label: 'Status', get: provState, options: [['all', 'All'], ['approved', 'Approved'], ['registered', 'Registered'], ['inactive', 'Inactive'], ['removed', 'Removed']] },
@@ -150,13 +153,15 @@ export function provider(x: Row): Page {
   const token = !p.payment_token ? null : p.payment_token === ZERO ? 'FIL' : p.price_symbol ?? short(p.payment_token)
   const span = q.start ? `${q.start} to ${q.end}` : quarterSpan(coverage('quality')?.end)
   const ratio = (a: unknown, b: unknown, what: string) => num(b) == null ? 'Not observed' : num(b) ? `${count(a)} / ${count(b)} ${what}` : `No ${what} observed`
-  const qplot = (title: string, k: string, column: string, value: string, note: string, info: string) => plot({ title, value, key: column === 'retrieval_median_ttfb_ms' ? column : `provider_${column}`, kind: 'line', pts: points(qs!.d, qs![k]), note, info, source: 'daily_provider_quality', column })
+  const qkey = (column: string) => column === 'retrieval_median_ttfb_ms' ? column : `provider_${column}`
+  // Headlines pool the window; they share the plotted column's units and precision.
+  const qplot = (title: string, k: string, column: string, note: string, info: string) => plot({ title, value: metric(q[k], qkey(column)), key: qkey(column), kind: 'line', pts: points(qs!.d, qs![k]), note, info, source: 'daily_provider_quality', column })
   const quality = qs ? `<div class="chart-grid foc-grid">
-    ${qplot('Storage success', 'storage', 'storage_success_rate', pct(q.storage, 2), ratio(q.storage_successes, q.storage_checks, 'probes'), 'Dealbot storage probes that succeeded. Headline pools the 30-day window.')}
-    ${qplot('Retrieval success', 'retrieval', 'retrieval_success_rate', pct(q.retrieval, 2), ratio(q.retrieval_successes, q.retrieval_checks, 'retrievals'), 'Dealbot retrievals of its own uploads that succeeded.')}
-    ${qplot('Sampled retrieval success', 'sampled', 'sampled_retrieval_success_rate', pct(q.sampled, 2), ratio(q.sampled_retrieval_successes, q.sampled_retrieval_checks, 'sampled pieces'), 'Retrievals of randomly sampled stored pieces that succeeded. Skips excluded.')}
-    ${qplot('Proving fault rate', 'faults', 'proving_fault_rate', pct(q.faults, 2), `${ratio(q.proving_periods_faulted, q.proving_periods_closed, 'proving periods faulted')} · ${count(q.proofs)} proofs`, 'Closed proving periods that faulted. Onchain PDP, not probes.')}
-    ${qplot('Retrieval time to first byte (ms)', 'ttfb', 'retrieval_median_ttfb_ms', ms(q.ttfb), esc(q.ttfb_label ?? 'Median of daily medians'), 'Daily median time to first byte of Dealbot retrievals, in milliseconds.')}
+    ${qplot('Storage success', 'storage', 'storage_success_rate', ratio(q.storage_successes, q.storage_checks, 'probes'), 'Dealbot storage probes that succeeded. Headline pools the 30-day window.')}
+    ${qplot('Retrieval success', 'retrieval', 'retrieval_success_rate', ratio(q.retrieval_successes, q.retrieval_checks, 'retrievals'), 'Dealbot retrievals of its own uploads that succeeded.')}
+    ${qplot('Sampled retrieval success', 'sampled', 'sampled_retrieval_success_rate', ratio(q.sampled_retrieval_successes, q.sampled_retrieval_checks, 'sampled pieces'), 'Retrievals of randomly sampled stored pieces that succeeded. Skips excluded.')}
+    ${qplot('Proving fault rate', 'faults', 'proving_fault_rate', `${ratio(q.proving_periods_faulted, q.proving_periods_closed, 'proving periods faulted')} · ${count(q.proofs)} proofs`, 'Closed proving periods that faulted. Onchain PDP, not probes.')}
+    ${qplot('Retrieval time to first byte (ms)', 'ttfb', 'retrieval_median_ttfb_ms', esc(q.ttfb_label ?? 'Median of daily medians'), 'Daily median time to first byte of Dealbot retrievals, in milliseconds.')}
   </div>` : empty('No quality checks recorded for this provider.')
   const history = [
     ['Registered', p.registered_at, p.registered_tx],
@@ -168,7 +173,7 @@ export function provider(x: Row): Page {
     title: `${pname(p.name) || `Provider #${p.id}`}`,
     description: `Storage provider ${p.name ?? p.id}: data sets, rails, payments and service quality.`,
     html: `${head({
-      crumbs: [['Onchain Cloud', url()], ['Providers', url('providers')], [`#${p.id}`]],
+      crumbs: [['Filecoin Onchain Cloud', url()], ['Providers', url('providers')], [`#${p.id}`]],
       title: `${esc(p.name ?? `Provider #${p.id}`)} <span class="foc-id">#${p.id}</span>`,
       lede: p.description && p.description !== p.name ? esc(p.description) : '',
       meta: [provStatus(p), p.endorsed && tag('Endorsed'), p.service_status && tag(p.service_status), loc && esc(loc),
@@ -180,7 +185,7 @@ export function provider(x: Row): Page {
       ['Clients', count(clients), 'Distinct data set owners'],
       ['Recurring rate', usd(rate), 'Per 30 days, streaming stablecoin rails'],
       ['Paid to provider', usd(paid), `Stablecoin · ${plural(rails.length, 'rail')}`],
-      ['Proving fault rate', pct(q.faults, 2), ratio(q.proving_periods_faulted, q.proving_periods_closed, 'periods')],
+      ['Proving fault rate', metric(q.faults, qkey('proving_fault_rate')), ratio(q.proving_periods_faulted, q.proving_periods_closed, 'periods')],
     ])}
     ${section('Service quality', quality, { sub: `Daily Dealbot probes and onchain proving. Headlines pool numerators and denominators over ${span}. Probes are synthetic checks, not client traffic.` })}
     ${paySection(x.daily, x.payments, { title: 'Payments received', hide: ['payee'] })}
@@ -210,7 +215,7 @@ export function datasets(rows: Row[]): Page {
   return {
     title: 'Storage data sets',
     description: 'Warm storage data sets: client, provider, status, rails and payments.',
-    html: `${head({ crumbs: [['Onchain Cloud', url()], ['Data sets']], title: 'Storage data sets', lede: `${count(rows.length)} warm storage data sets, ${count(live)} live. Each is owned by a client, stored by one provider and paid through a PDP rail, plus CDN rails when enabled. Not to be confused with the portal’s <a href="/datasets">published datasets</a>.` })}
+    html: `${head({ title: 'Storage data sets', lede: `${count(rows.length)} warm storage data sets, ${count(live)} live. Each is owned by a client, stored by one provider and paid through a PDP rail, plus CDN rails when enabled. Not to be confused with the portal’s <a href="${portalHref('/datasets')}">published datasets</a>.` })}
     ${dsTable(rows, { prefix: '', page: 100, caption: 'Storage data sets' })}
     ${sources(['data_sets', 'rails', 'payments'], 'Rate and paid are stablecoin only.')}`,
   }
@@ -231,7 +236,7 @@ export function dataset(x: Row): Page {
     title: `Data set #${d.id}`,
     description: `Storage data set #${d.id}: client, provider, rails and payments.`,
     html: `${head({
-      crumbs: [['Onchain Cloud', url()], ['Data sets', url('datasets')], [`#${d.id}`]],
+      crumbs: [['Filecoin Onchain Cloud', url()], ['Storage data sets', url('datasets')], [`#${d.id}`]],
       title: `Data set <span class="foc-id">#${d.id}</span>`,
       meta: [dsStatus(d.status), d.source && tag(d.source), d.cdn && tag('CDN'), d.ipfs && tag('IPFS indexing'), `Created ${date(d.created_at)}`, d.api_observed_at != null && `API snapshot ${dateTime(d.api_observed_at)} UTC`],
     })}
@@ -270,7 +275,7 @@ export function rails(rows: Row[]): Page {
   return {
     title: 'Payment rails',
     description: 'Filecoin Pay rails: payer, payee, operator, rate and payments.',
-    html: `${head({ crumbs: [['Onchain Cloud', url()], ['Rails']], title: 'Payment rails', lede: `${count(rows.length)} Filecoin Pay rails, ${count(active)} active. A rail streams tokens from a payer to a payee under an operator contract. Rates settle per epoch, with optional one-time payments.` })}
+    html: `${head({ title: 'Payment rails', lede: `${count(rows.length)} Filecoin Pay rails, ${count(active)} active. A rail streams tokens from a payer to a payee under an operator contract. Rates settle per epoch, with optional one-time payments.` })}
     ${railTable(rows, { prefix: '', page: 100, caption: 'Payment rails' })}
     ${sources(['rails', 'payments'], 'Rate and paid are in each rail’s own token; sorting compares raw amounts across tokens.')}`,
   }
@@ -287,7 +292,7 @@ export function rail(x: Row): Page {
     title: `Rail #${r.id}`,
     description: `Filecoin Pay rail #${r.id}: payer, payee, operator, rate and payments.`,
     html: `${head({
-      crumbs: [['Onchain Cloud', url()], ['Rails', url('rails')], [`#${r.id}`]],
+      crumbs: [['Filecoin Onchain Cloud', url()], ['Rails', url('rails')], [`#${r.id}`]],
       title: `Rail <span class="foc-id">#${r.id}</span>`,
       meta: [railState(r.state), r.service && tag(r.service), sym && tag(sym), r.dealbot && tag('Dealbot'),
         x.data_set && `Data set ${dsLink(x.data_set.id)}`, `Created ${date(r.created_at)} · ${txLink(r.created_tx)}`, r.api_observed_at != null && `API snapshot ${dateTime(r.api_observed_at)} UTC`],
@@ -329,7 +334,7 @@ export function clients(rows: Row[]): Page {
   return {
     title: 'Clients',
     description: 'Addresses that own storage data sets or pay through Filecoin Pay rails.',
-    html: `${head({ crumbs: [['Onchain Cloud', url()], ['Clients']], title: 'Clients', lede: `${count(rows.length)} addresses that own data sets or pay through Filecoin Pay rails. ${plural(bots, 'is a Dealbot wallet', 'are Dealbot wallets')} running synthetic checks.` })}
+    html: `${head({ title: 'Clients', lede: `${count(rows.length)} addresses that own data sets or pay through Filecoin Pay rails. ${plural(bots, 'is a Dealbot wallet', 'are Dealbot wallets')} running synthetic checks.` })}
     ${table({
       caption: 'Clients', rows, prefix: '', page: 100, href: (r) => url(`address/${r.address}`),
       filter: { label: 'Kind', get: (r) => r.dealbot ? 'dealbot' : 'client', options: [['all', 'All'], ['client', 'Excluding Dealbot'], ['dealbot', 'Dealbot']] },
@@ -353,7 +358,7 @@ export function operators(rows: Row[]): Page {
   return {
     title: 'Operators',
     description: 'Operator contracts that create and manage Filecoin Pay rails.',
-    html: `${head({ crumbs: [['Onchain Cloud', url()], ['Operators']], title: 'Operators', lede: `${count(rows.length)} operator contracts create and manage Filecoin Pay rails on behalf of payers. Filecoin Warm Storage Service (FWSS) operates most of them.` })}
+    html: `${head({ title: 'Operators', lede: `${count(rows.length)} operator contracts create and manage Filecoin Pay rails on behalf of payers. Filecoin Warm Storage Service (FWSS) operates most of them.` })}
     ${table({
       caption: 'Operators', rows, prefix: '', page: 100, href: (r) => url(`address/${r.address}`),
       search: true, searchLabel: 'Filter by address or service',
@@ -386,7 +391,7 @@ export function address(x: Row): Page {
     title: l ?? short(a),
     description: `Filecoin Onchain Cloud activity of ${a}.`,
     html: `${head({
-      crumbs: [['Onchain Cloud', url()], ['Clients', url('clients')], ['Address']],
+      crumbs: [['Filecoin Onchain Cloud', url()], ['Clients', url('clients')], ['Address']],
       title: l ? esc(l) : `<span class="mono foc-hex">${esc(a)}</span>`,
       lede: provs.length ? `Registered as ${provs.map((p) => provLink(p.id, p.name)).join(', ')}.` : '',
       meta: [`<span class="mono">${esc(a)}</span> ${copy(a)} ${blockscout(a)}`, ...roles.map(tag)],
@@ -402,8 +407,8 @@ export function address(x: Row): Page {
       x.orchestrator && ['Orchestrator', x.orchestrator.is_admitted ? 'Admitted' : 'Removed', `${count(x.orchestrator.bound_pairs)} bound pairs`],
     ]) : ''}
     ${od ? section('Operator run rate', `<div class="chart-grid foc-grid foc-grid-2">
-      ${plot({ title: 'Annualized run rate', value: usd(lastVal(od.run_rate)[0]), key: 'operator_run_rate_usd', kind: 'line', pts: points(od.d, od.run_rate), info: 'Gross stablecoin run rate of this operator’s eligible recurring rails, annualized.', source: 'daily_operator_metrics', column: 'filecoin_pay_gross_payment_volume_run_rate_usd' })}
-      ${plot({ title: 'Active rails', value: count(lastVal(od.active_rails)[0]), key: 'operator_active_rails', kind: 'step', pts: points(od.d, od.active_rails), info: 'Rails in the active state at the end of the day.', source: 'daily_operator_metrics', column: 'active_rails' })}
+      ${plot({ title: 'Annualized run rate', value: metric(lastVal(od.run_rate)[0], 'operator_run_rate_usd'), key: 'operator_run_rate_usd', kind: 'line', pts: points(od.d, od.run_rate), info: 'Gross stablecoin run rate of this operator’s eligible recurring rails, annualized.', source: 'daily_operator_metrics', column: 'filecoin_pay_gross_payment_volume_run_rate_usd' })}
+      ${plot({ title: 'Active rails', value: metric(lastVal(od.active_rails)[0], 'operator_active_rails'), key: 'operator_active_rails', kind: 'step', pts: points(od.d, od.active_rails), info: 'Rails in the active state at the end of the day.', source: 'daily_operator_metrics', column: 'active_rails' })}
     </div>`) : ''}
     ${x.daily_out?.d?.length ? paySection(x.daily_out, null, { title: 'Payments sent' }) : ''}
     ${x.daily_in?.d?.length ? paySection(x.daily_in, null, { title: 'Net payments received' }) : ''}
@@ -418,22 +423,15 @@ export function address(x: Row): Page {
 
 // ---------------------------------------------------------------- solstice
 
-const blockTime = (block: unknown) => num(block) == null ? 'unknown time' : new Date(epochTs(block) * 1000).toISOString().slice(0, 16).replace('T', ' ')
 const blockDate = (block: unknown) => num(block) == null ? NA : date(epochTs(block))
-const fusd = (v: unknown) => v == null ? '<span class="null">Unknown</span>' : `$${atto(v)}`
-const ffil = (v: unknown) => v == null ? '<span class="null">Unknown</span>' : `${atto(v, 4)} <span class="unit">FIL</span>`
-function phase(q: Row) {
-  const at = num(q.as_of_block)
-  if (at == null) return 'Unknown'
-  if (at < Number(q.start_block)) return 'Not started'
-  if (at <= Number(q.end_block)) return 'In quarter, partial'
-  if (at < Number(q.verification_start_block)) return 'Posting window'
-  return q.is_bound ? 'Bound' : 'Verification window'
-}
+const unknown = '<span class="null">Unknown</span>'
+const fusd = (v: unknown) => quarter.usd(v) ?? unknown
+const ffil = (v: unknown) => v == null ? unknown : `${atto(v, 4)} <span class="unit">FIL</span>`
 function gate(q: Row) {
-  if (Number(q.quarter) === 1) return 'Not gated'
-  if (q.gate_checked_at == null) return '<span class="null">Not observed</span>'
-  return `${q.gate_passed ? 'Passed' : 'Failed'} ${date(q.gate_checked_at)} · ${fusd(q.gate_threshold)} threshold${q.gate_steps != null ? ` · ${count(q.gate_steps)} steps` : ''}`
+  const state = quarter.gate(q)
+  if (state == null) return '<span class="null">Not observed</span>'
+  if (Number(q.quarter) === 1) return state
+  return `${state} ${date(q.gate_checked_at)} · ${fusd(q.gate_threshold)} threshold${q.gate_steps != null ? ` · ${count(q.gate_steps)} steps` : ''}`
 }
 
 export function solstice(x: Row): Page {
@@ -441,14 +439,14 @@ export function solstice(x: Row): Page {
   return {
     title: 'Solstice',
     description: 'Solstice ServiceOrchestrators and quarterly Filecoin Pay Volume.',
-    html: `${head({ crumbs: [['Onchain Cloud', url()], ['Solstice']], title: 'Solstice', lede: 'ServiceOrchestrators post quarterly Filecoin Pay Volume (FPV). Once bound, the aggregate is checked against a gate threshold and shares are submitted. Volumes are provisional until bound.' })}
+    html: `${head({ title: 'Solstice', lede: 'ServiceOrchestrators post quarterly Filecoin Pay Volume (FPV). Once bound, the aggregate is checked against a gate threshold and shares are submitted. Volumes are provisional until bound.' })}
     ${section('Quarters', table({
       caption: 'Solstice quarters', rows: quarters, prefix: 'quarters',
       cols: [
         { label: 'Quarter', html: (r) => `Q${esc(r.quarter)} <span class="mono meta">${count(r.start_block)}–${count(r.end_block)}</span>` },
         { label: 'Window (UTC)', html: (r) => `${blockDate(r.start_block)} to ${blockDate(r.end_block)}` },
-        { label: 'Phase', html: phase },
-        { label: 'Observed through', html: (r) => r.as_of_block == null ? '<span class="null">Unknown</span>' : `block ${count(r.as_of_block)} <span class="meta">${blockTime(r.as_of_block)} UTC</span>` },
+        { label: 'Phase', html: quarter.phase },
+        { label: 'Observed through', html: (r) => r.as_of_block == null ? '<span class="null">Unknown</span>' : `block ${count(r.as_of_block)} <span class="meta">${epochTime(r.as_of_block) ?? 'unknown time'} UTC</span>` },
         { label: 'Binds at', html: (r) => blockDate(r.bound_block) },
         { label: 'Bound FPV', num: true, html: (r) => r.is_bound ? fusd(r.bound_volume) : '<span class="null">Not bound</span>' },
         { label: 'Gate', html: gate, wrap: true },
@@ -477,7 +475,7 @@ export function solstice(x: Row): Page {
         { label: 'Stablecoin', num: true, html: (r) => fusd(r.stablecoin_volume) },
         { label: 'FIL (USD)', num: true, html: (r) => fusd(r.fil_volume) },
         { label: 'Recomputed FPV', num: true, html: (r) => fusd(r.volume) },
-        { label: 'Posted', num: true, html: (r) => r.posted_volume == null ? '<span class="null">Not posted</span>' : `${fusd(r.posted_volume)}${r.posted_at ? ` <span class="meta">${dateText(r.posted_at)}</span>` : ''}` },
+        { label: 'Posted', num: true, html: (r) => r.posted_volume == null ? '<span class="null">Not posted</span>' : `${fusd(r.posted_volume)}${r.posted_at ? ` <span class="meta">${day(r.posted_at)}</span>` : ''}` },
         { label: 'Reported', num: true, html: (r) => r.reported_volume == null ? '<span class="null">Not reported</span>' : `${fusd(r.reported_volume)}${Number(r.corrections) > 0 ? ` <span class="meta">${plural(Number(r.corrections), 'correction')}</span>` : ''}` },
         { label: 'Bound', num: true, html: (r) => r.is_bound ? fusd(r.bound_volume) : '<span class="null">Not bound</span>' },
         { label: 'Pending FIL', num: true, html: (r) => ffil(r.fil_pending_atto_fil) },
@@ -486,6 +484,5 @@ export function solstice(x: Row): Page {
     ${sources(['service_orchestrators', 'orchestrator_quarters', 'service_quarters'])}`,
   }
 }
-const dateText = (ts: unknown) => new Date(Number(ts) * 1000).toISOString().slice(0, 10)
 
 export const render: Record<string, (data: any) => Page> = { overview, providers, provider, datasets, dataset, rails, rail, clients, operators, address, solstice }

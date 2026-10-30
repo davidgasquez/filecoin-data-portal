@@ -3,3 +3,4 @@ dist/
 .astro/
 .foc/
 __pycache__/
+dist-foc/

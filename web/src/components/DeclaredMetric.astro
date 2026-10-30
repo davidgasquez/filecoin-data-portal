@@ -1,6 +1,6 @@
 ---
 import { declaredMetrics } from '../sections'
-import { repoUrl } from '../data'
+import { repoUrl } from '../site.mjs'
 interface Props { id: string; headingLevel?: 3 | 4 }
 const { id, headingLevel = 3 } = Astro.props
 const metric = declaredMetrics.find(item => item.id === id)!
@@ -27,14 +27,5 @@ const Heading = `h${headingLevel}` as 'h3' | 'h4'
   </figure>
 </div>
 <style>
-  .chart-heading { position: relative; }
-  .metric-info { min-width: 0; flex: 1; }
-  .metric-info > summary { display: block; min-height: 1.75rem; padding-top: 0.1875rem; width: fit-content; color: var(--fg); }
-  .metric-info > summary > :is(h3, h4) { display: inline; }
-  .metric-info > summary > .meta { margin-left: 0.5rem; white-space: nowrap; }
-  .metric-info > summary::before { content: none; }
-  .metric-info :is(h3, h4) { text-decoration: underline dotted var(--rule-strong); text-underline-offset: 0.25em; }
-  .metric-info-body { position: absolute; z-index: 4; inset: 100% 0 auto; padding: 0.875rem; background: var(--bg); border: 1px solid var(--rule-strong); font-size: 0.875rem; }
-  .metric-info-body > * + * { margin-top: 0.5rem; }
   .declared-line { margin: 0; }
 </style>

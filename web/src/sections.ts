@@ -17,3 +17,7 @@ export const sections = numbersSections.filter(section => section.id !== 'solsti
   })),
 }))
 export type { NumbersMetric } from './numbers-sections.ts'
+
+// The /numbers definition of a primary daily_network_metrics column, for the same measure shown elsewhere.
+const network = numbersSections.flatMap(section => section.groups.flatMap(group => group.charts)).filter(metric => metric.source === undefined)
+export const definition = (column: string) => network.find(metric => metric.y === column)?.description ?? ''

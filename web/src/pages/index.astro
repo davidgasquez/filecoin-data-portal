@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro'
-import { daily, datasets, dataUrl, repoUrl } from '../data'
+import { daily, datasets, dataUrl } from '../data'
+import { repoUrl } from '../site.mjs'
 import { latest, format, series, kind } from '../metrics.mjs'
 import { draw } from '../charts.mjs'
 
@@ -74,7 +75,7 @@ const other = datasets.filter((dataset) => !dataset.id.startsWith('daily_'))
       <p>Daily Parquet datasets on storage, payments, providers, and the chain. Query them with SQL, hand them to your agent, or read the numbers.</p>
       <div class="actions">
         <a class="button primary" href="/datasets">Datasets</a>
-        <a class="button" href="/numbers">Dashboard</a>
+        <a class="button" href="/numbers">Numbers</a>
       </div>
     </div>
 
@@ -111,14 +112,14 @@ const other = datasets.filter((dataset) => !dataset.id.startsWith('daily_'))
         <h3 id="ask-agent">Paste this into your favorite agent</h3>
         <div class="copy prompt">
           <pre tabindex="0" role="region" aria-label="Agent prompt"><code>Read <a href={skill}>{skill}</a> and tell me which providers onboarded more data last week</code></pre>
-          <button class="button" type="button" data-copy={prompt} aria-live="polite" hidden>Copy</button>
+          <button class="button" type="button" data-copy={prompt} hidden>Copy</button>
         </div>
       </section>
       <section class="quickstart-path" aria-labelledby="sql">
         <h3 id="sql"><a href="/docs">Query it yourself</a></h3>
         <div class="copy prompt">
           <pre tabindex="0" role="region" aria-label="DuckDB query"><code>{sql}</code></pre>
-          <button class="button" type="button" data-copy={sql} aria-live="polite" hidden>Copy</button>
+          <button class="button" type="button" data-copy={sql} hidden>Copy</button>
         </div>
       </section>
     </section>
@@ -136,7 +137,7 @@ const other = datasets.filter((dataset) => !dataset.id.startsWith('daily_'))
   <section class="home-block home-data" aria-labelledby="data">
     <div class="home-data-lede">
       <h2 id="data"><a href="/datasets">Datasets</a></h2>
-      <p>Public tables, each a Parquet file you can query directly. <a href="/datasets">Dataset pages</a> list columns and a sample, and link the <a href={`${repoUrl}/tree/main/assets/main`}>SQL that builds them</a>.</p>
+      <p>Public tables, each a Parquet file you can query directly. Dataset pages list columns and a sample, and link the <a href={`${repoUrl}/tree/main/assets/main`}>SQL that builds them</a>.</p>
     </div>
     <dl class="home-tables">
       <div><dt class="meta">Daily</dt><dd>{daily_.map((dataset) => <a class="mono" href={`/datasets/${dataset.id}`}>{dataset.id}</a>)}</dd></div>

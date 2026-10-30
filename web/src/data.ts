@@ -4,8 +4,8 @@ import { pathToFileURL } from 'node:url'
 import { resolve } from 'node:path'
 import { number, pooledQuality } from './metrics.mjs'
 import { missingMetricSources } from './schema'
+import { production, repoUrl } from './site.mjs'
 
-export const repoUrl = 'https://github.com/davidgasquez/filecoin-data-portal'
 export const dataUrl = 'https://data.filecoindataportal.xyz'
 export const builtAt = new Date().toISOString().slice(0, 10)
 export type Row = Record<string, string | number | boolean | null>
@@ -57,7 +57,7 @@ for (const table of tables) {
 export const missingSources = missingMetricSources(datasets)
 if (missingSources.length) {
   const message = `Snapshot lacks required metric sources: ${missingSources.join(', ')}`
-  if (import.meta.env.PROD && new URL(process.env.SITE_URL || 'https://filecoindataportal.xyz').origin === 'https://filecoindataportal.xyz') {
+  if (import.meta.env.PROD && production) {
     connection.closeSync()
     instance.closeSync()
     throw new Error(message)

@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro'
-import { dataUrl, repoUrl } from '../data'
+import { dataUrl } from '../data'
+import { repoUrl } from '../site.mjs'
 
 const sql = `select date, onboarded_pibs, raw_power_pibs
 from '${dataUrl}/daily_network_metrics.parquet'
@@ -32,7 +33,7 @@ const examples = [
 ---
 
 <Layout title="Docs" description="Query Filecoin Data Portal datasets with SQL, Python, JavaScript, or an agent, and read them correctly.">
-  <header class="page-head compact">
+  <header class="page-head">
     <h1>Docs</h1>
     <p>Every dataset is a Parquet file at a stable URL, rebuilt daily. Query it from anywhere that reads Parquet, and check definitions before drawing conclusions.</p>
   </header>
@@ -45,7 +46,7 @@ const examples = [
         <div class="copy">
           <div class="copy-head">
             <span class="meta">{label}</span>
-            <button class="button" type="button" data-copy={code} aria-live="polite" hidden>{action}</button>
+            <button class="button" type="button" data-copy={code} hidden>{action}</button>
           </div>
           <pre tabindex="0" role="region" aria-label={aria}><code>{code}</code></pre>
         </div>
@@ -58,7 +59,7 @@ const examples = [
       <div class="copy">
         <div class="copy-head">
           <span class="meta">Prompt</span>
-          <button class="button" type="button" data-copy={prompt} aria-live="polite" hidden>Copy prompt</button>
+          <button class="button" type="button" data-copy={prompt} hidden>Copy prompt</button>
         </div>
         <pre tabindex="0" role="region" aria-label="Agent prompt"><code>{prompt}</code></pre>
       </div>
