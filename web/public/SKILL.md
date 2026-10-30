@@ -19,7 +19,7 @@ Ask a clarifying question only if the dataset or metric stays ambiguous.
 ## Query
 
 - Each dataset is at `https://data.filecoindataportal.xyz/<dataset>.parquet`.
-- All public tables are in one DuckDB 2.0+ file: `attach 'https://data.filecoindataportal.xyz/fdp.duckdb' as fdp (read_only); use fdp; show tables;`
+- All public tables are in one DuckDB file: `attach 'https://data.filecoindataportal.xyz/fdp.duckdb' as fdp (read_only); use fdp; show tables;`
 - `daily_network_metrics` is also at `https://data.filecoindataportal.xyz/daily_network_metrics.json` for live dashboards.
 - Prefer DuckDB, but check what is installed first; Python or Node.js with any Parquet reader also works.
 - Inspect schema and a few rows before writing the final query.

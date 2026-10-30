@@ -5,10 +5,10 @@
   - Remaining folders plus the file stem are joined with `_` to form the table name (`raw/riba/eth_logs.py` → `raw.riba_eth_logs`, `model/foc/providers.sql` → `model.foc_providers`)
   - Keep `main` flat (`main/providers.sql` → `main.providers`)
   - Table names must be unique per schema
-- Prefer SQL first, then Python with `asset.materialization = dataframe`, then Python with `asset.materialization = custom`
-- Asset header metadata is the only source of truth for asset semantics.
+- Prefer SQL, then Python with `asset.materialization = dataframe`, then Python with `asset.materialization = custom`
+- Define asset metadata only in the asset header.
 
-## Header Format
+## Header format
 
 - Optional `asset.description`
 - Optional and repeatable `asset.depends`
@@ -26,22 +26,22 @@
 - If `asset.column` is present, documented columns must exactly match the materialized columns by name
 - Inline tests (`asset.not_null`, `asset.unique`, `asset.assert`) are declared in the asset header and run against the materialized table
 - `asset.keep_existing_on_failure = true` requires the table to already exist; first materialization still fails if refresh fails
-- Leave a blank line between the different metadata sections (`description`, `materialization`, tests, ...)
+- Leave a blank line between metadata sections, such as `description`, `materialization`, and tests
 - Custom SQL tests live next to their asset as `<asset file stem>__name.test.sql` (`model/foc/pieces__unique_piece.test.sql` → `model.foc_pieces`)
 - `uv run fdp materialize schema.table` refreshes only the selected assets by default
 - `uv run fdp materialize schema` refreshes all assets under `assets/schema/**`
 - `uv run fdp materialize model.foc` refreshes all assets under `assets/model/foc/**`
 - `uv run fdp materialize assets/model/foc/providers.sql` refreshes exactly that asset
 - You can also pass asset folder paths like `assets/model/foc`
-- Use `uv run fdp materialize --with-deps schema.table`, `uv run fdp materialize --with-deps model.foc`, or `uv run fdp materialize --with-deps assets/model/foc/providers.sql` to refresh their transitive dependency closure too
-- Selectors fail when ambiguous (e.g. a folder named like a table in the same schema)
+- Use `uv run fdp materialize --with-deps schema.table`, `uv run fdp materialize --with-deps model.foc`, or `uv run fdp materialize --with-deps assets/model/foc/providers.sql` to also refresh all direct and indirect dependencies
+- Selectors fail when ambiguous, such as when a folder and a table share a name in the same schema
 
 ## Python assets
 
 - Define a top-level function whose name matches the file name
 - Declare `asset.materialization = dataframe` when FDP should materialize the returned `pl.DataFrame`
 - Declare `asset.materialization = custom` when the asset materializes itself and returns `None`
-- Return annotations are optional developer ergonomics, not framework behavior
+- Return annotations are optional and do not affect execution
 - Use `fdp.table("schema.table")` to load a dependency
 - Use `fdp.sql("...")` to run SQL against the database
 - Use `fdp.db_connection()` when the asset needs custom or incremental materialization

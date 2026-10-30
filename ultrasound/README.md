@@ -1,12 +1,12 @@
 # Ultra Sound Storage
 
-A single-file Filecoin storage dashboard at **https://ultrasoundstorage.filecoindataportal.xyz**. No runtime API, backend, or framework; CSS, fonts, charts, and data are embedded in the page.
+A single-file Filecoin storage dashboard at https://ultrasoundstorage.filecoindataportal.xyz. The page embeds CSS, fonts, charts, and data, with no runtime API, backend, or framework.
 
 ## Update
 
-The daily [Pipeline](../.github/workflows/pipeline.yml) (14:00 UTC) rebuilds and deploys it after successful publication on `main`. Code changes go live on the next successful run; dispatch Pipeline manually for an earlier update. POC failures warn in Actions and retain the previous page without blocking the main portal.
+The daily [Pipeline](../.github/workflows/pipeline.yml) (14:00 UTC) rebuilds and deploys it after successful publication on `main`. Code changes go live on the next successful run; dispatch Pipeline manually for an earlier update. Dashboard failures produce warnings in Actions and keep the previous page without blocking the main portal.
 
-The build reads the **full materialized `fdp.duckdb`**, including `raw` and `model`. The public download only contains `main` and is insufficient. Daily series stop at UTC yesterday; source lag is preserved, not filled with invented observations. The page shows build/source dates and warns when a daily source is more than three days old.
+The build reads the **full materialized `fdp.duckdb`**, including `raw` and `model`. The public download only contains `main` and is insufficient. Daily series stop at UTC yesterday, or earlier if the source lags. The page shows build and source dates and warns when a daily source is more than three days old.
 
 ```sh
 npm ci --prefix ultrasound
@@ -33,4 +33,4 @@ The assets-only Worker has its own custom domain, isolated from the main portal.
 - `build.mjs`: columnar payload, validation, and HTML generation.
 - `wrangler.jsonc`: static hosting configuration.
 
-This directory is now the source of truth; edits to the original sibling `ultra-sound-storage/` directory are not synced. The prototype embeds Inter and Roboto Mono fonts (SIL OFL).
+Edit this directory. Changes to the original sibling `ultra-sound-storage/` directory are not synced. The prototype embeds Inter and Roboto Mono fonts (SIL OFL).

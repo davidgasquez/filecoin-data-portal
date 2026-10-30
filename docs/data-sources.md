@@ -24,9 +24,9 @@ Start with the Filecoin API or MCP for Onchain Cloud data, Lily for chain histor
 
 For individual transactions, actors, and contracts, use [Filfox](https://filfox.info/) and [Blockscout](https://filecoin.blockscout.com/).
 
-Provider quality uses ProbeLab for offchain checks and onchain PDP/FWSS events for proving. Proofs are dated when accepted; closed and faulted periods are dated when the contract closes them. The fault rate compares the same closed periods. A stalled data set's missed periods remain uncounted until its next proving-period call closes them; zero closures do not imply healthy proving. Missing archive partitions or stale decoded partitions make proving unavailable from that date until repaired. The old overdue estimate is omitted: reconstructing it correctly requires proving deadlines, deletions and payment termination.
+Provider quality uses ProbeLab for offchain checks and onchain PDP/FWSS events for proving. Proofs are dated when accepted; closed and faulted periods are dated when the contract closes them. The fault rate compares the same closed periods. A stalled data set's missed periods remain uncounted until its next proving-period call closes them; zero closures do not imply healthy proving. Missing archive partitions or stale decoded partitions make proving unavailable from that date until repaired. The old overdue estimate is omitted because reconstructing it requires proving deadlines, deletions, and payment termination.
 
-Quarterly FPV uses admitted stablecoin payments and fee-auction traces for FIL valuation. FIL awaiting a qualifying print remains pending; missing inputs remain NULL. SRA posts, corrections and bound volumes are separate onchain facts. Gate columns describe observed checks, and Q1 is ungated; absent share-submission events do not prove that no submission occurred.
+Quarterly FPV uses admitted stablecoin payments and fee-auction traces for FIL valuation. FIL awaiting a qualifying print remains pending; missing inputs remain NULL. SRA posts, corrections and bound volumes are separate onchain facts. Gate columns describe observed checks, and Q1 is ungated. Missing share-submission events do not prove that no submission occurred.
 
 ## JSON-RPC endpoints
 
@@ -37,4 +37,4 @@ These mainnet endpoints returned chain ID `314` in read-only checks on 2026-10-2
 | [GLIF](https://api.node.glif.io/) | `https://api.node.glif.io/rpc/v1` |
 | [Chain.Love](https://filecoin.chain.love/) | `https://api.chain.love/rpc/v1` |
 
-Use `Filecoin.*` methods for native chain state and `eth_*` methods for FEVM reads. The [official RPC directory](https://docs.filecoin.io/networks-and-tools/networks/mainnet/rpcs) lists more providers. Most public endpoints guarantee only recent state (about 2,000 blocks); for older state, use an archive node or an indexed source such as Lily. The chain-ID check does not verify archive depth or throughput.
+Use `Filecoin.*` methods for native chain state and `eth_*` methods for FEVM reads. The [official RPC directory](https://docs.filecoin.io/networks-and-tools/networks/mainnet/rpcs) lists more providers. Most public endpoints guarantee only recent state (about 2,000 blocks). For older state, use an archive node or an indexed source such as Lily. The chain-ID check does not verify archive depth or throughput.

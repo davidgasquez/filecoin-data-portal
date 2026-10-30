@@ -37,7 +37,7 @@ import polars as pl
 pl.read_parquet("https://data.filecoindataportal.xyz/miners.parquet")
 ```
 
-Or get everything at once in a single DuckDB file (DuckDB 2.0+):
+All datasets are also available in one DuckDB file:
 
 ```sql
 attach 'https://data.filecoindataportal.xyz/fdp.duckdb' as fdp (read_only);
@@ -49,7 +49,7 @@ Point your agent to [`SKILL.md`](https://filecoindataportal.xyz/SKILL.md). It ex
 
 ## ⚙️ Development
 
-Runs anywhere with `uv`. On Nix, `nix develop` gives a pinned shell with all the tools.
+Run the pipeline with `uv`. On Nix, `nix develop` provides a shell with pinned tool versions.
 
 - `uv run fdp list`: list assets
 - `uv run fdp materialize`: materialize all assets
@@ -74,7 +74,7 @@ CLOUDFLARE_ZONE_ID=d301192e601454a9cf7a87b4cd6ee243
 
 ## 📃 Disclaimer
 
-The datasets provided by this service are made available "as is", without any warranties or guarantees of any kind, either expressed or implied. By using these datasets, you agree that you do so at your own risk.
+Datasets are provided "as is", without express or implied warranties or guarantees. Use them at your own risk.
 
 ## 📝 Licenses
 
