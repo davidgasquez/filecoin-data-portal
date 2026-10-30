@@ -1,7 +1,7 @@
 // Shared enhancements loaded by the layout: copy buttons and Info disclosure dismissal.
 // Copy controls ship hidden; the text, code and real links beside them stay selectable without JavaScript.
 
-// Runs setup for the first page and for each page Astro's router swaps in (/foc only).
+// Runs setup for the first page and for each page Astro's router swaps in (explorer only).
 // Aborting the signal before a real swap drops the old page's listeners and pending work.
 export function onPage(setup: (signal: AbortSignal) => void) {
   let body: HTMLElement | undefined, controller: AbortController | undefined

@@ -1,5 +1,6 @@
-// Default target is the isolated preview Worker on workers.dev. It never touches the apex.
-// Production is only `--env production` via `npm run deploy:production` (gated, see scripts/deploy.mjs).
+// Default target is the isolated portal preview Worker on workers.dev. It never touches the apex.
+// Every other target is only selected by scripts/deploy.mjs (gated): FDP_SITE picks the portal or explorer
+// build, and `production` requires explicit approval.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "filecoindataportal-preview",
@@ -26,6 +27,30 @@
       "routes": [
         { "pattern": "filecoindataportal.xyz", "custom_domain": true },
         { "pattern": "filecoindataportal.xyz/*", "zone_name": "filecoindataportal.xyz" }
+      ]
+    },
+    // Onchain Cloud explorer (FDP_SITE=foc): its own static build in dist-foc.
+    "foc-preview": {
+      "name": "filecoindataportal-foc-preview",
+      "workers_dev": true,
+      "preview_urls": false,
+      "assets": {
+        "directory": "./dist-foc",
+        "html_handling": "drop-trailing-slash",
+        "not_found_handling": "404-page"
+      }
+    },
+    "foc-production": {
+      "name": "filecoindataportal-foc",
+      "workers_dev": false,
+      "preview_urls": false,
+      "assets": {
+        "directory": "./dist-foc",
+        "html_handling": "drop-trailing-slash",
+        "not_found_handling": "404-page"
+      },
+      "routes": [
+        { "pattern": "foc.filecoindataportal.xyz", "custom_domain": true }
       ]
     }
   }

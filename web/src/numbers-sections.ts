@@ -1,5 +1,5 @@
 // Metric inventory carried over from the previous site (web/src/numbers-sections.ts at 7793d6e).
-// Units and precision derive from the column name (metrics.mjs `unit`), so headlines, hover and /foc agree.
+// Units and precision derive from the column name (metrics.mjs `unit`), so headlines, hover and the explorer agree.
 // `kind` overrides the column's default mark; `columns` lists source columns when they differ from `y`.
 type ChartConfig = { y: string; kind?: "line" | "bar" | "step" }
 type DetailConfig = ChartConfig & { title: string; description: string }

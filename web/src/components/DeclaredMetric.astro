@@ -1,6 +1,6 @@
 ---
 import { declaredMetrics } from '../sections'
-import { repoUrl } from '../data'
+import { repoUrl } from '../site.mjs'
 interface Props { id: string; headingLevel?: 3 | 4 }
 const { id, headingLevel = 3 } = Astro.props
 const metric = declaredMetrics.find(item => item.id === id)!

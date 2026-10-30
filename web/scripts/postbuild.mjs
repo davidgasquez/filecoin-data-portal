@@ -1,12 +1,13 @@
-// Derive origin-specific static files after `astro build`. Idempotent: always regenerated from public/.
-// Non-production origins (previews) get X-Robots-Tag: noindex and no sitemap; production never inherits it.
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+// Derive origin-specific static files after `astro build` for the selected FDP_SITE target. Idempotent:
+// always regenerated from public/. Non-production origins (previews) get X-Robots-Tag: noindex and no
+// sitemap; production never inherits it.
+import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { explorer, origin, outDir, production } from '../src/site.mjs'
 
-const PRODUCTION = 'https://filecoindataportal.xyz'
-const origin = new URL(process.env.SITE_URL || PRODUCTION).origin
-const dist = new URL('../dist/', import.meta.url)
-const production = origin === PRODUCTION
+const dist = new URL(`../${outDir}/`, import.meta.url)
+// The portal's agent files use portal-relative links; the explorer does not publish them.
+if (explorer) for (const file of ['SKILL.md', 'llms.txt']) rmSync(new URL(file, dist), { force: true })
 
 let headers = readFileSync(new URL('../public/_headers', import.meta.url), 'utf8')
 if (!production) headers = headers.replace(/^\/\*\n/m, '/*\n  X-Robots-Tag: noindex\n')
@@ -25,4 +26,4 @@ for (const file of files) {
   const path = join(file.parentPath, file.name)
   if (statSync(path).size > 25 * 1024 ** 2) throw new Error(`Static asset exceeds 25 MiB: ${path}`)
 }
-console.log(`postbuild: ${origin} (${production ? 'production, indexable' : 'preview, noindex'}), ${files.length} assets within size/count limits`)
+console.log(`postbuild: ${outDir} for ${origin} (${production ? 'production, indexable' : 'preview, noindex'}), ${files.length} assets within size/count limits`)

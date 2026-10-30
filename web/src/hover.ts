@@ -3,7 +3,7 @@ import { indexAt, xAt, yAt } from './charts.mjs'
 import { onPage } from './interactions'
 
 let dismissActive: (() => void) | undefined
-// Listeners live on each page's plots, which a /foc swap discards with the old body.
+// Listeners live on each page's plots, which an explorer swap discards with the old body.
 onPage(() => {
   dismissActive = undefined
   for (const plot of document.querySelectorAll<HTMLElement>('[data-chart]')) setup(plot)

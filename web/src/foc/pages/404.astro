@@ -1,0 +1,11 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { portalHref } from '../../site.mjs'
+---
+
+<Layout title="Not found">
+  <header class="page-head">
+    <h1>Not found</h1>
+    <p>No page at this address. Try the <a href="/">Filecoin Onchain Cloud overview</a>, its <a href="/providers">providers</a>, or the <a href={portalHref('/')}>Filecoin Data Portal</a>.</p>
+  </header>
+</Layout>

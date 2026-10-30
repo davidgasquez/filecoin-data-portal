@@ -1,13 +1,14 @@
-// One render function per /foc route kind. Each returns static HTML for the page body.
+// One render function per explorer route kind. Each returns static HTML for the page body.
 import { chart } from '../charts.mjs'
 import { atto, epochTime, format, shiftDate } from '../metrics.mjs'
 import { definition } from '../sections'
 import * as quarter from '../solstice.mjs'
+import { portalHref } from '../site.mjs'
 import { readFoc, coverage as covered } from './data'
 import {
   type Row, BLOCKSCOUT, ZERO, NA, esc, num, sum, count, plural, usd, amt, pct, metric, bytes, date, day, dateTime, epochTs, days, short, pname, lastVal, isStable,
   copy, ext, blockscout, txLink, tag, safeUrl, addr, dsLink, railLink, provLink, dsStatus, railState, provStatus, provState, flag, label,
-  head, section, more, figures, kv, empty, sources, points, plot, table, dsTable, railTable, payTable, paySection, col, url, zeroMuted,
+  head, section, more, figures, kv, empty, sources, points, plot, table, dsTable, railTable, payTable, paySection, col, url, catalog, zeroMuted,
 } from './ui'
 
 export type Page = { title: string; description: string; html: string }
@@ -44,7 +45,7 @@ export function overview(o: Row): Page {
     <figure class="chart foc-hero-chart">
       <div class="foc-hero-lead">
         <details class="metric-info"><summary><h2 id="run-rate-title">Annualized Filecoin Pay run rate</h2><span class="meta">Info</span></summary>
-          <div class="metric-info-body"><p>${definition(RR)} Excludes Dealbot. Covers every operator, so it is payment volume, not storage-only revenue.</p><p class="meta">Source: <a href="/datasets/daily_network_metrics#filecoin_pay_gross_payment_volume_run_rate_usd">daily_network_metrics</a> · filecoin_pay_gross_payment_volume_run_rate_usd</p></div></details>
+          <div class="metric-info-body"><p>${definition(RR)} Excludes Dealbot. Covers every operator, so it is payment volume, not storage-only revenue.</p><p class="meta">Source: <a href="${catalog('daily_network_metrics', RR)}">daily_network_metrics</a> · filecoin_pay_gross_payment_volume_run_rate_usd</p></div></details>
         <p class="foc-big">${metric(rr.v, RR)}</p>
         <p class="meta">${rr.date ? `${rr.date} (UTC) · ${delta}` : 'Not observed'}</p>
       </div>
@@ -172,7 +173,7 @@ export function provider(x: Row): Page {
     title: `${pname(p.name) || `Provider #${p.id}`}`,
     description: `Storage provider ${p.name ?? p.id}: data sets, rails, payments and service quality.`,
     html: `${head({
-      crumbs: [['Onchain Cloud', url()], ['Providers', url('providers')], [`#${p.id}`]],
+      crumbs: [['Filecoin Onchain Cloud', url()], ['Providers', url('providers')], [`#${p.id}`]],
       title: `${esc(p.name ?? `Provider #${p.id}`)} <span class="foc-id">#${p.id}</span>`,
       lede: p.description && p.description !== p.name ? esc(p.description) : '',
       meta: [provStatus(p), p.endorsed && tag('Endorsed'), p.service_status && tag(p.service_status), loc && esc(loc),
@@ -214,7 +215,7 @@ export function datasets(rows: Row[]): Page {
   return {
     title: 'Storage data sets',
     description: 'Warm storage data sets: client, provider, status, rails and payments.',
-    html: `${head({ title: 'Storage data sets', lede: `${count(rows.length)} warm storage data sets, ${count(live)} live. Each is owned by a client, stored by one provider and paid through a PDP rail, plus CDN rails when enabled. Not to be confused with the portal’s <a href="/datasets">published datasets</a>.` })}
+    html: `${head({ title: 'Storage data sets', lede: `${count(rows.length)} warm storage data sets, ${count(live)} live. Each is owned by a client, stored by one provider and paid through a PDP rail, plus CDN rails when enabled. Not to be confused with the portal’s <a href="${portalHref('/datasets')}">published datasets</a>.` })}
     ${dsTable(rows, { prefix: '', page: 100, caption: 'Storage data sets' })}
     ${sources(['data_sets', 'rails', 'payments'], 'Rate and paid are stablecoin only.')}`,
   }
@@ -235,7 +236,7 @@ export function dataset(x: Row): Page {
     title: `Data set #${d.id}`,
     description: `Storage data set #${d.id}: client, provider, rails and payments.`,
     html: `${head({
-      crumbs: [['Onchain Cloud', url()], ['Storage data sets', url('datasets')], [`#${d.id}`]],
+      crumbs: [['Filecoin Onchain Cloud', url()], ['Storage data sets', url('datasets')], [`#${d.id}`]],
       title: `Data set <span class="foc-id">#${d.id}</span>`,
       meta: [dsStatus(d.status), d.source && tag(d.source), d.cdn && tag('CDN'), d.ipfs && tag('IPFS indexing'), `Created ${date(d.created_at)}`, d.api_observed_at != null && `API snapshot ${dateTime(d.api_observed_at)} UTC`],
     })}
@@ -291,7 +292,7 @@ export function rail(x: Row): Page {
     title: `Rail #${r.id}`,
     description: `Filecoin Pay rail #${r.id}: payer, payee, operator, rate and payments.`,
     html: `${head({
-      crumbs: [['Onchain Cloud', url()], ['Rails', url('rails')], [`#${r.id}`]],
+      crumbs: [['Filecoin Onchain Cloud', url()], ['Rails', url('rails')], [`#${r.id}`]],
       title: `Rail <span class="foc-id">#${r.id}</span>`,
       meta: [railState(r.state), r.service && tag(r.service), sym && tag(sym), r.dealbot && tag('Dealbot'),
         x.data_set && `Data set ${dsLink(x.data_set.id)}`, `Created ${date(r.created_at)} · ${txLink(r.created_tx)}`, r.api_observed_at != null && `API snapshot ${dateTime(r.api_observed_at)} UTC`],
@@ -390,7 +391,7 @@ export function address(x: Row): Page {
     title: l ?? short(a),
     description: `Filecoin Onchain Cloud activity of ${a}.`,
     html: `${head({
-      crumbs: [['Onchain Cloud', url()], ['Clients', url('clients')], ['Address']],
+      crumbs: [['Filecoin Onchain Cloud', url()], ['Clients', url('clients')], ['Address']],
       title: l ? esc(l) : `<span class="mono foc-hex">${esc(a)}</span>`,
       lede: provs.length ? `Registered as ${provs.map((p) => provLink(p.id, p.name)).join(', ')}.` : '',
       meta: [`<span class="mono">${esc(a)}</span> ${copy(a)} ${blockscout(a)}`, ...roles.map(tag)],

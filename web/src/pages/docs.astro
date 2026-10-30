@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro'
-import { dataUrl, repoUrl } from '../data'
+import { dataUrl } from '../data'
+import { repoUrl } from '../site.mjs'
 
 const sql = `select date, onboarded_pibs, raw_power_pibs
 from '${dataUrl}/daily_network_metrics.parquet'

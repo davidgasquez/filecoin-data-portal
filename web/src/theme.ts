@@ -3,7 +3,7 @@ export {}
 const root = document.documentElement
 const system = matchMedia('(prefers-color-scheme: dark)')
 const current = () => root.dataset.theme ?? (system.matches ? 'dark' : 'light')
-// Labels the toggle and theme colour of a document: the current one, or an incoming /foc page before it paints.
+// Labels the toggle and theme colour of a document: the current one, or an incoming explorer page before it paints.
 function update(doc: Document = document) {
   const dark = current() === 'dark'
   const next = dark ? 'light' : 'dark'

@@ -2,7 +2,7 @@
 
 /* One explorer header: logo home, the portal menu, the sections and search. The logo's name stays for assistive tech. */
 .site-header:has(.foc-menu) { position: relative; display: flex; align-items: center; gap: 0.25rem 1rem; }
-.site-header:has(.foc-menu) .brand { flex: none; }
+.site-header:has(.foc-menu) .brand, .foc-menu { flex: none; }
 .site-header:has(.foc-menu) .brand > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .foc-menu > summary { gap: 0.375rem; padding-inline: 0.5rem; margin-inline-start: -0.5rem; font: 500 0.9375rem var(--sans); color: var(--fg); white-space: nowrap; }
 .foc-menu > summary::before, .foc-menu[open] > summary::before { content: none; }

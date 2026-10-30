@@ -26,8 +26,8 @@ test('missing, zero and declared values stay distinct', () => {
   assert.equal(epochTime(null), null)
 })
 
-test('the same column has one unit and precision on /numbers, /foc headlines and hover', () => {
-  // Formerly /foc rendered warm storage with auto-scaled units (PiB) while hover used TiB.
+test('the same column has one unit and precision on /numbers, explorer headlines and hover', () => {
+  // Formerly the explorer rendered warm storage with auto-scaled units (PiB) while hover used TiB.
   assert.equal(format(1234.567 * 2 ** 40, 'warm_storage_stored_bytes'), '1,234.57 TiB')
   assert.equal(format(0.98765, 'provider_storage_success_rate'), '98.77%')
   assert.equal(format(0.98765, 'provider_proving_fault_rate'), percent(0.98765))
@@ -42,7 +42,7 @@ test('shared definitions come from the inventory and never borrow another popula
   for (const column of ['filecoin_pay_gross_payment_volume_run_rate_usd', 'filecoin_pay_paid_usd', 'warm_storage_billing_data_sets', 'warm_storage_stored_bytes', 'filecoin_pay_active_payers', 'filecoin_pay_active_rails'])
     assert.equal(definition(column), primary.find(metric => metric.y === column).description)
   assert.match(definition('warm_storage_stored_bytes'), /every stored copy/)
-  assert.equal(definition('provider_storage_success_rate'), '', 'quality columns are pooled differently on /foc')
+  assert.equal(definition('provider_storage_success_rate'), '', 'quality columns are pooled differently in the explorer')
   assert.equal(definition('high_profile_paying_clients'), '', 'the declared zero has no source definition')
   assert.equal(definition('absent'), '')
 })

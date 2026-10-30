@@ -1,4 +1,4 @@
-// Solstice quarter decisions shared by /numbers and /foc. Values are as published; pages only label them.
+// Solstice quarter decisions shared by /numbers and the explorer. Values are as published; pages only label them.
 // Callers keep their own field names, timestamps and markup.
 import { atto, number } from './metrics.mjs'
 

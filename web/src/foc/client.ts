@@ -1,4 +1,4 @@
-// Progressive enhancement for /foc: table sort, filter, search, show-more and URL state,
+// Progressive enhancement for the explorer: table sort, filter, search, show-more and URL state,
 // row navigation, and the explorer search box. Every page is complete without it.
 // Astro's router swaps explorer pages in place: data and global handlers load once, page setup runs per page.
 import { navigate } from 'astro:transitions/client'
@@ -151,19 +151,19 @@ function matches(value: string) {
   let options: Option[] = []
   if (/^\d+$/.test(v)) {
     const id = BigInt(v).toString(), p = providers.find((x) => String(x.id) === id)
-    if (datasetIds.has(id)) options.push({ href: `/foc/dataset/${id}`, text: `Data set #${id}`, kind: 'Data set' })
-    if (railIds.has(id)) options.push({ href: `/foc/rail/${id}`, text: `Rail #${id}`, kind: 'Rail' })
-    if (p) options.push({ href: `/foc/provider/${id}`, text: p.label, kind: `Provider #${id}` })
+    if (datasetIds.has(id)) options.push({ href: `/dataset/${id}`, text: `Data set #${id}`, kind: 'Data set' })
+    if (railIds.has(id)) options.push({ href: `/rail/${id}`, text: `Rail #${id}`, kind: 'Rail' })
+    if (p) options.push({ href: `/provider/${id}`, text: p.label, kind: `Provider #${id}` })
   } else if (/^0x[0-9a-f]{40}$/.test(v)) {
     const l = all.find((x) => x.address === v)
-    if (l?.kind === 'provider') options.push({ href: `/foc/provider/${l.id}`, text: l.label, kind: `Provider #${l.id}` })
-    if (addresses.has(v)) options.push({ href: `/foc/address/${v}`, text: l?.label ?? short(v), kind: 'Address' })
+    if (l?.kind === 'provider') options.push({ href: `/provider/${l.id}`, text: l.label, kind: `Provider #${l.id}` })
+    if (addresses.has(v)) options.push({ href: `/address/${v}`, text: l?.label ?? short(v), kind: 'Address' })
     else options.push({ href: `https://filecoin.blockscout.com/address/${v}`, text: short(v), kind: 'Not in snapshot · Blockscout ↗', external: true })
   } else if (/^0x[0-9a-f]{64}$/.test(v)) {
     options.push({ href: `https://filecoin.blockscout.com/tx/${v}`, text: short(v), kind: 'Transaction on Blockscout ↗', external: true })
   } else if (v) {
-    for (const p of providers) if (p.label.toLowerCase().includes(v) || p.address.startsWith(v)) options.push({ href: `/foc/provider/${p.id}`, text: p.label, kind: `Provider #${p.id}` })
-    for (const l of all) if (l.kind !== 'provider' && (l.label.toLowerCase().includes(v) || l.address.startsWith(v))) options.push({ href: `/foc/address/${l.address}`, text: `${l.label} ${short(l.address)}`, kind: l.kind })
+    for (const p of providers) if (p.label.toLowerCase().includes(v) || p.address.startsWith(v)) options.push({ href: `/provider/${p.id}`, text: p.label, kind: `Provider #${p.id}` })
+    for (const l of all) if (l.kind !== 'provider' && (l.label.toLowerCase().includes(v) || l.address.startsWith(v))) options.push({ href: `/address/${l.address}`, text: `${l.label} ${short(l.address)}`, kind: l.kind })
     options = options.slice(0, 10)
   }
   return options
@@ -241,11 +241,10 @@ onPage(() => {
   restoring = false
 })
 
-// Only explorer pages swap in place; other sections load normally, without fetching them first.
+// Every page of this origin is the explorer; the router lets the browser load other origins (the portal).
 // Back/Forward within the shown page (filters, sort, fragment) and fragment links keep the current
 // document: no fetch or swap, the router only updates history and scroll.
 document.addEventListener('astro:before-preparation', (e) => {
-  if (!/^\/foc(\/|$)/.test(e.to.pathname)) return e.preventDefault()
   const same = e.to.pathname === path && (e.navigationType === 'traverse' || e.to.search === location.search)
   inPlace = same ? e.navigationType : undefined
   if (same) e.loader = async () => {}
@@ -281,7 +280,7 @@ function hint(event: Event) {
   clearTimeout(prefetchTimer)
   const a = (event.target as Element).closest?.<HTMLAnchorElement>('a[data-astro-prefetch="hover"]')
   const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection
-  if (!a || !a.isConnected || a.origin !== location.origin || !/^\/foc(\/|$)/.test(a.pathname)) return
+  if (!a || !a.isConnected || a.origin !== location.origin) return
   if ((event as PointerEvent).pointerType === 'touch' || connection?.saveData || connection?.effectiveType?.includes('2g')) return
   if (a.pathname === location.pathname && a.search === location.search) return
   const href = a.href.split('#')[0]

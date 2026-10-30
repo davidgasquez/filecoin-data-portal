@@ -1,7 +1,7 @@
 // Run after `npm run build`; checks actual HTML, not just the metric inventory.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { sections } from '../src/sections.ts'
 import { numbersSections } from '../src/numbers-sections.ts'
@@ -9,6 +9,7 @@ import { numbersSections } from '../src/numbers-sections.ts'
 const dist = resolve(process.env.SITE_DIST ?? 'dist')
 const site = process.env.SITE_URL ?? 'https://filecoindataportal.xyz'
 const archive = process.env.ARCHIVE_URL ?? 'https://old.filecoindataportal.xyz'
+const foc = new URL(process.env.FOC_URL || 'https://foc.filecoindataportal.xyz').origin
 const page = await readFile(resolve(dist, 'numbers/index.html'), 'utf8')
 const home = await readFile(resolve(dist, 'index.html'), 'utf8')
 const primary = sections.flatMap((section) => section.groups.flatMap((group) => group.charts))
@@ -23,11 +24,18 @@ test('landing and Numbers are distinct routes with the portal identity', () => {
 test('homepage actions and dataset copy stay concise without counts or the diagram caption', () => {
   assert.match(home, /<a[^>]+class="button primary"[^>]+href="\/datasets"[^>]*>Datasets<\/a>/)
   assert.match(home, /<a[^>]+class="button"[^>]+href="\/numbers"[^>]*>Numbers<\/a>/)
-  assert.match(home, /<a[^>]+class="button"[^>]+href="\/foc"[^>]*>Onchain Cloud<\/a>/)
   assert.match(home, /href="\/datasets"[^>]*>more datasets<\/a>/)
   assert.match(home, /Public tables, each a Parquet file you can query directly\./)
   assert.doesNotMatch(home, /\d+ (?:public tables|more tables)|How the portal is built|flow-caption|Browse datasets|Read the numbers/)
   assert.match(home, /<figure[^>]+class="flow"[^>]+aria-label="[^"]+"/)
+})
+test('the portal does not advertise the explorer', async () => {
+  for (const file of await readdir(dist, { recursive: true })) {
+    if (!/\.(html|md|txt|xml)$/.test(file)) continue
+    const html = await readFile(resolve(dist, file), 'utf8')
+    assert.ok(!html.includes(foc), `${file}: no explorer origin`)
+    assert.doesNotMatch(html, /href="\/foc(?:[\/#?"])/, file)
+  }
 })
 test('Get Answers offers one agent instruction and a formatted SQL alternative', () => {
   assert.match(home, /<h2[^>]+id="quickstart"[^>]*>Get Answers<\/h2>/)
@@ -150,11 +158,11 @@ test('history controls, the two section navigations and pre-paint theme preferen
   assert.equal(navs.length, 1)
   assert.ok(header.includes(navs[0][0]), 'The section menu lives in the site header')
   assert.doesNotMatch(home, /nav-menu/)
-  // Outside the explorer the primary navigation stays the portal's four sections.
+  // The portal's primary navigation: three sections, no explorer link or client router.
   for (const html of [home, page]) {
     const primary = html.match(/<nav class="site-nav" aria-label="Primary">([\s\S]*?)<\/nav>\s*<button class="theme-toggle"/)?.[1]
-    assert.deepEqual([...primary.matchAll(/<(?:a href="([^"#]+)"|summary)/g)].map(match => match[1] ?? '/numbers'), ['/numbers', '/foc', '/datasets', '/docs'])
-    assert.doesNotMatch(html, /foc-menu|foc-search/)
+    assert.deepEqual([...primary.matchAll(/<(?:a href="([^"#]+)"|summary)/g)].map(match => match[1] ?? '/numbers'), ['/numbers', '/datasets', '/docs'])
+    assert.doesNotMatch(html, /foc-menu|foc-search|name="astro-view-transitions-enabled"/)
   }
   // Both presentations link the same sections in page order; the menu adds a way back to the contents.
   const order = [...page.matchAll(/<section class="board" id="([^"]+)"/g)].map(match => match[1])

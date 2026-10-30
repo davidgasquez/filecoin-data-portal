@@ -55,12 +55,12 @@ test('sitemap lists canonical HTML routes once, at the build origin', () => {
   assert.match(xml, /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/)
   const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])
   assert.equal(locs.length, new Set(locs).size, 'no duplicates')
-  for (const path of ['/', '/numbers', '/datasets', '/docs', '/about', '/foc', '/foc/providers']) assert.ok(locs.includes(new URL(path, origin).href), path)
+  for (const path of ['/', '/numbers', '/datasets', '/docs', '/about']) assert.ok(locs.includes(new URL(path, origin).href), path)
   for (const id of ids) assert.ok(locs.includes(`${origin}/datasets/${id}`), id)
   for (const loc of locs) {
     const url = new URL(loc)
     assert.equal(url.origin, origin)
-    assert.doesNotMatch(url.pathname, /\.(?:json|md|xml|txt)$|^\/(?:guide|404|assets)(?:\/|$)/)
+    assert.doesNotMatch(url.pathname, /\.(?:json|md|xml|txt)$|^\/(?:guide|404|assets|foc|providers|rails|clients|operators|solstice|provider|dataset|rail|address)(?:\/|$)/)
     assert.ok(existsSync(join(dist, decodeURIComponent(url.pathname), 'index.html')), `built: ${url.pathname}`)
   }
 })

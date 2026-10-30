@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro'
-import { daily, datasets, dataUrl, repoUrl } from '../data'
+import { daily, datasets, dataUrl } from '../data'
+import { repoUrl } from '../site.mjs'
 import { latest, format, series, kind } from '../metrics.mjs'
 import { draw } from '../charts.mjs'
 
@@ -75,7 +76,6 @@ const other = datasets.filter((dataset) => !dataset.id.startsWith('daily_'))
       <div class="actions">
         <a class="button primary" href="/datasets">Datasets</a>
         <a class="button" href="/numbers">Numbers</a>
-        <a class="button" href="/foc">Onchain Cloud</a>
       </div>
     </div>
 

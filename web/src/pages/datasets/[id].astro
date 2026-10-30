@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro'
-import { builtAt, datasets, repoUrl, type Dataset } from '../../data'
+import { builtAt, datasets, type Dataset } from '../../data'
+import { repoUrl } from '../../site.mjs'
 
 export const getStaticPaths = () => datasets.map((dataset) => ({ params: { id: dataset.id }, props: { dataset } }))
 

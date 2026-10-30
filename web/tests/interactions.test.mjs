@@ -78,7 +78,7 @@ function page({ clipboard = true, execCommand = false, href = 'https://example.t
   const tick = () => { while (state.timers.some(t => t.callback)) state.timers.forEach(t => { const c = t.callback; t.callback = null; c?.() }) }
   const flush = () => { const t = state.timers.findLast(t => t.callback); const c = t.callback; t.callback = null; c() }
   const click = async button => { await button.listeners.click(); flush() }
-  // A /foc router swap: abort the old page, then page-load with a new <body> (here holding the same buttons).
+  // An explorer router swap: abort the old page, then page-load with a new <body> (here holding the same buttons).
   const swap = () => { state.listeners['astro:before-swap']({ newDocument: {} }); context.document.body = element('body'); state.listeners['astro:page-load']() }
   return { block, text, row, link, address, plain, info, menu, explorer, audit, body, click, tick, swap, context }
 }

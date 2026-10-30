@@ -1,6 +1,7 @@
-// Server-side HTML atoms for /foc. Pure functions over exporter JSON; client.ts only enhances.
+// Server-side HTML atoms for the explorer. Pure functions over exporter JSON; client.ts only enhances.
 import { chart } from '../charts.mjs'
 import { GENESIS, format, number, plural, shiftDate } from '../metrics.mjs'
+import { portalHref } from '../site.mjs'
 import { labels as labelData, routes, coverage } from './data'
 
 export type Row = Record<string, any>
@@ -13,7 +14,9 @@ const labels = new Map<string, Row>((labelData?.labels ?? []).map((l: Row) => [l
 const built = new Set(routes.map((r) => r.route ?? ''))
 export const label = (a: string) => labels.get(a)?.label as string | undefined
 // Link only to pages that were actually generated.
-export const url = (route = '') => route ? `/foc/${route}` : '/foc'
+export const url = (route = '') => `/${route}`
+// The portal's dataset catalog, not the explorer's storage data sets.
+export const catalog = (id: string, column = '') => portalHref(`/datasets/${id}${column ? `#${column}` : ''}`)
 const routeUrl = (route: string) => built.has(route) ? url(route) : null
 
 // ---------------------------------------------------------------- format
@@ -126,7 +129,7 @@ export function sources(ids: string[], note = '') {
   const names: Record<string, string> = { daily_network_metrics: 'network', daily_provider_quality: 'quality', daily_operator_metrics: 'operators' }
   const windows = ids.map(id => ({ id, row: coverage.find((r: Row) => r.source === (names[id] ?? id)) })).filter(({ row }) => row)
   const detail = windows.length ? `<details><summary>Observation windows</summary><dl class="facts wide foc-kv">${windows.map(({ id, row }) => `<div><dt>${id}</dt><dd>${row.observed_at ? `API snapshot ${esc(row.observed_at.replace('T', ' ').replace('Z', ' UTC'))}` : `${row.start ?? 'Unknown'} to ${row.end ?? 'unknown'} (UTC)`}</dd></div>`).join('')}</dl>${ids.includes('rails') ? '<p>State, rates, lockups and settlement counters are API snapshots. Paid totals and charts use event history and can differ. Monthly rates mean 30 days and include terminated rails still streaming at the snapshot.</p>' : ''}</details>` : ''
-  return `<aside class="foc-sources meta" aria-label="Sources">Sources: ${ids.map((id) => `<a href="/datasets/${id}">${id}</a>`).join(' · ')}.${note ? ` ${note}` : ''}${detail}</aside>`
+  return `<aside class="foc-sources meta" aria-label="Sources">Sources: ${ids.map((id) => `<a href="${catalog(id)}">${id}</a>`).join(' · ')}.${note ? ` ${note}` : ''}${detail}</aside>`
 }
 
 // ---------------------------------------------------------------- charts
@@ -147,7 +150,7 @@ export function points(dates?: string[] | null, values?: unknown[] | null, minDa
 // Definitions and sources live in the title disclosure, as on /numbers.
 export function plot({ title, value, key, kind, pts, note = '', cls = '', info = '', source = '', column = '' }: { title: string; value: string; key: string; kind: 'bar' | 'line' | 'step'; pts: { date: string; value: number | null }[]; note?: string; cls?: string; info?: string; source?: string; column?: string }) {
   const latest = pts.findLast((p) => p.value != null)?.date
-  const heading = info || source ? `<details class="metric-info"><summary><h3>${esc(title)}</h3><span class="meta">Info</span></summary><div class="metric-info-body">${info ? `<p>${info}</p>` : ''}<p class="meta">Latest observation: ${latest ?? 'not observed'} (UTC).</p>${source ? `<p class="meta">Source: <a href="/datasets/${source}${column ? `#${column}` : ''}">${source}</a>${column ? ` · ${column}` : ''}</p>` : ''}</div></details>` : `<h3>${esc(title)}</h3>`
+  const heading = info || source ? `<details class="metric-info"><summary><h3>${esc(title)}</h3><span class="meta">Info</span></summary><div class="metric-info-body">${info ? `<p>${info}</p>` : ''}<p class="meta">Latest observation: ${latest ?? 'not observed'} (UTC).</p>${source ? `<p class="meta">Source: <a href="${catalog(source, column)}">${source}</a>${column ? ` · ${column}` : ''}</p>` : ''}</div></details>` : `<h3>${esc(title)}</h3>`
   return `<figure class="chart foc-chart ${cls}">
     <div class="chart-heading">${heading}<span class="chart-value">${value}</span></div>
     ${chart(pts, key, kind, { label: title, interactive: true })}
