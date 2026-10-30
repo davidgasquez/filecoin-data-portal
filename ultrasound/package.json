@@ -1,0 +1,17 @@
+{
+  "name": "ultrasoundstorage",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test test.mjs",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@duckdb/node-api": "2.0.0-r.1"
+  },
+  "devDependencies": {
+    "wrangler": "4.154.0"
+  }
+}

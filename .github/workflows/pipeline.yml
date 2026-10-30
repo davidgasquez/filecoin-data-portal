@@ -61,3 +61,34 @@ jobs:
           aws s3 cp build/fdp.duckdb "s3://$R2_BUCKET/fdp.duckdb" \
             --endpoint-url "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" \
             --region auto --no-progress --cache-control no-cache
+
+      # Keep this POC non-blocking: Website is triggered by Pipeline success.
+      - name: Setup Node.js for ultrasoundstorage
+        if: github.ref == 'refs/heads/main'
+        id: ultrasound_node
+        continue-on-error: true
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: ultrasound/package-lock.json
+
+      - name: Build and deploy ultrasoundstorage
+        if: github.ref == 'refs/heads/main' && steps.ultrasound_node.outcome == 'success'
+        id: ultrasound
+        continue-on-error: true
+        working-directory: ultrasound
+        env:
+          # Override the pipeline's cache-purge token with the Workers token.
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
+        run: |
+          npm ci
+          npm test
+          npm run build
+          npm run deploy
+
+      - name: Report ultrasoundstorage failure
+        if: ${{ !cancelled() && github.ref == 'refs/heads/main' && (steps.ultrasound_node.outcome == 'failure' || steps.ultrasound.outcome == 'failure') }}
+        run: |
+          echo "::warning::ultrasoundstorage refresh failed; the previous deployment remains online."
+          echo "⚠️ ultrasoundstorage refresh failed. Check the POC build/deploy step; the main portal is unaffected." >> "$GITHUB_STEP_SUMMARY"
