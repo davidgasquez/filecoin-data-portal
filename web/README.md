@@ -83,6 +83,8 @@ Deploy the explorer before the portal in both stages, so a failed explorer deplo
 
 ### Published snapshot contract
 
+Both adapters read only public `main` datasets, never `raw` or `model`. Explorer histories travel with the existing entities: `rails.rate_history` (exact per-epoch base units) and `history_start`/`history_end` (FEVM coverage), `data_sets.storage_history` (end-of-day inventory and piece flows) and `storage_provider_attribution_safe`, and `service_orchestrators.payment_history` (daily settlements by payer and token). State histories are sparse change points, not API snapshots; carry them only through the declared coverage. Missing history is not a dated zero. Generate a `uv run fdp export` snapshot and use that `main`-only file for release validation, not the working database.
+
 Production builds require every stored metric source column, including `pdp_registered_bytes`, `pdp_replicated_bytes`, `pdp_replication_coverage`, and `pdp_unique_bytes` in `daily_network_metrics`. Previews explain missing columns and show unavailable metrics without borrowing local values or inventing zero/history. **Production builds reject incomplete schemas.** After an independently authorized data refresh, export and publish through the data pipeline, then download and identify the public snapshot before building the website.
 
 ### Production release and rollback
