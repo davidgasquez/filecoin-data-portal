@@ -80,7 +80,6 @@
 .foc-empty { padding-block: 1rem; color: var(--muted); }
 .foc-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gap); }
 .foc-cols > * { min-width: 0; }
-.foc-sources { margin-top: var(--space); padding-top: 0.75rem; border-top: 1px solid var(--rule); max-width: 60rem; }
 
 /* Overview hero: one focal chart, facts beside it */
 .foc-hero { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: 1.5rem var(--gap); }

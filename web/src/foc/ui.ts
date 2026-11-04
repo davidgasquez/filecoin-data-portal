@@ -2,7 +2,7 @@
 import { chart } from '../charts.mjs'
 import { GENESIS, format, number, plural, shiftDate } from '../metrics.mjs'
 import { portalHref } from '../site.mjs'
-import { labels as labelData, routes, coverage } from './data'
+import { labels as labelData, routes } from './data'
 
 export type Row = Record<string, any>
 export const BLOCKSCOUT = 'https://filecoin.blockscout.com'
@@ -125,12 +125,6 @@ type Figure = [string, string, string?] | false | null | undefined | 0
 export const figures = (items: Figure[]) => `<dl class="foc-figures">${items.filter((x): x is [string, string, string?] => !!x).map(([l, v, s]) => `<div><dt>${esc(l)}</dt><dd>${v}${s ? `<span class="meta">${s}</span>` : ''}</dd></div>`).join('')}</dl>`
 export const kv = (items: ([string, string | null | undefined] | false | null | undefined)[]) => `<dl class="facts wide foc-kv">${items.filter((x): x is [string, string] => !!x).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${v ?? NA}</dd></div>`).join('')}</dl>`
 export const empty = (text: string) => `<p class="foc-empty">${esc(text)}</p>`
-export function sources(ids: string[], note = '') {
-  const names: Record<string, string> = { daily_network_metrics: 'network', daily_provider_quality: 'quality', daily_operator_metrics: 'operators' }
-  const windows = ids.map(id => ({ id, row: coverage.find((r: Row) => r.source === (names[id] ?? id)) })).filter(({ row }) => row)
-  const detail = windows.length ? `<details><summary>Observation windows</summary><dl class="facts wide foc-kv">${windows.map(({ id, row }) => `<div><dt>${id}</dt><dd>${row.observed_at ? `API snapshot ${esc(row.observed_at.replace('T', ' ').replace('Z', ' UTC'))}` : `${row.start ?? 'Unknown'} to ${row.end ?? 'unknown'} (UTC)`}</dd></div>`).join('')}</dl>${ids.includes('rails') ? '<p>State, rates, lockups and settlement counters are API snapshots. Paid totals and charts use event history and can differ. Monthly rates mean 30 days and include terminated rails still streaming at the snapshot.</p>' : ''}</details>` : ''
-  return `<aside class="foc-sources meta" aria-label="Sources">Sources: ${ids.map((id) => `<a href="${catalog(id)}">${id}</a>`).join(' · ')}.${note ? ` ${note}` : ''}${detail}</aside>`
-}
 
 // ---------------------------------------------------------------- charts
 
@@ -146,14 +140,27 @@ export function points(dates?: string[] | null, values?: unknown[] | null, minDa
   for (let d = start; d <= end; d = shiftDate(d, 1)) out.push({ date: d, value: byDate.get(d) ?? null })
   return out
 }
+// End-of-day states from change points, carried through `end` (the last FEVM checkpoint). With `zero`,
+// days without a row are 0 instead: positive-only counts, never filled before their first observation.
+export function steps(dates?: string[] | null, values?: unknown[] | null, end?: string, { zero = false, map = num } = {}) {
+  if (!dates?.length || !end) return []
+  const at = new Map(dates.map((d, i) => [d, map(values?.[i])]))
+  const ds: string[] = [], vs: (number | null)[] = []
+  for (let d = dates[0], last: number | null = null; d <= end; d = shiftDate(d, 1)) {
+    last = at.has(d) ? at.get(d)! : zero ? 0 : last
+    ds.push(d); vs.push(last)
+  }
+  return points(ds, vs)
+}
 // key selects units in metrics.mjs (…_usd → $, …_bytes → TiB, provider_…_rate → %, …_fil → FIL).
 // Definitions and sources live in the title disclosure, as on /numbers.
-export function plot({ title, value, key, kind, pts, note = '', cls = '', info = '', source = '', column = '' }: { title: string; value: string; key: string; kind: 'bar' | 'line' | 'step'; pts: { date: string; value: number | null }[]; note?: string; cls?: string; info?: string; source?: string; column?: string }) {
+type Pts = { date: string; value: number | null }[]
+export function plot({ title, value, key, kind, pts, note = '', cls = '', info = '', source = '', column = '', negative }: { title: string; value: string; key: string; kind: 'bar' | 'line' | 'step'; pts: Pts; note?: string; cls?: string; info?: string; source?: string; column?: string; negative?: { points: Pts; key: string; label: string } }) {
   const latest = pts.findLast((p) => p.value != null)?.date
   const heading = info || source ? `<details class="metric-info"><summary><h3>${esc(title)}</h3><span class="meta">Info</span></summary><div class="metric-info-body">${info ? `<p>${info}</p>` : ''}<p class="meta">Latest observation: ${latest ?? 'not observed'} (UTC).</p>${source ? `<p class="meta">Source: <a href="${catalog(source, column)}">${source}</a>${column ? ` · ${column}` : ''}</p>` : ''}</div></details>` : `<h3>${esc(title)}</h3>`
   return `<figure class="chart foc-chart ${cls}">
     <div class="chart-heading">${heading}<span class="chart-value">${value}</span></div>
-    ${chart(pts, key, kind, { label: title, interactive: true })}
+    ${chart(pts, key, kind, { label: title, interactive: true, negative })}
     ${note ? `<figcaption class="meta">${note}</figcaption>` : ''}
   </figure>`
 }
