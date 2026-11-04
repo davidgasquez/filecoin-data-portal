@@ -158,6 +158,48 @@ test('explorer totals, quotes, and snapshot provenance remain consistent', () =>
   }
 })
 
+test('explorer pages omit source footers and observation windows', () => {
+  for (const entry of routes) {
+    const page = html(entry.route)
+    assert.ok(!page.includes('foc-sources'))
+    assert.ok(!page.includes('Observation windows'))
+  }
+})
+
+test('orchestrator pages show payment activity by token and distinct clients', () => {
+  for (const entry of routes.filter(r => r.kind === 'address')) {
+    const data = readFoc(entry.file)
+    const activity = data.orchestrator_activity
+    const page = html(entry.route)
+    if (!activity?.daily?.length) {
+      if (data.orchestrator) assert.ok(page.includes('No attributed settlements.'))
+      continue
+    }
+    assert.ok(page.includes('Paying clients'))
+    assert.ok(activity.daily.every(d => Number.isInteger(d.payers) && d.payers >= 0))
+    for (const token of activity.tokens) {
+      for (const day of token.daily) assert.match(day.amount, /^\d+$/)
+      if (token.decimals != null) assert.ok(page.includes(`Payment volume (${token.symbol})`))
+    }
+  }
+})
+
+test('orchestrator pages chart exact daily rewards as FIL flows', () => {
+  const totals = readFoc('solstice.json').rewards
+  for (const entry of routes.filter(r => r.kind === 'address')) {
+    const data = readFoc(entry.file)
+    if (!data.reward_daily?.length) continue
+    const page = html(entry.route)
+    for (const title of ['Earned rewards', 'Claimed rewards']) assert.ok(page.includes(title))
+    for (const key of ['earned', 'claimed']) {
+      for (const day of data.reward_daily) assert.match(day[key], /^\d+$/)
+      const expected = totals.filter(r => r.orchestrator === data.address || (!r.orchestrator && r.wallet === data.address))
+        .reduce((n, r) => n + BigInt(r[key]), 0n)
+      assert.equal(data.reward_daily.reduce((n, r) => n + BigInt(r[key]), 0n), expected)
+    }
+  }
+})
+
 test('Solstice amounts remain exact atto strings and missing states stay null', () => {
   const data = readFoc('solstice.json')
   for (const row of [...data.quarters, ...data.orchestrator_quarters]) {
@@ -165,5 +207,68 @@ test('Solstice amounts remain exact atto strings and missing states stay null', 
       if (row[key] != null) assert.match(row[key], /^-?\d+$/, key)
     }
     if (!row.is_bound) assert.equal(row.bound_volume, null)
+  }
+  for (const row of data.rewards) {
+    assert.match(row.earned, /^\d+$/)
+    assert.match(row.claimed, /^\d+$/)
+  }
+  const rewards = html('solstice').match(/<section[^>]*id="rewards"[\s\S]*?<\/section>/)?.[0]
+  assert.ok(rewards)
+  for (const heading of ['Orchestrator ID', 'Earned', 'Claimed']) assert.ok(rewards.includes(`>${heading}</th>`))
+  assert.equal(rewards.includes('>Wallet</th>'), data.rewards.some(r => r.wallet !== r.orchestrator))
+  for (const row of data.rewards.filter(r => r.orchestrator)) assert.ok(rewards.includes(`>${row.orchestrator}</a>`))
+})
+
+test('entity daily states reconcile with network totals at the last FEVM checkpoint', () => {
+  const end = readFoc('coverage.json').find(row => row.source === 'fevm').end
+  const { series } = readFoc('overview.json'), i = series.date.indexOf(end)
+  assert.ok(i >= 0)
+  const latest = (s, key) => s?.d?.length && s.d[0] <= end ? Number(s[key].findLast((_, j) => s.d[j] <= end)) : 0
+  const at = (s, key) => s?.d?.includes(end) ? Number(s[key][s.d.indexOf(end)]) : 0
+  let stored = 0, billing = 0
+  for (const entry of routes.filter(r => r.kind === 'provider')) stored += latest(readFoc(entry.file).storage, 'bytes')
+  for (const entry of routes.filter(r => r.kind === 'address')) billing += at(readFoc(entry.file).billing_daily, 'v')
+  assert.equal(stored, series.stored_bytes[i])
+  assert.equal(billing, series.billing_data_sets[i])
+})
+
+test('entity series keep exact strings, tokens and observed coverage', () => {
+  const end = readFoc('coverage.json').find(row => row.source === 'fevm').end
+  const values = (page, key) => JSON.parse(page.match(new RegExp(`data-key="${key}"[^>]*data-start="([^"]+)" data-values="([^"]+)"`))[2].replaceAll('&quot;', '"'))
+  for (const entry of routes.filter(r => r.kind === 'rail')) {
+    const data = readFoc(entry.file)
+    for (const v of data.rate?.v ?? []) assert.match(v, /^\d+$/)
+    if (data.rate?.d) assert.ok(data.rate.d.at(-1) <= end)
+  }
+  // Native FIL rails share one token rule; unknown event amounts never read as zero.
+  for (const entry of routes.filter(r => r.kind === 'rail')) {
+    const data = readFoc(entry.file)
+    if (data.rail.token === '0x0000000000000000000000000000000000000000') assert.equal(data.rail.token_symbol, 'FIL', entry.route)
+    if (data.rate_token) assert.equal(data.rate_token.symbol, data.rail.token_symbol, entry.route)
+    if (data.net_daily?.v?.length && !data.net_daily.v.some(v => v != null)) {
+      const page = html(entry.route), net = page.match(/<h3>Net to payee<\/h3><span class="chart-value">([\s\S]*?)<\/span><\/div>/)
+      assert.ok(net?.[1].includes('Not observed') && page.includes('no recorded amount'), entry.route)
+      if (data.rail.token_symbol === 'FIL') assert.doesNotMatch(page, /unidentified token|unknown token/, entry.route)
+    }
+  }
+  const idle = readFoc('r/2962.json'), page = html('rail/2962')
+  assert.deepEqual(idle.rate.v, ['0'])
+  assert.ok(page.includes('data-label="Recurring rate"') && !page.includes('data-label="Net to payee"'))
+  // A deleted data set reads zero after deletion, through the last checkpoint.
+  const deleted = readFoc('ds/1293.json').storage
+  assert.equal(deleted.bytes.at(-1), 0)
+  const datasetPage = html('dataset/1293')
+  const stored = values(datasetPage, 'stored_bytes')
+  assert.equal(stored.at(-1), 0)
+  // Daily states connect observations directly; flows retain their daily bar encoding.
+  for (const key of ['stored_bytes', 'stored_pieces', 'rate_month_usd']) {
+    assert.match(datasetPage, new RegExp(`data-key="${key}" data-kind="line"`))
+  }
+  assert.match(datasetPage, /data-kind="bar" data-label="Data added and removed"/)
+  for (const entry of routes.filter(r => r.kind === 'address')) {
+    for (const t of readFoc(entry.file).payer_rates ?? []) {
+      for (const v of t.v) assert.match(v, /^\d+$/)
+      assert.equal(new Set((readFoc(entry.file).payer_rates).map(x => x.token)).size, readFoc(entry.file).payer_rates.length)
+    }
   }
 })
