@@ -1,6 +1,7 @@
 -- asset.description = Warm storage data sets.
 
 -- asset.depends = model.foc_data_sets
+-- asset.depends = model.foc_daily_data_set_storage
 
 -- asset.column = data_set_id | FWSS data set identifier.
 -- asset.column = owner | Client address that pays for the data set.
@@ -27,6 +28,8 @@
 -- asset.column = api_updated_at_block | Last API indexer update block, not a verified event block.
 -- asset.column = api_indexed_block | Latest API indexer block before the snapshot.
 -- asset.column = api_observed_at | UTC Filecoin API snapshot timestamp.
+-- asset.column = storage_history | Sparse end-of-day stored pieces and bytes plus added and removed byte flows, ordered by date.
+-- asset.column = storage_provider_attribution_safe | Whether creation-time providers can safely receive historical storage attribution globally.
 
 select
     data_set_id,
@@ -53,6 +56,15 @@ select
     is_deleted,
     api_updated_at_block,
     api_indexed_block,
-    api_observed_at
+    api_observed_at,
+    history.storage_history,
+    storage_provider_attribution_safe
 from model.foc_data_sets
+left join (
+    select data_set_id, list(struct_pack(
+        date := date, pieces := stored_pieces, bytes := stored_bytes,
+        added := added_bytes, removed := removed_bytes
+    ) order by date) as storage_history
+    from model.foc_daily_data_set_storage group by data_set_id
+) as history using (data_set_id)
 order by billing_started_at

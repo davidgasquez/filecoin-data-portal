@@ -29,6 +29,7 @@
 -- asset.column = api_updated_at_block | Last API indexer update block, not a verified event block.
 -- asset.column = api_indexed_block | Latest API indexer block before the snapshot.
 -- asset.column = api_observed_at | UTC Filecoin API snapshot timestamp.
+-- asset.column = storage_provider_attribution_safe | Whether creation-time providers can safely receive historical storage attribution globally.
 
 -- asset.not_null = data_set_id
 -- asset.unique = data_set_id
@@ -122,7 +123,12 @@ select
     api.deleted as is_deleted,
     api.updated_at_block as api_updated_at_block,
     api.indexed_block as api_indexed_block,
-    api.observed_at as api_observed_at
+    api.observed_at as api_observed_at,
+    not exists (
+        select 1 from raw.riba_eth_logs_decoded
+        where (contract_name = 'pdp_verifier' and event_name = 'StorageProviderChanged')
+           or (contract_name = 'filecoin_warm_storage_service' and event_name = 'DataSetServiceProviderChanged')
+    ) as storage_provider_attribution_safe
 from dataset_created as created
 left join dataset_billing_started as started using (data_set_id)
 left join dataset_billing_terminated as terminated using (data_set_id)

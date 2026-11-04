@@ -1,6 +1,8 @@
 -- asset.description = Filecoin Pay rails.
 
 -- asset.depends = model.pay_rails
+-- asset.depends = model.pay_daily_rail_rates
+-- asset.depends = model.network_daily_fevm_checkpoints
 
 -- asset.column = rail_id | Filecoin Pay rail identifier.
 -- asset.column = payer | Payer address.
@@ -39,6 +41,9 @@
 -- asset.column = total_one_time_net_payee_amount | Cumulative one-time payments net to payee in token base units, from the Filecoin API.
 -- asset.column = api_indexed_block | Latest API indexer block before the snapshot.
 -- asset.column = api_observed_at | UTC Filecoin API snapshot timestamp.
+-- asset.column = rate_history | Sparse end-of-day rates in token base units per epoch, ordered by date.
+-- asset.column = history_start | First UTC date in FEVM checkpoint coverage.
+-- asset.column = history_end | Last UTC date in FEVM checkpoint coverage.
 
 select
     rail_id,
@@ -77,5 +82,16 @@ select
     total_one_time_amount,
     total_one_time_net_payee_amount,
     api_indexed_block,
-    api_observed_at
+    api_observed_at,
+    history.rate_history,
+    coverage.history_start,
+    coverage.history_end
 from model.pay_rails
+left join (
+    select rail_id, list(struct_pack(date := date, rate := rate_wei_per_epoch) order by date) as rate_history
+    from model.pay_daily_rail_rates group by rail_id
+) as history using (rail_id)
+cross join (
+    select min(date) as history_start, max(date) as history_end
+    from model.network_daily_fevm_checkpoints where date < current_date
+) as coverage
