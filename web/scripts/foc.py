@@ -79,32 +79,12 @@ def connect(source: str) -> duckdb.DuckDBPyConnection:
         where date >= '2025-11-01' and date < current_date order by date"""
     )
     con.execute("""create table orchestrator_settlements as
-        select * from fdp.model.foc_orchestrator_settlements
-        where to_timestamp(1598306400 + block_number * 30)::date < current_date""")
-    con.execute("""create table checkpoints as select date, checkpoint_ordinal
-        from fdp.model.network_daily_fevm_checkpoints where date < current_date""")
-    con.execute("""create table intervals as select rail_id, payer, token, start_ordinal, end_ordinal,
-        rate_wei_per_epoch as rate from fdp.model.pay_rail_rate_intervals""")
-    # One delta per piece event and kind (added, PiecesRemoved, DataSetDeleted), keyed by PDP set id.
-    con.execute("""create table piece_events as
-        select set_id, ordinal, kind, sum(pieces)::bigint as pieces, sum(bytes)::hugeint as bytes from (
-            select data_set_id as set_id, added_ordinal as ordinal, 'added' as kind, 1 as pieces, raw_size_bytes as bytes from fdp.model.foc_pieces
-            union all select data_set_id, removed_ordinal, removed_by, -1, -raw_size_bytes from fdp.model.foc_pieces
-            where removed_ordinal is not null) group by all""")
-    # FWSS data set <- PDP set: created in the same transaction, never assumed equal ids.
-    con.execute("""create table ds_map as
-        with logs as (select contract_name, event_name, transaction_hash as tx, args
-            from fdp.raw.riba_eth_logs_decoded where contract_name in ('pdp_verifier', 'filecoin_warm_storage_service'))
-        select f.id as data_set_id, p.id as set_id from
-            (select tx, cast(json_extract_string(args, '$.dataSetId') as bigint) as id from logs
-                where contract_name = 'filecoin_warm_storage_service' and event_name = 'DataSetCreated') f
-        join (select tx, cast(json_extract_string(args, '$.setId') as bigint) as id from logs
-                where contract_name = 'pdp_verifier' and event_name = 'DataSetCreated') p using (tx)
-        qualify count(*) over (partition by tx) = 1""")
-    # Provider handoffs make creation-time provider attribution unsafe after them.
-    con.execute("""create table handoffs as select count(*) as n from fdp.raw.riba_eth_logs_decoded
-        where (contract_name = 'pdp_verifier' and event_name = 'StorageProviderChanged')
-            or (contract_name = 'filecoin_warm_storage_service' and event_name = 'DataSetServiceProviderChanged')""")
+        select o.orchestrator, h.* from service_orchestrators o,
+            unnest(o.payment_history) as history(h) where h.date < current_date""")
+    # Coverage belongs to the public history, not the API snapshot or wall clock.
+    con.execute("""create table checkpoints as select d::date as date from generate_series(
+        (select min(history_start) from rails), (select least(max(history_end), current_date - 1) from rails),
+        interval 1 day) dates(d)""")
     con.execute("detach fdp")
     return con
 
@@ -256,42 +236,24 @@ def model(con: duckdb.DuckDBPyConnection) -> None:
     """)
 
 
-def dated(events: str) -> str:
-    """Each event lands on the first day whose end-of-day FEVM checkpoint covers it, as in
-    model.foc_daily_storage_data; events after the latest checkpoint wait."""
-    return f"""(select c.date, e.* from {events} e asof join (
-        select checkpoint_ordinal, min(date) as date from checkpoints group by 1
-    ) c on c.checkpoint_ordinal >= e.ordinal)"""
-
-
 def daily_model(con: duckdb.DuckDBPyConnection) -> None:
-    """Entity daily series. States are change points carried forward to the last checkpoint;
-    counts and payer rates are positive days, zero-filled only after the first one."""
-    first, last, n = con.execute(
-        "select min(date), max(date), count(*) from checkpoints"
-    ).fetchone()
-    if n and (last - first).days + 1 != n:
-        raise SystemExit("FEVM checkpoints are not contiguous")
-    con.execute(f"""create table ds_delta as
-        select m.data_set_id, e.date, sum(e.pieces) as pieces, sum(e.bytes) as bytes,
-            coalesce(sum(e.bytes) filter (where e.kind = 'added'), 0) as added,
-            coalesce(-sum(e.bytes) filter (where e.kind = 'PiecesRemoved'), 0) as removed
-        from {dated("piece_events")} e join ds_map m using (set_id) group by all""")
-    # End-of-day rate per rail on days it changes; a rail ends at zero.
-    con.execute(f"""create table rail_rates as
-        select rail_id, date, rate from (
-            select rail_id, date, arg_max(rate, ordinal) as rate from {
-        dated('''(select rail_id, start_ordinal as ordinal, rate from intervals
-            union all select i.rail_id, i.end_ordinal, 0 from intervals i
-            anti join intervals n on n.rail_id = i.rail_id and n.start_ordinal = i.end_ordinal
-            where i.end_ordinal is not null)''')
-    } group by all)
-        qualify rate is distinct from lag(rate) over (partition by rail_id order by date)""")
+    """Reshape published end-of-day histories for page inputs; never reconstruct chain events."""
+    con.execute("""create table ds_delta as
+        select data_set_id, h.date,
+            h.pieces - coalesce(lag(h.pieces) over w, 0) as pieces,
+            h.bytes - coalesce(lag(h.bytes) over w, 0) as bytes,
+            h.added as added, h.removed as removed
+        from data_sets, unnest(storage_history) as history(h)
+        where h.date <= (select max(date) from checkpoints)
+        window w as (partition by data_set_id order by h.date)""")
+    con.execute("""create table rail_rates as
+        select rail_id, h.date, h.rate as rate from rails, unnest(rate_history) as history(h)
+        where h.date <= (select max(date) from checkpoints)""")
     con.execute("""create table rail_days as
-        select c.date, i.rail_id, i.payer, i.token, i.rate
-        from checkpoints c join (select * from intervals where rate > 0) i
-            on i.start_ordinal <= c.checkpoint_ordinal
-            and coalesce(i.end_ordinal, 9223372036854775807) > c.checkpoint_ordinal""")
+        select c.date, r.rail_id, r.payer, r.token, h.rate
+        from checkpoints c cross join rails r
+        asof join rail_rates h on r.rail_id = h.rail_id and c.date >= h.date
+        where h.rate > 0""")
 
 
 def stored(key: str, source: str, flows: bool = False) -> str:
@@ -325,7 +287,7 @@ def entity_series(con: duckdb.DuckDBPyConnection) -> None:
         f"create table owner_storage as {stored('d.owner', 'ds_delta join d on d.id = ds_delta.data_set_id')}"
     )
     con.execute(f"""create table provider_storage as select * from ({stored("d.provider_id", "ds_delta join d on d.id = ds_delta.data_set_id")})
-        where (select n from handoffs) = 0""")
+        where not exists (select 1 from data_sets where not storage_provider_attribution_safe)""")
     con.execute(
         f"""create table provider_clients as {
             counts('''select d.provider_id as k, date, count(distinct d.owner) as v
@@ -401,14 +363,14 @@ def daily(where: str, stable_only: bool = True, measure: str = "gross") -> str:
 def orchestrator_activity(where: str) -> str:
     return f"""(select to_json({{
         daily: (select coalesce(to_json(list(x order by x.date)), '[]') from (
-            select strftime(to_timestamp(1598306400 + block_number * 30), '%Y-%m-%d') as date,
+            select strftime(date, '%Y-%m-%d') as date,
                 count(distinct payer) filter (where amount > 0) as payers
             from orchestrator_settlements where {where} group by 1) x),
         tokens: (select coalesce(to_json(list(x order by x.token)), '[]') from (
             select s.token, coalesce(m.symbol, s.token) as symbol, m.decimals,
                 list({{date: s.date, amount: s.amount}} order by s.date) as daily
             from (
-                select token, strftime(to_timestamp(1598306400 + block_number * 30), '%Y-%m-%d') as date,
+                select token, strftime(date, '%Y-%m-%d') as date,
                     sum(amount)::varchar as amount
                 from orchestrator_settlements where {where} group by 1, 2
             ) s left join tokens m using (token) group by s.token, m.symbol, m.decimals) x)
@@ -670,7 +632,7 @@ def build(source: str, out: Path) -> None:
             dealbot: a.address in (select payer from dealbot),
             providers: (select coalesce(to_json(list({{id: id, name: name, approved: approved}})), '[]') from p
                 where p.address = a.address or p.payee = a.address),
-            orchestrator: (select to_json(o) from service_orchestrators o where o.orchestrator = a.address or o.wallet = a.address),
+            orchestrator: (select to_json(o) from (select * exclude (payment_history) from service_orchestrators) o where o.orchestrator = a.address or o.wallet = a.address),
             orchestrator_activity: {orchestrator_activity("orchestrator = a.address")},
             reward_daily: (select coalesce(to_json(list(x order by x.date)), '[]') from (
                 select strftime(date, '%Y-%m-%d') as date,
