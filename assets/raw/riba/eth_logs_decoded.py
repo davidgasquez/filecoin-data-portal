@@ -394,7 +394,7 @@ def ensure_table() -> None:
                 topic0 varchar,
                 event_name varchar,
                 contract_name varchar,
-                args json,
+                args json using compression zstd,
                 file_date date,
                 source_etag varchar
             )
