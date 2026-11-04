@@ -55,8 +55,12 @@ jobs:
           enable-cache: false
 
       - name: Download published snapshot
+        timeout-minutes: 25
         run: |
-          curl -fsSL --retry 3 -o "$RUNNER_TEMP/fdp.duckdb" https://data.filecoindataportal.xyz/fdp.duckdb
+          # Retry connection resets too, and bound stalled or slow transfers.
+          curl -fsSL --retry 3 --retry-all-errors --retry-delay 5 \
+            --connect-timeout 15 --max-time 300 --speed-limit 1024 --speed-time 60 \
+            -o "$RUNNER_TEMP/fdp.duckdb" https://data.filecoindataportal.xyz/fdp.duckdb
           echo "FDP_DB=$RUNNER_TEMP/fdp.duckdb" >> "$GITHUB_ENV"
           {
             echo "commit: $GITHUB_SHA"
