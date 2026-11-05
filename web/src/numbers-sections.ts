@@ -188,8 +188,8 @@ export const numbersSections: NumbersSection[] = [
         { id: "storage-provider-cron-burn", title: "Storage Provider Cron Burn", description: "FIL burned during storage provider cron fees and penalties per day.", y: "storage_provider_cron_burn_fil" },
         { id: "unattributed-burn", title: "Unattributed Burn", description: "Non-emission FIL burned outside gas, message penalties, and cron, such as contract burns and unclassified penalties.", y: "unattributed_burn_fil" },
         { id: "locked-fil", title: "Locked FIL", description: "End-of-day FIL locked in the network.", y: "locked_fil" },
-        { id: "circulating-fil", title: "Circulating FIL", description: "End-of-day FIL circulating and tradeable in the economy.", y: "circulating_fil" },
-        { id: "yearly-inflation-rate", title: "Yearly Inflation Rate", description: "Year-over-year change in circulating FIL.", y: "yearly_inflation_rate" },
+        { id: "circulating-fil", title: "Protocol Circulating FIL", description: "End-of-day circulating FIL under Lotus protocol rules. Differs from market-data supply.", y: "circulating_fil" },
+        { id: "yearly-inflation-rate", title: "Yearly Protocol Supply Growth", description: "Year-over-year change in protocol circulating FIL.", y: "yearly_inflation_rate" },
         { id: "minted-rewards-fil", title: "Minted Block Rewards", description: "FIL block rewards minted per day across miner, service, and emission burn allocations.", y: "minted_rewards_fil" },
         { id: "miner-rewards-fil", title: "Miner Block Rewards", description: "FIL block rewards allocated to block-winning storage providers per day.", y: "miner_rewards_fil" },
         { id: "service-rewards-fil", title: "Service Rewards", description: "FIL block rewards accrued to the FIP-0118 service stream per day.", y: "service_rewards_fil" },
@@ -199,7 +199,7 @@ export const numbersSections: NumbersSection[] = [
         { id: "miner-tips", title: "Miner Tips", description: "FIL paid to miners as message tips per day.", y: "miner_tip_fil" },
         { id: "storage-provider-penalties", title: "Storage Provider Penalties", description: "FIL penalties incurred by storage providers during message execution per day.", y: "message_storage_provider_penalty_fil" },
         { id: "pledge-collateral", title: "Pledge Collateral", description: "End-of-day FIL locked as storage provider pledge collateral.", y: "pledge_collateral_fil" },
-        { id: "locked-to-circulating-ratio", title: "Locked to Circulating Ratio", description: "Percentage of circulating FIL that is locked.", y: "locked_to_circulating_ratio", columns: ["locked_fil", "circulating_fil"] },
+        { id: "locked-to-circulating-ratio", title: "Locked to Circulating Ratio", description: "Protocol-counted locked FIL divided by protocol circulating FIL.", y: "locked_to_circulating_ratio", columns: ["locked_fil", "circulating_fil"] },
         { id: "miner-rewards-usd", title: "Miner Block Rewards Value", description: "Miner block rewards per day, valued at average FIL/USD price.", y: "miner_rewards_usd" },
         { id: "mining-yield", title: "Mining Yield", description: "Annualized miner block rewards relative to locked FIL.", y: "mining_yield" },
         { id: "reward-per-wincount", title: "Reward per Wincount", description: "Average miner block reward per winning proof per day.", y: "reward_per_wincount_fil" },
@@ -214,7 +214,7 @@ export const numbersSections: NumbersSection[] = [
         charts: [
           { id: "fil-token-price", title: "FIL Token Price", description: "Average daily FIL token price in USD.", y: "fil_token_price_avg_usd" },
           { id: "fil-token-volume", title: "FIL Trading Volume", description: "Reported daily FIL trading volume in USD.", y: "fil_token_volume_usd" },
-          { id: "fil-token-market-cap", title: "FIL Market Cap", description: "Daily FIL market capitalization in USD.", y: "fil_token_market_cap_usd" },
+          { id: "fil-token-market-cap", title: "FIL Market Cap", description: "Daily FIL market capitalization reported by CoinCodex, in USD.", y: "fil_token_market_cap_usd" },
         ],
       },
       {
