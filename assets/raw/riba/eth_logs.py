@@ -102,7 +102,6 @@ def loaded_etags() -> dict[dt.date, str]:
     with fdp.db_connection() as conn:
         if not table_exists(conn, "raw", "riba_eth_logs"):
             return {}
-        conn.execute(f"alter table {TABLE} add column if not exists source_etag text")
         rows = conn.execute(
             f"select file_date, any_value(source_etag) from {TABLE} group by 1"
         ).fetchall()
@@ -127,10 +126,6 @@ def replace_partition(conn, client: httpx.Client, url: str, day: dt.date) -> Non
     # Daily mainnet partitions always have logs; empty means a broken source file.
     if conn.execute("select count(*) from riba_partition").fetchone()[0] == 0:
         raise ValueError(f"Empty RIBA partition for {day}")
-    conn.execute(
-        f"create table if not exists {TABLE} as "
-        "select *, ''::text as source_etag from riba_partition limit 0"
-    )
     conn.execute("begin")
     conn.execute(f"delete from {TABLE} where file_date = ?", [day])
     conn.execute(
@@ -148,6 +143,23 @@ def eth_logs() -> None:
 
     with fdp.db_connection() as conn:
         conn.execute("create schema if not exists raw")
+        conn.execute(
+            f"""
+            create table if not exists {TABLE} (
+                address varchar,
+                blockHash varchar,
+                blockNumber varchar,
+                data varchar using compression zstd,
+                logIndex varchar,
+                removed boolean,
+                topics varchar[],
+                transactionHash varchar,
+                transactionIndex varchar,
+                file_date date,
+                source_etag varchar
+            )
+            """
+        )
 
         with httpx.Client(follow_redirects=True, timeout=30) as client:
             day = START_DATE
