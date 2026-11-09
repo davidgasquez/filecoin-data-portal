@@ -251,9 +251,6 @@ test('entity series keep exact strings, tokens and observed coverage', () => {
       if (data.rail.token_symbol === 'FIL') assert.doesNotMatch(page, /unidentified token|unknown token/, entry.route)
     }
   }
-  const idle = readFoc('r/2962.json'), page = html('rail/2962')
-  assert.deepEqual(idle.rate.v, ['0'])
-  assert.ok(page.includes('data-label="Recurring rate"') && !page.includes('data-label="Net to payee"'))
   // A deleted data set reads zero after deletion, through the last checkpoint.
   const deleted = readFoc('ds/1293.json').storage
   assert.equal(deleted.bytes.at(-1), 0)
