@@ -21,11 +21,9 @@ The Filecoin Data Portal is a minimalistic and functional open data platform to 
 ## Code
 
 - Use `uv` instead of `python` (`uv run file.py`, `uv --help`, `uv run fdp`, ...)
-- Run `make check` after writing assets, if it pass, materialize the asset, then query it
-- Orchestration, resources, io, and platform related code lives under `fdp`, assets under `assets`
-- You can learn more about how `fdp` wors in the documentation
+- Run `make check` after writing assets, if it passes, materialize the asset, then query it
+- You can learn more about how `fdp` works in the documentation
 - Assets are executed once a day in GitHub Actions, optimize accordingly
-- Follow commit, issues, and PR style (prepend emoji and concise)
 
 ### Assets
 
@@ -41,7 +39,7 @@ Produce simple and clean models under the right schema:
 
 - `raw`. Source-ish shaped tables. External extracts, source-level aggregations, ...
 - `model`. Reusable semantic layer. Entity modeling, derived daily facts, shared spines/calendars. Depend on raw and other `model` assets
-- `main`. Public contract with the final wide `entities` (mostly `select ... from model....`) and daily tables (mostly `left join of model.daily_*`) without cure business logic
+- `main`. Public contract with the final wide `entities` (mostly `select ... from model....`) and daily tables (mostly `left join of model.daily_*`) without core business logic
 
 ### Discovering Information
 
