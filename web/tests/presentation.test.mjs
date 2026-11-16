@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { atto, epochTime, format, grouped, kind, percent, plural } from '../src/metrics.mjs'
-import { gate, phase, usd } from '../src/solstice.mjs'
+import { gate, nativeAmount, phase, totals, usd } from '../src/solstice.mjs'
 import { numbersSections } from '../src/numbers-sections.ts'
 import { definition } from '../src/sections.ts'
 
@@ -87,6 +87,28 @@ test('Solstice gates distinguish not gated, not observed, passed and failed', ()
   assert.equal(gate({ quarter: 2, gate_checked_at: 1767225600, gate_passed: null }), null)
   assert.equal(gate({ quarter: 2, gate_checked_at: 1767225600, gate_passed: true }), 'Passed')
   assert.equal(gate({ quarter: 2, gate_checked_at: '2026-01-01 00:00:00', gate_passed: false }), 'Failed')
+})
+
+test('Solstice aggregates retain unknowns, observed zero posts and exact sums', () => {
+  assert.deepEqual(totals([]), { calculated: null, posted: null, posts: 0, orchestrators: 0 })
+  assert.deepEqual(totals([{ volume: '9007199254740993000000001', posted_volume: null },
+    { volume: '1', posted_volume: '0' }]), {
+    calculated: '9007199254740993000000002', posted: '0', posts: 1, orchestrators: 2,
+  })
+  assert.equal(totals([{ volume: '0' }, { volume: null }]).calculated, null)
+  assert.equal(totals([{ volume: '0' }]).calculated, '0')
+  assert.equal(totals([{ posted_volume: null }, {}]).posted, null)
+  assert.equal(totals([{ posted_volume: '1' }, { posted_volume: '2' }]).posted, '3')
+})
+
+test('daily native amounts retain base-unit precision and unknown decimals', () => {
+  assert.equal(nativeAmount('2310756789', 6), '2,310.756789')
+  assert.equal(nativeAmount('1000000000000000001', 18), '1.000000000000000001')
+  assert.equal(nativeAmount('1000000', 6), '1')
+  assert.equal(nativeAmount('0', 18), '0')
+  assert.equal(nativeAmount('1000', 0), '1,000')
+  assert.equal(nativeAmount('1', null), null)
+  assert.equal(nativeAmount(null, 18), null)
 })
 
 test('epochs map to UTC minutes from mainnet genesis', () => {

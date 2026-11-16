@@ -535,14 +535,26 @@ function gate(q: Row) {
 
 export function solstice(x: Row): Page {
   const quarters: Row[] = x.quarters ?? [], orchestrators: Row[] = x.orchestrators ?? [], oq: Row[] = x.orchestrator_quarters ?? [], rewards: Row[] = x.rewards ?? []
+  const payments: Row[] = x.attributed_payments ?? []
   return {
-    title: 'Solstice',
-    description: 'Solstice ServiceOrchestrators and quarterly Filecoin Pay Volume.',
-    html: `${head({ title: 'Solstice', lede: 'ServiceOrchestrators post quarterly Filecoin Pay Volume (FPV). Once bound, the aggregate is checked against a gate threshold and shares are submitted. Volumes are provisional until bound.' })}
+    title: 'Solstice · Mainnet',
+    description: 'Mainnet Solstice ServiceOrchestrators and quarterly Filecoin Pay Volume.',
+    html: `${head({ title: 'Solstice', meta: [tag('Mainnet · chain ID 314')], lede: 'ServiceOrchestrators post quarterly Filecoin Pay Volume (FPV). Once bound, the aggregate is checked against a gate threshold and shares are submitted. Volumes are provisional until bound.' })}
+    <nav class="foc-sub" aria-label="Solstice sections"><a href="#quarter-summary">Quarter aggregates</a> · <a href="#volume-by-orchestrator">Volume by orchestrator</a> · <a href="#attributed-payments">Daily attributed payments</a> · <a href="#rewards">Rewards</a></nav>
+    ${section('Quarter aggregates', quarters.map(q => {
+      const rows = oq.filter(r => String(r.quarter) === String(q.quarter)), total = quarter.totals(rows)
+      return `<div id="q${esc(q.quarter)}"><h3 class="foc-h3"><a href="#q${esc(q.quarter)}">Q${esc(q.quarter)}</a> · ${blockDate(q.start_block)} to ${blockDate(q.end_block)} (UTC)</h3>
+        ${figures([
+          ['Calculated FPV', fusd(total.calculated), `${count(total.orchestrators)} published orchestrators · ${rows.length && rows.every(r => r.is_complete) ? 'complete' : 'partial coverage'}`],
+          ['Posted FPV', total.posts ? fusd(total.posted) : total.orchestrators ? '<span class="null">Not posted</span>' : unknown, `${count(total.posts)} of ${count(total.orchestrators)} published orchestrators posted${total.posts < total.orchestrators ? ' · partial postings' : ''}`],
+          ['Bound FPV', q.is_bound ? fusd(q.bound_volume) : '<span class="null">Not bound</span>'],
+        ])}
+        <p class="foc-sub">${esc(quarter.phase(q))} · Observed through block ${count(q.as_of_block)} (${epochTime(q.as_of_block) ?? 'unknown time'} UTC).</p></div>`
+    }).join(''), { id: 'quarter-summary', sub: 'Calculated = sum of published recomputed FPV; unknown if any orchestrator value is missing. Posted = sum of observed VolumePosted amounts, before corrections; absent posts are not zero. Coverage and totals are provisional, not a prospective gate prediction.' })}
     ${section('Quarters', table({
       caption: 'Solstice quarters', rows: quarters, prefix: 'quarters',
       cols: [
-        { label: 'Quarter', html: (r) => `Q${esc(r.quarter)} <span class="mono meta">${count(r.start_block)}–${count(r.end_block)}</span>` },
+        { label: 'Quarter', html: (r) => `<a href="#q${esc(r.quarter)}">Q${esc(r.quarter)}</a> <span class="mono meta">${count(r.start_block)}–${count(r.end_block)}</span>` },
         { label: 'Window (UTC)', html: (r) => `${blockDate(r.start_block)} to ${blockDate(r.end_block)}` },
         { label: 'Phase', html: quarter.phase },
         { label: 'Observed through', html: (r) => r.as_of_block == null ? '<span class="null">Unknown</span>' : `block ${count(r.as_of_block)} <span class="meta">${epochTime(r.as_of_block) ?? 'unknown time'} UTC</span>` },
@@ -570,7 +582,7 @@ export function solstice(x: Row): Page {
         { label: 'Quarter', html: (r) => `Q${esc(r.quarter)}` },
         { label: 'Orchestrator ID', html: (r) => addr(r.orchestrator, { full: true }) + (r.is_removed_in_quarter ? ' <span class="meta">removed</span>' : '') },
         { label: 'Coverage', html: (r) => r.is_complete ? 'Complete' : `<span class="null">Partial${r.volume_as_of_block != null ? ` · block ${count(r.volume_as_of_block)}` : ''}</span>` },
-        { label: 'Settlements', num: true, html: (r) => count(r.stablecoin_settlements) },
+        { label: 'Stablecoin settlements', num: true, html: (r) => count(r.stablecoin_settlements) },
         { label: 'Stablecoin', num: true, html: (r) => fusd(r.stablecoin_volume) },
         { label: 'FIL (USD)', num: true, html: (r) => fusd(r.fil_volume) },
         { label: 'Recomputed FPV', num: true, html: (r) => fusd(r.volume) },
@@ -578,8 +590,22 @@ export function solstice(x: Row): Page {
         { label: 'Reported', num: true, html: (r) => r.reported_volume == null ? '<span class="null">Not reported</span>' : `${fusd(r.reported_volume)}${Number(r.corrections) > 0 ? ` <span class="meta">${plural(Number(r.corrections), 'correction')}</span>` : ''}` },
         { label: 'Bound', num: true, html: (r) => r.is_bound ? fusd(r.bound_volume) : '<span class="null">Not bound</span>' },
         { label: 'Pending FIL', num: true, html: (r) => ffil(r.fil_pending_atto_fil) },
+        { label: 'Activity', html: (r) => `<a href="${url(`address/${r.orchestrator}`)}#payment-activity">Daily charts</a> · <a href="#attributed-payments">Daily attributed payments</a>` },
       ],
     }), { sub: 'Recomputed from settlements; posted volumes come from onchain VolumePosted events. Exact atto amounts, rounded for display.' })}
+    ${section('Daily attributed payments', table({
+      caption: 'Daily attributed payments by orchestrator, payer and token', rows: payments, prefix: 'attributed', search: true,
+      searchLabel: 'Filter by orchestrator, payer or token',
+      cols: [
+        { label: 'Date (UTC)', html: (r) => esc(r.date), sort: (r) => r.date },
+        { label: 'Orchestrator ID', html: (r) => addr(r.orchestrator, { full: true }) },
+        { label: 'Payer', html: (r) => addr(r.payer) },
+        { label: 'Gross native amount', num: true, html: (r) => `<span title="${esc(r.amount)} base units">${quarter.nativeAmount(r.amount, r.decimals) ?? unknown}</span>` },
+        { label: 'Token', html: (r) => `<span title="${esc(r.token)}">${esc(r.symbol ?? r.token)}</span>` },
+        { label: 'USD (at par)', num: true, html: (r) => r.decimals != null && ['USDFC', 'USDC.axl'].includes(r.symbol) ? usd(Number(r.amount) / 10 ** r.decimals) : unknown },
+        { label: 'Payment details', html: (r) => `<a href="${url(`address/${r.payer}`)}#latest-payments">Payer payments &amp; rails</a>` },
+      ],
+    }) + `<details><summary>Source and limitations</summary><p class="foc-sub">Source: service_orchestrators.payment_history, derived from model.foc_orchestrator_settlements. Amounts attributed when settled, grouped by UTC day, payer and token. Payer links show broader activity, not the same attributed set; rail pages expose operators and payment tables link transactions. Exact attributed epoch, rail, operator and transaction are not available in this daily source. No per-payment FIL auction allocation is published.</p></details>`, { id: 'attributed-payments', sub: 'All published dates, not filtered to a quarter. Daily gross amounts, not individual payments or necessarily eligible FPV. Stablecoin USD is at par; FIL USD is unknown here.' })}
     ${section('Rewards', table({
       caption: 'Service rewards by orchestrator and wallet', rows: rewards, prefix: 'rewards',
       cols: [

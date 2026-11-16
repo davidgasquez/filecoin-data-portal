@@ -15,5 +15,25 @@ export function phase(q) {
 export const gate = (q) => Number(q.quarter) === 1 ? 'Not gated'
   : q.gate_checked_at == null || q.gate_passed == null ? null
   : q.gate_passed ? 'Passed' : 'Failed'
+// Sum published orchestrator facts exactly. Missing calculated values invalidate the total;
+// posted sums cover observed posts only, and no posts is not a posted zero.
+export function totals(rows) {
+  const sum = (key, all) => {
+    const known = rows.filter(r => r[key] != null)
+    return !known.length || (all && known.length !== rows.length) ? null
+      : known.reduce((n, r) => n + BigInt(r[key]), 0n).toString()
+  }
+  return { calculated: sum('volume', true), posted: sum('posted_volume', false),
+    posts: rows.filter(r => r.posted_volume != null).length, orchestrators: rows.length }
+}
+
+// Exact native token units from published base units; unknown decimals stay unknown.
+export function nativeAmount(value, decimals) {
+  if (value == null || decimals == null) return null
+  const d = Number(decimals), n = BigInt(value), scale = 10n ** BigInt(d)
+  const fraction = d ? (n % scale).toString().padStart(d, '0').replace(/0+$/, '') : ''
+  return `${(n / scale).toLocaleString('en-US')}${fraction ? `.${fraction}` : ''}`
+}
+
 // Exact atto USD, rounded to cents for display only. null stays unknown, never $0.
 export const usd = (value) => value == null ? null : `$${atto(value)}`

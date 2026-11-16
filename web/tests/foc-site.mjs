@@ -219,6 +219,35 @@ test('Solstice amounts remain exact atto strings and missing states stay null', 
   for (const row of data.rewards.filter(r => r.orchestrator)) assert.ok(rewards.includes(`>${row.orchestrator}</a>`))
 })
 
+test('Solstice mainnet summary and daily drilldown are shareable and reconcile with published history', () => {
+  const data = readFoc('solstice.json'), page = html('solstice')
+  for (const text of ['Mainnet · chain ID 314', 'Calculated FPV', 'Posted FPV', 'Daily attributed payments',
+    'absent posts are not zero', 'not individual payments or necessarily eligible FPV',
+    'Payer links show broader activity, not the same attributed set', 'FIL USD is unknown here']) assert.ok(page.includes(text), text)
+  for (const id of ['quarter-summary', 'attributed-payments', ...data.quarters.map(q => `q${q.quarter}`)]) {
+    assert.ok(page.includes(`id="${id}"`), id)
+    assert.ok(page.includes(`href="#${id}"`), id)
+  }
+  // Address shards deliberately omit raw payment_history; compare the exact per-token chart inputs instead.
+  const byToken = new Map()
+  for (const entry of routes.filter(r => r.kind === 'address')) {
+    const address = readFoc(entry.file)
+    for (const token of address.orchestrator_activity?.tokens ?? []) {
+      byToken.set(`${address.address}:${token.token}`, token.daily.reduce((n, d) => n + BigInt(d.amount), 0n))
+    }
+  }
+  const dailyTotals = new Map()
+  for (const row of data.attributed_payments) {
+    assert.match(row.amount, /^\d+$/)
+    const key = `${row.orchestrator}:${row.token}`
+    dailyTotals.set(key, (dailyTotals.get(key) ?? 0n) + BigInt(row.amount))
+    assert.ok(page.includes(`${row.amount} base units`))
+    assert.ok(page.includes(`/address/${row.payer}#latest-payments`))
+    assert.ok(row.date <= new Date(Date.now() - 86400000).toISOString().slice(0, 10))
+  }
+  assert.deepEqual(dailyTotals, byToken)
+})
+
 test('entity daily states reconcile with network totals at the last FEVM checkpoint', () => {
   const end = readFoc('coverage.json').find(row => row.source === 'fevm').end
   const { series } = readFoc('overview.json'), i = series.date.indexOf(end)

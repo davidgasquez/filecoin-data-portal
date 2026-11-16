@@ -542,6 +542,10 @@ def build(source: str, out: Path) -> None:
             bound_volume_atto_usd::varchar as bound_volume, fil_pending_atto_fil::varchar as fil_pending_atto_fil,
             volume_as_of_block, as_of_block, is_removed_in_quarter,
             epoch(posted_at)::bigint as posted_at from orchestrator_quarters order by quarter desc"""),
+            "attributed_payments": w.rows("""select s.orchestrator, strftime(s.date, '%Y-%m-%d') as date,
+            s.payer, s.token, s.amount::varchar as amount, t.symbol, t.decimals
+            from orchestrator_settlements s left join tokens t using (token)
+            order by s.date desc, s.orchestrator, s.payer, s.token"""),
             "rewards": w.rows("""select orchestrator, wallet, sum(earned_atto_fil)::varchar as earned,
             sum(claimed_atto_fil)::varchar as claimed from daily_orchestrator_rewards
             group by all order by orchestrator nulls last, wallet"""),
