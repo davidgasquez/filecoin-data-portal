@@ -1,7 +1,5 @@
 import importlib.util
-from pathlib import Path
 from time import perf_counter
-from types import ModuleType
 from typing import assert_never
 
 import polars as pl
@@ -103,65 +101,61 @@ def can_keep_existing(asset: Asset) -> bool:
 
 
 def materialize_asset(asset: Asset) -> None:
+    source: str | pa.Table | None
     match asset.runtime:
         case "sql":
-            write_asset(asset, asset.path.read_text(encoding="utf-8").strip())
+            source = asset.path.read_text(encoding="utf-8").strip()
         case "lily":
-            query = asset.path.read_text(encoding="utf-8").strip()
-            write_asset(asset, "select * from asset_result", lily.query_arrow(query))
+            source = lily.query_arrow(asset.path.read_text(encoding="utf-8").strip())
         case "dataframe":
-            data = run_dataframe_asset(asset).to_arrow()
-            write_asset(asset, "select * from asset_result", data)
+            result = call_python_asset(asset)
+            if not isinstance(result, pl.DataFrame):
+                raise TypeError(
+                    f"Python asset {asset.path} declares asset.materialization = "
+                    "dataframe and must return polars.DataFrame"
+                )
+            source = result.to_arrow()
         case "custom":
-            run_custom_asset(asset)
+            if call_python_asset(asset) is not None:
+                raise TypeError(
+                    f"Python asset {asset.path} declares asset.materialization = "
+                    "custom and must return None"
+                )
+            source = None
         case _:
             assert_never(asset.runtime)
 
-
-def write_asset(
-    asset: Asset, query: str | None = None, data: pa.Table | None = None
-) -> None:
     with db_connection() as conn:
-        if query is not None:
-            if data is not None:
-                conn.register("asset_result", data)
+        if isinstance(source, pa.Table):
+            conn.register("asset_result", source)
+            source = "select * from asset_result"
+        if source is not None:
             conn.execute(
                 f"create schema if not exists {quote_identifier(asset.schema)}"
             )
             conn.execute(
                 f"create or replace table {quote_table_key(asset.schema, asset.name)} "
-                f"as {query}"
+                f"as {source}"
             )
         validate_materialized_asset(conn, asset)
         apply_asset_comments(conn, asset)
 
 
 def call_python_asset(asset: Asset) -> object:
-    func = getattr(load_module(asset.path), asset.path.stem, None)
+    module_name = (
+        f"fdp_asset_{asset.path.as_posix().replace('/', '_').replace('.', '_')}"
+    )
+    spec = importlib.util.spec_from_file_location(module_name, asset.path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Unable to load asset module: {asset.path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    func = getattr(module, asset.path.stem, None)
     if not callable(func):
         raise ValueError(
             f"Python asset {asset.path} must define callable {asset.path.stem}"
         )
     return func()
-
-
-def run_custom_asset(asset: Asset) -> None:
-    if call_python_asset(asset) is not None:
-        raise TypeError(
-            f"Python asset {asset.path} declares asset.materialization = custom "
-            "and must return None"
-        )
-    write_asset(asset)
-
-
-def run_dataframe_asset(asset: Asset) -> pl.DataFrame:
-    result = call_python_asset(asset)
-    if not isinstance(result, pl.DataFrame):
-        raise TypeError(
-            f"Python asset {asset.path} declares asset.materialization = "
-            "dataframe and must return polars.DataFrame"
-        )
-    return result
 
 
 def apply_asset_comments(conn, asset: Asset) -> None:
@@ -177,15 +171,3 @@ def apply_asset_comments(conn, asset: Asset) -> None:
             f"{quoted_asset_key}.{quote_identifier(column.name)} "
             f"is {quote_literal(column.description)}"
         )
-
-
-def load_module(module_path: Path) -> ModuleType:
-    module_name = (
-        f"fdp_asset_{module_path.as_posix().replace('/', '_').replace('.', '_')}"
-    )
-    spec = importlib.util.spec_from_file_location(module_name, module_path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"Unable to load asset module: {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
