@@ -131,13 +131,9 @@ def check_assets() -> None:
     load_assets(reporter=print_check_status)
 
 
-def discover_assets() -> dict[str, Asset]:
-    return load_assets().assets
-
-
 def main_assets() -> list[Asset]:
     return sorted(
-        (asset for asset in discover_assets().values() if asset.schema == "main"),
+        (asset for asset in load_assets().assets.values() if asset.schema == "main"),
         key=lambda asset: asset.key,
     )
 

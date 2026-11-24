@@ -35,14 +35,6 @@ def table_exists(
     return bool(row)
 
 
-def materialized_tables(conn: duckdb.DuckDBPyConnection) -> list[tuple[str, str]]:
-    return conn.execute(
-        "select table_schema, table_name from information_schema.tables "
-        "where table_schema not in ('information_schema', 'pg_catalog') "
-        "order by 1, 2"
-    ).fetchall()
-
-
 def quote_identifier(value: str) -> str:
     escaped = value.replace('"', '""')
     return f'"{escaped}"'

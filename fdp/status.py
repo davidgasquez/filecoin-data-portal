@@ -1,5 +1,5 @@
-from fdp.api import db_connection, default_db_path, materialized_tables, quote_table_key
-from fdp.assets import Asset, discover_assets, load_assets
+from fdp.api import db_connection, default_db_path, quote_table_key
+from fdp.assets import Asset, load_assets
 
 
 def show_status() -> None:
@@ -37,7 +37,7 @@ def prune_tables() -> None:
         print("Nothing to prune.")
         return
 
-    _, orphans = tables_and_orphans(discover_assets())
+    _, orphans = tables_and_orphans(load_assets().assets)
     if not orphans:
         print("Nothing to prune.")
         return
@@ -52,5 +52,9 @@ def tables_and_orphans(
     assets: dict[str, Asset],
 ) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
     with db_connection(read_only=True) as conn:
-        tables = materialized_tables(conn)
+        tables = conn.execute(
+            "select table_schema, table_name from information_schema.tables "
+            "where table_schema not in ('information_schema', 'pg_catalog') "
+            "order by 1, 2"
+        ).fetchall()
     return tables, [(s, n) for s, n in tables if f"{s}.{n}" not in assets]
