@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from pathlib import Path
+
+import duckdb
 
 from fdp.api import db_connection
-from fdp.assets import load_assets
-from fdp.inspect import AssetView, inspect_assets
+from fdp.assets import Asset, LoadedAssets, load_assets
+from fdp.inspect import ensure_tables_exist, validate_materialized_asset
 from fdp.tabular import render_text_table
 
 
@@ -19,19 +20,23 @@ def test_assets(sample_rows: int = 10) -> None:
         raise ValueError("sample_rows must be at least 1")
 
     loaded = load_assets()
-    asset_views = inspect_assets(loaded, require_materialized=True)
-    tests = data_tests(asset_views, loaded.project_root)
-    if not tests:
-        print("No data tests found.", flush=True)
-        return
+    assets = [loaded.assets[key] for key in loaded.ordered_keys]
+    with db_connection(read_only=True) as conn:
+        ensure_tables_exist(conn, assets)
+        for asset in assets:
+            validate_materialized_asset(conn, asset)
+        tests = data_tests(loaded, assets)
+        if not tests:
+            print("No data tests found.", flush=True)
+            return
 
-    run_data_tests(tests, sample_rows)
+        run_data_tests(conn, tests, sample_rows)
 
 
-def data_tests(asset_views: list[AssetView], project_root: Path) -> list[DataTest]:
+def data_tests(loaded: LoadedAssets, assets: list[Asset]) -> list[DataTest]:
+    project_root = loaded.project_root
     tests: list[DataTest] = []
-    for asset_view in asset_views:
-        asset = asset_view.asset
+    for asset in assets:
         source = f"metadata:{asset.path.relative_to(project_root).as_posix()}"
         if asset.tests.not_null:
             conditions = " or ".join(
@@ -68,14 +73,14 @@ def data_tests(asset_views: list[AssetView], project_root: Path) -> list[DataTes
                 )
             )
 
-    for asset_view in asset_views:
-        for custom_test in asset_view.custom_tests:
+    for asset in assets:
+        for custom_test in loaded.custom_tests_by_asset[asset.key]:
             query = custom_test.path.read_text(encoding="utf-8").strip()
             if not query:
                 raise ValueError(f"Data test file is empty: {custom_test.path}")
             tests.append(
                 DataTest(
-                    name=f"{asset_view.asset.key}__{custom_test.name}",
+                    name=f"{asset.key}__{custom_test.name}",
                     query=query.removesuffix(";").rstrip(),
                     source=custom_test.path.relative_to(project_root).as_posix(),
                 )
@@ -83,37 +88,38 @@ def data_tests(asset_views: list[AssetView], project_root: Path) -> list[DataTes
     return tests
 
 
-def run_data_tests(tests: list[DataTest], sample_rows: int) -> None:
+def run_data_tests(
+    conn: duckdb.DuckDBPyConnection, tests: list[DataTest], sample_rows: int
+) -> None:
     total = len(tests)
     count_width = len(str(total))
-    name_width = max((len(test.name) for test in tests), default=0)
-    failed_tests: list[str] = []
+    name_width = max(len(test.name) for test in tests)
+    failed = 0
 
-    with db_connection(read_only=True) as conn:
-        for index, test in enumerate(tests, start=1):
-            failing_rows = conn.execute(
-                f"select count(*) from ({test.query}) as counted_rows"
-            ).fetchall()[0][0]
-            status = "FAIL" if failing_rows else "OK"
-            print(
-                f"[{index:>{count_width}}/{total:>{count_width}}] "
-                f"{test.name:<{name_width}} {status}",
-                flush=True,
-            )
-            if not failing_rows:
-                continue
+    for index, test in enumerate(tests, start=1):
+        failing_rows = conn.execute(
+            f"select count(*) from ({test.query}) as counted_rows"
+        ).fetchall()[0][0]
+        status = "FAIL" if failing_rows else "OK"
+        print(
+            f"[{index:>{count_width}}/{total:>{count_width}}] "
+            f"{test.name:<{name_width}} {status}",
+            flush=True,
+        )
+        if not failing_rows:
+            continue
 
-            failed_tests.append(test.name)
-            print(f"  source: {test.source}", flush=True)
-            print(f"  failing rows: {failing_rows}", flush=True)
-            cursor = conn.execute(
-                f"select * from ({test.query}) as failing_rows limit {sample_rows}"
-            )
-            rows = cursor.fetchall()
-            columns = [description[0] for description in cursor.description]
-            print("  sample:", flush=True)
-            for line in render_text_table(columns, rows):
-                print(f"  {line}", flush=True)
+        failed += 1
+        print(f"  source: {test.source}", flush=True)
+        print(f"  failing rows: {failing_rows}", flush=True)
+        cursor = conn.execute(
+            f"select * from ({test.query}) as failing_rows limit {sample_rows}"
+        )
+        rows = cursor.fetchall()
+        columns = [description[0] for description in cursor.description]
+        print("  sample:", flush=True)
+        for line in render_text_table(columns, rows):
+            print(f"  {line}", flush=True)
 
-    if failed_tests:
-        raise ValueError(f"{len(failed_tests)} data tests failed")
+    if failed:
+        raise ValueError(f"{failed} data tests failed")
