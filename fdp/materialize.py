@@ -1,62 +1,58 @@
 import importlib.util
-from collections.abc import Iterable
-from pathlib import Path
 from time import perf_counter
-from types import ModuleType
+from typing import assert_never
 
 import polars as pl
+import pyarrow as pa
 
 from fdp.api import (
     db_connection,
     default_db_path,
     quote_identifier,
+    quote_literal,
     quote_table_key,
-    replace_table_arrow,
-    replace_table_frame,
     table_exists,
 )
-from fdp.assets import Asset, LoadedAssets, load_assets, python_asset_function_name
+from fdp.assets import Asset, load_assets
 from fdp.inspect import validate_materialized_asset
-from fdp.resources.bigquery import lily as lily_bigquery
+from fdp.resources import lily
 from fdp.selectors import expand_asset_selectors
 
 
-def materialize(
-    selectors: Iterable[str] | None = None,
-    *,
-    include_dependencies: bool = False,
-) -> None:
-    resolved_selectors = expand_asset_selectors(
-        None if selectors is None else list(selectors)
-    )
-    loaded = load_assets(
-        resolved_selectors,
-        include_dependencies=include_dependencies,
-    )
+def materialize(selectors: list[str], *, include_dependencies: bool = False) -> None:
+    loaded = load_assets()
+    if selectors:
+        selected = set(expand_asset_selectors(loaded, selectors))
+    else:
+        selected = set(loaded.assets)
+    if include_dependencies:
+        stack = list(selected)
+        while stack:
+            for dependency in loaded.assets[stack.pop()].depends:
+                if dependency not in selected:
+                    selected.add(dependency)
+                    stack.append(dependency)
+    assets = [loaded.assets[key] for key in loaded.ordered_keys if key in selected]
     if not include_dependencies:
-        validate_materialized_dependencies(loaded)
-    assets = [loaded.assets[key] for key in loaded.ordered_keys]
+        validate_materialized_dependencies(assets, loaded.assets)
     materialize_assets(assets)
 
 
-def validate_materialized_dependencies(loaded: LoadedAssets) -> None:
-    selected_keys = set(loaded.ordered_keys)
-    missing_dependencies = sorted({
-        dependency
-        for asset in (loaded.assets[key] for key in loaded.ordered_keys)
-        for dependency in asset.depends
-        if dependency not in selected_keys
-    })
-    if not missing_dependencies:
+def validate_materialized_dependencies(
+    assets: list[Asset], all_assets: dict[str, Asset]
+) -> None:
+    dependencies = sorted(
+        {d for a in assets for d in a.depends} - {a.key for a in assets}
+    )
+    if not dependencies:
         return
 
-    missing_tables: list[str] = []
     with db_connection() as conn:
-        for dependency_key in missing_dependencies:
-            dependency_asset = loaded.assets[dependency_key]
-            if table_exists(conn, dependency_asset.schema, dependency_asset.name):
-                continue
-            missing_tables.append(dependency_key)
+        missing_tables = [
+            key
+            for key in dependencies
+            if not table_exists(conn, all_assets[key].schema, all_assets[key].name)
+        ]
 
     if missing_tables:
         raise ValueError(
@@ -73,64 +69,21 @@ def materialize_assets(assets: list[Asset]) -> None:
     kept_existing: list[str] = []
 
     for index, asset in enumerate(assets, start=1):
-        print(
-            format_materialize_status(
-                index,
-                total,
-                count_width,
-                asset_width,
-                asset,
-                "RUN",
-            ),
-            flush=True,
-        )
+        label = f"[{index:>{count_width}}/{total}] {asset.key:<{asset_width}}"
+        print(f"{label} RUN", flush=True)
         started_at = perf_counter()
         try:
             materialize_asset(asset)
         except Exception as exc:
-            elapsed_seconds = perf_counter() - started_at
-            if can_keep_existing(asset):
-                kept_existing.append(asset.key)
-                print(
-                    format_materialize_status(
-                        index,
-                        total,
-                        count_width,
-                        asset_width,
-                        asset,
-                        "KEEP_EXISTING",
-                        elapsed_seconds,
-                    ),
-                    flush=True,
-                )
-                print(f"  {type(exc).__name__}: {exc}", flush=True)
-                continue
-
-            print(
-                format_materialize_status(
-                    index,
-                    total,
-                    count_width,
-                    asset_width,
-                    asset,
-                    "FAIL",
-                    elapsed_seconds,
-                ),
-                flush=True,
-            )
-            raise
-        print(
-            format_materialize_status(
-                index,
-                total,
-                count_width,
-                asset_width,
-                asset,
-                "OK",
-                perf_counter() - started_at,
-            ),
-            flush=True,
-        )
+            elapsed = perf_counter() - started_at
+            if not can_keep_existing(asset):
+                print(f"{label} FAIL {elapsed:.1f}s", flush=True)
+                raise
+            kept_existing.append(asset.key)
+            print(f"{label} KEEP_EXISTING {elapsed:.1f}s", flush=True)
+            print(f"  {type(exc).__name__}: {exc}", flush=True)
+            continue
+        print(f"{label} OK {perf_counter() - started_at:.1f}s", flush=True)
 
     if kept_existing:
         print("Kept existing tables after refresh failures:", flush=True)
@@ -147,122 +100,74 @@ def can_keep_existing(asset: Asset) -> bool:
         return table_exists(conn, asset.schema, asset.name)
 
 
-def format_materialize_status(
-    index: int,
-    total: int,
-    count_width: int,
-    asset_width: int,
-    asset: Asset,
-    status: str,
-    elapsed_seconds: float | None = None,
-) -> str:
-    prefix = f"[{index:>{count_width}}/{total:>{count_width}}]"
-    message = f"{prefix} {asset.key:<{asset_width}} {status}"
-    if elapsed_seconds is None:
-        return message
-    return f"{message} {elapsed_seconds:.1f}s"
-
-
 def materialize_asset(asset: Asset) -> None:
-    if asset.kind == "python":
-        materialize_python(asset)
-        return
-    materialize_sql(asset)
+    source: str | pa.Table | None
+    match asset.runtime:
+        case "sql":
+            source = asset.path.read_text(encoding="utf-8").strip()
+        case "lily":
+            source = lily.query_arrow(asset.path.read_text(encoding="utf-8").strip())
+        case "dataframe":
+            result = call_python_asset(asset)
+            if not isinstance(result, pl.DataFrame):
+                raise TypeError(
+                    f"Python asset {asset.path} declares asset.materialization = "
+                    "dataframe and must return polars.DataFrame"
+                )
+            source = result.to_arrow()
+        case "custom":
+            if call_python_asset(asset) is not None:
+                raise TypeError(
+                    f"Python asset {asset.path} declares asset.materialization = "
+                    "custom and must return None"
+                )
+            source = None
+        case _:
+            assert_never(asset.runtime)
 
-
-def materialize_sql(asset: Asset) -> None:
-    query = asset.path.read_text(encoding="utf-8").strip()
-    if not query:
-        raise ValueError(f"SQL asset is empty: {asset.path}")
-
-    if asset.resource is None:
-        materialize_local_sql(asset, query)
-        return
-    if asset.resource == "bigquery.lily":
-        materialize_remote_sql(asset, query)
-        return
-    raise ValueError(f"Unsupported SQL resource: {asset.resource}")
-
-
-def materialize_local_sql(asset: Asset, query: str) -> None:
-    quoted_asset_key = quote_table_key(asset.schema, asset.name)
     with db_connection() as conn:
-        conn.execute(f"create schema if not exists {quote_identifier(asset.schema)}")
-        conn.execute(f"create or replace table {quoted_asset_key} as {query}")
-        validate_materialized_asset(conn, asset)
-        apply_asset_comments(conn, asset)
-
-
-def materialize_remote_sql(asset: Asset, query: str) -> None:
-    replace_table_arrow(asset.key, lily_bigquery.query_arrow(query))
-    with db_connection() as conn:
-        validate_materialized_asset(conn, asset)
-        apply_asset_comments(conn, asset)
-
-
-def materialize_python(asset: Asset) -> None:
-    module = load_module(asset.path)
-    function_name = python_asset_function_name(asset.path)
-    func = getattr(module, function_name, None)
-    if func is None or not callable(func):
-        raise ValueError(
-            f"Python asset {asset.path} must define callable {function_name}"
-        )
-
-    result = func()
-    if asset.python_materialization == "custom":
-        if result is not None:
-            raise TypeError(
-                f"Python asset {asset.path} declares asset.materialization = custom "
-                "and must return None"
+        if isinstance(source, pa.Table):
+            conn.register("asset_result", source)
+            source = "select * from asset_result"
+        if source is not None:
+            conn.execute(
+                f"create schema if not exists {quote_identifier(asset.schema)}"
             )
-        with db_connection() as conn:
-            validate_materialized_asset(conn, asset)
-            apply_asset_comments(conn, asset)
-        return
-
-    if asset.python_materialization != "dataframe":
-        raise TypeError(f"Invalid Python materialization mode for {asset.path}")
-    if not isinstance(result, pl.DataFrame):
-        raise TypeError(
-            f"Python asset {asset.path} declares asset.materialization = "
-            "dataframe and must return polars.DataFrame"
-        )
-    materialize_polars_frame(asset, result)
-
-
-def materialize_polars_frame(asset: Asset, frame: pl.DataFrame) -> None:
-    replace_table_frame(asset.key, frame)
-    with db_connection() as conn:
+            conn.execute(
+                f"create or replace table {quote_table_key(asset.schema, asset.name)} "
+                f"as {source}"
+            )
         validate_materialized_asset(conn, asset)
         apply_asset_comments(conn, asset)
+
+
+def call_python_asset(asset: Asset) -> object:
+    module_name = (
+        f"fdp_asset_{asset.path.as_posix().replace('/', '_').replace('.', '_')}"
+    )
+    spec = importlib.util.spec_from_file_location(module_name, asset.path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Unable to load asset module: {asset.path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    func = getattr(module, asset.path.stem, None)
+    if not callable(func):
+        raise ValueError(
+            f"Python asset {asset.path} must define callable {asset.path.stem}"
+        )
+    return func()
 
 
 def apply_asset_comments(conn, asset: Asset) -> None:
     quoted_asset_key = quote_table_key(asset.schema, asset.name)
     if asset.description:
-        escaped = asset.description.replace("'", "''")
-        conn.execute(f"comment on table {quoted_asset_key} is '{escaped}'")
+        conn.execute(
+            f"comment on table {quoted_asset_key} is {quote_literal(asset.description)}"
+        )
 
     for column in asset.columns:
-        escaped = column.description.replace("'", "''")
         conn.execute(
             "comment on column "
             f"{quoted_asset_key}.{quote_identifier(column.name)} "
-            f"is '{escaped}'"
+            f"is {quote_literal(column.description)}"
         )
-
-
-def load_module(module_path: Path) -> ModuleType:
-    module_name = module_name_from_path(module_path)
-    spec = importlib.util.spec_from_file_location(module_name, module_path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"Unable to load asset module: {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def module_name_from_path(module_path: Path) -> str:
-    sanitized = module_path.as_posix().replace("/", "_").replace(".", "_")
-    return f"fdp_asset_{sanitized}"

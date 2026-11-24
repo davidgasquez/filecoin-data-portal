@@ -1,30 +1,13 @@
-from fdp.api import (
-    db_connection,
-    default_db_path,
-    find_project_root,
-    materialized_tables,
-    quote_table_key,
-)
-from fdp.assets import discover_assets
+from fdp.api import db_connection, default_db_path, quote_table_key
+from fdp.assets import Asset, load_assets
 
 
 def show_status() -> None:
-    project_root = find_project_root()
-    assets = discover_assets()
-    asset_keys = set(assets)
-
-    with db_connection(read_only=True) as conn:
-        tables = materialized_tables(conn)
-
-    missing_keys = sorted(
-        asset_keys - {table_key(schema, name) for schema, name in tables}
-    )
-    orphaned_tables = sorted(
-        (schema, name)
-        for schema, name in tables
-        if table_key(schema, name) not in asset_keys
-    )
-    if not missing_keys and not orphaned_tables:
+    loaded = load_assets()
+    assets = loaded.assets
+    tables, orphans = tables_and_orphans(assets)
+    missing_keys = sorted(assets.keys() - {f"{s}.{n}" for s, n in tables})
+    if not missing_keys and not orphans:
         return
 
     print(f"assets: {len(assets)}")
@@ -35,14 +18,14 @@ def show_status() -> None:
         print("missing in db:")
         for key in missing_keys:
             asset = assets[key]
-            rel_path = asset.path.relative_to(project_root).as_posix()
+            rel_path = asset.path.relative_to(loaded.project_root).as_posix()
             print(f"  - {asset.key} ({rel_path})")
 
-    if orphaned_tables:
+    if orphans:
         print()
         print("orphaned in db:")
-        for schema, name in orphaned_tables:
-            print(f"  - {table_key(schema, name)}")
+        for schema, name in orphans:
+            print(f"  - {schema}.{name}")
 
     raise SystemExit(1)
 
@@ -54,30 +37,24 @@ def prune_tables() -> None:
         print("Nothing to prune.")
         return
 
-    assets = discover_assets()
-    asset_keys = set(assets)
-
-    with db_connection(read_only=True) as conn:
-        tables = materialized_tables(conn)
-
-    orphaned_tables = sorted(
-        (schema, name)
-        for schema, name in tables
-        if table_key(schema, name) not in asset_keys
-    )
-    if not orphaned_tables:
+    _, orphans = tables_and_orphans(load_assets().assets)
+    if not orphans:
         print("Nothing to prune.")
         return
 
     with db_connection() as conn:
-        for schema, name in orphaned_tables:
-            conn.execute(f"drop table if exists {quoted_table_key(schema, name)}")
-            print(f"dropped: {table_key(schema, name)}")
+        for schema, name in orphans:
+            conn.execute(f"drop table if exists {quote_table_key(schema, name)}")
+            print(f"dropped: {schema}.{name}")
 
 
-def table_key(schema: str, name: str) -> str:
-    return f"{schema}.{name}"
-
-
-def quoted_table_key(schema: str, name: str) -> str:
-    return quote_table_key(schema, name)
+def tables_and_orphans(
+    assets: dict[str, Asset],
+) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
+    with db_connection(read_only=True) as conn:
+        tables = conn.execute(
+            "select table_schema, table_name from information_schema.tables "
+            "where table_schema not in ('information_schema', 'pg_catalog') "
+            "order by 1, 2"
+        ).fetchall()
+    return tables, [(s, n) for s, n in tables if f"{s}.{n}" not in assets]

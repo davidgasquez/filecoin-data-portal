@@ -1,5 +1,3 @@
-"""ProbeLab Filecoin Onchain Cloud daily Parquet backups of Dealbot checks."""
-
 import base64
 import csv
 import datetime as dt
@@ -8,6 +6,7 @@ import io
 import tempfile
 import time
 
+import duckdb
 import httpx
 
 import fdp
@@ -40,10 +39,9 @@ def car_section_length(car: bytes, offset: int) -> tuple[int, int]:
     raise ValueError("Invalid CAR section length")
 
 
-def car_root_block(car: bytes, cid: str) -> bytes | None:
+def car_root_block(car: bytes, cid: str) -> bytes:
     root = raw_cid_bytes(cid)
     try:
-        # A CARv1 has a length-prefixed header followed by length-prefixed blocks.
         header_length, offset = car_section_length(car, 0)
         offset += header_length
         while offset < len(car):
@@ -54,13 +52,11 @@ def car_root_block(car: bytes, cid: str) -> bytes | None:
             if car.startswith(root, start, offset):
                 return car[start + len(root) : offset]
     except ValueError:
-        return None
-    return None
+        return b""
+    return b""
 
 
-def fetch_verified(
-    client: httpx.Client, cid: str, piece_url: str | None = None
-) -> bytes:
+def fetch_verified(client: httpx.Client, cid: str, piece_url: str | None) -> bytes:
     urls = [gateway + cid for gateway in GATEWAYS]
     if piece_url:
         urls.append(piece_url)
@@ -76,18 +72,19 @@ def fetch_verified(
                 return response.content
             if url == piece_url:
                 block = car_root_block(response.content, cid)
-                if block is not None and matches_cid(cid, block):
+                if matches_cid(cid, block):
                     return block
         time.sleep(10 * (attempt + 1))
     raise RuntimeError(f"Backup {cid} unavailable from {', '.join(urls)}")
 
 
-def replace_backup(conn, table: str, day: str, cid: str, path: str) -> None:
+def replace_backup(
+    conn: duckdb.DuckDBPyConnection, table: str, day: str, cid: str, path: str
+) -> None:
     conn.execute(
-        "create or replace temp table backup as "
-        f"select *, ?::date as backup_date, ?::text as backup_cid "
-        f"from read_parquet('{path}')",
-        [day, cid],
+        "create or replace temp table backup as select *, ?::date as backup_date, "
+        "?::text as backup_cid from read_parquet(?)",
+        [day, cid, path],
     )
     conn.execute(f"create table if not exists {table} as from backup limit 0")
     existing = {row[0] for row in conn.execute(f"describe {table}").fetchall()}
@@ -99,11 +96,9 @@ def replace_backup(conn, table: str, day: str, cid: str, path: str) -> None:
     conn.execute(f"delete from {table} where backup_date = ?", [day])
     conn.execute(f"insert into {table} by name from backup")
     conn.execute("commit")
-    conn.execute("drop table backup")
 
 
 def load_backups(dataset: str, table: str) -> None:
-    """Load new or changed daily backups for one check type into a raw table."""
     yesterday = dt.datetime.now(dt.UTC).date() - dt.timedelta(days=1)
     schema, name = table.split(".")
     with httpx.Client(timeout=60, follow_redirects=True) as client:
@@ -137,7 +132,6 @@ def load_backups(dataset: str, table: str) -> None:
                 piece_url = (
                     provider + piece_cid if provider and piece_cid.isalnum() else None
                 )
-                # Empty backups add no rows, so they are fetched again next run.
                 with tempfile.NamedTemporaryFile(suffix=".parquet") as file:
                     file.write(fetch_verified(client, cid, piece_url))
                     file.flush()

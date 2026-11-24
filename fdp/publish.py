@@ -1,28 +1,18 @@
-from fdp.api import db_connection, ensure_tables_exist
+from fdp.api import db_connection
 from fdp.assets import Asset, load_assets, main_assets
+from fdp.inspect import ensure_tables_exist
 from fdp.selectors import expand_asset_selectors
 from fdp.targets import r2
 
 TARGETS = {"r2": r2.publish}
 
 
-def available_targets() -> list[str]:
-    return sorted(TARGETS)
-
-
 def publish(target: str, selectors: list[str] | None = None) -> None:
-    try:
-        target_publish = TARGETS[target]
-    except KeyError as exc:
-        available = ", ".join(available_targets())
-        raise ValueError(
-            f"Unknown publish target '{target}'. Available targets: {available}"
-        ) from exc
     assets = publishable_assets(selectors)
 
     with db_connection(read_only=True) as conn:
         ensure_tables_exist(conn, assets)
-        target_publish(assets, conn)
+        TARGETS[target](assets, conn)
 
 
 def publishable_assets(selectors: list[str] | None) -> list[Asset]:
@@ -32,18 +22,12 @@ def publishable_assets(selectors: list[str] | None) -> list[Asset]:
             raise ValueError("No main assets found.")
         return assets
 
-    resolved_selectors = expand_asset_selectors(selectors)
-    loaded = load_assets(resolved_selectors, include_dependencies=False)
-    selected_assets = [loaded.assets[key] for key in loaded.ordered_keys]
-    unsupported_assets = sorted(
-        asset.key for asset in selected_assets if asset.schema != "main"
-    )
+    loaded = load_assets()
+    resolved = expand_asset_selectors(loaded, selectors)
+    assets = [loaded.assets[key] for key in sorted(resolved)]
+    unsupported_assets = [asset.key for asset in assets if asset.schema != "main"]
     if unsupported_assets:
         raise ValueError(
             f"Publish only supports main assets: {', '.join(unsupported_assets)}"
         )
-
-    assets = sorted(selected_assets, key=lambda asset: asset.key)
-    if not assets:
-        raise ValueError("No main assets found.")
     return assets

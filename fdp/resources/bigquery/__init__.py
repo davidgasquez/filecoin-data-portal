@@ -1,1 +1,0 @@
-"""BigQuery-backed resources."""

@@ -3,21 +3,15 @@ from pathlib import Path
 
 import duckdb
 
-from fdp.api import default_db_path, find_project_root, quote_identifier
+from fdp.api import default_db_path, find_project_root, quote_identifier, quote_literal
 from fdp.assets import main_assets
 
 
-def default_export_path() -> Path:
-    return find_project_root() / "build" / "fdp.duckdb"
-
-
-def sql_string(value: str) -> str:
-    return "'" + value.replace("'", "''") + "'"
-
-
-def export(out: Path | str | None = None, db_path: Path | str | None = None) -> Path:
-    source = (default_db_path() if db_path is None else Path(db_path)).resolve()
-    target = (default_export_path() if out is None else Path(out)).resolve()
+def export(out: Path | str | None = None) -> Path:
+    source = default_db_path().resolve()
+    target = (
+        Path(out) if out is not None else find_project_root() / "build" / "fdp.duckdb"
+    ).resolve()
     if not source.is_file():
         raise FileNotFoundError(f"Database not found: {source}")
     if target == source or (target.exists() and target.samefile(source)):
@@ -31,7 +25,7 @@ def export(out: Path | str | None = None, db_path: Path | str | None = None) -> 
     temp.unlink(missing_ok=True)
     try:
         with duckdb.connect(temp) as conn:
-            conn.execute(f"attach {sql_string(str(source))} as src (read_only)")
+            conn.execute(f"attach {quote_literal(str(source))} as src (read_only)")
             columns = conn.execute(
                 "select t.table_name, t.comment, c.column_name, c.comment "
                 "from duckdb_tables() t left join duckdb_columns() c "
@@ -41,21 +35,21 @@ def export(out: Path | str | None = None, db_path: Path | str | None = None) -> 
             missing = set(names) - {row[0] for row in columns}
             if missing:
                 raise ValueError(f"Main assets not materialized: {sorted(missing)}")
+            columns = [row for row in columns if row[0] in names]
             for name in names:
                 table = f"main.{quote_identifier(name)}"
                 conn.execute(f"create table {table} as select * from src.{table}")
             for name, table_comment in {(row[0], row[1]) for row in columns}:
-                if name in names and table_comment is not None:
-                    table = f"main.{quote_identifier(name)}"
+                if table_comment is not None:
                     conn.execute(
-                        f"comment on table {table} is {sql_string(table_comment)}"
+                        f"comment on table main.{quote_identifier(name)} "
+                        f"is {quote_literal(table_comment)}"
                     )
             for name, _, column, comment in columns:
-                if name in names and comment is not None:
-                    table = f"main.{quote_identifier(name)}"
+                if comment is not None:
                     conn.execute(
-                        f"comment on column {table}.{quote_identifier(column)} "
-                        f"is {sql_string(comment)}"
+                        f"comment on column main.{quote_identifier(name)}."
+                        f"{quote_identifier(column)} is {quote_literal(comment)}"
                     )
             conn.execute("detach src")
             conn.execute("checkpoint")

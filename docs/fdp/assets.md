@@ -42,9 +42,7 @@
 - Declare `asset.materialization = dataframe` when FDP should materialize the returned `pl.DataFrame`
 - Declare `asset.materialization = custom` when the asset materializes itself and returns `None`
 - Return annotations are optional and do not affect execution
-- Use `fdp.table("schema.table")` to load a dependency
-- Use `fdp.sql("...")` to run SQL against the database
-- Use `fdp.db_connection()` when the asset needs custom or incremental materialization
+- Use `fdp.db_connection()` to load dependencies or run SQL (`conn.sql("select * from schema.table").pl()`)
 - Use a SQL asset with `asset.resource = bigquery.lily` when the query must run in Lily BigQuery and the result should be copied into DuckDB
 - Use `fdp.resources.*` helpers inside a custom Python asset when the upstream source is not a SQL backend
 
