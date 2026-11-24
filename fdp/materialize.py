@@ -1,5 +1,4 @@
 import importlib.util
-from collections.abc import Iterable
 from pathlib import Path
 from time import perf_counter
 from types import ModuleType
@@ -16,48 +15,37 @@ from fdp.api import (
     replace_table_frame,
     table_exists,
 )
-from fdp.assets import Asset, LoadedAssets, load_assets
+from fdp.assets import Asset, load_assets
 from fdp.inspect import validate_materialized_asset
-from fdp.resources.bigquery import lily as lily_bigquery
+from fdp.resources import lily
 from fdp.selectors import expand_asset_selectors
 
 
-def materialize(
-    selectors: Iterable[str] | None = None,
-    *,
-    include_dependencies: bool = False,
-) -> None:
-    resolved_selectors = expand_asset_selectors(
-        None if selectors is None else list(selectors)
-    )
+def materialize(selectors: list[str], *, include_dependencies: bool = False) -> None:
     loaded = load_assets(
-        resolved_selectors,
-        include_dependencies=include_dependencies,
+        expand_asset_selectors(selectors), include_dependencies=include_dependencies
     )
-    if not include_dependencies:
-        validate_materialized_dependencies(loaded)
     assets = [loaded.assets[key] for key in loaded.ordered_keys]
+    if not include_dependencies:
+        validate_materialized_dependencies(assets, loaded.assets)
     materialize_assets(assets)
 
 
-def validate_materialized_dependencies(loaded: LoadedAssets) -> None:
-    selected_keys = set(loaded.ordered_keys)
-    missing_dependencies = sorted({
-        dependency
-        for asset in (loaded.assets[key] for key in loaded.ordered_keys)
-        for dependency in asset.depends
-        if dependency not in selected_keys
-    })
-    if not missing_dependencies:
+def validate_materialized_dependencies(
+    assets: list[Asset], all_assets: dict[str, Asset]
+) -> None:
+    dependencies = sorted(
+        {d for a in assets for d in a.depends} - {a.key for a in assets}
+    )
+    if not dependencies:
         return
 
-    missing_tables: list[str] = []
     with db_connection() as conn:
-        for dependency_key in missing_dependencies:
-            dependency_asset = loaded.assets[dependency_key]
-            if table_exists(conn, dependency_asset.schema, dependency_asset.name):
-                continue
-            missing_tables.append(dependency_key)
+        missing_tables = [
+            key
+            for key in dependencies
+            if not table_exists(conn, all_assets[key].schema, all_assets[key].name)
+        ]
 
     if missing_tables:
         raise ValueError(
@@ -74,64 +62,21 @@ def materialize_assets(assets: list[Asset]) -> None:
     kept_existing: list[str] = []
 
     for index, asset in enumerate(assets, start=1):
-        print(
-            format_materialize_status(
-                index,
-                total,
-                count_width,
-                asset_width,
-                asset,
-                "RUN",
-            ),
-            flush=True,
-        )
+        label = f"[{index:>{count_width}}/{total}] {asset.key:<{asset_width}}"
+        print(f"{label} RUN", flush=True)
         started_at = perf_counter()
         try:
             materialize_asset(asset)
         except Exception as exc:
-            elapsed_seconds = perf_counter() - started_at
-            if can_keep_existing(asset):
-                kept_existing.append(asset.key)
-                print(
-                    format_materialize_status(
-                        index,
-                        total,
-                        count_width,
-                        asset_width,
-                        asset,
-                        "KEEP_EXISTING",
-                        elapsed_seconds,
-                    ),
-                    flush=True,
-                )
-                print(f"  {type(exc).__name__}: {exc}", flush=True)
-                continue
-
-            print(
-                format_materialize_status(
-                    index,
-                    total,
-                    count_width,
-                    asset_width,
-                    asset,
-                    "FAIL",
-                    elapsed_seconds,
-                ),
-                flush=True,
-            )
-            raise
-        print(
-            format_materialize_status(
-                index,
-                total,
-                count_width,
-                asset_width,
-                asset,
-                "OK",
-                perf_counter() - started_at,
-            ),
-            flush=True,
-        )
+            elapsed = perf_counter() - started_at
+            if not can_keep_existing(asset):
+                print(f"{label} FAIL {elapsed:.1f}s", flush=True)
+                raise
+            kept_existing.append(asset.key)
+            print(f"{label} KEEP_EXISTING {elapsed:.1f}s", flush=True)
+            print(f"  {type(exc).__name__}: {exc}", flush=True)
+            continue
+        print(f"{label} OK {perf_counter() - started_at:.1f}s", flush=True)
 
     if kept_existing:
         print("Kept existing tables after refresh failures:", flush=True)
@@ -146,22 +91,6 @@ def can_keep_existing(asset: Asset) -> bool:
         return False
     with db_connection(read_only=True) as conn:
         return table_exists(conn, asset.schema, asset.name)
-
-
-def format_materialize_status(
-    index: int,
-    total: int,
-    count_width: int,
-    asset_width: int,
-    asset: Asset,
-    status: str,
-    elapsed_seconds: float | None = None,
-) -> str:
-    prefix = f"[{index:>{count_width}}/{total:>{count_width}}]"
-    message = f"{prefix} {asset.key:<{asset_width}} {status}"
-    if elapsed_seconds is None:
-        return message
-    return f"{message} {elapsed_seconds:.1f}s"
 
 
 def materialize_asset(asset: Asset) -> None:
@@ -195,7 +124,7 @@ def materialize_local_sql(asset: Asset, query: str) -> None:
 
 
 def materialize_remote_sql(asset: Asset, query: str) -> None:
-    replace_table_arrow(asset.key, lily_bigquery.query_arrow(query))
+    replace_table_arrow(asset.key, lily.query_arrow(query))
     with db_connection() as conn:
         validate_materialized_asset(conn, asset)
         apply_asset_comments(conn, asset)
