@@ -91,12 +91,9 @@ class LoadedAssets:
 
 
 def load_assets(
-    names: Iterable[str] | None = None,
     *,
     reporter: ValidationReporter = lambda label, status: None,
-    include_dependencies: bool = True,
 ) -> LoadedAssets:
-    requested_names = None if names is None else list(names)
     project_root = find_project_root()
     assets_root = project_root / "assets"
     asset_list = run_validation_step(
@@ -120,17 +117,11 @@ def load_assets(
         reporter,
         lambda: collect_custom_sql_tests(assets_root, assets),
     )
-    selected = resolve_selection(
-        requested_names, assets, graph, include_dependencies=include_dependencies
-    )
     ordered_keys = tuple(
         run_validation_step(
             "validate dependency ordering",
             reporter,
-            lambda: topological_order({
-                key: tuple(d for d in graph[key] if d in selected)
-                for key in sorted(selected)
-            }),
+            lambda: topological_order({key: graph[key] for key in sorted(assets)}),
         )
     )
     return LoadedAssets(
@@ -506,28 +497,6 @@ def dependency_graph(assets: dict[str, Asset]) -> dict[str, tuple[str, ...]]:
                 )
         graph[asset.key] = tuple(sorted(asset.depends))
     return graph
-
-
-def resolve_selection(
-    names: Iterable[str] | None,
-    assets: dict[str, Asset],
-    graph: dict[str, tuple[str, ...]],
-    *,
-    include_dependencies: bool,
-) -> set[str]:
-    selected = set(names) if names else set(assets)
-    if not include_dependencies:
-        return selected
-
-    stack = list(selected)
-    while stack:
-        key = stack.pop()
-        for dependency in graph[key]:
-            if dependency in selected:
-                continue
-            selected.add(dependency)
-            stack.append(dependency)
-    return selected
 
 
 def topological_order(graph: dict[str, tuple[str, ...]]) -> list[str]:

@@ -22,9 +22,9 @@ def publishable_assets(selectors: list[str] | None) -> list[Asset]:
             raise ValueError("No main assets found.")
         return assets
 
-    resolved_selectors = expand_asset_selectors(selectors)
-    loaded = load_assets(resolved_selectors, include_dependencies=False)
-    assets = [loaded.assets[key] for key in sorted(loaded.ordered_keys)]
+    loaded = load_assets()
+    resolved = expand_asset_selectors(loaded, selectors)
+    assets = [loaded.assets[key] for key in sorted(resolved)]
     unsupported_assets = [asset.key for asset in assets if asset.schema != "main"]
     if unsupported_assets:
         raise ValueError(

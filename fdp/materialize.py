@@ -22,10 +22,19 @@ from fdp.selectors import expand_asset_selectors
 
 
 def materialize(selectors: list[str], *, include_dependencies: bool = False) -> None:
-    loaded = load_assets(
-        expand_asset_selectors(selectors), include_dependencies=include_dependencies
-    )
-    assets = [loaded.assets[key] for key in loaded.ordered_keys]
+    loaded = load_assets()
+    if selectors:
+        selected = set(expand_asset_selectors(loaded, selectors))
+    else:
+        selected = set(loaded.assets)
+    if include_dependencies:
+        stack = list(selected)
+        while stack:
+            for dependency in loaded.assets[stack.pop()].depends:
+                if dependency not in selected:
+                    selected.add(dependency)
+                    stack.append(dependency)
+    assets = [loaded.assets[key] for key in loaded.ordered_keys if key in selected]
     if not include_dependencies:
         validate_materialized_dependencies(assets, loaded.assets)
     materialize_assets(assets)

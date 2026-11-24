@@ -1,15 +1,12 @@
 from pathlib import Path
 
-from fdp.assets import LoadedAssets, load_assets
+from fdp.assets import LoadedAssets
 
 
-def expand_asset_selectors(
-    selectors: list[str] | None,
-) -> list[str] | None:
+def expand_asset_selectors(loaded: LoadedAssets, selectors: list[str]) -> list[str]:
     if not selectors:
-        return selectors
+        return []
 
-    loaded = load_assets()
     exact_index = asset_exact_selector_index(loaded)
     folder_index = asset_folder_index(loaded)
     selected: dict[str, None] = {}

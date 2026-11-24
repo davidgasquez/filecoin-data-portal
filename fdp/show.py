@@ -10,7 +10,8 @@ def show_asset(selector: str, sample_rows: int = 5) -> None:
     if sample_rows < 1:
         raise ValueError("sample_rows must be at least 1")
 
-    resolved_selectors = expand_asset_selectors([selector]) or []
+    loaded = load_assets()
+    resolved_selectors = expand_asset_selectors(loaded, [selector])
     if len(resolved_selectors) != 1:
         count = len(resolved_selectors)
         raise ValueError(
@@ -18,7 +19,6 @@ def show_asset(selector: str, sample_rows: int = 5) -> None:
         )
 
     asset_key = resolved_selectors[0]
-    loaded = load_assets([asset_key], include_dependencies=False)
     asset_view = inspect_asset(loaded.assets[asset_key], sample_rows)
     print_asset_view(
         asset_view, loaded.custom_tests_by_asset[asset_key], loaded.project_root
