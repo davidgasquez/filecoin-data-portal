@@ -1,7 +1,6 @@
-from pathlib import Path
-
-from fdp.assets import CustomSqlTest, load_assets
-from fdp.inspect import AssetView, inspect_asset
+from fdp.api import db_connection, table_exists
+from fdp.assets import load_assets
+from fdp.inspect import validate_materialized_asset
 from fdp.selectors import expand_asset_selectors
 from fdp.tabular import render_text_table
 
@@ -18,25 +17,17 @@ def show_asset(selector: str, sample_rows: int = 5) -> None:
             f"show expects exactly one asset, got {count} from '{selector}'"
         )
 
-    asset_key = resolved_selectors[0]
-    asset_view = inspect_asset(loaded.assets[asset_key], sample_rows)
-    print_asset_view(
-        asset_view, loaded.custom_tests_by_asset[asset_key], loaded.project_root
-    )
+    asset = loaded.assets[resolved_selectors[0]]
+    project_root = loaded.project_root
+    with db_connection(read_only=True) as conn:
+        exists = table_exists(conn, asset.schema, asset.name)
+        if exists:
+            columns = validate_materialized_asset(conn, asset)
+            rows = conn.execute(
+                f"select * from {asset.key} limit {sample_rows}"
+            ).fetchall()
+            total = conn.execute(f"select count(*) from {asset.key}").fetchall()[0][0]
 
-
-def print_items(label: str, items: list[str]) -> None:
-    print(f"  {label}:")
-    for item in items or ["none"]:
-        print(f"    - {item}")
-
-
-def print_asset_view(
-    asset_view: AssetView,
-    custom_tests: tuple[CustomSqlTest, ...],
-    project_root: Path,
-) -> None:
-    asset = asset_view.asset
     print(f"asset: {asset.key}")
     print()
     print("metadata:")
@@ -53,24 +44,28 @@ def print_asset_view(
             *(f"assert: {assertion}" for assertion in asset.tests.assertions),
             *(
                 f"custom: {t.path.relative_to(project_root).as_posix()}"
-                for t in custom_tests
+                for t in loaded.custom_tests_by_asset[asset.key]
             ),
         ],
     )
     print()
     print("materialized:")
-    print(f"  exists: {'yes' if asset_view.exists else 'no'}")
-    if not asset_view.exists:
+    print(f"  exists: {'yes' if exists else 'no'}")
+    if not exists:
         return
-    print(f"  rows: {asset_view.row_count}")
+    print(f"  rows: {total}")
     print("  columns:")
-    for column in asset_view.columns:
-        print(f"    - {column.name}: {column.data_type}")
+    for name, data_type in columns:
+        print(f"    - {name}: {data_type}")
     print()
     print("sample:")
     for line in render_text_table(
-        asset_view.sample_columns,
-        asset_view.sample_rows,
-        lowercase_bools=True,
+        [name for name, _ in columns], rows, lowercase_bools=True
     ):
         print(f"  {line}")
+
+
+def print_items(label: str, items: list[str]) -> None:
+    print(f"  {label}:")
+    for item in items or ["none"]:
+        print(f"    - {item}")
