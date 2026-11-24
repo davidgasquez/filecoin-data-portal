@@ -4,7 +4,7 @@ from pathlib import Path
 import duckdb
 
 from fdp.api import db_connection
-from fdp.assets import load_assets, read_custom_sql_test_query
+from fdp.assets import load_assets
 from fdp.inspect import AssetView, inspect_assets
 from fdp.tabular import render_text_table
 
@@ -22,7 +22,7 @@ def test_assets(sample_rows: int = 10) -> None:
 
     loaded = load_assets()
     asset_views = inspect_assets(loaded, require_materialized=True)
-    tests = collect_data_tests(asset_views, loaded.project_root)
+    tests = data_tests(asset_views, loaded.project_root)
     if not tests:
         print("No data tests found.", flush=True)
         return
@@ -30,29 +30,19 @@ def test_assets(sample_rows: int = 10) -> None:
     run_data_tests(tests, sample_rows)
 
 
-def collect_data_tests(
-    asset_views: list[AssetView],
-    project_root: Path,
-) -> list[DataTest]:
-    return [
-        *inline_data_tests(asset_views, project_root),
-        *custom_sql_tests(asset_views, project_root),
-    ]
-
-
-def inline_data_tests(
-    asset_views: list[AssetView],
-    project_root: Path,
-) -> list[DataTest]:
+def data_tests(asset_views: list[AssetView], project_root: Path) -> list[DataTest]:
     tests: list[DataTest] = []
     for asset_view in asset_views:
         asset = asset_view.asset
         source = f"metadata:{asset.path.relative_to(project_root).as_posix()}"
         if asset.tests.not_null:
+            conditions = " or ".join(
+                f"{column} is null" for column in asset.tests.not_null
+            )
             tests.append(
                 DataTest(
                     name=f"{asset.key}__not_null",
-                    query=not_null_query(asset_view),
+                    query=f"select * from {asset.key} where {conditions}",
                     source=source,
                 )
             )
@@ -61,7 +51,12 @@ def inline_data_tests(
             tests.append(
                 DataTest(
                     name=f"{asset.key}__unique_{column}",
-                    query=unique_query(asset_view, column),
+                    query=(
+                        f"select {column}, count(*) as n "
+                        f"from {asset.key} "
+                        f"group by {column} "
+                        "having count(*) > 1"
+                    ),
                     source=source,
                 )
             )
@@ -70,49 +65,24 @@ def inline_data_tests(
             tests.append(
                 DataTest(
                     name=f"{asset.key}__assert_{index}",
-                    query=assertion_query(asset_view, assertion),
+                    query=f"select * from {asset.key} where not ({assertion})",
                     source=source,
                 )
             )
-    return tests
 
-
-def custom_sql_tests(
-    asset_views: list[AssetView],
-    project_root: Path,
-) -> list[DataTest]:
-    tests: list[DataTest] = []
     for asset_view in asset_views:
-        asset = asset_view.asset
         for custom_test in asset_view.custom_tests:
+            query = custom_test.path.read_text(encoding="utf-8").strip()
+            if not query:
+                raise ValueError(f"Data test file is empty: {custom_test.path}")
             tests.append(
                 DataTest(
-                    name=f"{asset.key}__{custom_test.name}",
-                    query=read_custom_sql_test_query(custom_test.path),
+                    name=f"{asset_view.asset.key}__{custom_test.name}",
+                    query=query.removesuffix(";").rstrip(),
                     source=custom_test.path.relative_to(project_root).as_posix(),
                 )
             )
     return tests
-
-
-def not_null_query(asset_view: AssetView) -> str:
-    asset = asset_view.asset
-    conditions = " or ".join(f"{column} is null" for column in asset.tests.not_null)
-    return f"select * from {asset.key} where {conditions}"
-
-
-def unique_query(asset_view: AssetView, column: str) -> str:
-    asset = asset_view.asset
-    return (
-        f"select {column}, count(*) as n "
-        f"from {asset.key} "
-        f"group by {column} "
-        "having count(*) > 1"
-    )
-
-
-def assertion_query(asset_view: AssetView, assertion: str) -> str:
-    return f"select * from {asset_view.asset.key} where not ({assertion})"
 
 
 def run_data_tests(tests: list[DataTest], sample_rows: int) -> None:

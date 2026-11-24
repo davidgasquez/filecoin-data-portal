@@ -16,7 +16,7 @@ from fdp.api import (
     replace_table_frame,
     table_exists,
 )
-from fdp.assets import Asset, LoadedAssets, load_assets, python_asset_function_name
+from fdp.assets import Asset, LoadedAssets, load_assets
 from fdp.inspect import validate_materialized_asset
 from fdp.resources.bigquery import lily as lily_bigquery
 from fdp.selectors import expand_asset_selectors
@@ -202,12 +202,10 @@ def materialize_remote_sql(asset: Asset, query: str) -> None:
 
 
 def call_python_asset(asset: Asset) -> object:
-    module = load_module(asset.path)
-    function_name = python_asset_function_name(asset.path)
-    func = getattr(module, function_name, None)
-    if func is None or not callable(func):
+    func = getattr(load_module(asset.path), asset.path.stem, None)
+    if not callable(func):
         raise ValueError(
-            f"Python asset {asset.path} must define callable {function_name}"
+            f"Python asset {asset.path} must define callable {asset.path.stem}"
         )
     return func()
 
@@ -256,15 +254,12 @@ def apply_asset_comments(conn, asset: Asset) -> None:
 
 
 def load_module(module_path: Path) -> ModuleType:
-    module_name = module_name_from_path(module_path)
+    module_name = (
+        f"fdp_asset_{module_path.as_posix().replace('/', '_').replace('.', '_')}"
+    )
     spec = importlib.util.spec_from_file_location(module_name, module_path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Unable to load asset module: {module_path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
-
-
-def module_name_from_path(module_path: Path) -> str:
-    sanitized = module_path.as_posix().replace("/", "_").replace(".", "_")
-    return f"fdp_asset_{sanitized}"
