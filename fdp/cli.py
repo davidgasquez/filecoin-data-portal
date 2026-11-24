@@ -4,21 +4,13 @@ from fdp.api import db_connection, find_project_root
 from fdp.assets import check_assets, discover_assets
 from fdp.export import export
 from fdp.materialize import materialize
-from fdp.publish import available_targets, publish
+from fdp.publish import TARGETS, publish
 from fdp.show import show_asset
 from fdp.status import prune_tables, show_status
 from fdp.test import test_assets
 
 
-def _materialize(args: argparse.Namespace) -> None:
-    materialize(args.selectors, include_dependencies=args.with_deps)
-
-
-def _check(_: argparse.Namespace) -> None:
-    check_assets()
-
-
-def _list_assets(_: argparse.Namespace) -> None:
+def list_assets() -> None:
     project_root = find_project_root()
     assets = discover_assets()
     if not assets:
@@ -35,32 +27,8 @@ def _list_assets(_: argparse.Namespace) -> None:
             print(f"  {connector} {dependency}")
 
 
-def _export(args: argparse.Namespace) -> None:
-    print(export(args.out))
-
-
-def _status(_: argparse.Namespace) -> None:
-    show_status()
-
-
-def _prune(_: argparse.Namespace) -> None:
-    prune_tables()
-
-
-def _test(args: argparse.Namespace) -> None:
-    test_assets(sample_rows=args.sample_rows)
-
-
-def _publish(args: argparse.Namespace) -> None:
-    publish(args.target, args.selectors)
-
-
-def _show(args: argparse.Namespace) -> None:
-    show_asset(args.asset, sample_rows=args.sample_rows)
-
-
-def _query(args: argparse.Namespace) -> None:
-    statement = args.statement.strip()
+def query(statement: str) -> None:
+    statement = statement.strip()
     if not statement:
         raise ValueError("SQL statement must not be empty.")
 
@@ -109,31 +77,15 @@ def main() -> None:
             "default, explicit selectors refresh only the matched assets."
         ),
     )
-    materialize_parser.set_defaults(func=_materialize)
 
-    check_parser = subparsers.add_parser(
-        "check",
-        help="Validate assets.",
+    subparsers.add_parser("check", help="Validate assets.")
+    subparsers.add_parser("list", help="List available assets.")
+    subparsers.add_parser(
+        "status", help="Compare asset files with materialized DuckDB tables."
     )
-    check_parser.set_defaults(func=_check)
-
-    list_parser = subparsers.add_parser(
-        "list",
-        help="List available assets.",
+    subparsers.add_parser(
+        "prune", help="Drop materialized DuckDB tables with no matching asset file."
     )
-    list_parser.set_defaults(func=_list_assets)
-
-    status_parser = subparsers.add_parser(
-        "status",
-        help="Compare asset files with materialized DuckDB tables.",
-    )
-    status_parser.set_defaults(func=_status)
-
-    prune_parser = subparsers.add_parser(
-        "prune",
-        help="Drop materialized DuckDB tables with no matching asset file.",
-    )
-    prune_parser.set_defaults(func=_prune)
 
     export_parser = subparsers.add_parser(
         "export",
@@ -143,7 +95,6 @@ def main() -> None:
         "--out",
         help="Output DuckDB path. Defaults to <project>/build/fdp.duckdb.",
     )
-    export_parser.set_defaults(func=_export)
 
     test_parser = subparsers.add_parser(
         "test",
@@ -158,7 +109,6 @@ def main() -> None:
         default=10,
         help="Number of failing rows to print per failed test.",
     )
-    test_parser.set_defaults(func=_test)
 
     publish_parser = subparsers.add_parser(
         "publish",
@@ -173,7 +123,7 @@ def main() -> None:
     )
     publish_parser.add_argument(
         "target",
-        choices=available_targets(),
+        choices=sorted(TARGETS),
         help="Publish target.",
     )
     publish_parser.add_argument(
@@ -188,7 +138,6 @@ def main() -> None:
             "all main assets."
         ),
     )
-    publish_parser.set_defaults(func=_publish)
 
     show_parser = subparsers.add_parser(
         "show",
@@ -205,7 +154,6 @@ def main() -> None:
         default=5,
         help="Number of sample rows to print when materialized.",
     )
-    show_parser.set_defaults(func=_show)
 
     query_parser = subparsers.add_parser(
         "query",
@@ -220,7 +168,26 @@ def main() -> None:
         metavar="SQL",
         help="SQL statement to execute.",
     )
-    query_parser.set_defaults(func=_query)
 
     args = parser.parse_args()
-    args.func(args)
+    match args.command:
+        case "materialize":
+            materialize(args.selectors, include_dependencies=args.with_deps)
+        case "check":
+            check_assets()
+        case "list":
+            list_assets()
+        case "status":
+            show_status()
+        case "prune":
+            prune_tables()
+        case "export":
+            print(export(args.out))
+        case "test":
+            test_assets(sample_rows=args.sample_rows)
+        case "publish":
+            publish(args.target, args.selectors)
+        case "show":
+            show_asset(args.asset, sample_rows=args.sample_rows)
+        case "query":
+            query(args.statement)
