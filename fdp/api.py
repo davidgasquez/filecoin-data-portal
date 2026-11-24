@@ -1,11 +1,9 @@
-from collections.abc import Generator, Iterable
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Protocol
 
 import duckdb
 import polars as pl
-import pyarrow as pa
 
 SYSTEM_SCHEMAS = ("information_schema", "pg_catalog")
 
@@ -64,34 +62,6 @@ def table_exists(
     return bool(row)
 
 
-class TableAsset(Protocol):
-    @property
-    def key(self) -> str: ...
-
-    @property
-    def schema(self) -> str: ...
-
-    @property
-    def name(self) -> str: ...
-
-
-def ensure_tables_exist(
-    conn: duckdb.DuckDBPyConnection,
-    assets: Iterable[TableAsset],
-) -> None:
-    missing_assets = [
-        asset.key
-        for asset in assets
-        if not table_exists(conn, asset.schema, asset.name)
-    ]
-    if missing_assets:
-        missing = ", ".join(missing_assets)
-        raise ValueError(
-            "Assets are not materialized: "
-            f"{missing}. Run `uv run --env-file .env fdp materialize` first."
-        )
-
-
 def materialized_tables(conn: duckdb.DuckDBPyConnection) -> list[tuple[str, str]]:
     return conn.execute(
         "select table_schema, table_name from information_schema.tables "
@@ -105,28 +75,10 @@ def quote_identifier(value: str) -> str:
     return f'"{escaped}"'
 
 
+def quote_literal(value: str) -> str:
+    escaped = value.replace("'", "''")
+    return f"'{escaped}'"
+
+
 def quote_table_key(schema: str, name: str) -> str:
     return f"{quote_identifier(schema)}.{quote_identifier(name)}"
-
-
-def split_asset_key(asset_key: str) -> tuple[str, str]:
-    schema, _, name = asset_key.partition(".")
-    if not schema or not name:
-        raise ValueError(f"Invalid asset key: {asset_key}")
-    return schema, name
-
-
-def replace_table_arrow(asset_key: str, table: pa.Table) -> int:
-    schema, name = split_asset_key(asset_key)
-    quoted_table = quote_table_key(schema, name)
-    with db_connection() as conn:
-        conn.execute(f"create schema if not exists {quote_identifier(schema)}")
-        conn.register("asset_result", table)
-        conn.execute(
-            f"create or replace table {quoted_table} as select * from asset_result"
-        )
-    return table.num_rows
-
-
-def replace_table_frame(asset_key: str, frame: pl.DataFrame) -> int:
-    return replace_table_arrow(asset_key, frame.to_arrow())

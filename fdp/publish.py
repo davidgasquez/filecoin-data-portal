@@ -1,5 +1,6 @@
-from fdp.api import db_connection, ensure_tables_exist
+from fdp.api import db_connection
 from fdp.assets import Asset, load_assets, main_assets
+from fdp.inspect import ensure_tables_exist
 from fdp.selectors import expand_asset_selectors
 from fdp.targets import r2
 

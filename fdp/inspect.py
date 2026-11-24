@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import duckdb
 
-from fdp.api import db_connection, ensure_tables_exist, table_exists
+from fdp.api import db_connection, table_exists
 from fdp.assets import Asset, CustomSqlTest, LoadedAssets
 
 
@@ -91,7 +91,11 @@ def inspect_asset(
         )
 
     columns = validate_materialized_asset(conn, asset)
-    row_count = materialized_row_count(conn, asset) if include_row_count else None
+    row_count = (
+        conn.execute(f"select count(*) from {asset.key}").fetchall()[0][0]
+        if include_row_count
+        else None
+    )
     sample_columns, rows = materialized_sample(conn, asset, sample_rows)
     return AssetView(
         asset=asset,
@@ -157,14 +161,21 @@ def materialized_columns(
     )
 
 
-def materialized_row_count(
+def ensure_tables_exist(
     conn: duckdb.DuckDBPyConnection,
-    asset: Asset,
-) -> int:
-    row = conn.execute(f"select count(*) from {asset.key}").fetchone()
-    if row is None:
-        raise ValueError(f"Missing row count for {asset.key}")
-    return int(row[0])
+    assets: Iterable[Asset],
+) -> None:
+    missing_assets = [
+        asset.key
+        for asset in assets
+        if not table_exists(conn, asset.schema, asset.name)
+    ]
+    if missing_assets:
+        missing = ", ".join(missing_assets)
+        raise ValueError(
+            "Assets are not materialized: "
+            f"{missing}. Run `uv run --env-file .env fdp materialize` first."
+        )
 
 
 def materialized_sample(

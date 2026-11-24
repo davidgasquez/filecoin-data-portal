@@ -3,16 +3,12 @@ from pathlib import Path
 
 import duckdb
 
-from fdp.api import default_db_path, find_project_root, quote_identifier
+from fdp.api import default_db_path, find_project_root, quote_identifier, quote_literal
 from fdp.assets import main_assets
 
 
 def default_export_path() -> Path:
     return find_project_root() / "build" / "fdp.duckdb"
-
-
-def sql_string(value: str) -> str:
-    return "'" + value.replace("'", "''") + "'"
 
 
 def export(out: Path | str | None = None, db_path: Path | str | None = None) -> Path:
@@ -31,7 +27,7 @@ def export(out: Path | str | None = None, db_path: Path | str | None = None) -> 
     temp.unlink(missing_ok=True)
     try:
         with duckdb.connect(temp) as conn:
-            conn.execute(f"attach {sql_string(str(source))} as src (read_only)")
+            conn.execute(f"attach {quote_literal(str(source))} as src (read_only)")
             columns = conn.execute(
                 "select t.table_name, t.comment, c.column_name, c.comment "
                 "from duckdb_tables() t left join duckdb_columns() c "
@@ -48,14 +44,14 @@ def export(out: Path | str | None = None, db_path: Path | str | None = None) -> 
                 if name in names and table_comment is not None:
                     table = f"main.{quote_identifier(name)}"
                     conn.execute(
-                        f"comment on table {table} is {sql_string(table_comment)}"
+                        f"comment on table {table} is {quote_literal(table_comment)}"
                     )
             for name, _, column, comment in columns:
                 if name in names and comment is not None:
                     table = f"main.{quote_identifier(name)}"
                     conn.execute(
                         f"comment on column {table}.{quote_identifier(column)} "
-                        f"is {sql_string(comment)}"
+                        f"is {quote_literal(comment)}"
                     )
             conn.execute("detach src")
             conn.execute("checkpoint")

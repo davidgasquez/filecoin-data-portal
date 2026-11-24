@@ -5,14 +5,14 @@ from types import ModuleType
 from typing import assert_never
 
 import polars as pl
+import pyarrow as pa
 
 from fdp.api import (
     db_connection,
     default_db_path,
     quote_identifier,
+    quote_literal,
     quote_table_key,
-    replace_table_arrow,
-    replace_table_frame,
     table_exists,
 )
 from fdp.assets import Asset, load_assets
@@ -96,36 +96,33 @@ def can_keep_existing(asset: Asset) -> bool:
 def materialize_asset(asset: Asset) -> None:
     match asset.runtime:
         case "sql":
-            materialize_local_sql(asset, read_sql_query(asset))
+            write_asset(asset, asset.path.read_text(encoding="utf-8").strip())
         case "lily":
-            materialize_remote_sql(asset, read_sql_query(asset))
+            query = asset.path.read_text(encoding="utf-8").strip()
+            write_asset(asset, "select * from asset_result", lily.query_arrow(query))
         case "dataframe":
-            materialize_polars_frame(asset, run_dataframe_asset(asset))
+            data = run_dataframe_asset(asset).to_arrow()
+            write_asset(asset, "select * from asset_result", data)
         case "custom":
             run_custom_asset(asset)
         case _:
             assert_never(asset.runtime)
 
 
-def read_sql_query(asset: Asset) -> str:
-    query = asset.path.read_text(encoding="utf-8").strip()
-    if not query:
-        raise ValueError(f"SQL asset is empty: {asset.path}")
-    return query
-
-
-def materialize_local_sql(asset: Asset, query: str) -> None:
-    quoted_asset_key = quote_table_key(asset.schema, asset.name)
+def write_asset(
+    asset: Asset, query: str | None = None, data: pa.Table | None = None
+) -> None:
     with db_connection() as conn:
-        conn.execute(f"create schema if not exists {quote_identifier(asset.schema)}")
-        conn.execute(f"create or replace table {quoted_asset_key} as {query}")
-        validate_materialized_asset(conn, asset)
-        apply_asset_comments(conn, asset)
-
-
-def materialize_remote_sql(asset: Asset, query: str) -> None:
-    replace_table_arrow(asset.key, lily.query_arrow(query))
-    with db_connection() as conn:
+        if query is not None:
+            if data is not None:
+                conn.register("asset_result", data)
+            conn.execute(
+                f"create schema if not exists {quote_identifier(asset.schema)}"
+            )
+            conn.execute(
+                f"create or replace table {quote_table_key(asset.schema, asset.name)} "
+                f"as {query}"
+            )
         validate_materialized_asset(conn, asset)
         apply_asset_comments(conn, asset)
 
@@ -145,9 +142,7 @@ def run_custom_asset(asset: Asset) -> None:
             f"Python asset {asset.path} declares asset.materialization = custom "
             "and must return None"
         )
-    with db_connection() as conn:
-        validate_materialized_asset(conn, asset)
-        apply_asset_comments(conn, asset)
+    write_asset(asset)
 
 
 def run_dataframe_asset(asset: Asset) -> pl.DataFrame:
@@ -160,25 +155,18 @@ def run_dataframe_asset(asset: Asset) -> pl.DataFrame:
     return result
 
 
-def materialize_polars_frame(asset: Asset, frame: pl.DataFrame) -> None:
-    replace_table_frame(asset.key, frame)
-    with db_connection() as conn:
-        validate_materialized_asset(conn, asset)
-        apply_asset_comments(conn, asset)
-
-
 def apply_asset_comments(conn, asset: Asset) -> None:
     quoted_asset_key = quote_table_key(asset.schema, asset.name)
     if asset.description:
-        escaped = asset.description.replace("'", "''")
-        conn.execute(f"comment on table {quoted_asset_key} is '{escaped}'")
+        conn.execute(
+            f"comment on table {quoted_asset_key} is {quote_literal(asset.description)}"
+        )
 
     for column in asset.columns:
-        escaped = column.description.replace("'", "''")
         conn.execute(
             "comment on column "
             f"{quoted_asset_key}.{quote_identifier(column.name)} "
-            f"is '{escaped}'"
+            f"is {quote_literal(column.description)}"
         )
 
 

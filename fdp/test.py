@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-import duckdb
-
 from fdp.api import db_connection
 from fdp.assets import load_assets
 from fdp.inspect import AssetView, inspect_assets
@@ -93,7 +91,9 @@ def run_data_tests(tests: list[DataTest], sample_rows: int) -> None:
 
     with db_connection(read_only=True) as conn:
         for index, test in enumerate(tests, start=1):
-            failing_rows = count_failing_rows(conn, test.query)
+            failing_rows = conn.execute(
+                f"select count(*) from ({test.query}) as counted_rows"
+            ).fetchall()[0][0]
             status = "FAIL" if failing_rows else "OK"
             print(
                 f"[{index:>{count_width}}/{total:>{count_width}}] "
@@ -117,10 +117,3 @@ def run_data_tests(tests: list[DataTest], sample_rows: int) -> None:
 
     if failed_tests:
         raise ValueError(f"{len(failed_tests)} data tests failed")
-
-
-def count_failing_rows(conn: duckdb.DuckDBPyConnection, query: str) -> int:
-    row = conn.execute(f"select count(*) from ({query}) as counted_rows").fetchone()
-    if row is None:
-        raise ValueError("Missing row count")
-    return int(row[0])
