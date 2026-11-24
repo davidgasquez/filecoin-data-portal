@@ -24,11 +24,6 @@ SUPPORTED_METADATA_KEYS = {
     "resource",
     "keep_existing_on_failure",
 }
-SQL_RUNTIME_BY_RESOURCE: dict[str, AssetRuntime] = {"bigquery.lily": "lily"}
-PYTHON_RUNTIME_BY_MATERIALIZATION: dict[str, AssetRuntime] = {
-    "dataframe": "dataframe",
-    "custom": "custom",
-}
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 METADATA_LINE_RE = re.compile(
     r"asset\.(?P<key>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?P<value>.*)"
@@ -417,45 +412,29 @@ def parse_asset_runtime(
     if kind == "python":
         if metadata.get("resource"):
             raise ValueError(f"asset.resource is only supported on SQL assets: {path}")
-        return parse_python_materialization(metadata, path)
-    if metadata.get("materialization"):
-        raise ValueError(
-            f"asset.materialization is only supported on Python assets: {path}"
-        )
-    return parse_sql_resource(metadata, path)
-
-
-def parse_python_materialization(
-    metadata: dict[str, list[str]],
-    path: Path,
-) -> AssetRuntime:
-    materialization = metadata_value(metadata, "materialization", path)
-    if materialization is None:
-        raise ValueError(f"Python asset {path} must declare asset.materialization")
-    runtime = PYTHON_RUNTIME_BY_MATERIALIZATION.get(materialization)
-    if runtime is None:
+        materialization = metadata_value(metadata, "materialization", path)
+        if materialization is None:
+            raise ValueError(f"Python asset {path} must declare asset.materialization")
+        match materialization:
+            case "dataframe" | "custom":
+                return materialization
         raise ValueError(
             f"Unsupported asset.materialization '{materialization}' in {path}. "
             "Expected dataframe or custom."
         )
-    return runtime
-
-
-def parse_sql_resource(
-    metadata: dict[str, list[str]],
-    path: Path,
-) -> AssetRuntime:
+    if metadata.get("materialization"):
+        raise ValueError(
+            f"asset.materialization is only supported on Python assets: {path}"
+        )
     resource = metadata_value(metadata, "resource", path)
     if resource is None:
         return "sql"
-    runtime = SQL_RUNTIME_BY_RESOURCE.get(resource)
-    if runtime is None:
-        known_resources = ", ".join(sorted(SQL_RUNTIME_BY_RESOURCE))
-        raise ValueError(
-            f"Unsupported asset.resource '{resource}' in {path}. "
-            f"Expected one of: {known_resources}."
-        )
-    return runtime
+    if resource == "bigquery.lily":
+        return "lily"
+    raise ValueError(
+        f"Unsupported asset.resource '{resource}' in {path}. "
+        "Expected one of: bigquery.lily."
+    )
 
 
 def parse_bool_metadata(
