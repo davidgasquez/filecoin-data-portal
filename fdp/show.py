@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from fdp.assets import load_assets
-from fdp.inspect import AssetView, inspect_assets
+from fdp.assets import Asset, CustomSqlTest, load_assets
+from fdp.inspect import AssetView, inspect_asset
 from fdp.selectors import expand_asset_selectors
 from fdp.tabular import render_text_table
 
@@ -21,16 +21,17 @@ def show_asset(selector: str, sample_rows: int = 5) -> None:
 
     asset_key = resolved_selectors[0]
     loaded = load_assets([asset_key], include_dependencies=False)
-    asset_view = inspect_assets(
-        loaded,
-        asset_keys=[asset_key],
-        include_row_count=True,
-        sample_rows=sample_rows,
-    )[0]
-    print_asset_view(asset_view, loaded.project_root)
+    asset_view = inspect_asset(loaded.assets[asset_key], sample_rows)
+    print_asset_view(
+        asset_view, loaded.custom_tests_by_asset[asset_key], loaded.project_root
+    )
 
 
-def print_asset_view(asset_view: AssetView, project_root: Path) -> None:
+def print_asset_view(
+    asset_view: AssetView,
+    custom_tests: tuple[CustomSqlTest, ...],
+    project_root: Path,
+) -> None:
     asset = asset_view.asset
     print(f"asset: {asset.key}")
     print()
@@ -51,7 +52,7 @@ def print_asset_view(asset_view: AssetView, project_root: Path) -> None:
     else:
         print("    - none")
     print("  tests:")
-    test_lines = asset_test_lines(asset_view, project_root)
+    test_lines = asset_test_lines(asset, custom_tests, project_root)
     if test_lines:
         for line in test_lines:
             print(f"    - {line}")
@@ -76,15 +77,18 @@ def print_asset_view(asset_view: AssetView, project_root: Path) -> None:
         print(f"  {line}")
 
 
-def asset_test_lines(asset_view: AssetView, project_root: Path) -> list[str]:
-    asset = asset_view.asset
+def asset_test_lines(
+    asset: Asset,
+    custom_tests: tuple[CustomSqlTest, ...],
+    project_root: Path,
+) -> list[str]:
     lines = [
         *(f"not_null: {column}" for column in asset.tests.not_null),
         *(f"unique: {column}" for column in asset.tests.unique),
         *(f"assert: {assertion}" for assertion in asset.tests.assertions),
         *(
             f"custom: {custom_test.path.relative_to(project_root).as_posix()}"
-            for custom_test in asset_view.custom_tests
+            for custom_test in custom_tests
         ),
     ]
     return lines
