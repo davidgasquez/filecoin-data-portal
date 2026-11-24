@@ -12,26 +12,15 @@ def render_text_table(
     *,
     lowercase_bools: bool = False,
 ) -> list[str]:
-    if not columns:
-        return ["no columns"]
     if not rows:
         return ["no rows"]
 
-    rendered_rows = [
-        [format_cell(value, lowercase_bools=lowercase_bools) for value in row]
-        for row in rows
+    cells = [
+        [format_cell(v, lowercase_bools=lowercase_bools) for v in row] for row in rows
     ]
-    widths = [len(column) for column in columns]
-    for row in rendered_rows:
-        for index, value in enumerate(row):
-            widths[index] = max(widths[index], len(value))
+    widths = [max(map(len, column)) for column in zip(columns, *cells, strict=True)]
 
-    header = " | ".join(
-        column.ljust(widths[index]) for index, column in enumerate(columns)
-    )
-    divider = "-+-".join("-" * width for width in widths)
-    body = [
-        " | ".join(value.ljust(widths[index]) for index, value in enumerate(row))
-        for row in rendered_rows
-    ]
-    return [header, divider, *body]
+    def line(values: list[str] | tuple[str, ...]) -> str:
+        return " | ".join(v.ljust(w) for v, w in zip(values, widths, strict=True))
+
+    return [line(columns), "-+-".join("-" * w for w in widths), *map(line, cells)]
