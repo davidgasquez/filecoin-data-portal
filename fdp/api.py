@@ -3,9 +3,6 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import duckdb
-import polars as pl
-
-SYSTEM_SCHEMAS = ("information_schema", "pg_catalog")
 
 
 def find_project_root() -> Path:
@@ -20,33 +17,9 @@ def default_db_path() -> Path:
 
 
 @contextmanager
-def db_connection(
-    db_path: Path | str | None = None,
-    *,
-    read_only: bool = False,
-) -> Generator[duckdb.DuckDBPyConnection]:
-    path = default_db_path() if db_path is None else Path(db_path)
-    with duckdb.connect(path, read_only=read_only) as conn:
+def db_connection(*, read_only: bool = False) -> Generator[duckdb.DuckDBPyConnection]:
+    with duckdb.connect(default_db_path(), read_only=read_only) as conn:
         yield conn
-
-
-def sql(
-    statement: str,
-    params: list[object] | None = None,
-    *,
-    db_path: Path | str | None = None,
-) -> None:
-    cleaned = statement.strip()
-    with db_connection(db_path) as conn:
-        if params is None:
-            conn.execute(cleaned)
-            return
-        conn.execute(cleaned, params)
-
-
-def table(name: str, *, db_path: Path | str | None = None) -> pl.DataFrame:
-    with db_connection(db_path, read_only=True) as conn:
-        return conn.sql(f"select * from {name}").pl()
 
 
 def table_exists(
@@ -65,8 +38,8 @@ def table_exists(
 def materialized_tables(conn: duckdb.DuckDBPyConnection) -> list[tuple[str, str]]:
     return conn.execute(
         "select table_schema, table_name from information_schema.tables "
-        "where table_schema not in (?, ?) order by 1, 2",
-        list(SYSTEM_SCHEMAS),
+        "where table_schema not in ('information_schema', 'pg_catalog') "
+        "order by 1, 2"
     ).fetchall()
 
 
