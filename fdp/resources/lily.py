@@ -1,9 +1,28 @@
-"""Lily BigQuery queries returned as Arrow tables."""
+import base64
+import json
+import os
 
 import pyarrow as pa
 from google.cloud import bigquery
+from google.oauth2 import service_account
 
-from fdp.google import credentials_from_env
+CREDENTIALS_ENV_VAR = "ENCODED_GOOGLE_APPLICATION_CREDENTIALS"
+
+
+def credentials_from_env() -> service_account.Credentials:
+    encoded = os.environ.get(CREDENTIALS_ENV_VAR)
+    if not encoded:
+        raise ValueError(f"Missing {CREDENTIALS_ENV_VAR} in environment")
+
+    try:
+        payload = json.loads(base64.b64decode(encoded))
+    except Exception as exc:
+        raise ValueError(f"Invalid {CREDENTIALS_ENV_VAR} payload") from exc
+
+    if not isinstance(payload, dict):
+        raise ValueError(f"Invalid {CREDENTIALS_ENV_VAR} payload")
+
+    return service_account.Credentials.from_service_account_info(payload)
 
 
 def query_arrow(query: str) -> pa.Table:
