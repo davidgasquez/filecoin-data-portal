@@ -3,12 +3,12 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from graphlib import CycleError, TopologicalSorter
 from pathlib import Path
-from typing import Literal
+from typing import Literal, assert_never
 
 from fdp.api import find_project_root
 
 AssetKind = Literal["python", "sql"]
-PythonMaterialization = Literal["dataframe", "custom"]
+AssetRuntime = Literal["sql", "lily", "dataframe", "custom"]
 ValidationReporter = Callable[[str, str], None]
 
 ASSET_KIND_BY_SUFFIX: dict[str, AssetKind] = {".py": "python", ".sql": "sql"}
@@ -24,7 +24,7 @@ SUPPORTED_METADATA_KEYS = {
     "resource",
     "keep_existing_on_failure",
 }
-VALID_SQL_RESOURCES = {"bigquery.lily"}
+SQL_RUNTIME_BY_RESOURCE: dict[str, AssetRuntime] = {"bigquery.lily": "lily"}
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 METADATA_LINE_RE = re.compile(
     r"asset\.(?P<key>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?P<value>.*)"
@@ -75,14 +75,22 @@ class Asset:
     schema: str
     key: str
     path: Path
-    kind: AssetKind
-    python_materialization: PythonMaterialization | None
-    resource: str | None
+    runtime: AssetRuntime
     keep_existing_on_failure: bool
     depends: tuple[str, ...]
     description: str | None
     columns: tuple[AssetColumn, ...]
     tests: AssetTests
+
+    @property
+    def kind(self) -> AssetKind:
+        match self.runtime:
+            case "sql" | "lily":
+                return "sql"
+            case "dataframe" | "custom":
+                return "python"
+            case _:
+                assert_never(self.runtime)
 
 
 @dataclass(frozen=True)
@@ -266,8 +274,7 @@ def asset_from_path(path: Path, assets_root: Path) -> Asset:
     metadata, body_lines = metadata_from_source(path, kind, source)
     ensure_asset_body(body_lines, path)
     schema, name = asset_identity_from_path(path, assets_root)
-    python_materialization = parse_python_materialization(kind, metadata, path)
-    resource = parse_asset_resource(kind, metadata, path)
+    runtime = parse_asset_runtime(kind, metadata, path)
     keep_existing_on_failure = parse_bool_metadata(
         metadata,
         "keep_existing_on_failure",
@@ -279,9 +286,7 @@ def asset_from_path(path: Path, assets_root: Path) -> Asset:
         schema=schema,
         key=f"{schema}.{name}",
         path=path,
-        kind=kind,
-        python_materialization=python_materialization,
-        resource=resource,
+        runtime=runtime,
         keep_existing_on_failure=keep_existing_on_failure,
         depends=tuple(parse_dependencies(metadata.get("depends", []), path)),
         description=optional_metadata_value(metadata, "description", path),
@@ -510,18 +515,27 @@ def validate_identifier(value: str, label: str, path: Path) -> None:
         raise ValueError(f"Invalid {label} name '{value}' from {path}")
 
 
-def parse_python_materialization(
+def parse_asset_runtime(
     kind: AssetKind,
     metadata: dict[str, list[str]],
     path: Path,
-) -> PythonMaterialization | None:
+) -> AssetRuntime:
+    if kind == "python":
+        if metadata.get("resource"):
+            raise ValueError(f"asset.resource is only supported on SQL assets: {path}")
+        return parse_python_materialization(metadata, path)
+    if metadata.get("materialization"):
+        raise ValueError(
+            f"asset.materialization is only supported on Python assets: {path}"
+        )
+    return parse_sql_resource(metadata, path)
+
+
+def parse_python_materialization(
+    metadata: dict[str, list[str]],
+    path: Path,
+) -> AssetRuntime:
     values = metadata.get("materialization", [])
-    if kind != "python":
-        if values:
-            raise ValueError(
-                f"asset.materialization is only supported on Python assets: {path}"
-            )
-        return None
 
     if not values:
         raise ValueError(f"Python asset {path} must declare asset.materialization")
@@ -541,29 +555,27 @@ def parse_python_materialization(
     )
 
 
-def parse_asset_resource(
-    kind: AssetKind,
+def parse_sql_resource(
     metadata: dict[str, list[str]],
     path: Path,
-) -> str | None:
+) -> AssetRuntime:
     values = metadata.get("resource", [])
     if not values:
-        return None
-    if kind != "sql":
-        raise ValueError(f"asset.resource is only supported on SQL assets: {path}")
+        return "sql"
     if len(values) != 1:
         raise ValueError(f"asset.resource must appear once in {path}")
 
     resource = values[0].strip()
     if not resource:
         raise ValueError(f"asset.resource must have a value in {path}")
-    if resource not in VALID_SQL_RESOURCES:
-        known_resources = ", ".join(sorted(VALID_SQL_RESOURCES))
+    runtime = SQL_RUNTIME_BY_RESOURCE.get(resource)
+    if runtime is None:
+        known_resources = ", ".join(sorted(SQL_RUNTIME_BY_RESOURCE))
         raise ValueError(
             f"Unsupported asset.resource '{resource}' in {path}. "
             f"Expected one of: {known_resources}."
         )
-    return resource
+    return runtime
 
 
 def parse_bool_metadata(

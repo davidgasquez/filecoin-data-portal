@@ -3,6 +3,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from time import perf_counter
 from types import ModuleType
+from typing import assert_never
 
 import polars as pl
 
@@ -164,24 +165,24 @@ def format_materialize_status(
 
 
 def materialize_asset(asset: Asset) -> None:
-    if asset.kind == "python":
-        materialize_python(asset)
-        return
-    materialize_sql(asset)
+    match asset.runtime:
+        case "sql":
+            materialize_local_sql(asset, read_sql_query(asset))
+        case "lily":
+            materialize_remote_sql(asset, read_sql_query(asset))
+        case "dataframe":
+            materialize_polars_frame(asset, run_dataframe_asset(asset))
+        case "custom":
+            run_custom_asset(asset)
+        case _:
+            assert_never(asset.runtime)
 
 
-def materialize_sql(asset: Asset) -> None:
+def read_sql_query(asset: Asset) -> str:
     query = asset.path.read_text(encoding="utf-8").strip()
     if not query:
         raise ValueError(f"SQL asset is empty: {asset.path}")
-
-    if asset.resource is None:
-        materialize_local_sql(asset, query)
-        return
-    if asset.resource == "bigquery.lily":
-        materialize_remote_sql(asset, query)
-        return
-    raise ValueError(f"Unsupported SQL resource: {asset.resource}")
+    return query
 
 
 def materialize_local_sql(asset: Asset, query: str) -> None:
@@ -200,7 +201,7 @@ def materialize_remote_sql(asset: Asset, query: str) -> None:
         apply_asset_comments(conn, asset)
 
 
-def materialize_python(asset: Asset) -> None:
+def call_python_asset(asset: Asset) -> object:
     module = load_module(asset.path)
     function_name = python_asset_function_name(asset.path)
     func = getattr(module, function_name, None)
@@ -208,27 +209,28 @@ def materialize_python(asset: Asset) -> None:
         raise ValueError(
             f"Python asset {asset.path} must define callable {function_name}"
         )
+    return func()
 
-    result = func()
-    if asset.python_materialization == "custom":
-        if result is not None:
-            raise TypeError(
-                f"Python asset {asset.path} declares asset.materialization = custom "
-                "and must return None"
-            )
-        with db_connection() as conn:
-            validate_materialized_asset(conn, asset)
-            apply_asset_comments(conn, asset)
-        return
 
-    if asset.python_materialization != "dataframe":
-        raise TypeError(f"Invalid Python materialization mode for {asset.path}")
+def run_custom_asset(asset: Asset) -> None:
+    if call_python_asset(asset) is not None:
+        raise TypeError(
+            f"Python asset {asset.path} declares asset.materialization = custom "
+            "and must return None"
+        )
+    with db_connection() as conn:
+        validate_materialized_asset(conn, asset)
+        apply_asset_comments(conn, asset)
+
+
+def run_dataframe_asset(asset: Asset) -> pl.DataFrame:
+    result = call_python_asset(asset)
     if not isinstance(result, pl.DataFrame):
         raise TypeError(
             f"Python asset {asset.path} declares asset.materialization = "
             "dataframe and must return polars.DataFrame"
         )
-    materialize_polars_frame(asset, result)
+    return result
 
 
 def materialize_polars_frame(asset: Asset, frame: pl.DataFrame) -> None:
